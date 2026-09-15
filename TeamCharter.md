@@ -136,4 +136,4 @@
 | Оксана | @Sanna001 | ☐ |
 | Данило | @nemaproblem478 | ☐ |
 | Дар'я | @dchorna | ☐ |
-| Владислав | @zarraban | ☐ |
+| Владислав | @zarraban | x |
