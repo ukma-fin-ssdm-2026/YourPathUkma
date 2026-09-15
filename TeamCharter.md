@@ -133,7 +133,8 @@
 
 | Учасник | GitHub | Підпис |
 |---|---|---|
-| Оксана | @Sanna001 | x |
-| Данило | @nemaproblem478 | ☐ |
-| Дар'я | @dchorna | ☐ |
-| Владислав | @zarraban | ☐ |
+
+| Оксана | @Sanna001 | ☐ |
+| Данило | @nemaproblem478 | x |
+| Дар'я | @dchorna | х |
+| Владислав | @zarraban | x |
