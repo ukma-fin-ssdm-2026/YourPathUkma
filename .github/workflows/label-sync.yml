@@ -1,0 +1,22 @@
+name: Sync status label on close
+
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  issues: write
+
+jobs:
+  relabel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove in-progress/review labels, add done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue edit ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
+            --remove-label "status: in progress" \
+            --remove-label "status: needs review" \
+            --add-label "status: done"
