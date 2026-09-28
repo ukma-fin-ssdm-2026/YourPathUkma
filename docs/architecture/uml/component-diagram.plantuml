@@ -1,0 +1,103 @@
+@startuml
+skinparam componentStyle uml2
+skinparam packageStyle rectangle
+
+title Component Diagram: Modular Monolith — YourPathUkma
+
+package "Client Tier (React SPA)" {
+  [Auth & SSO View] as UIAuth
+  [Student Dashboard & Profile\n(Лічильники кредитів, Історія)] as UIDash
+  [Plan Builder UI\n(Вибір дисциплін, Навантаження, AI)] as UIPlan
+  [Deanery Doc Uploader] as UIDoc
+  [Catalog & Certificates View] as UICatalog
+  [Admin Console\n(Модерація, Запуск парсингу)] as UIAdmin
+}
+
+package "Application Server (FastAPI / Modular Monolith)" {
+  portin "REST API Gateway" as APIPort
+
+  package "Auth & User Module" {
+    [Auth Service\n(Google SSO, JWT)] as AuthMod
+    [Student Profile Service\n(Лічильники 240/25/54)] as ProfileMod
+  }
+
+  package "Planning & Validation Module" {
+    [Study Plan Service] as PlanMod
+    [Academic Validation Engine\n(240/25 кредитів, 4 курс, конфлікти)] as ValidatorMod
+    [Deanery Document Parser] as DocParserMod
+  }
+
+  package "Recommendation Module" {
+    [AI-сервіс Adapter] as AIMod
+  }
+
+  package "Catalog & Certificates Module" {
+    [Catalog Service] as CatalogMod
+    [Certificate Program Service\n(Case-insensitive звірка)] as CertMod
+  }
+
+  package "Ingestion & Moderation Module" {
+    [Sync Orchestrator\n(SyncJob management)] as SyncMod
+    [CA3 & Faculty Parser Task] as ParserMod
+  }
+
+  ' Точки входа API
+  APIPort --> AuthMod
+  APIPort --> ProfileMod
+  APIPort --> PlanMod
+  APIPort --> DocParserMod
+  APIPort --> CatalogMod
+  APIPort --> CertMod
+  APIPort --> SyncMod
+
+  ' Внутренние in-memory вызовы
+  PlanMod ..> ValidatorMod : валідація плану та лімітів
+  PlanMod ..> CatalogMod : запит доступних курсів
+  PlanMod ..> AIMod : запит генерації плану (in-memory)
+  PlanMod ..> DocParserMod : перевірка нормативних дисциплін
+  CertMod ..> CatalogMod : звірка дисциплін із САЗ
+  SyncMod ..> ParserMod : запуск асинхронного таска (Scheduler/Admin)
+}
+
+database "Master DB (PostgreSQL)" as DB {
+  [Users & Profiles]
+  [Individual Plans & Alternatives]
+  [Deanery Documents]
+  [Courses & Catalogs]
+  [Certificate Programs]
+  [Moderation Queue & SyncJobs]
+}
+
+cloud "External Systems & Sources" {
+  [Google Workspace SSO (NaUKMA)] as GoogleSSO
+  [External LLM API] as ExtLLM
+  [САЗ НаУКМА] as ExtCA3
+  [Сайт факультету\n(Сертифікатні програми)] as ExtFaculty
+}
+
+' Клиентские интерфейсы
+UIAuth .down.> APIPort : OAuth2 Token
+UIDash .down.> APIPort : HTTPS / JSON
+UIPlan .down.> APIPort : HTTPS / JSON
+UIDoc .down.> APIPort : Multipart / PDF-Docx
+UICatalog .down.> APIPort : HTTPS / JSON
+UIAdmin .down.> APIPort : HTTPS / JSON
+
+' Внешние вызовы из модулей
+AuthMod .down.> GoogleSSO : перевірка домену @ukma.edu.ua
+AIMod .down.> ExtLLM : HTTPS POST (анонімізований prompt)
+ParserMod .down.> ExtCA3 : HTTP Scrape (каталог САЗ)
+ParserMod .down.> ExtFaculty : HTTP Scrape (сертифікати)
+
+' Доступ к БД
+AuthMod --> DB
+ProfileMod --> DB
+PlanMod --> DB
+DocParserMod --> DB
+CatalogMod --> DB
+CertMod --> DB
+SyncMod --> DB
+ParserMod --> DB : запис у Moderation Queue & SyncJob
+AIMod ..> DB : read-only доступ до каталогу
+
+@enduml
