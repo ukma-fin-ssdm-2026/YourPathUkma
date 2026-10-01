@@ -1,0 +1,322 @@
+@startuml
+' Використання ШІ: модель створено за допомогою Claude на основі requirements.md, Project-Description.md,
+' AGENTS.md, deployment- і sequence-діаграм; перевірено рендером PlantUML і ручною звіркою з FR-001…FR-012.
+hide circle
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor<<PII>> #FFE8E8
+  BorderColor<<PII>> #C0392B
+  BackgroundColor<<security>> #E8F0FF
+  BorderColor<<security>> #2E5AAC
+}
+
+title Data Model (ER): YourPathUkma
+
+' Позначення:
+'   <<PII>>      — сутність містить персональні дані студента
+'   <<security>> — сутність не описана у вимогах явно, додана для
+'                  виконання SEC-001 та контрзаходів з threat-model.md
+'   {PII}        — окреме поле з персональними даними
+'   {sensitive}  — чутливе поле, що не є PII напряму, але визначає
+'                  права доступу або є репутаційно чутливим
+'   (FR-xxx)     — вимога, з якої походить поле / обмеження
+'   bigint       — 64-бітне ціле (Long); PK генерується БД
+'                  (GENERATED ALWAYS AS IDENTITY)
+
+' ============================================================
+package "Users & Profiles" {
+  entity User <<PII>> {
+    * id : bigint <<PK>>
+    --
+    * google_sub : varchar <<unique>>  {PII}
+    * email : varchar <<unique>>  {PII}  (@ukma.edu.ua, FR-012)
+    * full_name : varchar  {PII}
+    * role : enum {student, admin}  {sensitive}
+    * created_at : timestamptz
+    last_login_at : timestamptz
+  }
+
+  entity StudentProfile <<PII>> {
+    * user_id : bigint <<PK, FK>>
+    --
+    * faculty : varchar  (ФІ)
+    * specialty : varchar  {PII}
+    * course_year : smallint  (1..4; FR-001, FR-003)  {PII}
+    * course_year_source : enum {saz_sync, admin}
+    credits_used_total : smallint  (derived, /240)
+    credits_used_free_choice : smallint  (derived, /25)
+    credits_used_professional : smallint  (derived, /54)
+    saz_synced_at : timestamptz
+  }
+
+  entity PlanPreferences <<PII>> {
+    * id : bigint <<PK>>
+    * student_id : bigint <<FK>>
+    * academic_year : varchar  ("2026/2027")
+    --
+    wants_certificate : boolean
+    certificate_program_id : bigint <<FK>>
+  }
+
+  entity PreferenceDirection {
+    * preferences_id : bigint <<PK, FK>>
+    * direction_id : bigint <<PK, FK>>
+    --
+    (1..3 на preferences, FR-007)
+  }
+
+  entity TrimesterLoad {
+    * preferences_id : bigint <<PK, FK>>
+    * trimester : enum {autumn, spring, summer} <<PK>>
+    --
+    * load_level : enum {low, medium, high}  (FR-001)
+    * is_auto : boolean  (true для 4 курсу, FR-003)
+  }
+
+  entity InstructorPreference <<PII>> {
+    * preferences_id : bigint <<PK, FK>>
+    * instructor_id : bigint <<PK, FK>>
+    --
+    * kind : enum {preferred, unwanted}  (FR-005)  {sensitive}
+  }
+}
+
+' ============================================================
+package "Deanery Documents" {
+  entity DeaneryPlanDocument <<PII>> {
+    * id : bigint <<PK>>
+    * student_id : bigint <<FK>>
+    * academic_year : varchar
+    --
+    * content : bytea  (файл у PostgreSQL, ≤ 10 МБ)  {PII}
+    * original_filename : varchar  {PII}
+    * mime_type : enum {pdf, docx}
+    * size_bytes : int
+    * sha256 : char(64)
+    * parse_status : enum {pending, parsed, failed}
+    parse_error : text
+    * uploaded_at : timestamptz
+  }
+
+  entity NormativeCourseEntry {
+    * id : bigint <<PK>>
+    * document_id : bigint <<FK>>
+    --
+    course_id : bigint <<FK>>  (null, якщо не знайдено в каталозі)
+    * raw_title : varchar
+    * credits : numeric(4,1)
+    * trimester : enum {autumn, spring, summer}
+  }
+}
+
+' ============================================================
+package "Individual Plans & Alternatives" {
+  entity IndividualPlan <<PII>> {
+    * id : bigint <<PK>>
+    * student_id : bigint <<FK>>
+    * academic_year : varchar
+    --
+    * title : varchar
+    * status : enum {draft, submitted, awaiting_deanery, approved_in_saz}  (FR-004)
+    (PII через student_id: план ідентифікує студента)
+    * origin : enum {manual, ai_generated, saz_sync}
+    * total_credits : numeric(5,1)  (перераховується сервером)
+    preferences_id : bigint <<FK>>
+    deanery_document_id : bigint <<FK>>  (нормативні на цей рік)
+    * created_at : timestamptz
+    * updated_at : timestamptz
+  }
+
+  entity PlanItem {
+    * id : bigint <<PK>>
+    * plan_id : bigint <<FK>>
+    * course_id : bigint <<FK>>
+    --
+    * trimester : enum {autumn, spring, summer}
+    * category : enum {professional, free_choice}
+    ai_explanation : text
+  }
+
+  entity PlanAlternative {
+    * id : bigint <<PK>>
+    * plan_item_id : bigint <<FK>>
+    * course_id : bigint <<FK>>
+    --
+    * rank : smallint  (1..3, FR-009)
+    ai_explanation : text
+    * is_selected : boolean  (заміна → перевірка ліміту 25, FR-010)
+  }
+
+  entity AIGenerationRequest <<security>> {
+    * id : bigint <<PK>>
+    * student_id : bigint <<FK>>
+    --
+    plan_id : bigint <<FK>>
+    * status : enum {pending, succeeded, failed}
+    * attempts : smallint  (≤ 3, таймаут ~90 с, REL-001)
+    * llm_model : varchar
+    * prompt_sha256 : char(64)  (без тексту prompt)
+    * tokens_used : int
+    * created_at : timestamptz
+    finished_at : timestamptz
+  }
+}
+
+' ============================================================
+package "Courses & Catalogs" {
+  entity Course {
+    * id : bigint <<PK>>
+    --
+    * saz_code : varchar <<unique>>
+    * title : varchar
+    title_normalized : varchar  (lower(), для звірки)
+    description : text  (недовірений вміст із САЗ)
+    * credits : numeric(4,1)
+    * trimester : enum {autumn, spring, summer}
+    * allowed_years : smallint[]  (2..4)
+    * kind : enum {normative, professional, free_choice}
+    * publication_status : enum {published, archived}
+    * last_sync_job_id : bigint <<FK>>
+  }
+
+  entity Instructor <<PII>> {
+    * id : bigint <<PK>>
+    --
+    * full_name : varchar  {PII}  (публічна, але персональна)
+  }
+
+  entity CourseInstructor {
+    * course_id : bigint <<PK, FK>>
+    * instructor_id : bigint <<PK, FK>>
+    --
+    * role : enum {lecturer, practice}
+  }
+
+  entity Direction {
+    * id : bigint <<PK>>
+    --
+    * name : varchar <<unique>>  ("Data Science", ...)
+    description : text
+  }
+
+  entity CourseDirection {
+    * course_id : bigint <<PK, FK>>
+    * direction_id : bigint <<PK, FK>>
+  }
+}
+
+' ============================================================
+package "Certificate Programs" {
+  entity CertificateProgram {
+    * id : bigint <<PK>>
+    --
+    * title : varchar
+    * source_url : varchar
+    availability : enum {available, unavailable_this_year}  (derived: усі дисципліни є в САЗ)
+    * last_sync_job_id : bigint <<FK>>
+  }
+
+  entity CertificateProgramCourse {
+    * id : bigint <<PK>>
+    * program_id : bigint <<FK>>
+    --
+    * raw_title : varchar  (із сайту факультету)
+    course_id : bigint <<FK>>  (case-insensitive збіг, null якщо немає)
+    * match_status : enum {matched, not_found}
+  }
+}
+
+' ============================================================
+package "Moderation Queue & SyncJobs" {
+  entity SyncJob {
+    * id : bigint <<PK>>
+    --
+    * source : enum {saz_catalog, faculty_certificates}
+    * initiator : enum {admin, scheduler}
+    initiated_by : bigint <<FK>>  (User.id, FR-011)
+    * status : enum {queued, running, succeeded, failed}
+    * started_at : timestamptz
+    finished_at : timestamptz
+    * added_count : int
+    * updated_count : int
+    error_message : text
+    raw_snapshot : text  (сирий HTML, R13)
+    raw_snapshot_sha256 : char(64)
+  }
+
+  entity ModerationItem {
+    * id : bigint <<PK>>
+    * sync_job_id : bigint <<FK>>
+    --
+    course_id : bigint <<FK>>  (null для нової дисципліни)
+    * change_type : enum {add, update, remove}
+    * payload : jsonb  (спарсені поля)
+    diff : jsonb  (відносно поточного Course)
+    * status : enum {pending, approved, rejected}
+    reviewed_by : bigint <<FK>>
+    reviewed_at : timestamptz
+  }
+}
+
+' ============================================================
+package "Audit" {
+  entity AuditLog <<security>> {
+    * id : bigint <<PK>>
+    --
+    actor_id : bigint <<FK>>  (null для анонімних спроб)
+    * action : varchar  (plan.read, plan.update, moderation.approve, ...)
+    * object_type : varchar
+    * object_id : bigint
+    * outcome : enum {allowed, denied}  (SEC-001)
+    old_value : jsonb  {PII}
+    new_value : jsonb  {PII}
+    ip : inet  {PII}
+    * created_at : timestamptz
+    (append-only: INSERT без UPDATE/DELETE)
+  }
+}
+
+' ============================================================
+' Зв'язки
+User ||--o| StudentProfile
+User ||--o{ PlanPreferences
+User ||--o{ DeaneryPlanDocument
+User ||--o{ IndividualPlan
+User ||--o{ AIGenerationRequest
+User |o--o{ SyncJob : initiated_by
+User |o--o{ ModerationItem : reviewed_by
+User |o--o{ AuditLog : actor
+
+PlanPreferences ||--|{ PreferenceDirection
+PlanPreferences ||--|{ TrimesterLoad
+PlanPreferences ||--o{ InstructorPreference
+PlanPreferences }o--o| CertificateProgram
+Direction ||--o{ PreferenceDirection
+Instructor ||--o{ InstructorPreference
+
+DeaneryPlanDocument ||--|{ NormativeCourseEntry
+NormativeCourseEntry }o--o| Course
+
+IndividualPlan }o--o| PlanPreferences
+IndividualPlan }o--o| DeaneryPlanDocument
+IndividualPlan ||--o{ PlanItem
+PlanItem }o--|| Course
+PlanItem ||--o{ PlanAlternative
+PlanAlternative }o--|| Course
+AIGenerationRequest }o--o| IndividualPlan
+
+Course ||--o{ CourseInstructor
+Instructor ||--o{ CourseInstructor
+Course ||--o{ CourseDirection
+Direction ||--o{ CourseDirection
+
+CertificateProgram ||--o{ CertificateProgramCourse
+CertificateProgramCourse }o--o| Course
+
+SyncJob ||--o{ ModerationItem
+ModerationItem }o--o| Course
+SyncJob ||--o{ Course : last_sync_job
+SyncJob ||--o{ CertificateProgram : last_sync_job
+
+@enduml
