@@ -6,16 +6,17 @@
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **FR-001** | FR | Вибір рівня тижневого навантаження окремо для кожного триместру (2–3 курси) | `Plan Builder UI`, `Study Plan Service` | Модульний моноліт (ADR-001); REST API клієнт–сервер (HLD §4) | **Test-01** (rtm.md): інтеграційний тест незалежності вибору для осіннього, весняного та літнього триместрів |
 | **FR-002** | FR | Попередження про зростання навантаження в наступних роках при низькому рівні (<20 год/тиждень) | `Plan Builder UI`, `Academic Validation Engine` | Обов'язкова серверна валідація академічних правил (HLD §3.2) із відображенням попередження в UI | **Test-02** (rtm.md): перевірка появи попередження при виборі «низького» навантаження |
-| **FR-003** | FR | Блокування ручного вибору для 4 курсу та автоматичний розрахунок за залишком до 240 кредитів | `Academic Validation Engine`, `Student Profile Service`, `Deanery Document Parser`, `Deanery Doc Uploader` | Серверна валідація в ACID-транзакціях PostgreSQL (ADR-001); нормативні дисципліни надходять лише з `DeaneryPlanDocument` (requirements.md, «Припущення та обмеження») | Тест у `rtm.md` **не визначено**. |
+| **FR-003** | FR | Блокування ручного вибору для 4 курсу та автоматичний розрахунок за залишком до 240 кредитів | `Academic Validation Engine`, `Student Profile Service`, `Deanery Document Parser`, `Deanery Doc Uploader` | Серверна валідація в ACID-транзакціях PostgreSQL (ADR-001); нормативні дисципліни надходять лише з `DeaneryPlanDocument` (requirements.md, «Припущення та обмеження») | **Test-18, Test-19** (rtm.md): блокування ручного вибору для студента 4 курсу та автоматичний розподіл навантаження за залишком до 240 кредитів |
 | **FR-004** | FR | Збереження плану зі статусом «чернетка» та список у «Збережених планах» | `Student Dashboard & Profile`, `Study Plan Service`, `PostgreSQL` | Реляційне сховище PostgreSQL як єдине джерело правди (HLD §3.3) | **Test-03, Test-04** (rtm.md): збереження чернетки та її відображення у списку |
 | **FR-005** | FR | Передача небажаних викладачів до AI-модуля та виключення їхніх дисциплін із рекомендацій | `AI Recommendation Adapter`, `Catalog Service`, `External LLM API` | Ізоляція даних для AI (ADR-003): у LLM іде лише анонімізований контекст; адаптер виключає небажаних викладачів (HLD §3.2) | **Test-05, Test-06** (rtm.md): жоден запропонований курс не містить небажаних викладачів; викладач додається до списку з каталогу |
-| **FR-006** | FR | Сповіщення про неможливість виключення викладача та пропозиція альтернативного курсу | `AI Recommendation Adapter`, `Catalog Service`, `Plan Builder UI` | Той самий адаптер (ADR-003); альтернативний курс береться із затвердженого каталогу | Тест у `rtm.md` **не визначено**. |
+| **FR-006** | FR | Сповіщення про неможливість виключення викладача та пропозиція альтернативного курсу | `AI Recommendation Adapter`, `Catalog Service`, `Plan Builder UI` | Той самий адаптер (ADR-003); альтернативний курс береться із затвердженого каталогу | **Test-17** (rtm.md): сповіщення про неможливість виключення викладача та пропозиція альтернативного курсу з каталогу |
 | **FR-007** | FR | Вибір від 1 до 3 напрямків, блокування 4-го | `Plan Builder UI`, `Academic Validation Engine`, `Catalog Service` | Обмеження в UI та на серверному API (вимога FR-007) | **Test-07, Test-08** (rtm.md): фіксація до 3 напрямків та блокування 4-го |
 | **FR-008** | FR | Ручний запуск парсингу САЗ адміністратором, створення `SyncJob`, запис у чергу модерації | `Admin Console`, `Sync Orchestrator`, `CA3 & Faculty Parser Task`, `PostgreSQL` | Черга модерації для даних парсера (ADR-002); асинхронні Background Tasks (HLD §3.2) | **Test-09, Test-10** (rtm.md): створення `SyncJob` з датою й ініціатором; нові дисципліни в черзі модерації |
 | **FR-009** | FR | 2–3 альтернативні дисципліни (`PlanAlternative`) для кожного слота | `AI Recommendation Adapter`, `Study Plan Service`, `Plan Builder UI`, `External LLM API` | Інтеграція із зовнішнім LLM через внутрішній адаптер (HLD §3.2, §4) | **Test-11** (rtm.md): наявність 2–3 альтернатив для запропонованої дисципліни |
 | **FR-010** | FR | Серверна валідація ліміту 25 кредитів вільного вибору при заміні на альтернативу | `Academic Validation Engine`, `Study Plan Service`, `PostgreSQL` | Обов'язкова серверна валідація в ACID-транзакції (ADR-001; requirements.md, «Припущення та обмеження») | **Test-12** (rtm.md): спроба перевищити 25 кредитів блокується |
 | **FR-011** | FR | Журнал `SyncJob` в адмін-панелі (дата, ініціатор, статус, лічильники, помилка) | `Admin Console`, `Sync Orchestrator`, `PostgreSQL` | Журнал `SyncJob` зберігається в PostgreSQL (HLD §3.3) | **Test-13, Test-14** (rtm.md): відображення журналу та статусу помилки з описом |
 | **FR-012** | FR | Автентифікація лише через Google Workspace SSO домену НаУКМА | `Auth Service`, `Google Workspace SSO (NaUKMA)` | OAuth2/OIDC із перевіркою домену `@ukma.edu.ua` (HLD §3.2, §4) | **Test-15, Test-16** (rtm.md): вхід із дозволеним доменом та відхилення стороннього |
+| **FR-013** | FR | Перегляд каталогу затверджених дисциплін і сертифікатних програм у режимі читання | `Catalog & Certificates View`, `Catalog Service`, `Certificate Program Service`, `PostgreSQL` | Модульний моноліт (ADR-001); REST API клієнт–сервер (HLD §4); дані каталогу в PostgreSQL (HLD §3.3) | **Test-20, Test-21** (rtm.md): перегляд переліку дисциплін і переліку сертифікатних програм |
 | **PERF-001** | NFR | Генерація плану LLM не довше 5 хвилин | `AI Recommendation Adapter`, `External LLM API` | Синхронний/потоковий HTTPS-виклик LLM (HLD §4). Ліміт очікування в адаптері треба уточнити в HLD | **Сценарій 1**: навантажувальне тестування генерації |
 | **PERF-002** | NFR | Повне оновлення каталогу не довше 30 хвилин | `CA3 & Faculty Parser Task`, `Sync Orchestrator` | Фонові асинхронні задачі поза HTTP-запитом (HLD §3.2; ADR-001, наслідки) | Заміри тривалості повного `SyncJob` на реальному обсязі каталогу САЗ |
 | **REL-001** | NFR | При помилці LLM автоматично повторити спробу щонайменше 2 рази | `AI Recommendation Adapter` | Retry при відмові провайдера в адаптері (HLD §3.2) | **Сценарій 3**: fault injection на моку LLM |
@@ -29,7 +30,7 @@
 | `Student Dashboard & Profile` | FR-004, USE-001 |
 | `Plan Builder UI` | FR-001, FR-002, FR-006, FR-007, FR-009, USE-001 |
 | `Deanery Doc Uploader` | FR-003 (непряма, через обмеження щодо `DeaneryPlanDocument`) |
-| `Catalog & Certificates View` | **немає вимоги** |
+| `Catalog & Certificates View` | FR-013|
 | `Admin Console` | FR-008, FR-011 |
 | `Auth Service` | FR-012, SEC-001 |
 | `Student Profile Service` | FR-003, SEC-001 |
@@ -37,11 +38,11 @@
 | `Academic Validation Engine` | FR-002, FR-003, FR-007, FR-010 |
 | `Deanery Document Parser` | FR-003 (непряма, через обмеження щодо `DeaneryPlanDocument`) |
 | `AI Recommendation Adapter` | FR-005, FR-006, FR-009, PERF-001, REL-001 |
-| `Catalog Service` | FR-005, FR-006, FR-007 |
-| `Certificate Program Service` | **немає вимоги** |
+| `Catalog Service` | FR-005, FR-006, FR-007, FR-013 |
+| `Certificate Program Service` | FR-013 |
 | `Sync Orchestrator` | FR-008, FR-011, PERF-002 |
 | `CA3 & Faculty Parser Task` | FR-008, PERF-002 |
-| `PostgreSQL` | FR-004, FR-008, FR-010, FR-011, SEC-001 |
+| `PostgreSQL` | FR-004, FR-008, FR-010, FR-011, FR-013, SEC-001 |
 | `Google Workspace SSO (NaUKMA)` | FR-012 |
 | `External LLM API` | FR-005, FR-009, PERF-001 |
 
