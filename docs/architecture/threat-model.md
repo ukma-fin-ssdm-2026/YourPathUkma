@@ -1,13 +1,13 @@
 # Threat Model — YourPathUkma
 
 Артефакти:
-- Діаграма розгортання з межами довіри: [`uml/deployment.puml`](uml/deployment.puml) · [svg](uml/deployment.svg). Основа — первинна діаграма `deployment-old.puml` (корінь проєкту): вузли, зони TZ-1…TZ-4 і межі TB1…TB5 узято без змін. За результатами аналізу додано TB6 (логічна межа привілеїв student → admin), TB7 («Оновити» з САЗ, R14) і позначки, які чутливі дані перетинають кожну межу.
+- Діаграма розгортання з межами довіри: [`uml/deployment.puml`](uml/deployment.puml) · [svg](uml/svg/deployment.svg). Основа — первинна діаграма `deployment-old.puml` (корінь проєкту): вузли, зони TZ-1…TZ-4 і межі TB1…TB5 узято без змін. За результатами аналізу додано TB6 (логічна межа привілеїв student → admin), TB7 («Оновити» з САЗ, R14) і позначки, які чутливі дані перетинають кожну межу.
 - Модель даних: [`data-model.md`](data-model.md) (діаграма: [`uml/data-model.plantuml`](uml/data-model.plantuml)).
 - Контекст проєкту для агентів: `AGENTS.md` (стек, хостинг, вхід AI-моделі).
 - Сценарій AI-генерації плану: `sequence-generate-plan.puml` — використано для TB4, R1, R5, R10.
 - Модулі з `component-diagram.plantuml` (Auth Service, Study Plan Service тощо) на діаграмі розгортання входять до компонента **Application Server** у вузлі «Docker container: Backend» (TZ-2).
 
-![Deployment + trust boundaries](uml/deployment.svg)
+![Deployment + trust boundaries](uml/svg/deployment.svg)
 
 ## 1. Чутливі дані (з моделі даних)
 
