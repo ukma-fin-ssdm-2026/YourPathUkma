@@ -1,0 +1,50 @@
+@startuml
+' Використання ШІ: створено за допомогою Claude, перевірено вручну та відрендерено в PlantUML.
+' Deployment diagram + межі довіри (trust boundaries) для STRIDE.
+' Містить лише те, що є в HLD: React SPA, FastAPI у Docker, PostgreSQL, зовнішні системи.
+top to bottom direction
+skinparam componentStyle uml2
+skinparam nodesep 60
+skinparam ranksep 80
+
+title Deployment Diagram — YourPathUkma (виробниче середовище)
+
+node "Пристрій користувача\n<<TZ-1: недовірена зона>>" as ClientZone {
+  node "Web Browser" as Browser {
+    artifact "Client Tier (React SPA)" as SPA
+  }
+}
+
+node "Хостинг застосунку\n<<TZ-2: наша інфраструктура>>" as Host {
+  node "Docker container: Backend" as BackendNode {
+    component "Application Server\n(FastAPI / Modular Monolith)" as App
+    component "CA3 & Faculty Parser Task\n(Background Task)" as Parser
+  }
+  node "Хостинг бази даних\n<<TZ-3: внутрішня зона>>" as DBNode {
+    database "Master DB (PostgreSQL)" as DB
+  }
+}
+
+cloud "External Systems & Sources\n<<TZ-4: треті сторони>>" as Ext {
+  node "Google Workspace SSO (NaUKMA)" as Google
+  node "External LLM API" as LLM
+  node "CA3 (САЗ НаУКМА)" as CA3
+  node "Сайт факультету\n(Сертифікатні програми)" as Faculty
+}
+
+SPA --> App : **TB1** HTTPS, REST API (JSON),\nBearer JWT
+App --> DB : **TB2** TCP/IP (SQL, asyncpg)
+App --> Google : **TB3** HTTPS / OAuth2 (OIDC)
+App --> LLM : **TB4** HTTPS POST\n(анонімізований prompt)
+Parser --> CA3 : **TB5** HTTP(S) scrape
+Parser --> Faculty : **TB5** HTTP(S) scrape
+
+legend right
+  **Межі довіри**
+  TB1 браузер ↔ сервер застосунку
+  TB2 застосунок ↔ БД
+  TB3 застосунок ↔ Google SSO
+  TB4 застосунок ↔ зовнішній LLM
+  TB5 парсер ↔ зовнішні сайти
+end legend
+@enduml
