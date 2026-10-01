@@ -1,6 +1,6 @@
 # Data Model
 
-Діаграма (ER, PlantUML): [`uml/data-model.plantuml`](uml/data-model.plantuml) · зображення: [`uml/svg/data-model.svg`](uml/data-model.svg)
+Діаграма (ER, PlantUML): [`uml/data-model.plantuml`](uml/data-model.plantuml) · зображення: [`uml/svg/data-model.svg`](uml/svg/data-model.svg)
 
 ![Data model](uml/svg/data-model.svg)
 
