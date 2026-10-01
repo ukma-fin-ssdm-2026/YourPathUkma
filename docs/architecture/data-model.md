@@ -1,8 +1,8 @@
-# Data Model — YourPathUkma
+# Data Model
 
-Діаграма (ER, PlantUML): [`uml/data-model.plantuml`](uml/data-model.plantuml) · зображення: [`uml/data-model.png`](uml/data-model.png)
+Діаграма (ER, PlantUML): [`uml/data-model.plantuml`](uml/data-model.plantuml) · зображення: [`uml/data-model.png`](uml/data-model.svg)
 
-![Data model](uml/data-model.png)
+![Data model]
 
 Джерела: `Project-Description.md` (ключові функції), `requirements.md` (глосарій, FR-001…FR-012, PERF/REL/SEC), `traceability-matrix.md` (компоненти), `component-diagram.plantuml`, `deployment.puml` (усі дані, включно з файлами документів, зберігаються в одній БД PostgreSQL), `sequence-generate-plan.puml` (потік AI-генерації). Сутності `AuditLog` і `AIGenerationRequest` додано за результатами [`threat-model.md`](threat-model.md).
 
@@ -96,3 +96,8 @@
 ## 5. Відкриті питання
 
 - **«Оновити» з САЗ (R14).** Як отримати затверджений план студента, не зберігаючи його облікові дані САЗ. Модель поки передбачає лише `IndividualPlan.origin = saz_sync` і `StudentProfile.saz_synced_at`.
+
+- ## Використання ШІ
+
+- **Що створено/змінено:** модель даних (`uml/data-model.plantuml`) і цей документ складено за допомогою Claude (Claude Code) на основі `Project-Description.md`, `requirements.md`, `AGENTS.md`, `traceability-matrix.md`, `component-diagram.plantuml`, `uml/deployment.puml`, `sequence-generate-plan.puml`. Сутності `AuditLog`, `AIGenerationRequest` і поля `course_year_source`, `sha256`, `raw_snapshot*` додано за результатами STRIDE-аналізу (`threat-model.md`). Тип ключів змінено з `UUID` на `bigint` на прохання команди.
+- **Як перевірено:** діаграму відрендерено PlantUML без помилок; вручну звірено, що кожна з 7 ключових функцій має сутності, кожна сутність має PK, а позначки `{PII}` відповідають таблиці розділу 3; посилання на FR / NFR / Test звірено з `requirements.md` і `rtm.md`.
