@@ -1,0 +1,76 @@
+@startuml
+title Sequence: Генерація індивідуального плану з AI
+
+actor Student
+participant "Plan Builder UI" as UI
+participant "REST API Gateway" as API
+participant "Auth Service" as Auth
+participant "Study Plan Service" as Plan
+participant "Academic Validation Engine" as Val
+participant "Catalog Service" as Cat
+participant "AI Recommendation Adapter" as AI
+participant "External LLM API" as LLM
+database "Master DB (PostgreSQL)" as DB
+
+Student -> UI : "Згенерувати план"\n(триместри, напрямки, небажані викладачі)
+activate UI
+UI -> API : HTTPS/JSON, Bearer JWT
+activate API
+API -> Auth : перевірка токена та ролі
+activate Auth
+Auth --> API : студент ідентифікований
+deactivate Auth
+API -> Plan : запит генерації плану
+activate Plan
+Plan -> Val : валідація плану та лімітів
+activate Val
+Val --> Plan : OK
+deactivate Val
+Plan -> Cat : запит доступних курсів
+activate Cat
+Cat -> DB : SELECT
+DB --> Cat : курси
+Cat --> Plan : курси
+deactivate Cat
+Plan -> AI : запит генерації плану
+activate AI
+AI -> AI : анонімізований контекст\n(без ПД студента, ADR-003)
+
+loop початкова спроба + щонайменше 2 повтори (REL-001)
+  AI -> LLM : HTTPS POST (prompt)
+  activate LLM
+  alt успішна відповідь
+    LLM --> AI : план + альтернативи
+  else помилка / недоступність
+    LLM --> AI : error
+  end
+  deactivate LLM
+end
+
+alt план отримано
+  AI --> Plan : план з 2–3 альтернативами (FR-009)
+  Plan -> Val : перевірка лімітів кредитів
+  activate Val
+  Val --> Plan : OK
+  deactivate Val
+  Plan -> DB : збереження («чернетка»)
+  DB --> Plan : збережено
+  Plan --> API : план
+  API --> UI : план
+  UI --> Student : показати план
+else усі спроби невдалі
+  AI --> Plan : помилка
+  Plan --> API : помилка
+  API --> UI : повідомлення про тимчасову недоступність
+  UI --> Student : повідомлення
+end
+deactivate AI
+deactivate Plan
+deactivate API
+deactivate UI
+
+note over AI, LLM
+  Загальний час ≤ 5 хв (PERF-001).
+  Ліміт очікування на спробу в HLD ще не визначено.
+end note
+@enduml
