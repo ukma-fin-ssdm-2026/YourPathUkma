@@ -40,3 +40,13 @@ Full documentation: [Project-Description.md](Project-Description.md)
 - [Матриця простежуваності (RTM)](docs/requirements/rtm.md)
 - [Командний статут (Team Charter)](TeamCharter.md)
 - [Процеси та мітки (Process Labels)](docs/process/labels.md)
+
+## Архітектура
+Архітектурна документація: [`/docs/architecture/`](docs/architecture/)
+
+- [High-Level Design](docs/architecture/high-level-design.md)
+- [Матриця простежуваності](docs/architecture/traceability-matrix.md)
+- [Модель даних](docs/architecture/data-model.md)
+- [Модель загроз (STRIDE)](docs/architecture/threat-model.md)
+- [ADR](docs/architecture/decisions/)
+- UML-діаграми: [компонентів](docs/architecture/uml/svg/component-diagram.svg), [послідовності](docs/architecture/uml/svg/sequence-generate-plan.svg), [розгортання](docs/architecture/uml/svg/deployment.svg)
