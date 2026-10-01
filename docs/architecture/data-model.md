@@ -2,7 +2,7 @@
 
 Діаграма (ER, PlantUML): [`uml/data-model.plantuml`](uml/data-model.plantuml) · зображення: [`uml/data-model.png`](uml/data-model.svg)
 
-![Data model]
+![Data model](uml/data-model.svg)
 
 Джерела: `Project-Description.md` (ключові функції), `requirements.md` (глосарій, FR-001…FR-012, PERF/REL/SEC), `traceability-matrix.md` (компоненти), `component-diagram.plantuml`, `deployment.puml` (усі дані, включно з файлами документів, зберігаються в одній БД PostgreSQL), `sequence-generate-plan.puml` (потік AI-генерації). Сутності `AuditLog` і `AIGenerationRequest` додано за результатами [`threat-model.md`](threat-model.md).
 
