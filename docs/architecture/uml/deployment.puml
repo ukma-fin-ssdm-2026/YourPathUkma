@@ -1,50 +1,75 @@
 @startuml
-' Використання ШІ: створено за допомогою Claude, перевірено вручну та відрендерено в PlantUML.
-' Deployment diagram + межі довіри (trust boundaries) для STRIDE.
-' Містить лише те, що є в HLD: React SPA, FastAPI у Docker, PostgreSQL, зовнішні системи.
+' Використання ШІ: створено за допомогою Claude на основі первинної діаграми (../../deployment-old.puml), перевірено та відрендерено в PlantUML.
+' Deployment diagram + межі довіри для STRIDE (threat-model.md).
+' Вузли, зони TZ-1…TZ-4 і межі TB1…TB5 — без змін із deployment-old.puml.
+' Додано за результатами STRIDE-аналізу:
+'   TB6 — логічна межа привілеїв student → admin усередині Application Server;
+'   TB7 — «Оновити»: синхронізація плану з САЗ від імені студента (відкрите питання, R14);
+'   на зв'язках позначено, які чутливі дані (PII) перетинають межу;
+'   кольорові пунктирні рамки зон: червона — недовірена, помаранчева — треті сторони, зелена — наша.
 top to bottom direction
 skinparam componentStyle uml2
 skinparam nodesep 60
 skinparam ranksep 80
 
-title Deployment Diagram — YourPathUkma (виробниче середовище)
+title Deployment Diagram + Trust Boundaries — YourPathUkma (виробниче середовище)
 
-node "Пристрій користувача\n<<TZ-1: недовірена зона>>" as ClientZone {
+node "Пристрій користувача\n<<TZ-1: недовірена зона>>" as ClientZone #line:red;line.dashed;line.bold {
   node "Web Browser" as Browser {
-    artifact "Client Tier (React SPA)" as SPA
+    artifact "Client Tier (React SPA)\n(student UI + Admin Console)" as SPA
   }
 }
 
-node "Хостинг застосунку\n<<TZ-2: наша інфраструктура>>" as Host {
+node "Хостинг застосунку\n<<TZ-2: наша інфраструктура>>" as Host #line:green;line.dashed;line.bold {
   node "Docker container: Backend" as BackendNode {
     component "Application Server\n(FastAPI / Modular Monolith)" as App
     component "CA3 & Faculty Parser Task\n(Background Task)" as Parser
   }
-  node "Хостинг бази даних\n<<TZ-3: внутрішня зона>>" as DBNode {
-    database "Master DB (PostgreSQL)" as DB
+  node "Хостинг бази даних\n<<TZ-3: внутрішня зона>>" as DBNode #line:green;line.dashed;line.bold {
+    database "Master DB (PostgreSQL)\n<<PII>>: User, StudentProfile, PlanPreferences,\nIndividualPlan, DeaneryPlanDocument (+ файли), AuditLog" as DB
   }
 }
 
-cloud "External Systems & Sources\n<<TZ-4: треті сторони>>" as Ext {
+cloud "External Systems & Sources\n<<TZ-4: треті сторони>>" as Ext #line:orange;line.dashed;line.bold {
   node "Google Workspace SSO (NaUKMA)" as Google
   node "External LLM API" as LLM
   node "CA3 (САЗ НаУКМА)" as CA3
   node "Сайт факультету\n(Сертифікатні програми)" as Faculty
 }
 
-SPA --> App : **TB1** HTTPS, REST API (JSON),\nBearer JWT
-App --> DB : **TB2** TCP/IP (SQL, asyncpg)
-App --> Google : **TB3** HTTPS / OAuth2 (OIDC)
-App --> LLM : **TB4** HTTPS POST\n(анонімізований prompt)
+note right of App
+  **TB6** (логічна межа привілеїв):
+  роль student ↛ /api/admin/*
+  (модерація, парсинг, довідники).
+  Роль береться з User.role у БД,
+  перевірка — у REST API (Auth Service).
+end note
+
+SPA --> App : **TB1** HTTPS, REST API (JSON),\nBearer JWT\n(PII; Multipart PDF/Docx документа деканату)
+App --> DB : **TB2** TCP/IP (SQL, asyncpg)\n(усі сутності, PII)
+App --> Google : **TB3** HTTPS / OAuth2 (OIDC)\n(email, google_sub)
+App --> LLM : **TB4** HTTPS POST\n(анонімізований prompt, без PII — ADR-003)
+App --> Parser : **TB6** запуск парсингу\n(лише роль admin)
 Parser --> CA3 : **TB5** HTTP(S) scrape
 Parser --> Faculty : **TB5** HTTP(S) scrape
+Parser --> DB : **TB2** ModerationItem, SyncJob
+App ..> CA3 : **TB7** «Оновити»: план студента\nвід його імені (відкрите питання, R14)
 
 legend right
   **Межі довіри**
-  TB1 браузер ↔ сервер застосунку
-  TB2 застосунок ↔ БД
-  TB3 застосунок ↔ Google SSO
-  TB4 застосунок ↔ зовнішній LLM
-  TB5 парсер ↔ зовнішні сайти
+  TB1 браузер ↔ сервер застосунку (TZ-1 → TZ-2)
+  TB2 застосунок / парсер ↔ БД (TZ-2 → TZ-3)
+  TB3 застосунок ↔ Google SSO (TZ-2 → TZ-4)
+  TB4 застосунок ↔ зовнішній LLM (TZ-2 → TZ-4)
+  TB5 парсер ↔ зовнішні сайти (TZ-4 → TZ-2, недовірений вміст)
+  TB6 роль student → адмін-функції (логічна, всередині TZ-2)
+  TB7 застосунок ↔ САЗ від імені студента (TZ-2 ↔ TZ-4)
+  ----
+  TB6, TB7 і позначки PII додано до deployment-old.puml
+  за результатами STRIDE (threat-model.md)
+  ----
+  <color:red>червоний</color> — недовірена зона
+  <color:orange>помаранчевий</color> — треті сторони
+  <color:green>зелений</color> — наша інфраструктура
 end legend
 @enduml
