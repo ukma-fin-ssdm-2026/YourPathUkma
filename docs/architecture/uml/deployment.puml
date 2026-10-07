@@ -1,12 +1,10 @@
 @startuml
-' Використання ШІ: створено за допомогою Claude на основі первинної діаграми (../../deployment-old.puml), перевірено та відрендерено в PlantUML.
 ' Deployment diagram + межі довіри для STRIDE (threat-model.md).
-' Вузли, зони TZ-1…TZ-4 і межі TB1…TB5 — без змін із deployment-old.puml.
 ' Додано за результатами STRIDE-аналізу:
 '   TB6 — логічна межа привілеїв student → admin усередині Application Server;
 '   TB7 — «Оновити»: синхронізація плану з САЗ від імені студента (відкрите питання, R14);
 '   на зв'язках позначено, які чутливі дані (PII) перетинають межу;
-'   кольорові пунктирні рамки зон: червона — недовірена, помаранчева — треті сторони, зелена — наша.
+'   кольорoві пунктирні рамки зон: червона — недовірена, помаранчева — треті сторони, зелена — наша.
 top to bottom direction
 skinparam componentStyle uml2
 skinparam nodesep 60
@@ -65,8 +63,7 @@ legend right
   TB6 роль student → адмін-функції (логічна, всередині TZ-2)
   TB7 застосунок ↔ САЗ від імені студента (TZ-2 ↔ TZ-4)
   ----
-  TB6, TB7 і позначки PII додано до deployment-old.puml
-  за результатами STRIDE (threat-model.md)
+  TB6, TB7 і позначки PII додано за результатами STRIDE (threat-model.md)
   ----
   <color:red>червоний</color> — недовірена зона
   <color:orange>помаранчевий</color> — треті сторони

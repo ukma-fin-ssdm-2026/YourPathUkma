@@ -1,0 +1,14 @@
+name: CI Test
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Run Hello World Command
+      run: echo "Hello, World from SOLIDni team!"
