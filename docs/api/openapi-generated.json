@@ -1,0 +1,1425 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "YourPathUkma API",
+    "description": "REST API платформи для побудови індивідуального навчального плану студентів НаУКМА: плани вибіркових дисциплін, каталог дисциплін, контроль кредитного навантаження.\n\n**Автентифікація:** JWT Bearer (Google Workspace SSO). У поточній заглушці приймається будь-який непорожній токен: натисніть Authorize і введіть, наприклад, `test`.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/plans": {
+      "post": {
+        "tags": [
+          "Plans"
+        ],
+        "summary": "Створити новий індивідуальний план (чернетку)",
+        "description": "Створює план вибіркових дисциплін для поточного студента. Серверна валідація: унікальність дисциплін, ліміт вільного вибору (25 кредитів), заборона плану лише з вільного вибору.",
+        "operationId": "create_plan_api_v1_plans_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "План успішно створено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неавторизований доступ: відсутній або некоректний JWT-токен",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Відсутній або некоректний токен авторизації",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Помилка валідації вхідних даних",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Plans"
+        ],
+        "summary": "Отримати список планів студента",
+        "description": "Повертає плани поточного студента з offset-пагінацією та фільтрами за статусом і навчальним роком.",
+        "operationId": "list_plans_api_v1_plans_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Максимальна кількість планів на сторінку",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Максимальна кількість планів на сторінку"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Кількість планів, які треба пропустити",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Кількість планів, які треба пропустити"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PlanStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Фільтр за статусом плану",
+              "title": "Status"
+            },
+            "description": "Фільтр за статусом плану"
+          },
+          {
+            "name": "academic_year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 2030,
+                  "minimum": 2024
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Фільтр за навчальним роком",
+              "title": "Academic Year"
+            },
+            "description": "Фільтр за навчальним роком"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список планів отримано",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedPlansResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неавторизований доступ: відсутній або некоректний JWT-токен",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Відсутній або некоректний токен авторизації",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Помилка валідації вхідних даних",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{plan_id}": {
+      "get": {
+        "tags": [
+          "Plans"
+        ],
+        "summary": "Отримати план за ID",
+        "description": "Детальна інформація про конкретний індивідуальний план поточного студента.",
+        "operationId": "get_plan_api_v1_plans__plan_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Унікальний ідентифікатор плану",
+              "examples": [
+                1
+              ],
+              "title": "Plan Id"
+            },
+            "description": "Унікальний ідентифікатор плану"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "План знайдено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неавторизований доступ: відсутній або некоректний JWT-токен",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Відсутній або некоректний токен авторизації",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Доступ заборонено: ресурс належить іншому студенту",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "PLAN_FORBIDDEN",
+                  "message": "Цей план належить іншому студенту",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ресурс не знайдено",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "PLAN_NOT_FOUND",
+                  "message": "План з ID 5 не знайдено",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Помилка валідації вхідних даних",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Plans"
+        ],
+        "summary": "Оновити індивідуальний план",
+        "description": "Повне оновлення плану. Дозволено лише для планів у статусі `draft`, інакше — 409.",
+        "operationId": "update_plan_api_v1_plans__plan_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Унікальний ідентифікатор плану",
+              "examples": [
+                1
+              ],
+              "title": "Plan Id"
+            },
+            "description": "Унікальний ідентифікатор плану"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "План успішно оновлено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неавторизований доступ: відсутній або некоректний JWT-токен",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Відсутній або некоректний токен авторизації",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Доступ заборонено: ресурс належить іншому студенту",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "PLAN_FORBIDDEN",
+                  "message": "Цей план належить іншому студенту",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ресурс не знайдено",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "PLAN_NOT_FOUND",
+                  "message": "План з ID 5 не знайдено",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфлікт: дія неможлива в поточному стані ресурсу",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "PLAN_NOT_EDITABLE",
+                  "message": "Редагувати можна лише план у статусі draft",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Помилка валідації вхідних даних",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Plans"
+        ],
+        "summary": "Видалити індивідуальний план",
+        "description": "Видаляє план, лише якщо він у статусі `draft`, інакше — 409.",
+        "operationId": "delete_plan_api_v1_plans__plan_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Унікальний ідентифікатор плану",
+              "examples": [
+                1
+              ],
+              "title": "Plan Id"
+            },
+            "description": "Унікальний ідентифікатор плану"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "План успішно видалено"
+          },
+          "401": {
+            "description": "Неавторизований доступ: відсутній або некоректний JWT-токен",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Відсутній або некоректний токен авторизації",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Доступ заборонено: ресурс належить іншому студенту",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "PLAN_FORBIDDEN",
+                  "message": "Цей план належить іншому студенту",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ресурс не знайдено",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "PLAN_NOT_FOUND",
+                  "message": "План з ID 5 не знайдено",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфлікт: дія неможлива в поточному стані ресурсу",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "PLAN_NOT_DELETABLE",
+                  "message": "Видаляти можна лише план у статусі draft",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Помилка валідації вхідних даних",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/disciplines": {
+      "get": {
+        "tags": [
+          "Disciplines"
+        ],
+        "summary": "Отримати каталог дисциплін",
+        "description": "Каталог дисциплін з фільтрами (напрямок, триместр, викладач, кредити, рік, тип) та offset-пагінацією.",
+        "operationId": "list_disciplines_api_v1_disciplines_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Максимальна кількість дисциплін на сторінку",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Максимальна кількість дисциплін на сторінку"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Кількість дисциплін, які треба пропустити",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Кількість дисциплін, які треба пропустити"
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 50
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Напрямок розвитку, напр. Data Science",
+              "title": "Direction"
+            },
+            "description": "Напрямок розвитку, напр. Data Science"
+          },
+          {
+            "name": "trimester",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 3,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Триместр (1 — осінь, 2 — весна, 3 — літо)",
+              "title": "Trimester"
+            },
+            "description": "Триместр (1 — осінь, 2 — весна, 3 — літо)"
+          },
+          {
+            "name": "instructor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Частина імені викладача",
+              "title": "Instructor"
+            },
+            "description": "Частина імені викладача"
+          },
+          {
+            "name": "min_credits",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Мінімум кредитів",
+              "title": "Min Credits"
+            },
+            "description": "Мінімум кредитів"
+          },
+          {
+            "name": "max_credits",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Максимум кредитів",
+              "title": "Max Credits"
+            },
+            "description": "Максимум кредитів"
+          },
+          {
+            "name": "recommended_year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 4,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Рекомендований рік навчання",
+              "title": "Recommended Year"
+            },
+            "description": "Рекомендований рік навчання"
+          },
+          {
+            "name": "discipline_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/DisciplineType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Тип дисципліни",
+              "title": "Discipline Type"
+            },
+            "description": "Тип дисципліни"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Каталог отримано",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedDisciplinesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неавторизований доступ: відсутній або некоректний JWT-токен",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Відсутній або некоректний токен авторизації",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Помилка валідації вхідних даних",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/disciplines/{discipline_id}": {
+      "get": {
+        "tags": [
+          "Disciplines"
+        ],
+        "summary": "Отримати дисципліну за ID",
+        "description": "Детальна інформація про дисципліну з каталогу.",
+        "operationId": "get_discipline_api_v1_disciplines__discipline_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "discipline_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Унікальний ідентифікатор дисципліни",
+              "examples": [
+                101
+              ],
+              "title": "Discipline Id"
+            },
+            "description": "Унікальний ідентифікатор дисципліни"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Дисципліну знайдено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Discipline"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неавторизований доступ: відсутній або некоректний JWT-токен",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Відсутній або некоректний токен авторизації",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ресурс не знайдено",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "DISCIPLINE_NOT_FOUND",
+                  "message": "Дисципліну з ID 999 не знайдено",
+                  "details": []
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Помилка валідації вхідних даних",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreatePlanRequest": {
+        "properties": {
+          "academic_year": {
+            "type": "integer",
+            "maximum": 2030.0,
+            "minimum": 2024.0,
+            "title": "Academic Year",
+            "description": "Навчальний рік",
+            "examples": [
+              2026
+            ]
+          },
+          "course": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 2.0,
+            "title": "Course",
+            "description": "Курс навчання (на 1 курсі план формує деканат)",
+            "examples": [
+              2
+            ]
+          },
+          "load_levels": {
+            "$ref": "#/components/schemas/LoadLevels",
+            "description": "Навантаження по триместрах"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlanItem"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Items",
+            "description": "Список вибіркових дисциплін"
+          }
+        },
+        "type": "object",
+        "required": [
+          "academic_year",
+          "course",
+          "items"
+        ],
+        "title": "CreatePlanRequest"
+      },
+      "Discipline": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Унікальний ID дисципліни (як у каталозі САЗ)",
+            "examples": [
+              101
+            ]
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Назва дисципліни",
+            "examples": [
+              "Функціональне програмування"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Короткий опис змісту"
+          },
+          "discipline_type": {
+            "$ref": "#/components/schemas/DisciplineType",
+            "description": "Нормативна (від деканату) або вибіркова"
+          },
+          "instructor": {
+            "type": "string",
+            "title": "Instructor",
+            "description": "Викладач",
+            "examples": [
+              "Петренко І. М."
+            ]
+          },
+          "recommended_year": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Recommended Year",
+            "description": "Рекомендований рік навчання"
+          },
+          "trimester": {
+            "type": "integer",
+            "maximum": 3.0,
+            "minimum": 1.0,
+            "title": "Trimester",
+            "description": "Триместр (1 — осінь, 2 — весна, 3 — літо)"
+          },
+          "credits": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Credits",
+            "description": "Кількість кредитів ECTS"
+          },
+          "directions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Directions",
+            "description": "Напрямки, для яких дисципліна профорієнтовна. Порожньо — дисципліна вільного вибору"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "discipline_type",
+          "instructor",
+          "recommended_year",
+          "trimester",
+          "credits"
+        ],
+        "title": "Discipline",
+        "examples": [
+          {
+            "credits": 5.0,
+            "description": "Основи функціональної парадигми.",
+            "directions": [
+              "Software Engineering",
+              "Data Science"
+            ],
+            "discipline_type": "elective",
+            "id": 101,
+            "instructor": "Петренко І. М.",
+            "recommended_year": 2,
+            "title": "Функціональне програмування",
+            "trimester": 1
+          }
+        ]
+      },
+      "DisciplineType": {
+        "type": "string",
+        "enum": [
+          "normative",
+          "elective"
+        ],
+        "title": "DisciplineType"
+      },
+      "ErrorDetail": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field",
+            "description": "Поле, до якого належить помилка",
+            "examples": [
+              "items.0.credits"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Опис проблеми",
+            "examples": [
+              "Input should be greater than 0"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "message"
+        ],
+        "title": "ErrorDetail"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "description": "Машинозчитуваний код помилки",
+            "examples": [
+              "PLAN_NOT_FOUND"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Повідомлення, зрозуміле людині",
+            "examples": [
+              "План з ID 5 не знайдено"
+            ]
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "type": "array",
+            "title": "Details",
+            "description": "Деталі по полях (для помилок валідації)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorResponse",
+        "description": "Єдиний формат відповіді для всіх помилок 4xx/5xx.",
+        "examples": [
+          {
+            "code": "VALIDATION_ERROR",
+            "details": [
+              {
+                "field": "items.0.credits",
+                "message": "Input should be greater than 0"
+              }
+            ],
+            "message": "Невалідні вхідні дані"
+          }
+        ]
+      },
+      "LoadLevel": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "LoadLevel"
+      },
+      "LoadLevels": {
+        "properties": {
+          "autumn": {
+            "$ref": "#/components/schemas/LoadLevel",
+            "description": "Навантаження на осінній триместр",
+            "default": "medium"
+          },
+          "spring": {
+            "$ref": "#/components/schemas/LoadLevel",
+            "description": "Навантаження на весняний триместр",
+            "default": "medium"
+          },
+          "summer": {
+            "$ref": "#/components/schemas/LoadLevel",
+            "description": "Навантаження на літній триместр",
+            "default": "medium"
+          }
+        },
+        "type": "object",
+        "title": "LoadLevels",
+        "description": "Рівень навантаження окремо на кожен триместр (для 4 курсу розраховується автоматично)."
+      },
+      "PaginatedDisciplinesResponse": {
+        "properties": {
+          "disciplines": {
+            "items": {
+              "$ref": "#/components/schemas/Discipline"
+            },
+            "type": "array",
+            "title": "Disciplines",
+            "description": "Список дисциплін"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationInfo",
+            "description": "Метадані пагінації"
+          }
+        },
+        "type": "object",
+        "required": [
+          "disciplines",
+          "pagination"
+        ],
+        "title": "PaginatedDisciplinesResponse"
+      },
+      "PaginatedPlansResponse": {
+        "properties": {
+          "plans": {
+            "items": {
+              "$ref": "#/components/schemas/PlanResponse"
+            },
+            "type": "array",
+            "title": "Plans",
+            "description": "Список індивідуальних планів"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationInfo",
+            "description": "Метадані пагінації"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plans",
+          "pagination"
+        ],
+        "title": "PaginatedPlansResponse"
+      },
+      "PaginationInfo": {
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "description": "Кількість елементів на сторінку",
+            "default": 20
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset",
+            "description": "Зсув для пагінації",
+            "default": 0
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Загальна кількість записів"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More",
+            "description": "Чи є наступні сторінки"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "has_more"
+        ],
+        "title": "PaginationInfo",
+        "examples": [
+          {
+            "has_more": false,
+            "limit": 20,
+            "offset": 0,
+            "total": 2
+          }
+        ]
+      },
+      "PlanItem": {
+        "properties": {
+          "course_id": {
+            "type": "integer",
+            "title": "Course Id",
+            "description": "Унікальний ID дисципліни з каталогу САЗ",
+            "examples": [
+              101
+            ]
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Title",
+            "description": "Назва дисципліни",
+            "examples": [
+              "Функціональне програмування"
+            ]
+          },
+          "trimester": {
+            "type": "integer",
+            "maximum": 3.0,
+            "minimum": 1.0,
+            "title": "Trimester",
+            "description": "Номер триместру (1 — осінь, 2 — весна, 3 — літо)",
+            "examples": [
+              1
+            ]
+          },
+          "credits": {
+            "type": "number",
+            "maximum": 30.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Credits",
+            "description": "Кількість кредитів ECTS",
+            "examples": [
+              5.0
+            ]
+          },
+          "is_free_elective": {
+            "type": "boolean",
+            "title": "Is Free Elective",
+            "description": "Чи є дисципліна вільним вибором (ліміт 25 кредитів)",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "course_id",
+          "title",
+          "trimester",
+          "credits"
+        ],
+        "title": "PlanItem"
+      },
+      "PlanResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Унікальний ідентифікатор індивідуального плану",
+            "examples": [
+              1
+            ]
+          },
+          "student_id": {
+            "type": "integer",
+            "title": "Student Id",
+            "description": "ID студента-власника",
+            "examples": [
+              42
+            ]
+          },
+          "academic_year": {
+            "type": "integer",
+            "title": "Academic Year",
+            "description": "Навчальний рік",
+            "examples": [
+              2026
+            ]
+          },
+          "course": {
+            "type": "integer",
+            "title": "Course",
+            "description": "Курс навчання",
+            "examples": [
+              2
+            ]
+          },
+          "load_levels": {
+            "$ref": "#/components/schemas/LoadLevels",
+            "description": "Навантаження по триместрах"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlanItem"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Вибіркові дисципліни плану"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PlanStatus",
+            "description": "Статус плану"
+          },
+          "total_credits": {
+            "type": "number",
+            "title": "Total Credits",
+            "description": "Сумарна кількість кредитів ECTS",
+            "examples": [
+              8.0
+            ]
+          },
+          "free_elective_credits": {
+            "type": "number",
+            "title": "Free Elective Credits",
+            "description": "Кредити вільного вибору в плані",
+            "examples": [
+              3.0
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Дата створення плану"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "student_id",
+          "academic_year",
+          "course",
+          "load_levels",
+          "items",
+          "status",
+          "total_credits",
+          "free_elective_credits",
+          "created_at"
+        ],
+        "title": "PlanResponse",
+        "examples": [
+          {
+            "academic_year": 2026,
+            "course": 2,
+            "created_at": "2026-10-08T10:00:00Z",
+            "free_elective_credits": 0.0,
+            "id": 1,
+            "items": [
+              {
+                "course_id": 101,
+                "credits": 5.0,
+                "is_free_elective": false,
+                "title": "Функціональне програмування",
+                "trimester": 1
+              }
+            ],
+            "load_levels": {
+              "autumn": "medium",
+              "spring": "high",
+              "summer": "low"
+            },
+            "status": "draft",
+            "student_id": 42,
+            "total_credits": 5.0
+          }
+        ]
+      },
+      "PlanStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "submitted",
+          "awaiting_deanery",
+          "approved"
+        ],
+        "title": "PlanStatus"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "description": "JWT після входу через Google Workspace SSO. У заглушці приймається будь-який непорожній токен.",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Plans",
+      "description": "Індивідуальні навчальні плани студента (CRUD)"
+    },
+    {
+      "name": "Disciplines",
+      "description": "Каталог дисциплін (читання, фільтри)"
+    }
+  ]
+}
