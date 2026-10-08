@@ -42,6 +42,7 @@ async def lifespan(app: FastAPI):
     print("ReDoc:      http://127.0.0.1:3000/redoc") 
     yield
 
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="YourPathUkma API",
@@ -54,16 +55,33 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/api-docs",  
     redoc_url="/redoc",
+    servers=[
+        {"url": "http://localhost:3000", "description": "Local development server (localhost)"}
+    ],
     openapi_tags=[
+        {"name": "System", "description": "Системні маршрути (моніторинг)"},
         {"name": "Plans", "description": "Індивідуальні навчальні плани студента (CRUD)"},
         {"name": "Disciplines", "description": "Каталог дисциплін (читання, фільтри)"},
     ],
     lifespan=lifespan,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 register_error_handlers(app)
 app.include_router(plans.router)
 app.include_router(disciplines.router)
+
+@app.get("/health", tags=["System"], summary="Перевірка стану системи (Healthcheck)")
+async def health_check():
+
+    return {"status": "ok", "version": "1.0.0", "message": "All systems operational"}
 
 
 if __name__ == "__main__":
