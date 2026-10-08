@@ -12,8 +12,6 @@ client = TestClient(app)
 AUTH = {"Authorization": "Bearer test"}
 
 
-# Відсутній токен зараз НЕ дає 401: get_current_student_id тимчасово повертає тестового студента
-# для MCP (common.py). Тому перевіряємо порожній токен; коли хардкод приберуть, додати тест на 401 без заголовка.
 def test_disciplines_requires_auth():
     r = client.get("/api/v1/disciplines")
     assert r.status_code == 401
