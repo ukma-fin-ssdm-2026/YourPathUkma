@@ -5,6 +5,7 @@
 Перевірка: ручний запуск сервера, перегляд у Swagger UI (/api-docs), перевірка
 відповідей 401/404/409/422 для кожної кінцевої точки, звірка форматів з docs/api/api-design.md.
 """
+import os
 from typing import Dict, List, Optional, Tuple
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
