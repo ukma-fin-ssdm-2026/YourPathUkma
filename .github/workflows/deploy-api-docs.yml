@@ -1,13 +1,11 @@
 name: Generate and Deploy API Docs
 
+# Запускається лише після успішного workflow "CI" на main
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
-    paths:
-      - 'src/api/**'
-      - 'docs/api/**'
-      - 'scripts/generate_openapi.py'
-      - 'requirements.txt'
   workflow_dispatch:
 
 permissions:
