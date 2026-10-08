@@ -50,3 +50,35 @@ Full documentation: [Project-Description.md](Project-Description.md)
 - [Модель загроз (STRIDE)](docs/architecture/threat-model.md)
 - [ADR](docs/architecture/decisions/)
 - UML-діаграми: [компонентів](docs/architecture/uml/svg/component-diagram.svg), [послідовності](docs/architecture/uml/svg/sequence-generate-plan.svg), [розгортання](docs/architecture/uml/svg/deployment.svg)
+
+
+## Запуск MCP Сервера (Бонус до Лаб 4)
+У проєкті реалізовано автоматичну генерацію MCP-сервера напряму з FastAPI за допомогою `fastmcp`.
+
+**Як запустити та перевірити через MCP Inspector:**
+1. Встановіть залежність: `pip install fastmcp`
+2. Запустіть Inspector (переконайтеся, що ви знаходитесь у корені проєкту):
+   ```bash
+   npx @modelcontextprotocol/inspector python mcp/mcp_server.py
+   ```
+3. У браузері відкриється сторінка Inspector. Ви побачите всі кінцеві точки (наприклад, `health_check`, `list_plans`) як готові інструменти з описами, підтягнутими зі Swagger!
+
+**Підключення до агента (наприклад, Claude Desktop):**
+Додайте наступний блок до вашого `claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "YourPathUkma": {
+      "command": "python",
+      "args": ["АБСОЛЮТНИЙ_ШЛЯХ_ДО_ПРОЄКТУ/mcp/mcp_server.py"]
+    }
+  }
+}
+```
+
+---
+**Нотатка щодо використання ШІ (Бонус MCP)**
+* **Агент:** Antigravity (Google)
+* **Що створено:** Файл `mcp/mcp_server.py` та інструкція в README.
+* **Який виклик:** "Получиться ли слеать MCP сервер по етому примеру именно для нашего проекта"
+* **Що спрацювало не так (обмеження автогенерації):** Оскільки наш API вимагає авторизації, `fastmcp` намагатиметься перетворити FastAPI `Depends()` на звичайні вхідні параметри для інструмента. Якщо ШІ-агент не знатиме, як згенерувати токен, він не зможе успішно виконати запити до захищених маршрутів. Щоб агент працював ідеально, у майбутньому доведеться написати спеціальні "обгортки" (wrappers) для функцій безпосередньо під MCP, щоб вони ігнорували JWT авторизацію і працювали від імені тестового студента.
