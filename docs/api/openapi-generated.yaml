@@ -9,6 +9,9 @@ info:
     **Автентифікація:** JWT Bearer (Google Workspace SSO). У поточній заглушці приймається
     будь-який непорожній токен: натисніть Authorize і введіть, наприклад, `test`.'
   version: 1.0.0
+servers:
+- url: http://localhost:3000
+  description: Local development server (localhost)
 paths:
   /api/v1/plans:
     post:
@@ -571,6 +574,18 @@ paths:
                   message: Input should be greater than 0
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /health:
+    get:
+      tags:
+      - System
+      summary: Перевірка стану системи (Healthcheck)
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
 components:
   schemas:
     CreatePlanRequest:
@@ -976,6 +991,8 @@ components:
         будь-який непорожній токен.
       scheme: bearer
 tags:
+- name: System
+  description: Системні маршрути (моніторинг)
 - name: Plans
   description: Індивідуальні навчальні плани студента (CRUD)
 - name: Disciplines

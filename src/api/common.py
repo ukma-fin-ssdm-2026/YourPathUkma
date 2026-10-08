@@ -134,6 +134,15 @@ bearer_scheme = HTTPBearer(
 async def get_current_student_id(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
 ) -> int:
-    if credentials is None or not credentials.credentials.strip():
+    # ТИМЧАСОВИЙ ХАРДКОД ДЛЯ MCP (ШІ):
+    # Оскільки ШІ-агент викликає функції напряму без HTTP-заголовків, 
+    # credentials буде None. Щоб ШІ міг успішно смикати API, ми
+    # хардкодимо повернення тестового студента у цьому випадку.
+    # В подальшому можна буде замінити профілем, щоб для dev перевірка токенів завжди проходила і MCP сервер
+    # тоді буде працювати при реальних даних, а не тільки повертати МОК
+    if credentials is None:
+        return MOCK_STUDENT_ID
+        
+    if not credentials.credentials.strip():
         raise ApiError(401, "UNAUTHORIZED", "Відсутній або некоректний токен авторизації")
     return MOCK_STUDENT_ID

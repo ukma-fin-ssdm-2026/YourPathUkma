@@ -5,6 +5,12 @@
     "description": "REST API платформи для побудови індивідуального навчального плану студентів НаУКМА: плани вибіркових дисциплін, каталог дисциплін, контроль кредитного навантаження.\n\n**Автентифікація:** JWT Bearer (Google Workspace SSO). У поточній заглушці приймається будь-який непорожній токен: натисніть Authorize і введіть, наприклад, `test`.",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server (localhost)"
+    }
+  ],
   "paths": {
     "/api/v1/plans": {
       "post": {
@@ -881,6 +887,25 @@
           }
         }
       }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Перевірка стану системи (Healthcheck)",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1413,6 +1438,10 @@
     }
   },
   "tags": [
+    {
+      "name": "System",
+      "description": "Системні маршрути (моніторинг)"
+    },
     {
       "name": "Plans",
       "description": "Індивідуальні навчальні плани студента (CRUD)"
