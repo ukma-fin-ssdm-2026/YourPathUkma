@@ -49,6 +49,7 @@ Full documentation: [Project-Description.md](Project-Description.md)
 - [Модель даних](docs/architecture/data-model.md)
 - [Модель загроз (STRIDE)](docs/architecture/threat-model.md)
 - [ADR](docs/architecture/decisions/)
+- [API-контракт фронтенду і бекенду](docs/api/contract.md)
 - UML-діаграми: [компонентів](docs/architecture/uml/svg/component-diagram.svg), [послідовності](docs/architecture/uml/svg/sequence-generate-plan.svg), [розгортання](docs/architecture/uml/svg/deployment.svg)
 
 
@@ -82,3 +83,6 @@ Full documentation: [Project-Description.md](Project-Description.md)
 * **Що створено:** Файл `mcp/mcp_server.py` та інструкція в README.
 * **Який виклик:** "Получиться ли слеать MCP сервер по етому примеру именно для нашего проекта"
 * **Що спрацювало не так (обмеження автогенерації):** Оскільки наш API вимагає авторизації, `fastmcp` намагатиметься перетворити FastAPI `Depends()` на звичайні вхідні параметри для інструмента. Якщо ШІ-агент не знатиме, як згенерувати токен, він не зможе успішно виконати запити до захищених маршрутів. Щоб агент працював ідеально, у майбутньому доведеться написати спеціальні "обгортки" (wrappers) для функцій безпосередньо під MCP, щоб вони ігнорували JWT авторизацію і працювали від імені тестового студента.
+
+---
+**Нотатка щодо використання ШІ (посилання на API-контракт):** рядок із посиланням на `docs/api/contract.md` у розділі «Архітектура» додано за допомогою Claude (Claude Code); перевірено, що файл існує за цим шляхом.
