@@ -1,6 +1,6 @@
 # Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: ті самі кроки
 # (генерація, git diff, pytest) запущено локально; перший прогін у GitHub Actions після пушу.
-name: CI Test
+name: CI
 on:
   push:
     branches:
