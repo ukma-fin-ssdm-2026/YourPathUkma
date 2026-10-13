@@ -2,18 +2,30 @@
 Ресурс «Дисципліни» (Disciplines): read-only каталог вибіркових і нормативних дисциплін (use-case 9).
 Дані в реальній системі надходять із САЗ парсингом; тут — заглушки.
 """
+
 from enum import Enum
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Path, Query
 from pydantic import BaseModel, ConfigDict, Field
-from ..common import ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
+from ..common import (
+    ApiError,
+    ErrorDetail,
+    PaginationInfo,
+    error_responses,
+    get_current_student_id,
+)
 
-router = APIRouter(prefix="/api/v1", tags=["Disciplines"], dependencies=[Depends(get_current_student_id)])
+router = APIRouter(
+    prefix="/api/v1",
+    tags=["Disciplines"],
+    dependencies=[Depends(get_current_student_id)],
+)
 
 
 class DisciplineType(str, Enum):
     NORMATIVE = "normative"
     ELECTIVE = "elective"
+
 
 class Discipline(BaseModel):
     id: int = Field(..., description="Унікальний ID дисципліни (як у каталозі САЗ)", examples=[101])
@@ -47,24 +59,59 @@ class Discipline(BaseModel):
         }
     )
 
+
 class PaginatedDisciplinesResponse(BaseModel):
     disciplines: List[Discipline] = Field(..., description="Список дисциплін")
     pagination: PaginationInfo = Field(..., description="Метадані пагінації")
 
+
 _CATALOG = [
-    Discipline(id=101, title="Функціональне програмування", description="Основи функціональної парадигми.",
-               discipline_type=DisciplineType.ELECTIVE, instructor="Петренко І. М.", recommended_year=2,
-               trimester=1, credits=5.0, directions=["Software Engineering", "Data Science"]),
-    Discipline(id=102, title="Основи кібербезпеки", description="Базові принципи захисту інформації.",
-               discipline_type=DisciplineType.ELECTIVE, instructor="Коваленко О. В.", recommended_year=3,
-               trimester=2, credits=4.0, directions=["Cybersecurity"]),
-    Discipline(id=205, title="Управління цифровим продуктом", description="Життєвий цикл цифрового продукту.",
-               discipline_type=DisciplineType.ELECTIVE, instructor="Мельник Т. С.", recommended_year=2,
-               trimester=2, credits=3.0, directions=[]),
-    Discipline(id=301, title="Алгоритми та структури даних", description="Нормативна дисципліна від деканату.",
-               discipline_type=DisciplineType.NORMATIVE, instructor="Шевченко А. П.", recommended_year=2,
-               trimester=1, credits=6.0, directions=[]),
+    Discipline(
+        id=101,
+        title="Функціональне програмування",
+        description="Основи функціональної парадигми.",
+        discipline_type=DisciplineType.ELECTIVE,
+        instructor="Петренко І. М.",
+        recommended_year=2,
+        trimester=1,
+        credits=5.0,
+        directions=["Software Engineering", "Data Science"],
+    ),
+    Discipline(
+        id=102,
+        title="Основи кібербезпеки",
+        description="Базові принципи захисту інформації.",
+        discipline_type=DisciplineType.ELECTIVE,
+        instructor="Коваленко О. В.",
+        recommended_year=3,
+        trimester=2,
+        credits=4.0,
+        directions=["Cybersecurity"],
+    ),
+    Discipline(
+        id=205,
+        title="Управління цифровим продуктом",
+        description="Життєвий цикл цифрового продукту.",
+        discipline_type=DisciplineType.ELECTIVE,
+        instructor="Мельник Т. С.",
+        recommended_year=2,
+        trimester=2,
+        credits=3.0,
+        directions=[],
+    ),
+    Discipline(
+        id=301,
+        title="Алгоритми та структури даних",
+        description="Нормативна дисципліна від деканату.",
+        discipline_type=DisciplineType.NORMATIVE,
+        instructor="Шевченко А. П.",
+        recommended_year=2,
+        trimester=1,
+        credits=6.0,
+        directions=[],
+    ),
 ]
+
 
 @router.get(
     "/disciplines",
@@ -76,7 +123,12 @@ _CATALOG = [
 async def list_disciplines(
     limit: int = Query(20, ge=1, le=100, description="Максимальна кількість дисциплін на сторінку"),
     offset: int = Query(0, ge=0, description="Кількість дисциплін, які треба пропустити"),
-    direction: Optional[str] = Query(None, min_length=2, max_length=50, description="Напрямок розвитку, напр. Data Science"),
+    direction: Optional[str] = Query(
+        None,
+        min_length=2,
+        max_length=50,
+        description="Напрямок розвитку, напр. Data Science",
+    ),
     trimester: Optional[int] = Query(None, ge=1, le=3, description="Триместр (1 — осінь, 2 — весна, 3 — літо)"),
     instructor: Optional[str] = Query(None, min_length=2, max_length=100, description="Частина імені викладача"),
     min_credits: Optional[float] = Query(None, ge=0, description="Мінімум кредитів"),
@@ -89,7 +141,12 @@ async def list_disciplines(
             422,
             "VALIDATION_ERROR",
             "Невалідні параметри запиту",
-            [ErrorDetail(field="min_credits", message="min_credits не може бути більшим за max_credits")],
+            [
+                ErrorDetail(
+                    field="min_credits",
+                    message="min_credits не може бути більшим за max_credits",
+                )
+            ],
         )
 
     result = list(_CATALOG)
@@ -110,7 +167,12 @@ async def list_disciplines(
 
     return PaginatedDisciplinesResponse(
         disciplines=result[offset : offset + limit],
-        pagination=PaginationInfo(limit=limit, offset=offset, total=len(result), has_more=(offset + limit) < len(result)),
+        pagination=PaginationInfo(
+            limit=limit,
+            offset=offset,
+            total=len(result),
+            has_more=(offset + limit) < len(result),
+        ),
     )
 
 
@@ -121,7 +183,12 @@ async def list_disciplines(
     description="Детальна інформація про дисципліну з каталогу.",
     responses={
         200: {"description": "Дисципліну знайдено"},
-        **error_responses(401, 404, 422, overrides={404: ("DISCIPLINE_NOT_FOUND", "Дисципліну з ID 999 не знайдено")}),
+        **error_responses(
+            401,
+            404,
+            422,
+            overrides={404: ("DISCIPLINE_NOT_FOUND", "Дисципліну з ID 999 не знайдено")},
+        ),
     },
 )
 async def get_discipline(

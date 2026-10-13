@@ -4,6 +4,7 @@ Smoke-тести API для CI: перевіряють, що ключові кі
 Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: локальний запуск pytest,
 виконання в GitHub Actions.
 """
+
 from fastapi.testclient import TestClient
 
 from src.api.main import app
@@ -44,5 +45,22 @@ def test_health_ok():
 
 def test_openapi_has_all_endpoints():
     paths = client.get("/openapi.json").json()["paths"]
-    assert {"/api/v1/plans", "/api/v1/plans/{plan_id}", "/api/v1/disciplines",
-            "/api/v1/disciplines/{discipline_id}"} <= set(paths)
+    assert {
+        "/api/v1/plans",
+        "/api/v1/plans/{plan_id}",
+        "/api/v1/disciplines",
+        "/api/v1/disciplines/{discipline_id}",
+    } <= set(paths)
+
+
+def test_openapi_has_new_endpoints():
+    paths = client.get("/openapi.json").json()["paths"]
+    assert {
+        "/api/v1/config",
+        "/api/v1/auth/google",
+        "/api/v1/auth/refresh",
+        "/api/v1/auth/logout",
+        "/api/v1/directions",
+        "/api/v1/instructors",
+        "/api/v1/plans/validate",
+    } <= set(paths)

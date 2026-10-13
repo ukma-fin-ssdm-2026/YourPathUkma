@@ -6,9 +6,10 @@ enum-и, бізнес-валідація з AGENTS.md (вільний вибір
 унікальність дисциплін), статус 409 для не-чернеток, схема безпеки Bearer.
 Перевірка: ручний запуск, перевірка кожної кінцевої точки у Swagger UI, звірка з docs/api/api-design.md.
 """
+
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 from fastapi import APIRouter, Depends, Path, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from ..common import ApiError, PaginationInfo, error_responses, get_current_student_id
@@ -19,7 +20,8 @@ _PLAN_NOT_FOUND = ("PLAN_NOT_FOUND", "План з ID 5 не знайдено")
 _PLAN_NOT_EDITABLE = ("PLAN_NOT_EDITABLE", "Редагувати можна лише план у статусі draft")
 _PLAN_NOT_DELETABLE = ("PLAN_NOT_DELETABLE", "Видаляти можна лише план у статусі draft")
 
-FREE_ELECTIVE_LIMIT = 25  
+FREE_ELECTIVE_LIMIT = 25
+
 
 class PlanStatus(str, Enum):
     DRAFT = "draft"
@@ -35,8 +37,6 @@ class LoadLevel(str, Enum):
 
 
 class LoadLevels(BaseModel):
-    """Рівень навантаження окремо на кожен триместр (для 4 курсу розраховується автоматично)."""
-
     autumn: LoadLevel = Field(LoadLevel.MEDIUM, description="Навантаження на осінній триместр")
     spring: LoadLevel = Field(LoadLevel.MEDIUM, description="Навантаження на весняний триместр")
     summer: LoadLevel = Field(LoadLevel.MEDIUM, description="Навантаження на літній триместр")
@@ -44,28 +44,84 @@ class LoadLevels(BaseModel):
 
 class PlanItem(BaseModel):
     course_id: int = Field(..., description="Унікальний ID дисципліни з каталогу САЗ", examples=[101])
-    title: str = Field(..., min_length=2, max_length=150, description="Назва дисципліни", examples=["Функціональне програмування"])
-    trimester: int = Field(..., ge=1, le=3, description="Номер триместру (1 — осінь, 2 — весна, 3 — літо)", examples=[1])
+    title: str = Field(
+        ...,
+        min_length=2,
+        max_length=150,
+        description="Назва дисципліни",
+        examples=["Функціональне програмування"],
+    )
+    trimester: int = Field(
+        ...,
+        ge=1,
+        le=3,
+        description="Номер триместру (1 — осінь, 2 — весна, 3 — літо)",
+        examples=[1],
+    )
     credits: float = Field(..., gt=0, le=30, description="Кількість кредитів ECTS", examples=[5.0])
     is_free_elective: bool = Field(False, description="Чи є дисципліна вільним вибором (ліміт 25 кредитів)")
 
 
-class CreatePlanRequest(BaseModel):
+class RuleIssue(BaseModel):
+    code: str = Field(
+        ...,
+        description="Машинозчитуваний код",
+        examples=["FREE_ELECTIVE_LIMIT_EXCEEDED"],
+    )
+    message: str = Field(..., description="Повідомлення українською")
+    field: Optional[str] = Field(None, description="Поле, до якого належить порушення, або null")
+
+
+def collect_rule_errors(items: List[PlanItem]) -> List[RuleIssue]:
+    """Бізнес-правила плану, яким не потрібні БД чи каталог (contract.md, §2.4). Єдине джерело правил."""
+    errors: List[RuleIssue] = []
+    ids = [item.course_id for item in items]
+    if len(ids) != len(set(ids)):
+        errors.append(
+            RuleIssue(
+                code="DUPLICATE_COURSE",
+                message="Дисципліни в плані не повинні повторюватись (course_id має бути унікальним)",
+            )
+        )
+    if all(item.is_free_elective for item in items):
+        errors.append(
+            RuleIssue(
+                code="ONLY_FREE_ELECTIVES",
+                message="Не можна обрати лише дисципліни вільного вибору без профорієнтовних",
+            )
+        )
+    free_credits = sum(item.credits for item in items if item.is_free_elective)
+    if free_credits > FREE_ELECTIVE_LIMIT:
+        errors.append(
+            RuleIssue(
+                code="FREE_ELECTIVE_LIMIT_EXCEEDED",
+                message=f"Перевищено ліміт вільного вибору: {free_credits} > {FREE_ELECTIVE_LIMIT} кредитів",
+            )
+        )
+    return errors
+
+
+class PlanPayload(BaseModel):
+    """Тіло плану без бізнес-перевірок: його приймає і POST /plans/validate, який має повертати 200."""
+
     academic_year: int = Field(..., ge=2024, le=2030, description="Навчальний рік", examples=[2026])
-    course: int = Field(..., ge=2, le=4, description="Курс навчання (на 1 курсі план формує деканат)", examples=[2])
+    course: int = Field(
+        ...,
+        ge=2,
+        le=4,
+        description="Курс навчання (на 1 курсі план формує деканат)",
+        examples=[2],
+    )
     load_levels: LoadLevels = Field(default_factory=LoadLevels, description="Навантаження по триместрах")
     items: List[PlanItem] = Field(..., min_length=1, max_length=30, description="Список вибіркових дисциплін")
 
+
+class CreatePlanRequest(PlanPayload):
     @model_validator(mode="after")
     def validate_business_rules(self):
-        ids = [item.course_id for item in self.items]
-        if len(ids) != len(set(ids)):
-            raise ValueError("Дисципліни в плані не повинні повторюватись (course_id має бути унікальним)")
-        if all(item.is_free_elective for item in self.items):
-            raise ValueError("Не можна обрати лише дисципліни вільного вибору без профорієнтовних")
-        free_credits = sum(item.credits for item in self.items if item.is_free_elective)
-        if free_credits > FREE_ELECTIVE_LIMIT:
-            raise ValueError(f"Перевищено ліміт вільного вибору: {free_credits} > {FREE_ELECTIVE_LIMIT} кредитів")
+        errors = collect_rule_errors(self.items)
+        if errors:
+            raise ValueError(errors[0].message)
         return self
 
 
@@ -89,7 +145,11 @@ class PlanResponse(BaseModel):
                     "student_id": 42,
                     "academic_year": 2026,
                     "course": 2,
-                    "load_levels": {"autumn": "medium", "spring": "high", "summer": "low"},
+                    "load_levels": {
+                        "autumn": "medium",
+                        "spring": "high",
+                        "summer": "low",
+                    },
                     "items": [
                         {
                             "course_id": 101,
@@ -113,13 +173,42 @@ class PaginatedPlansResponse(BaseModel):
     plans: List[PlanResponse] = Field(..., description="Список індивідуальних планів")
     pagination: PaginationInfo = Field(..., description="Метадані пагінації")
 
+
+class PlanSummary(BaseModel):
+    total_credits: float = Field(..., description="Кредити вибіркових дисциплін плану", examples=[8.0])
+    free_elective_credits: float = Field(..., description="Кредити вільного вибору в плані", examples=[3.0])
+    free_elective_used_all_years: float = Field(
+        ..., description="Вільний вибір, використаний за всі роки", examples=[3.0]
+    )
+    free_elective_remaining: float = Field(
+        ...,
+        description="Скільки кредитів вільного вибору ще можна обрати",
+        examples=[22.0],
+    )
+    year_total_credits: float = Field(..., description="Сума кредитів за рік", examples=[8.0])
+    credits_by_trimester: Dict[str, float] = Field(..., description="Кредити по триместрах (ключі 1, 2, 3)")
+
+
+class PlanValidationResponse(BaseModel):
+    valid: bool = Field(..., description="true, якщо немає жодної помилки")
+    errors: List[RuleIssue] = Field(..., description="Порушення правил")
+    warnings: List[RuleIssue] = Field(..., description="Попередження")
+    summary: PlanSummary = Field(..., description="Підсумок кредитів для індикаторів у конструкторі")
+
+
 _SAMPLE_PAYLOAD = CreatePlanRequest(
     academic_year=2026,
     course=2,
     load_levels=LoadLevels(),
     items=[
         PlanItem(course_id=101, title="Функціональне програмування", trimester=1, credits=5.0),
-        PlanItem(course_id=205, title="Управління цифровим продуктом", trimester=2, credits=3.0, is_free_elective=True),
+        PlanItem(
+            course_id=205,
+            title="Управління цифровим продуктом",
+            trimester=2,
+            credits=3.0,
+            is_free_elective=True,
+        ),
     ],
 )
 
@@ -155,6 +244,7 @@ def _find_plan(plan_id: int, student_id: int) -> PlanStatus:
         raise ApiError(403, "PLAN_FORBIDDEN", "Цей план належить іншому студенту")
     return plan_status
 
+
 @router.post(
     "/plans",
     response_model=PlanResponse,
@@ -165,7 +255,10 @@ def _find_plan(plan_id: int, student_id: int) -> PlanStatus:
         "Серверна валідація: унікальність дисциплін, ліміт вільного вибору (25 кредитів), "
         "заборона плану лише з вільного вибору."
     ),
-    responses={201: {"description": "План успішно створено"}, **error_responses(401, 422)},
+    responses={
+        201: {"description": "План успішно створено"},
+        **error_responses(401, 422),
+    },
 )
 async def create_plan(payload: CreatePlanRequest, student_id: int = Depends(get_current_student_id)):
     return _build_response(4, student_id, PlanStatus.DRAFT, payload)
@@ -176,7 +269,10 @@ async def create_plan(payload: CreatePlanRequest, student_id: int = Depends(get_
     response_model=PaginatedPlansResponse,
     summary="Отримати список планів студента",
     description="Повертає плани поточного студента з offset-пагінацією та фільтрами за статусом і навчальним роком.",
-    responses={200: {"description": "Список планів отримано"}, **error_responses(401, 422)},
+    responses={
+        200: {"description": "Список планів отримано"},
+        **error_responses(401, 422),
+    },
 )
 async def list_plans(
     student_id: int = Depends(get_current_student_id),
@@ -197,7 +293,12 @@ async def list_plans(
 
     return PaginatedPlansResponse(
         plans=plans[offset : offset + limit],
-        pagination=PaginationInfo(limit=limit, offset=offset, total=len(plans), has_more=(offset + limit) < len(plans)),
+        pagination=PaginationInfo(
+            limit=limit,
+            offset=offset,
+            total=len(plans),
+            has_more=(offset + limit) < len(plans),
+        ),
     )
 
 
@@ -206,7 +307,10 @@ async def list_plans(
     response_model=PlanResponse,
     summary="Отримати план за ID",
     description="Детальна інформація про конкретний індивідуальний план поточного студента.",
-    responses={200: {"description": "План знайдено"}, **error_responses(401, 403, 404, 422, overrides={404: _PLAN_NOT_FOUND})},
+    responses={
+        200: {"description": "План знайдено"},
+        **error_responses(401, 403, 404, 422, overrides={404: _PLAN_NOT_FOUND}),
+    },
 )
 async def get_plan(
     plan_id: int = Path(..., gt=0, description="Унікальний ідентифікатор плану", examples=[1]),
@@ -223,7 +327,14 @@ async def get_plan(
     description="Повне оновлення плану. Дозволено лише для планів у статусі `draft`, інакше — 409.",
     responses={
         200: {"description": "План успішно оновлено"},
-        **error_responses(401, 403, 404, 409, 422, overrides={404: _PLAN_NOT_FOUND, 409: _PLAN_NOT_EDITABLE}),
+        **error_responses(
+            401,
+            403,
+            404,
+            409,
+            422,
+            overrides={404: _PLAN_NOT_FOUND, 409: _PLAN_NOT_EDITABLE},
+        ),
     },
 )
 async def update_plan(
@@ -244,7 +355,14 @@ async def update_plan(
     description="Видаляє план, лише якщо він у статусі `draft`, інакше — 409.",
     responses={
         204: {"description": "План успішно видалено"},
-        **error_responses(401, 403, 404, 409, 422, overrides={404: _PLAN_NOT_FOUND, 409: _PLAN_NOT_DELETABLE}),
+        **error_responses(
+            401,
+            403,
+            404,
+            409,
+            422,
+            overrides={404: _PLAN_NOT_FOUND, 409: _PLAN_NOT_DELETABLE},
+        ),
     },
 )
 async def delete_plan(
@@ -255,3 +373,38 @@ async def delete_plan(
     if plan_status != PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_DELETABLE", "Видаляти можна лише план у статусі draft")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(
+    "/plans/validate",
+    response_model=PlanValidationResponse,
+    summary="Перевірити план без збереження",
+    description=(
+        "Для живих підказок у конструкторі. Завжди 200, якщо тіло відповідає схемі; "
+        "порушення правил повертаються в `errors`. Поки без БД: не перевіряються каталог, "
+        "нормативні дисципліни, документ деканату, вільний вибір попередніх років і попередження про навантаження."
+    ),
+    dependencies=[Depends(get_current_student_id)],
+    responses={200: {"description": "Перевірку виконано"}, **error_responses(401, 422)},
+)
+async def validate_plan(payload: PlanPayload):
+    errors = collect_rule_errors(payload.items)
+    total = sum(item.credits for item in payload.items)
+    free = sum(item.credits for item in payload.items if item.is_free_elective)
+    by_trimester = {"1": 0.0, "2": 0.0, "3": 0.0}
+    for item in payload.items:
+        by_trimester[str(item.trimester)] += item.credits
+
+    return PlanValidationResponse(
+        valid=not errors,
+        errors=errors,
+        warnings=[],  # TODO: LOW_LOAD_FUTURE_INCREASE і YEAR_CREDITS_BELOW_MIN потребують нормативних дисциплін року
+        summary=PlanSummary(
+            total_credits=total,
+            free_elective_credits=free,
+            free_elective_used_all_years=free,  # TODO: додати вільний вибір попередніх років з історії студента
+            free_elective_remaining=max(0.0, FREE_ELECTIVE_LIMIT - free),
+            year_total_credits=total,  # TODO: додати нормативні дисципліни року
+            credits_by_trimester=by_trimester,
+        ),
+    )
