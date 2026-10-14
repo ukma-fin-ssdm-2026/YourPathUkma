@@ -4,6 +4,8 @@ import { CallbackPage } from "../auth/CallbackPage";
 import { LoginPage } from "../auth/LoginPage";
 import { RequireAdmin, RequireAuth } from "../auth/RequireAuth";
 import { CatalogPage } from "../features/catalog/CatalogPage";
+import { PathLayout } from "../features/plans/PathLayout";
+import { PlansPage } from "../features/plans/PlansPage";
 import { OnboardingPage } from "../features/profile/OnboardingPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { RequireOnboarded } from "../features/profile/RequireOnboarded";
@@ -32,10 +34,17 @@ export const appRoutes: RouteObject[] = [
             element: <RequireOnboarded />,
             children: [
               { path: "/", element: <ProfilePage /> },
-              { path: "/path/plan", element: <PlaceholderPage title="Індивідуальний план" /> },
-              { path: "/path/saved", element: <PlaceholderPage title="Збережені плани" /> },
-              { path: "/path/create", element: <PlaceholderPage title="Створити план" /> },
-              { path: "/path/create/document", element: <PlaceholderPage title="Документ деканату" /> },
+              {
+                path: "/path",
+                element: <PathLayout />,
+                children: [
+                  { path: "plan", element: <PlansPage mode="all" /> },
+                  { path: "saved", element: <PlansPage mode="saved" /> },
+                  { path: "create", element: <PlaceholderPage title="Створити план" /> },
+                  { path: "create/document", element: <PlaceholderPage title="Документ деканату" /> },
+                  { path: "plan/:id", element: <PlaceholderPage title="Перегляд плану" /> },
+                ],
+              },
               { path: "/catalog", element: <CatalogPage /> },
               {
                 element: <RequireAdmin />,

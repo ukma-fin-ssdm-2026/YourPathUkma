@@ -71,3 +71,33 @@ export function directionsHandler(names: string[]) {
   const directions: Direction[] = names.map((name, index) => ({ id: index + 1, name, description: null }));
   return http.get("*/api/v1/directions", () => HttpResponse.json({ directions }));
 }
+
+import type { PlanResponse } from "../api/types";
+
+export function planFixture(overrides: Partial<PlanResponse> = {}): PlanResponse {
+  return {
+    id: 1,
+    student_id: 42,
+    academic_year: 2026,
+    course: 3,
+    load_levels: { autumn: "medium", spring: "high", summer: "low" },
+    items: [],
+    status: "draft",
+    total_credits: 58,
+    free_elective_credits: 3,
+    created_at: "2026-10-08T10:00:00Z",
+    ...overrides,
+  };
+}
+
+/** GET /plans: віддає plans як є; `onRequest` бачить адресу запиту. */
+export function plansHandler(plans: PlanResponse[], onRequest?: (url: URL) => void) {
+  return http.get("*/api/v1/plans", ({ request }) => {
+    const url = new URL(request.url);
+    onRequest?.(url);
+    return HttpResponse.json({
+      plans,
+      pagination: { limit: 100, offset: 0, total: plans.length, has_more: false },
+    });
+  });
+}

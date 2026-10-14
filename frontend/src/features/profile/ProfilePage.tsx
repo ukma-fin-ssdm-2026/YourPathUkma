@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { useConfig } from "../../api/config";
 import { Button } from "../../ui/Button";
 import { Card } from "../../ui/Card";
+import { linkButtonClass } from "../../ui/linkButton";
 import { CreditsLedger } from "./CreditsLedger";
 import { LimitsStrip } from "./LimitsStrip";
 import { useAcademicHistory, useMe } from "./useMe";
@@ -11,9 +12,6 @@ import { useAcademicHistory, useMe } from "./useMe";
 export function defaultPlanYear(now: Date, min: number, max: number): number {
   return Math.min(max, Math.max(min, now.getFullYear()));
 }
-
-const linkButtonClass =
-  "inline-block rounded-[10px] bg-cobalt px-4 py-2.5 font-semibold text-on-accent transition-[transform,background-color] duration-150 ease-out hover:bg-cobalt-d active:scale-[.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt";
 
 export function ProfilePage() {
   const me = useMe();
