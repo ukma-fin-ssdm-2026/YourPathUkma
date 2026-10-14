@@ -3,9 +3,8 @@ import { render, screen } from "@testing-library/react";
 import { App } from "./App";
 
 describe("App", () => {
-  it("показує назву застосунку й навігацію", () => {
+  it("поки сесія відновлюється, показує «Завантаження…»", () => {
     render(<App />);
-    expect(screen.getByRole("link", { name: "YourPath" })).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "Основна навігація" })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Завантаження…");
   });
 });

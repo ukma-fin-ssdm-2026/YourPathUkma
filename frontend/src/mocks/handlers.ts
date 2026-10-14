@@ -8,8 +8,14 @@ import { authResponse } from "./fixtures";
 
 const API = "*/api/v1";
 
-function apiError(status: number, code: string, message: string, details: ErrorDetail[] = []) {
-  return HttpResponse.json({ code, message, details }, { status });
+function apiError(
+  status: number,
+  code: string,
+  message: string,
+  details: ErrorDetail[] = [],
+  headers?: Record<string, string>,
+) {
+  return HttpResponse.json({ code, message, details }, { status, headers });
 }
 
 const unauthorized = () =>
@@ -29,7 +35,14 @@ function validateOnboarding(body: unknown): ErrorDetail[] {
 }
 
 export const handlers = [
-  http.post(`${API}/auth/microsoft`, () => {
+  http.post(`${API}/auth/microsoft`, async ({ request }) => {
+    const body = (await request.json().catch(() => null)) as { code?: string } | null;
+    // Спеціальний код для перевірки помилки домену (FR-012).
+    if (body?.code === "blocked") {
+      return apiError(403, "DOMAIN_NOT_ALLOWED", "Пошта не з домену ukma.edu.ua", [], {
+        "X-Request-ID": "a41f-9c2e",
+      });
+    }
     db.signedIn = true;
     return HttpResponse.json(authResponse());
   }),

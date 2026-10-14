@@ -1,5 +1,6 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: AppLayout.test.tsx.
 import { Link, NavLink, Outlet } from "react-router";
+import { Button } from "../ui/Button";
 import { NAV_ITEMS, type Role } from "./nav";
 
 function initials(name: string): string {
@@ -11,7 +12,15 @@ function initials(name: string): string {
     .join("");
 }
 
-export function AppLayout({ role, userName }: { role: Role; userName: string }) {
+export function AppLayout({
+  role,
+  userName,
+  onSignOut,
+}: {
+  role: Role;
+  userName: string;
+  onSignOut?: () => void;
+}) {
   const items = NAV_ITEMS.filter((item) => !item.adminOnly || role === "admin");
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -46,6 +55,11 @@ export function AppLayout({ role, userName }: { role: Role; userName: string }) 
             >
               {initials(userName)}
             </span>
+            {onSignOut && (
+              <Button variant="ghost" size="sm" onClick={onSignOut}>
+                Вийти
+              </Button>
+            )}
           </div>
         </div>
       </header>
