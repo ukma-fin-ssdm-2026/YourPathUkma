@@ -3,6 +3,7 @@ import type { RouteObject } from "react-router";
 import { CallbackPage } from "../auth/CallbackPage";
 import { LoginPage } from "../auth/LoginPage";
 import { RequireAdmin, RequireAuth } from "../auth/RequireAuth";
+import { CatalogPage } from "../features/catalog/CatalogPage";
 import { OnboardingPage } from "../features/profile/OnboardingPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { RequireOnboarded } from "../features/profile/RequireOnboarded";
@@ -35,7 +36,7 @@ export const appRoutes: RouteObject[] = [
               { path: "/path/saved", element: <PlaceholderPage title="Збережені плани" /> },
               { path: "/path/create", element: <PlaceholderPage title="Створити план" /> },
               { path: "/path/create/document", element: <PlaceholderPage title="Документ деканату" /> },
-              { path: "/catalog", element: <PlaceholderPage title="Каталог" /> },
+              { path: "/catalog", element: <CatalogPage /> },
               {
                 element: <RequireAdmin />,
                 children: [{ path: "/admin", element: <PlaceholderPage title="Адмінка" /> }],
