@@ -7,10 +7,19 @@ import { App } from "./App";
 
 const queryClient = new QueryClient();
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </StrictMode>,
-);
+/** Моки лише для ендпоінтів, яких немає в бекенді; решта запитів іде на реальний сервер. */
+async function enableMocks(): Promise<void> {
+  if (import.meta.env.VITE_USE_MOCKS !== "true") return;
+  const { worker } = await import("./mocks/browser");
+  await worker.start({ onUnhandledRequest: "bypass" });
+}
+
+void enableMocks().then(() => {
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </StrictMode>,
+  );
+});
