@@ -82,3 +82,25 @@ export interface Me {
   role: UserRole;
   student: StudentProfile | null;
 }
+
+export type AcademicCategory = "normative" | "professional" | "free_choice";
+
+export interface AcademicRecord {
+  id: number;
+  academic_year: number;
+  course_year: number;
+  course_id: number | null;
+  title: string;
+  trimester: number;
+  credits: number;
+  category: AcademicCategory;
+  source: string;
+  verified: boolean;
+}
+
+export interface AcademicYear {
+  academic_year: number;
+  course_year: number;
+  total_credits: number;
+  records: AcademicRecord[];
+}

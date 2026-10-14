@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../../api/client";
 import type { ApiError } from "../../api/errors";
-import type { Me } from "../../api/types";
+import type { AcademicYear, Me } from "../../api/types";
 import { useSession } from "../../auth/session";
 
 export const ME_KEY = ["me"] as const;
@@ -26,5 +26,14 @@ export function useOnboard() {
   return useMutation<Me, ApiError, OnboardingInput>({
     mutationFn: (input) => request<Me>("/me/onboarding", { method: "POST", body: input }),
     onSuccess: (me) => queryClient.setQueryData(ME_KEY, me),
+  });
+}
+
+export function useAcademicHistory() {
+  const authenticated = useSession((s) => s.status === "authenticated");
+  return useQuery({
+    queryKey: ["academic-history"],
+    queryFn: () => request<{ years: AcademicYear[] }>("/me/academic-history"),
+    enabled: authenticated,
   });
 }

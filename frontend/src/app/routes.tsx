@@ -4,6 +4,7 @@ import { CallbackPage } from "../auth/CallbackPage";
 import { LoginPage } from "../auth/LoginPage";
 import { RequireAdmin, RequireAuth } from "../auth/RequireAuth";
 import { OnboardingPage } from "../features/profile/OnboardingPage";
+import { ProfilePage } from "../features/profile/ProfilePage";
 import { RequireOnboarded } from "../features/profile/RequireOnboarded";
 import { ConnectedLayout } from "./ConnectedLayout";
 
@@ -29,7 +30,7 @@ export const appRoutes: RouteObject[] = [
           {
             element: <RequireOnboarded />,
             children: [
-              { path: "/", element: <PlaceholderPage title="Профіль" /> },
+              { path: "/", element: <ProfilePage /> },
               { path: "/path/plan", element: <PlaceholderPage title="Індивідуальний план" /> },
               { path: "/path/saved", element: <PlaceholderPage title="Збережені плани" /> },
               { path: "/path/create", element: <PlaceholderPage title="Створити план" /> },

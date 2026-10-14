@@ -4,7 +4,7 @@
 import { http, HttpResponse } from "msw";
 import type { ErrorDetail } from "../api/errors";
 import { db } from "./db";
-import { authResponse } from "./fixtures";
+import { academicHistory, authResponse, historyCredits } from "./fixtures";
 
 const API = "*/api/v1";
 
@@ -60,6 +60,12 @@ export const handlers = [
     request.headers.get("Authorization") ? HttpResponse.json(db.me) : unauthorized(),
   ),
 
+  http.get(`${API}/me/academic-history`, ({ request }) =>
+    request.headers.get("Authorization")
+      ? HttpResponse.json({ years: academicHistory() })
+      : unauthorized(),
+  ),
+
   http.post(`${API}/me/onboarding`, async ({ request }) => {
     if (!request.headers.get("Authorization")) return unauthorized();
     const student = db.me.student;
@@ -83,6 +89,7 @@ export const handlers = [
         onboarding_required: false,
         can_create_plan: course_year >= 2,
         load_levels_mode: course_year === 4 ? "auto" : "manual",
+        credits: historyCredits(),
       },
     };
     return HttpResponse.json(db.me);
