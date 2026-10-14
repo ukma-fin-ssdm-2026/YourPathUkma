@@ -3,7 +3,7 @@
 // POST /auth/microsoft як припущення (див. спеку, «Рішення автора», п.1).
 import { http, HttpResponse } from "msw";
 import type { ErrorDetail } from "../api/errors";
-import type { DeaneryDocument } from "../api/types";
+import type { DeaneryDocument, Preferences } from "../api/types";
 import { db } from "./db";
 import { academicHistory, authResponse, historyCredits, normativeCourses } from "./fixtures";
 
@@ -109,7 +109,41 @@ const documentHandlers = [
   }),
 ];
 
+const preferencesHandlers = [
+  http.get(`${API}/preferences/:year`, ({ request, params }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const saved = db.preferences[Number(params.year)];
+    return saved
+      ? HttpResponse.json(saved)
+      : apiError(404, "PREFERENCES_NOT_FOUND", "Побажань на цей рік ще не збережено");
+  }),
+
+  http.put(`${API}/preferences/:year`, async ({ request, params }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const body = (await request.json()) as Preferences;
+    const details: ErrorDetail[] = [];
+    if (body.direction_ids.length > 3) {
+      details.push({ field: "direction_ids", message: "Не більше 3 напрямків" });
+    }
+    if (body.preferred_instructor_ids.some((id) => body.unwanted_instructor_ids.includes(id))) {
+      details.push({
+        field: "preferred_instructor_ids",
+        message: "Викладач не може бути і бажаним, і небажаним",
+      });
+    }
+    if (details.length > 0) return apiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details);
+    const saved: Preferences = {
+      ...body,
+      academic_year: Number(params.year),
+      updated_at: new Date().toISOString(),
+    };
+    db.preferences[saved.academic_year] = saved;
+    return HttpResponse.json(saved);
+  }),
+];
+
 export const handlers = [
+  ...preferencesHandlers,
   ...documentHandlers,
   http.post(`${API}/auth/microsoft`, async ({ request }) => {
     const body = (await request.json().catch(() => null)) as { code?: string } | null;

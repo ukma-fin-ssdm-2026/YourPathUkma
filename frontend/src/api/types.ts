@@ -135,3 +135,22 @@ export interface DeaneryDocument {
   uploaded_at: string;
   normative_courses: NormativeCourse[];
 }
+
+export type LoadLevels = Partial<Record<"autumn" | "spring" | "summer", LoadLevel>>;
+
+export interface Instructor {
+  id: number;
+  full_name: string;
+}
+
+export interface Preferences {
+  academic_year: number;
+  load_levels: LoadLevels;
+  direction_ids: number[];
+  include_free_electives: boolean;
+  preferred_instructor_ids: number[];
+  unwanted_instructor_ids: number[];
+  wants_certificate: boolean;
+  certificate_program_id: number | null;
+  updated_at?: string;
+}
