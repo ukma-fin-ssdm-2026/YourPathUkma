@@ -2,18 +2,36 @@
 Ресурс «Дисципліни» (Disciplines): read-only каталог вибіркових і нормативних дисциплін (use-case 9).
 Дані в реальній системі надходять із САЗ парсингом; тут — заглушки.
 """
+
 from enum import Enum
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Path, Query
 from pydantic import BaseModel, ConfigDict, Field
-from ..common import ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session, selectinload
+from ...db.base import normalize_text
+from ...db.enums import CourseKind, PublicationStatus, Trimester
+from ...db.models import Course, CourseDirection, CourseInstructor, Direction, Instructor
+from ...db.session import get_db
+from ..common import (
+    ApiError,
+    ErrorDetail,
+    PaginationInfo,
+    error_responses,
+    get_current_student_id,
+)
 
-router = APIRouter(prefix="/api/v1", tags=["Disciplines"], dependencies=[Depends(get_current_student_id)])
+router = APIRouter(
+    prefix="/api/v1",
+    tags=["Disciplines"],
+    dependencies=[Depends(get_current_student_id)],
+)
 
 
 class DisciplineType(str, Enum):
     NORMATIVE = "normative"
     ELECTIVE = "elective"
+
 
 class Discipline(BaseModel):
     id: int = Field(..., description="Унікальний ID дисципліни (як у каталозі САЗ)", examples=[101])
@@ -47,24 +65,26 @@ class Discipline(BaseModel):
         }
     )
 
+
 class PaginatedDisciplinesResponse(BaseModel):
     disciplines: List[Discipline] = Field(..., description="Список дисциплін")
     pagination: PaginationInfo = Field(..., description="Метадані пагінації")
 
-_CATALOG = [
-    Discipline(id=101, title="Функціональне програмування", description="Основи функціональної парадигми.",
-               discipline_type=DisciplineType.ELECTIVE, instructor="Петренко І. М.", recommended_year=2,
-               trimester=1, credits=5.0, directions=["Software Engineering", "Data Science"]),
-    Discipline(id=102, title="Основи кібербезпеки", description="Базові принципи захисту інформації.",
-               discipline_type=DisciplineType.ELECTIVE, instructor="Коваленко О. В.", recommended_year=3,
-               trimester=2, credits=4.0, directions=["Cybersecurity"]),
-    Discipline(id=205, title="Управління цифровим продуктом", description="Життєвий цикл цифрового продукту.",
-               discipline_type=DisciplineType.ELECTIVE, instructor="Мельник Т. С.", recommended_year=2,
-               trimester=2, credits=3.0, directions=[]),
-    Discipline(id=301, title="Алгоритми та структури даних", description="Нормативна дисципліна від деканату.",
-               discipline_type=DisciplineType.NORMATIVE, instructor="Шевченко А. П.", recommended_year=2,
-               trimester=1, credits=6.0, directions=[]),
-]
+
+def to_discipline(course: Course) -> Discipline:
+    lecturers = [ci.instructor.full_name for ci in course.course_instructors]
+    return Discipline(
+        id=course.id,
+        title=course.title,
+        description=course.description,
+        discipline_type=DisciplineType(course.kind.value),
+        instructor=", ".join(lecturers),
+        recommended_year=course.recommended_year,
+        trimester=course.trimester.number,
+        credits=course.credits,
+        directions=[direction.name for direction in course.directions],
+    )
+
 
 @router.get(
     "/disciplines",
@@ -73,10 +93,16 @@ _CATALOG = [
     description="Каталог дисциплін з фільтрами (напрямок, триместр, викладач, кредити, рік, тип) та offset-пагінацією.",
     responses={200: {"description": "Каталог отримано"}, **error_responses(401, 422)},
 )
-async def list_disciplines(
+def list_disciplines(
+    db: Session = Depends(get_db),
     limit: int = Query(20, ge=1, le=100, description="Максимальна кількість дисциплін на сторінку"),
     offset: int = Query(0, ge=0, description="Кількість дисциплін, які треба пропустити"),
-    direction: Optional[str] = Query(None, min_length=2, max_length=50, description="Напрямок розвитку, напр. Data Science"),
+    direction: Optional[str] = Query(
+        None,
+        min_length=2,
+        max_length=50,
+        description="Напрямок розвитку, напр. Data Science",
+    ),
     trimester: Optional[int] = Query(None, ge=1, le=3, description="Триместр (1 — осінь, 2 — весна, 3 — літо)"),
     instructor: Optional[str] = Query(None, min_length=2, max_length=100, description="Частина імені викладача"),
     min_credits: Optional[float] = Query(None, ge=0, description="Мінімум кредитів"),
@@ -89,28 +115,58 @@ async def list_disciplines(
             422,
             "VALIDATION_ERROR",
             "Невалідні параметри запиту",
-            [ErrorDetail(field="min_credits", message="min_credits не може бути більшим за max_credits")],
+            [
+                ErrorDetail(
+                    field="min_credits",
+                    message="min_credits не може бути більшим за max_credits",
+                )
+            ],
         )
 
-    result = list(_CATALOG)
+    query = select(Course).where(Course.publication_status == PublicationStatus.PUBLISHED)
     if direction:
-        result = [d for d in result if direction.lower() in [x.lower() for x in d.directions]]
+        query = query.where(
+            Course.id.in_(
+                select(CourseDirection.course_id)
+                .join(Direction, Direction.id == CourseDirection.direction_id)
+                .where(Direction.name_normalized == normalize_text(direction))
+            )
+        )
     if trimester:
-        result = [d for d in result if d.trimester == trimester]
+        query = query.where(Course.trimester == Trimester.from_number(trimester))
     if instructor:
-        result = [d for d in result if instructor.lower() in d.instructor.lower()]
+        query = query.where(
+            Course.id.in_(
+                select(CourseInstructor.course_id)
+                .join(Instructor, Instructor.id == CourseInstructor.instructor_id)
+                .where(Instructor.full_name_normalized.contains(normalize_text(instructor), autoescape=True))
+            )
+        )
     if min_credits is not None:
-        result = [d for d in result if d.credits >= min_credits]
+        query = query.where(Course.credits >= min_credits)
     if max_credits is not None:
-        result = [d for d in result if d.credits <= max_credits]
+        query = query.where(Course.credits <= max_credits)
     if recommended_year:
-        result = [d for d in result if d.recommended_year == recommended_year]
+        query = query.where(Course.recommended_year == recommended_year)
     if discipline_type:
-        result = [d for d in result if d.discipline_type == discipline_type]
+        query = query.where(Course.kind == CourseKind(discipline_type.value))
+
+    total = db.scalar(select(func.count()).select_from(query.subquery()))
+    courses = db.scalars(
+        query.options(selectinload(Course.course_instructors), selectinload(Course.directions))
+        .order_by(Course.id)
+        .offset(offset)
+        .limit(limit)
+    ).all()
 
     return PaginatedDisciplinesResponse(
-        disciplines=result[offset : offset + limit],
-        pagination=PaginationInfo(limit=limit, offset=offset, total=len(result), has_more=(offset + limit) < len(result)),
+        disciplines=[to_discipline(course) for course in courses],
+        pagination=PaginationInfo(
+            limit=limit,
+            offset=offset,
+            total=total,
+            has_more=(offset + limit) < total,
+        ),
     )
 
 
@@ -121,13 +177,19 @@ async def list_disciplines(
     description="Детальна інформація про дисципліну з каталогу.",
     responses={
         200: {"description": "Дисципліну знайдено"},
-        **error_responses(401, 404, 422, overrides={404: ("DISCIPLINE_NOT_FOUND", "Дисципліну з ID 999 не знайдено")}),
+        **error_responses(
+            401,
+            404,
+            422,
+            overrides={404: ("DISCIPLINE_NOT_FOUND", "Дисципліну з ID 999 не знайдено")},
+        ),
     },
 )
-async def get_discipline(
+def get_discipline(
     discipline_id: int = Path(..., gt=0, description="Унікальний ідентифікатор дисципліни", examples=[101]),
+    db: Session = Depends(get_db),
 ):
-    for discipline in _CATALOG:
-        if discipline.id == discipline_id:
-            return discipline
+    course = db.get(Course, discipline_id)
+    if course is not None and course.publication_status == PublicationStatus.PUBLISHED:
+        return to_discipline(course)
     raise ApiError(404, "DISCIPLINE_NOT_FOUND", f"Дисципліну з ID {discipline_id} не знайдено")

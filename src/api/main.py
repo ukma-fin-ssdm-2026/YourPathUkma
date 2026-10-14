@@ -9,15 +9,22 @@ OpenAPI-специфікація генерується з коду при ст�
 Використання ШІ: файл створено за допомогою Claude (Anthropic) на основі шаблону викладача (ЛР4).
 Перевірка: запуск сервера, перевірка появи/оновлення openapi-generated.yaml після зміни коду,
 перегляд Swagger UI (/api-docs) і ReDoc (/redoc).
+
+При старті застосовуються міграції Alembic і (у порожню БД) демо-дані: src/db/migrate.py.
+Ініціалізацію БД при старті додано за допомогою Claude (Claude Code); перевірено запуском uvicorn на SQLite.
 """
+
 import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 import yaml
 from fastapi import FastAPI
+from ..db.migrate import init_database
 from .common import register_error_handlers
-from .routes import disciplines, plans
+from .routes import disciplines, plans, auth, reference, system
+from fastapi.middleware.cors import CORSMiddleware
+
 DOCS_DIR = Path(__file__).resolve().parents[2] / "docs" / "api"
 
 
@@ -28,21 +35,18 @@ def save_openapi_spec(app: FastAPI) -> None:
     (DOCS_DIR / "openapi-generated.yaml").write_text(
         yaml.safe_dump(spec, sort_keys=False, allow_unicode=True), encoding="utf-8"
     )
-    (DOCS_DIR / "openapi-generated.json").write_text(
-        json.dumps(spec, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    (DOCS_DIR / "openapi-generated.json").write_text(json.dumps(spec, indent=2, ensure_ascii=False), encoding="utf-8")
     print("✅ OpenAPI spec auto-generated from code!")
     print(f"📁 Saved to: {DOCS_DIR / 'openapi-generated.yaml'}")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    save_openapi_spec(app) 
+    save_openapi_spec(app)
     print("Swagger UI: http://127.0.0.1:3000/api-docs")
-    print("ReDoc:      http://127.0.0.1:3000/redoc") 
+    print("ReDoc:      http://127.0.0.1:3000/redoc")
     yield
 
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="YourPathUkma API",
@@ -53,15 +57,29 @@ app = FastAPI(
         "будь-який непорожній токен: натисніть Authorize і введіть, наприклад, `test`."
     ),
     version="1.0.0",
-    docs_url="/api-docs",  
+    docs_url="/api-docs",
     redoc_url="/redoc",
     servers=[
-        {"url": "http://localhost:3000", "description": "Local development server (localhost)"}
+        {
+            "url": "http://localhost:3000",
+            "description": "Local development server (localhost)",
+        }
     ],
     openapi_tags=[
         {"name": "System", "description": "Системні маршрути (моніторинг)"},
-        {"name": "Plans", "description": "Індивідуальні навчальні плани студента (CRUD)"},
+        {
+            "name": "Plans",
+            "description": "Індивідуальні навчальні плани студента (CRUD)",
+        },
         {"name": "Disciplines", "description": "Каталог дисциплін (читання, фільтри)"},
+        {
+            "name": "Auth",
+            "description": "Вхід через Google, оновлення і відкликання токена (заглушка)",
+        },
+        {
+            "name": "Reference",
+            "description": "Довідники: напрямки розвитку і викладачі",
+        },
     ],
     lifespan=lifespan,
 )
@@ -77,6 +95,10 @@ app.add_middleware(
 register_error_handlers(app)
 app.include_router(plans.router)
 app.include_router(disciplines.router)
+app.include_router(auth.router)
+app.include_router(reference.router)
+app.include_router(system.router)
+
 
 @app.get("/health", tags=["System"], summary="Перевірка стану системи (Healthcheck)")
 async def health_check():
@@ -85,6 +107,7 @@ async def health_check():
 
 
 if __name__ == "__main__":
+    import os
     import uvicorn
 
-    uvicorn.run("src.api.main:app", host="0.0.0.0", port=3000, reload=True)
+    uvicorn.run("src.api.main:app", host=os.getenv("API_HOST", "127.0.0.1"), port=3000, reload=True)

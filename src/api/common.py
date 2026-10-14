@@ -5,6 +5,7 @@
 Перевірка: ручний запуск сервера, перегляд у Swagger UI (/api-docs), перевірка
 відповідей 401/404/409/422 для кожної кінцевої точки, звірка форматів з docs/api/api-design.md.
 """
+
 import os
 from typing import Dict, List, Optional, Tuple
 from fastapi import Depends, FastAPI, Request
@@ -13,6 +14,7 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
+
 
 class ErrorDetail(BaseModel):
     field: str = Field(..., description="Поле, до якого належить помилка", examples=["items.0.credits"])
@@ -23,7 +25,11 @@ class ErrorResponse(BaseModel):
     """Єдиний формат відповіді для всіх помилок 4xx/5xx."""
 
     code: str = Field(..., description="Машинозчитуваний код помилки", examples=["PLAN_NOT_FOUND"])
-    message: str = Field(..., description="Повідомлення, зрозуміле людині", examples=["План з ID 5 не знайдено"])
+    message: str = Field(
+        ...,
+        description="Повідомлення, зрозуміле людині",
+        examples=["План з ID 5 не знайдено"],
+    )
     details: List[ErrorDetail] = Field(default_factory=list, description="Деталі по полях (для помилок валідації)")
 
     model_config = ConfigDict(
@@ -32,7 +38,12 @@ class ErrorResponse(BaseModel):
                 {
                     "code": "VALIDATION_ERROR",
                     "message": "Невалідні вхідні дані",
-                    "details": [{"field": "items.0.credits", "message": "Input should be greater than 0"}],
+                    "details": [
+                        {
+                            "field": "items.0.credits",
+                            "message": "Input should be greater than 0",
+                        }
+                    ],
                 }
             ]
         }
@@ -42,7 +53,13 @@ class ErrorResponse(BaseModel):
 class ApiError(Exception):
     """Бізнес-помилка, яку хендлер перетворює на ErrorResponse."""
 
-    def __init__(self, status_code: int, code: str, message: str, details: Optional[List[ErrorDetail]] = None):
+    def __init__(
+        self,
+        status_code: int,
+        code: str,
+        message: str,
+        details: Optional[List[ErrorDetail]] = None,
+    ):
         self.status_code = status_code
         self.code = code
         self.message = message
@@ -77,14 +94,20 @@ def error_responses(*codes: int, overrides: Optional[Dict[int, Tuple[str, str]]]
     for status_code in codes:
         error_code, message = examples[status_code]
         details = (
-            [{"field": "items.0.credits", "message": "Input should be greater than 0"}]
-            if status_code == 422
-            else []
+            [{"field": "items.0.credits", "message": "Input should be greater than 0"}] if status_code == 422 else []
         )
         result[status_code] = {
             "model": ErrorResponse,
             "description": _ERROR_DESCRIPTIONS[status_code],
-            "content": {"application/json": {"example": {"code": error_code, "message": message, "details": details}}},
+            "content": {
+                "application/json": {
+                    "example": {
+                        "code": error_code,
+                        "message": message,
+                        "details": details,
+                    }
+                }
+            },
         }
     return result
 
@@ -115,6 +138,7 @@ def register_error_handlers(app: FastAPI) -> None:
         body = ErrorResponse(code="INTERNAL_ERROR", message="Внутрішня помилка сервера")
         return JSONResponse(status_code=500, content=body.model_dump(mode="json"))
 
+
 class PaginationInfo(BaseModel):
     limit: int = Field(20, ge=1, le=100, description="Кількість елементів на сторінку")
     offset: int = Field(0, ge=0, description="Зсув для пагінації")
@@ -124,6 +148,8 @@ class PaginationInfo(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={"examples": [{"limit": 20, "offset": 0, "total": 2, "has_more": False}]}
     )
+
+
 MOCK_STUDENT_ID = 42
 
 bearer_scheme = HTTPBearer(

@@ -373,6 +373,53 @@ paths:
                   message: Input should be greater than 0
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/plans/validate:
+    post:
+      tags:
+      - Plans
+      summary: Перевірити план без збереження
+      description: 'Для живих підказок у конструкторі. Завжди 200, якщо тіло відповідає
+        схемі; порушення правил повертаються в `errors`. Поки без БД: не перевіряються
+        каталог, нормативні дисципліни, документ деканату, вільний вибір попередніх
+        років і попередження про навантаження.'
+      operationId: validate_plan_api_v1_plans_validate_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanPayload'
+        required: true
+      responses:
+        '200':
+          description: Перевірку виконано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanValidationResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+      security:
+      - HTTPBearer: []
   /api/v1/disciplines:
     get:
       tags:
@@ -574,6 +621,212 @@ paths:
                   message: Input should be greater than 0
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/google:
+    post:
+      tags:
+      - Auth
+      summary: 'Вхід: обмін коду Google на токени'
+      description: 'Заглушка: приймає будь-який код і повертає тестового студента.'
+      operationId: login_with_google_api_v1_auth_google_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleLoginRequest'
+        required: true
+      responses:
+        '200':
+          description: Вхід виконано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+  /api/v1/auth/refresh:
+    post:
+      tags:
+      - Auth
+      summary: Новий access-токен за refresh-cookie
+      description: 'Без тіла. Потрібна cookie refresh_token (credentials: include).'
+      operationId: refresh_session_api_v1_auth_refresh_post
+      parameters:
+      - name: refresh_token
+        in: cookie
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Refresh Token
+      responses:
+        '200':
+          description: Токен оновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/auth/logout:
+    post:
+      tags:
+      - Auth
+      summary: Вихід
+      description: 'Очищає refresh-cookie. Заглушка: токени в БД ще не відкликаються.'
+      operationId: logout_api_v1_auth_logout_post
+      responses:
+        '204':
+          description: Вихід виконано
+  /api/v1/directions:
+    get:
+      tags:
+      - Reference
+      summary: Довідник напрямків розвитку
+      description: Усі напрямки без пагінації. `name` збігається зі значеннями в каталозі
+        дисциплін.
+      operationId: list_directions_api_v1_directions_get
+      responses:
+        '200':
+          description: Довідник отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectionsResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+      security:
+      - HTTPBearer: []
+  /api/v1/instructors:
+    get:
+      tags:
+      - Reference
+      summary: Довідник викладачів
+      description: Для вибору бажаних і небажаних викладачів та фільтра каталогу.
+        Пошук за підрядком ПІБ.
+      operationId: list_instructors_api_v1_instructors_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            minLength: 2
+            maxLength: 100
+          - type: 'null'
+          description: Підрядок ПІБ (від 2 символів)
+          title: Q
+        description: Підрядок ПІБ (від 2 символів)
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Максимальна кількість викладачів на сторінку
+          default: 20
+          title: Limit
+        description: Максимальна кількість викладачів на сторінку
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          description: Кількість викладачів, які треба пропустити
+          default: 0
+          title: Offset
+        description: Кількість викладачів, які треба пропустити
+      responses:
+        '200':
+          description: Довідник отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInstructorsResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/config:
+    get:
+      tags:
+      - System
+      summary: Публічна конфігурація для фронтенду
+      description: Ліміти нормативів і прапорці функцій. Без автентифікації, відповідь
+        можна кешувати.
+      operationId: get_config_api_v1_config_get
+      responses:
+        '200':
+          description: Конфігурацію отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigResponse'
   /health:
     get:
       tags:
@@ -588,6 +841,97 @@ paths:
               schema: {}
 components:
   schemas:
+    AuthResponse:
+      properties:
+        access_token:
+          type: string
+          title: Access Token
+          description: Access-токен (живе 15 хв, зберігати лише в пам'яті)
+        token_type:
+          type: string
+          title: Token Type
+          description: Тип токена
+          default: Bearer
+        expires_in:
+          type: integer
+          title: Expires In
+          description: Строк життя токена, секунди
+          default: 900
+        user:
+          $ref: '#/components/schemas/AuthUser'
+      type: object
+      required:
+      - access_token
+      - user
+      title: AuthResponse
+    AuthUser:
+      properties:
+        id:
+          type: integer
+          title: Id
+          description: ID користувача
+          examples:
+          - 42
+        email:
+          type: string
+          title: Email
+          description: Пошта користувача
+          examples:
+          - student@ukma.edu.ua
+        full_name:
+          type: string
+          title: Full Name
+          description: Повне ім'я
+          examples:
+          - Тестовий Студент
+        role:
+          $ref: '#/components/schemas/UserRole'
+          description: Роль користувача
+      type: object
+      required:
+      - id
+      - email
+      - full_name
+      - role
+      title: AuthUser
+    ConfigResponse:
+      properties:
+        api_version:
+          type: string
+          title: Api Version
+          description: Версія API
+          default: 1.0.0
+        google_client_id:
+          type: string
+          title: Google Client Id
+          description: Публічний client_id для входу через Google
+        allowed_email_domain:
+          type: string
+          title: Allowed Email Domain
+          description: Дозволений домен пошти
+          default: ukma.edu.ua
+        reviews_url:
+          type: string
+          title: Reviews Url
+          description: Посилання «Почитати відгуки»
+        limits:
+          $ref: '#/components/schemas/Limits'
+        load_levels:
+          additionalProperties:
+            $ref: '#/components/schemas/LoadLevelHours'
+          type: object
+          title: Load Levels
+          description: Межі годин на тиждень для рівнів навантаження
+        features:
+          $ref: '#/components/schemas/Features'
+      type: object
+      required:
+      - google_client_id
+      - reviews_url
+      - limits
+      - load_levels
+      - features
+      title: ConfigResponse
     CreatePlanRequest:
       properties:
         academic_year:
@@ -623,6 +967,43 @@ components:
       - course
       - items
       title: CreatePlanRequest
+    Direction:
+      properties:
+        id:
+          type: integer
+          title: Id
+          description: ID напрямку
+          examples:
+          - 1
+        name:
+          type: string
+          title: Name
+          description: Назва напрямку
+          examples:
+          - Data Science
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: Опис напрямку
+      type: object
+      required:
+      - id
+      - name
+      title: Direction
+    DirectionsResponse:
+      properties:
+        directions:
+          items:
+            $ref: '#/components/schemas/Direction'
+          type: array
+          title: Directions
+          description: Усі напрямки розвитку
+      type: object
+      required:
+      - directions
+      title: DirectionsResponse
     Discipline:
       properties:
         id:
@@ -754,6 +1135,138 @@ components:
         - field: items.0.credits
           message: Input should be greater than 0
         message: Невалідні вхідні дані
+    Features:
+      properties:
+        ai_generation:
+          type: boolean
+          title: Ai Generation
+          description: AI-генерація плану (етап 2)
+          default: false
+        certificate_programs:
+          type: boolean
+          title: Certificate Programs
+          description: Сертифікатні програми (етап 2)
+          default: false
+        saz_sync:
+          type: boolean
+          title: Saz Sync
+          description: Синхронізація з САЗ (заблоковано, R14)
+          default: false
+        plan_export:
+          type: boolean
+          title: Plan Export
+          description: Експорт плану в PDF
+          default: true
+      type: object
+      title: Features
+    GoogleLoginRequest:
+      properties:
+        code:
+          type: string
+          maxLength: 2048
+          minLength: 1
+          title: Code
+          description: Код авторизації Google
+        code_verifier:
+          type: string
+          maxLength: 128
+          minLength: 43
+          title: Code Verifier
+          description: PKCE code_verifier
+        redirect_uri:
+          type: string
+          maxLength: 512
+          minLength: 1
+          title: Redirect Uri
+          description: redirect_uri, використаний на фронтенді
+      type: object
+      required:
+      - code
+      - code_verifier
+      - redirect_uri
+      title: GoogleLoginRequest
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    Instructor:
+      properties:
+        id:
+          type: integer
+          title: Id
+          description: ID викладача
+          examples:
+          - 7
+        full_name:
+          type: string
+          title: Full Name
+          description: ПІБ викладача
+          examples:
+          - Петренко І. М.
+      type: object
+      required:
+      - id
+      - full_name
+      title: Instructor
+    Limits:
+      properties:
+        total_credits:
+          type: integer
+          title: Total Credits
+          description: Кредитів за всю програму (4 роки)
+          default: 240
+        free_choice_credits:
+          type: integer
+          title: Free Choice Credits
+          description: Ліміт вільного вибору за всі роки
+          default: 25
+        professional_credits:
+          type: integer
+          title: Professional Credits
+          description: Орієнтир профорієнтовних кредитів
+          default: 54
+        min_year_credits:
+          type: integer
+          title: Min Year Credits
+          description: Мінімум кредитів на рік
+          default: 57
+        max_directions:
+          type: integer
+          title: Max Directions
+          description: Максимум напрямків розвитку
+          default: 3
+        max_plan_items:
+          type: integer
+          title: Max Plan Items
+          description: Максимум дисциплін у плані
+          default: 30
+        max_item_credits:
+          type: integer
+          title: Max Item Credits
+          description: Максимум кредитів однієї дисципліни
+          default: 30
+        academic_year_min:
+          type: integer
+          title: Academic Year Min
+          description: Мінімальний навчальний рік
+          default: 2024
+        academic_year_max:
+          type: integer
+          title: Academic Year Max
+          description: Максимальний навчальний рік
+          default: 2030
+        max_upload_bytes:
+          type: integer
+          title: Max Upload Bytes
+          description: Максимальний розмір документа деканату
+          default: 10485760
+      type: object
+      title: Limits
     LoadLevel:
       type: string
       enum:
@@ -761,6 +1274,22 @@ components:
       - medium
       - high
       title: LoadLevel
+    LoadLevelHours:
+      properties:
+        min_hours_per_week:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Min Hours Per Week
+          description: Нижня межа годин на тиждень
+        max_hours_per_week:
+          type: integer
+          title: Max Hours Per Week
+          description: Верхня межа годин на тиждень
+      type: object
+      required:
+      - max_hours_per_week
+      title: LoadLevelHours
     LoadLevels:
       properties:
         autumn:
@@ -777,8 +1306,6 @@ components:
           default: medium
       type: object
       title: LoadLevels
-      description: Рівень навантаження окремо на кожен триместр (для 4 курсу розраховується
-        автоматично).
     PaginatedDisciplinesResponse:
       properties:
         disciplines:
@@ -795,6 +1322,22 @@ components:
       - disciplines
       - pagination
       title: PaginatedDisciplinesResponse
+    PaginatedInstructorsResponse:
+      properties:
+        instructors:
+          items:
+            $ref: '#/components/schemas/Instructor'
+          type: array
+          title: Instructors
+          description: Список викладачів
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+          description: Метадані пагінації
+      type: object
+      required:
+      - instructors
+      - pagination
+      title: PaginatedInstructorsResponse
     PaginatedPlansResponse:
       properties:
         plans:
@@ -889,6 +1432,43 @@ components:
       - trimester
       - credits
       title: PlanItem
+    PlanPayload:
+      properties:
+        academic_year:
+          type: integer
+          maximum: 2030.0
+          minimum: 2024.0
+          title: Academic Year
+          description: Навчальний рік
+          examples:
+          - 2026
+        course:
+          type: integer
+          maximum: 4.0
+          minimum: 2.0
+          title: Course
+          description: Курс навчання (на 1 курсі план формує деканат)
+          examples:
+          - 2
+        load_levels:
+          $ref: '#/components/schemas/LoadLevels'
+          description: Навантаження по триместрах
+        items:
+          items:
+            $ref: '#/components/schemas/PlanItem'
+          type: array
+          maxItems: 30
+          minItems: 1
+          title: Items
+          description: Список вибіркових дисциплін
+      type: object
+      required:
+      - academic_year
+      - course
+      - items
+      title: PlanPayload
+      description: 'Тіло плану без бізнес-перевірок: його приймає і POST /plans/validate,
+        який має повертати 200.'
     PlanResponse:
       properties:
         id:
@@ -984,6 +1564,136 @@ components:
       - awaiting_deanery
       - approved
       title: PlanStatus
+    PlanSummary:
+      properties:
+        total_credits:
+          type: number
+          title: Total Credits
+          description: Кредити вибіркових дисциплін плану
+          examples:
+          - 8.0
+        free_elective_credits:
+          type: number
+          title: Free Elective Credits
+          description: Кредити вільного вибору в плані
+          examples:
+          - 3.0
+        free_elective_used_all_years:
+          type: number
+          title: Free Elective Used All Years
+          description: Вільний вибір, використаний за всі роки
+          examples:
+          - 3.0
+        free_elective_remaining:
+          type: number
+          title: Free Elective Remaining
+          description: Скільки кредитів вільного вибору ще можна обрати
+          examples:
+          - 22.0
+        year_total_credits:
+          type: number
+          title: Year Total Credits
+          description: Сума кредитів за рік
+          examples:
+          - 8.0
+        credits_by_trimester:
+          additionalProperties:
+            type: number
+          type: object
+          title: Credits By Trimester
+          description: Кредити по триместрах (ключі 1, 2, 3)
+      type: object
+      required:
+      - total_credits
+      - free_elective_credits
+      - free_elective_used_all_years
+      - free_elective_remaining
+      - year_total_credits
+      - credits_by_trimester
+      title: PlanSummary
+    PlanValidationResponse:
+      properties:
+        valid:
+          type: boolean
+          title: Valid
+          description: true, якщо немає жодної помилки
+        errors:
+          items:
+            $ref: '#/components/schemas/RuleIssue'
+          type: array
+          title: Errors
+          description: Порушення правил
+        warnings:
+          items:
+            $ref: '#/components/schemas/RuleIssue'
+          type: array
+          title: Warnings
+          description: Попередження
+        summary:
+          $ref: '#/components/schemas/PlanSummary'
+          description: Підсумок кредитів для індикаторів у конструкторі
+      type: object
+      required:
+      - valid
+      - errors
+      - warnings
+      - summary
+      title: PlanValidationResponse
+    RuleIssue:
+      properties:
+        code:
+          type: string
+          title: Code
+          description: Машинозчитуваний код
+          examples:
+          - FREE_ELECTIVE_LIMIT_EXCEEDED
+        message:
+          type: string
+          title: Message
+          description: Повідомлення українською
+        field:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Field
+          description: Поле, до якого належить порушення, або null
+      type: object
+      required:
+      - code
+      - message
+      title: RuleIssue
+    UserRole:
+      type: string
+      enum:
+      - student
+      - admin
+      title: UserRole
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
     HTTPBearer:
       type: http
@@ -997,3 +1707,7 @@ tags:
   description: Індивідуальні навчальні плани студента (CRUD)
 - name: Disciplines
   description: Каталог дисциплін (читання, фільтри)
+- name: Auth
+  description: Вхід через Google, оновлення і відкликання токена (заглушка)
+- name: Reference
+  description: 'Довідники: напрямки розвитку і викладачі'
