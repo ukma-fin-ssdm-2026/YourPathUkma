@@ -52,6 +52,15 @@ Full documentation: [Project-Description.md](Project-Description.md)
 - [API-контракт фронтенду і бекенду](docs/api/contract.md)
 - UML-діаграми: [компонентів](docs/architecture/uml/svg/component-diagram.svg), [послідовності](docs/architecture/uml/svg/sequence-generate-plan.svg), [розгортання](docs/architecture/uml/svg/deployment.svg)
 
+## Запуск API
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+uvicorn src.api.main:app --reload --port 3000   # Swagger UI: http://127.0.0.1:3000/api-docs
+pytest -q
+```
+
+Без `DATABASE_URL` дані зберігаються в локальному файлі `yourpath.sqlite`; для PostgreSQL: `docker compose up -d db` і `DATABASE_URL` з [`.env.example`](.env.example). Міграції (Alembic) і демо-дані застосовуються при старті. Деталі: [docs/architecture/database.md](docs/architecture/database.md).
 
 ## Запуск MCP Сервера (Бонус до Лаб 4)
 У проєкті реалізовано автоматичну генерацію MCP-сервера напряму з FastAPI за допомогою `fastmcp`.
