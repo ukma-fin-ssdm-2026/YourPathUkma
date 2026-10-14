@@ -4,6 +4,7 @@ import { CallbackPage } from "../auth/CallbackPage";
 import { LoginPage } from "../auth/LoginPage";
 import { RequireAdmin, RequireAuth } from "../auth/RequireAuth";
 import { CatalogPage } from "../features/catalog/CatalogPage";
+import { DeaneryPage } from "../features/deanery/DeaneryPage";
 import { PathLayout } from "../features/plans/PathLayout";
 import { PlansPage } from "../features/plans/PlansPage";
 import { OnboardingPage } from "../features/profile/OnboardingPage";
@@ -41,7 +42,7 @@ export const appRoutes: RouteObject[] = [
                   { path: "plan", element: <PlansPage mode="all" /> },
                   { path: "saved", element: <PlansPage mode="saved" /> },
                   { path: "create", element: <PlaceholderPage title="Створити план" /> },
-                  { path: "create/document", element: <PlaceholderPage title="Документ деканату" /> },
+                  { path: "create/document", element: <DeaneryPage /> },
                   { path: "plan/:id", element: <PlaceholderPage title="Перегляд плану" /> },
                 ],
               },
