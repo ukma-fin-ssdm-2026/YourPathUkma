@@ -73,6 +73,17 @@ describe("request", () => {
     expect(error).toMatchObject({ status: 0, code: "NETWORK_ERROR" });
   });
 
+  it("FormData передається як є, без Content-Type (boundary додає браузер)", async () => {
+    const fetchMock = vi.fn().mockImplementation(async () => json({ id: 1 }));
+    setFetch(fetchMock);
+    const form = new FormData();
+    form.append("academic_year", "2026");
+    await request("/deanery-documents", { method: "POST", body: form });
+    const init = fetchMock.mock.calls[0]![1] as RequestInit;
+    expect(init.body).toBe(form);
+    expect(new Headers(init.headers).has("Content-Type")).toBe(false);
+  });
+
   it("не губить невідомі поля у відповіді", async () => {
     setFetch(vi.fn().mockResolvedValue(json({ id: 1, nova_ozdoba: "так" })));
     await expect(request<{ id: number }>("/me")).resolves.toEqual({ id: 1, nova_ozdoba: "так" });

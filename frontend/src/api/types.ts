@@ -114,3 +114,24 @@ export type PaginationInfo = components["schemas"]["PaginationInfo"];
 export type PaginatedDisciplinesResponse = components["schemas"]["PaginatedDisciplinesResponse"];
 export type PlanResponse = components["schemas"]["PlanResponse"];
 export type PaginatedPlansResponse = components["schemas"]["PaginatedPlansResponse"];
+
+export type ParseStatus = "pending" | "parsed" | "failed";
+
+export interface NormativeCourse {
+  course_id: number | null;
+  raw_title: string;
+  trimester: 1 | 2 | 3;
+  credits: number;
+}
+
+export interface DeaneryDocument {
+  id: number;
+  academic_year: number;
+  original_filename: string;
+  mime_type: "pdf" | "docx";
+  size_bytes: number;
+  parse_status: ParseStatus;
+  parse_error: string | null;
+  uploaded_at: string;
+  normative_courses: NormativeCourse[];
+}
