@@ -12,6 +12,9 @@ from enum import Enum
 from typing import Dict, List, Optional
 from fastapi import APIRouter, Depends, Path, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from ...db import enums as db_enums
+from ...db.models import Course, IndividualPlan, PlanItem as PlanItemRow
+from ...db.session import get_db
 from ..common import ApiError, PaginationInfo, error_responses, get_current_student_id
 
 router = APIRouter(prefix="/api/v1", tags=["Plans"])
@@ -218,31 +221,104 @@ _MOCK_PLANS = {
     3: (7, PlanStatus.DRAFT),
 }
 
-
-def _build_response(plan_id: int, student_id: int, plan_status: PlanStatus, payload: CreatePlanRequest) -> PlanResponse:
+def _to_response(plan: IndividualPlan) -> PlanResponse:
+    items = [
+        PlanItem(
+            course_id=item.course_id,
+            title=item.course.title,
+            trimester=item.trimester.number,
+            credits=item.course.credits,
+            is_free_elective=item.category == db_enums.PlanItemCategory.FREE_CHOICE,
+        )
+        for item in plan.items
+    ]
     return PlanResponse(
-        id=plan_id,
-        student_id=student_id,
-        academic_year=payload.academic_year,
-        course=payload.course,
-        load_levels=payload.load_levels,
-        items=payload.items,
-        status=plan_status,
-        total_credits=sum(item.credits for item in payload.items),
-        free_elective_credits=sum(item.credits for item in payload.items if item.is_free_elective),
-        created_at=datetime.now(timezone.utc),
+        id=plan.id,
+        student_id=plan.student_id,
+        academic_year=plan.academic_year,
+        course=plan.course_year,
+        load_levels=LoadLevels(
+            autumn=plan.load_autumn.value,
+            spring=plan.load_spring.value,
+            summer=plan.load_summer.value,
+        ),
+        items=items,
+        status=PlanStatus(plan.status.value),
+        total_credits=sum(item.credits for item in items),
+        free_elective_credits=sum(item.credits for item in items if item.is_free_elective),
+        created_at=plan.created_at,
     )
 
 
-def _find_plan(plan_id: int, student_id: int) -> PlanStatus:
-    """Повертає статус плану або кидає 404 (немає) / 403 (чужий план)."""
-    record = _MOCK_PLANS.get(plan_id)
-    if record is None:
+def _find_plan(db: Session, plan_id: int, student_id: int) -> IndividualPlan:
+    """Повертає план або кидає 404 (немає) / 403 (чужий план)."""
+    plan = db.get(IndividualPlan, plan_id)
+    if plan is None:
         raise ApiError(404, "PLAN_NOT_FOUND", f"План з ID {plan_id} не знайдено")
-    owner_id, plan_status = record
-    if owner_id != student_id:
+    if plan.student_id != student_id:
         raise ApiError(403, "PLAN_FORBIDDEN", "Цей план належить іншому студенту")
-    return plan_status
+    return plan
+
+
+def _check_catalog(db: Session, items: List[PlanItem]) -> Dict[int, Course]:
+    """
+    Звіряє елементи плану з каталогом (contract.md §2.4): дисципліна існує й опублікована, вона вибіркова,
+    кредити й триместр збігаються. Порушення → 422 з деталями по кожному елементу.
+    """
+    ids = [item.course_id for item in items]
+    courses = {
+        course.id: course
+        for course in db.scalars(
+            select(Course).where(Course.id.in_(ids), Course.publication_status == db_enums.PublicationStatus.PUBLISHED)
+        )
+    }
+    details: List[ErrorDetail] = []
+    for index, item in enumerate(items):
+        field = f"items.{index}.course_id"
+        course = courses.get(item.course_id)
+        if course is None:
+            details.append(
+                ErrorDetail(field=field, message=f"COURSE_NOT_FOUND: дисципліни {item.course_id} немає в каталозі")
+            )
+        elif course.kind == db_enums.CourseKind.NORMATIVE:
+            details.append(
+                ErrorDetail(field=field, message=f"NORMATIVE_NOT_ALLOWED: «{course.title}» — нормативна дисципліна")
+            )
+        elif course.credits != item.credits or course.trimester.number != item.trimester:
+            details.append(
+                ErrorDetail(
+                    field=field,
+                    message=(
+                        f"COURSE_DATA_MISMATCH: у каталозі «{course.title}» має {course.credits} кредитів "
+                        f"і триместр {course.trimester.number}"
+                    ),
+                )
+            )
+    if details:
+        raise ApiError(422, "VALIDATION_ERROR", "План не відповідає каталогу дисциплін", details)
+    return courses
+
+
+def _apply_payload(plan: IndividualPlan, payload: CreatePlanRequest, courses: Dict[int, Course]) -> None:
+    plan.academic_year = payload.academic_year
+    plan.course_year = payload.course
+    plan.load_autumn = db_enums.LoadLevel(payload.load_levels.autumn.value)
+    plan.load_spring = db_enums.LoadLevel(payload.load_levels.spring.value)
+    plan.load_summer = db_enums.LoadLevel(payload.load_levels.summer.value)
+    plan.total_credits = sum(courses[item.course_id].credits for item in payload.items)
+    plan.items = [
+        PlanItemRow(
+            course_id=item.course_id,
+            course=courses[item.course_id],
+            trimester=db_enums.Trimester.from_number(item.trimester),
+            category=(
+                db_enums.PlanItemCategory.FREE_CHOICE
+                if item.is_free_elective
+                else db_enums.PlanItemCategory.PROFESSIONAL
+            ),
+        )
+        for item in payload.items
+    ]
 
 
 @router.post(
@@ -260,8 +336,19 @@ def _find_plan(plan_id: int, student_id: int) -> PlanStatus:
         **error_responses(401, 422),
     },
 )
-async def create_plan(payload: CreatePlanRequest, student_id: int = Depends(get_current_student_id)):
-    return _build_response(4, student_id, PlanStatus.DRAFT, payload)
+def create_plan(
+    payload: CreatePlanRequest,
+    response: Response,
+    student_id: int = Depends(get_current_student_id),
+    db: Session = Depends(get_db),
+):
+    courses = _check_catalog(db, payload.items)
+    plan = IndividualPlan(student_id=student_id, status=db_enums.PlanStatus.DRAFT, origin=db_enums.PlanOrigin.MANUAL)
+    _apply_payload(plan, payload, courses)
+    db.add(plan)
+    db.commit()
+    response.headers["Location"] = f"/api/v1/plans/{plan.id}"
+    return _to_response(plan)
 
 
 @router.get(
@@ -274,30 +361,32 @@ async def create_plan(payload: CreatePlanRequest, student_id: int = Depends(get_
         **error_responses(401, 422),
     },
 )
-async def list_plans(
+def list_plans(
     student_id: int = Depends(get_current_student_id),
+    db: Session = Depends(get_db),
     limit: int = Query(20, ge=1, le=100, description="Максимальна кількість планів на сторінку"),
     offset: int = Query(0, ge=0, description="Кількість планів, які треба пропустити"),
     plan_status: Optional[PlanStatus] = Query(None, alias="status", description="Фільтр за статусом плану"),
     academic_year: Optional[int] = Query(None, ge=2024, le=2030, description="Фільтр за навчальним роком"),
 ):
-    plans = [
-        _build_response(pid, owner, st, _SAMPLE_PAYLOAD)
-        for pid, (owner, st) in _MOCK_PLANS.items()
-        if owner == student_id
-    ]
+    query = select(IndividualPlan).where(IndividualPlan.student_id == student_id)
     if plan_status:
-        plans = [p for p in plans if p.status == plan_status]
+        query = query.where(IndividualPlan.status == db_enums.PlanStatus(plan_status.value))
     if academic_year:
-        plans = [p for p in plans if p.academic_year == academic_year]
+        query = query.where(IndividualPlan.academic_year == academic_year)
+
+    total = db.scalar(select(func.count()).select_from(query.subquery()))
+    plans = db.scalars(
+        query.order_by(IndividualPlan.created_at.desc(), IndividualPlan.id.desc()).offset(offset).limit(limit)
+    ).all()
 
     return PaginatedPlansResponse(
-        plans=plans[offset : offset + limit],
+        plans=[_to_response(plan) for plan in plans],
         pagination=PaginationInfo(
             limit=limit,
             offset=offset,
-            total=len(plans),
-            has_more=(offset + limit) < len(plans),
+            total=total,
+            has_more=(offset + limit) < total,
         ),
     )
 
@@ -312,12 +401,12 @@ async def list_plans(
         **error_responses(401, 403, 404, 422, overrides={404: _PLAN_NOT_FOUND}),
     },
 )
-async def get_plan(
+def get_plan(
     plan_id: int = Path(..., gt=0, description="Унікальний ідентифікатор плану", examples=[1]),
     student_id: int = Depends(get_current_student_id),
+    db: Session = Depends(get_db),
 ):
-    plan_status = _find_plan(plan_id, student_id)
-    return _build_response(plan_id, student_id, plan_status, _SAMPLE_PAYLOAD)
+    return _to_response(_find_plan(db, plan_id, student_id))
 
 
 @router.put(
@@ -337,15 +426,22 @@ async def get_plan(
         ),
     },
 )
-async def update_plan(
+def update_plan(
     payload: CreatePlanRequest,
     plan_id: int = Path(..., gt=0, description="Унікальний ідентифікатор плану", examples=[1]),
     student_id: int = Depends(get_current_student_id),
+    db: Session = Depends(get_db),
 ):
-    plan_status = _find_plan(plan_id, student_id)
-    if plan_status != PlanStatus.DRAFT:
+    plan = _find_plan(db, plan_id, student_id)
+    if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_EDITABLE", "Редагувати можна лише план у статусі draft")
-    return _build_response(plan_id, student_id, plan_status, payload)
+    courses = _check_catalog(db, payload.items)
+    # Старі елементи видаляються до вставки нових, інакше спрацює UNIQUE (plan_id, course_id)
+    plan.items.clear()
+    db.flush()
+    _apply_payload(plan, payload, courses)
+    db.commit()
+    return _to_response(plan)
 
 
 @router.delete(
@@ -365,13 +461,16 @@ async def update_plan(
         ),
     },
 )
-async def delete_plan(
+def delete_plan(
     plan_id: int = Path(..., gt=0, description="Унікальний ідентифікатор плану", examples=[1]),
     student_id: int = Depends(get_current_student_id),
+    db: Session = Depends(get_db),
 ):
-    plan_status = _find_plan(plan_id, student_id)
-    if plan_status != PlanStatus.DRAFT:
+    plan = _find_plan(db, plan_id, student_id)
+    if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_DELETABLE", "Видаляти можна лише план у статусі draft")
+    db.delete(plan)
+    db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
