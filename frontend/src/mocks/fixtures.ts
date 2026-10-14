@@ -8,6 +8,7 @@ import type {
   AuthUser,
   Credits,
   Me,
+  NormativeCourse,
 } from "../api/types";
 
 export const mockUser: AuthUser = {
@@ -91,4 +92,14 @@ export function historyCredits(): Credits {
     professional_used: sum("professional"),
     professional_limit: 54,
   };
+}
+
+/** Нормативні, які «розпізнав» мок; остання не знайдена в каталозі (course_id: null). */
+export function normativeCourses(): NormativeCourse[] {
+  return [
+    { course_id: 301, raw_title: "Архітектура ПЗ", trimester: 1, credits: 6 },
+    { course_id: 302, raw_title: "Проєктний практикум", trimester: 2, credits: 9 },
+    { course_id: 303, raw_title: "Виробнича практика", trimester: 3, credits: 12 },
+    { course_id: null, raw_title: "Фізичне виховання", trimester: 2, credits: 2 },
+  ];
 }
