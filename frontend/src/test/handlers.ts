@@ -31,3 +31,43 @@ export function configFixture(): ConfigResponse {
 
 export const configHandler = (overrides: Partial<ConfigResponse> = {}) =>
   http.get("*/api/v1/config", () => HttpResponse.json({ ...configFixture(), ...overrides }));
+
+import type { Direction, Discipline } from "../api/types";
+
+export function disciplineFixture(overrides: Partial<Discipline> = {}): Discipline {
+  return {
+    id: 101,
+    title: "Функціональне програмування",
+    description: "Основи функціональної парадигми.",
+    discipline_type: "elective",
+    instructor: "Петренко І. М.",
+    recommended_year: 2,
+    trimester: 1,
+    credits: 5,
+    directions: ["Software Engineering"],
+    ...overrides,
+  };
+}
+
+/** GET /disciplines: віддає items як є; `onRequest` бачить адресу запиту (для перевірки параметрів). */
+export function disciplinesHandler(
+  items: Discipline[],
+  options: { total?: number; onRequest?: (url: URL) => void } = {},
+) {
+  return http.get("*/api/v1/disciplines", ({ request }) => {
+    const url = new URL(request.url);
+    options.onRequest?.(url);
+    const limit = Number(url.searchParams.get("limit") ?? 20);
+    const offset = Number(url.searchParams.get("offset") ?? 0);
+    const total = options.total ?? items.length;
+    return HttpResponse.json({
+      disciplines: items,
+      pagination: { limit, offset, total, has_more: offset + limit < total },
+    });
+  });
+}
+
+export function directionsHandler(names: string[]) {
+  const directions: Direction[] = names.map((name, index) => ({ id: index + 1, name, description: null }));
+  return http.get("*/api/v1/directions", () => HttpResponse.json({ directions }));
+}
