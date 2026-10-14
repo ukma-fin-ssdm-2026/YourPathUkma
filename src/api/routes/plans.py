@@ -12,6 +12,8 @@ from enum import Enum
 from typing import Dict, List, Optional
 from fastapi import APIRouter, Depends, Path, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
 from ...db import enums as db_enums
 from ...db.models import Course, IndividualPlan, PlanItem as PlanItemRow
 from ...db.session import get_db
