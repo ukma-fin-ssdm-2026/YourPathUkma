@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from ...db import enums as db_enums
 from ...db.models import Course, IndividualPlan, PlanItem as PlanItemRow
 from ...db.session import get_db
-from ..common import ApiError, PaginationInfo, error_responses, get_current_student_id
+from ..common import ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
 
 router = APIRouter(prefix="/api/v1", tags=["Plans"])
 
