@@ -1,0 +1,64 @@
+// Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { Button } from "./Button";
+import { StatusBadge, type PlanStatus } from "./Badge";
+import { Segmented } from "./Segmented";
+
+describe("Button", () => {
+  it("викликає onClick", async () => {
+    const onClick = vi.fn();
+    render(<Button onClick={onClick}>Зберегти</Button>);
+    await userEvent.click(screen.getByRole("button", { name: "Зберегти" }));
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("не викликає onClick, коли disabled", async () => {
+    const onClick = vi.fn();
+    render(
+      <Button onClick={onClick} disabled>
+        Зберегти
+      </Button>,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Зберегти" }));
+    expect(onClick).not.toHaveBeenCalled();
+  });
+});
+
+describe("StatusBadge", () => {
+  const cases: [PlanStatus, string][] = [
+    ["draft", "Чернетка"],
+    ["submitted", "Подано"],
+    ["awaiting_deanery", "Очікує деканату"],
+    ["approved", "Затверджено"],
+  ];
+  it.each(cases)("статус %s має мітку «%s»", (status, label) => {
+    render(<StatusBadge status={status} />);
+    expect(screen.getByText(label)).toBeInTheDocument();
+  });
+});
+
+describe("Segmented", () => {
+  const options = [
+    { value: "low", label: "Низьке" },
+    { value: "medium", label: "Середнє" },
+  ];
+
+  it("позначає активну кнопку й викликає onChange з новим значенням", async () => {
+    const onChange = vi.fn();
+    render(<Segmented value="low" options={options} onChange={onChange} ariaLabel="Навантаження" />);
+    expect(screen.getByRole("button", { name: "Низьке" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Середнє" })).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(screen.getByRole("button", { name: "Середнє" }));
+    expect(onChange).toHaveBeenCalledWith("medium");
+  });
+
+  it("не реагує, коли disabled", async () => {
+    const onChange = vi.fn();
+    render(
+      <Segmented value="low" options={options} onChange={onChange} ariaLabel="Навантаження" disabled />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Середнє" }));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+});

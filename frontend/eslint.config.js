@@ -17,5 +17,7 @@ export default defineConfig([
       jsxA11y.flatConfigs.recommended,
     ],
     languageOptions: { globals: globals.browser },
+    // `role` на наших компонентах (AppLayout) це роль користувача, а не ARIA-роль.
+    rules: { "jsx-a11y/aria-role": ["error", { ignoreNonDOM: true }] },
   },
 ]);
