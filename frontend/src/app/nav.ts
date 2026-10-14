@@ -1,5 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: AppLayout.test.tsx.
-export type Role = "student" | "admin";
+import type { UserRole } from "../api/types";
+
+export type Role = UserRole;
 
 export const NAV_ITEMS: { to: string; label: string; adminOnly?: boolean }[] = [
   { to: "/", label: "Профіль" },
