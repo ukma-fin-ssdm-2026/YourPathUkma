@@ -9,6 +9,9 @@ OpenAPI-специфікація генерується з коду при ст�
 Використання ШІ: файл створено за допомогою Claude (Anthropic) на основі шаблону викладача (ЛР4).
 Перевірка: запуск сервера, перевірка появи/оновлення openapi-generated.yaml після зміни коду,
 перегляд Swagger UI (/api-docs) і ReDoc (/redoc).
+
+При старті застосовуються міграції Alembic і (у порожню БД) демо-дані: src/db/migrate.py.
+Ініціалізацію БД при старті додано за допомогою Claude (Claude Code); перевірено запуском uvicorn на SQLite.
 """
 
 import json
@@ -17,6 +20,7 @@ from pathlib import Path
 
 import yaml
 from fastapi import FastAPI
+from ..db.migrate import init_database
 from .common import register_error_handlers
 from .routes import disciplines, plans, auth, reference, system
 from fastapi.middleware.cors import CORSMiddleware
