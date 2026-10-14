@@ -13,13 +13,15 @@ import { PreferencesForm } from "./PreferencesForm";
 
 const NAMES = ["Data Science", "Cybersecurity", "Web Development", "UX Research"];
 
-function renderForm() {
+function renderForm(year = 2026) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  render(
+  const ui = (y: number) => (
     <QueryClientProvider client={client}>
-      <PreferencesForm year={2026} />
-    </QueryClientProvider>,
+      <PreferencesForm year={y} />
+    </QueryClientProvider>
   );
+  const view = render(ui(year));
+  return { switchYear: (y: number) => view.rerender(ui(y)) };
 }
 
 function asStudent(course: 1 | 2 | 3 | 4) {
@@ -105,6 +107,22 @@ describe("навантаження", () => {
     for (const button of within(loadGroup("осінь")).getAllByRole("button")) {
       expect(button).toBeDisabled();
     }
+  });
+});
+
+describe("зміна року", () => {
+  it("чернетка попереднього року не переходить на інший рік", async () => {
+    const { switchYear } = renderForm(2026);
+    await userEvent.click(await chip("Data Science"));
+    expect(screen.getByRole("button", { name: "Data Science" })).toHaveAttribute("aria-pressed", "true");
+    switchYear(2025);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Data Science" })).toHaveAttribute("aria-pressed", "false"),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Зберегти побажання" }));
+    await screen.findByText("Побажання збережено");
+    expect(db.preferences[2025]).toMatchObject({ academic_year: 2025, direction_ids: [] });
+    expect(db.preferences[2026]).toBeUndefined();
   });
 });
 
