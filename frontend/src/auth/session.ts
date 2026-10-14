@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: session.test.ts.
 import { create } from "zustand";
 import { configureAuth, request } from "../api/client";
+import { queryClient } from "../api/queryClient";
 import { setAccessToken } from "../api/token";
 import type { AuthResponse, AuthUser } from "../api/types";
 
@@ -20,6 +21,7 @@ export const useSession = create<SessionState>((set) => ({
   },
   setAnonymous: () => {
     setAccessToken(null);
+    queryClient.clear();
     set({ status: "anonymous", user: null });
   },
 }));

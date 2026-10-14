@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
 import { http, HttpResponse } from "msw";
 import { request } from "../api/client";
+import { queryClient } from "../api/queryClient";
 import { getAccessToken, setAccessToken } from "../api/token";
 import type { AuthResponse } from "../api/types";
 import { server } from "../mocks/server";
@@ -39,6 +40,27 @@ describe("session", () => {
     await signOut();
     expect(useSession.getState().status).toBe("anonymous");
     expect(getAccessToken()).toBeNull();
+  });
+
+  it("signOut очищає кеш запитів, щоб наступний користувач не бачив чужі дані", async () => {
+    queryClient.setQueryData(["me"], { id: 42, full_name: "Попередній користувач" });
+    await signInOnServer();
+    await restoreSession();
+    await signOut();
+    expect(queryClient.getQueryData(["me"])).toBeUndefined();
+  });
+
+  it("втрата сесії (onAuthLost) теж очищає кеш запитів", async () => {
+    queryClient.setQueryData(["plans", "all"], { plans: [] });
+    installAuth();
+    setAccessToken("expired");
+    server.use(
+      http.get("*/api/v1/me", () =>
+        HttpResponse.json({ code: "UNAUTHORIZED", message: "x", details: [] }, { status: 401 }),
+      ),
+    );
+    await expect(request("/me")).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    expect(queryClient.getQueryData(["plans", "all"])).toBeUndefined();
   });
 
   it("installAuth: прострочений токен тихо оновлюється через refresh", async () => {
