@@ -1,0 +1,49 @@
+/* Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm run build. */
+@import "tailwindcss";
+@import "./tokens.css";
+@import "@fontsource/onest/400.css";
+@import "@fontsource/onest/500.css";
+@import "@fontsource/onest/600.css";
+@import "@fontsource/unbounded/500.css";
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-rule: var(--rule);
+  --color-cobalt: var(--cobalt);
+  --color-cobalt-d: var(--cobalt-d);
+  --color-on-accent: var(--on-accent);
+  --color-violet: var(--violet);
+  --color-violet-text: var(--violet-text);
+  --color-normative: var(--normative);
+  --color-autumn: var(--autumn);
+  --color-spring: var(--spring);
+  --color-summer: var(--summer);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-bad: var(--bad);
+  --color-bad-bg: var(--bad-bg);
+  --color-info-bg: var(--info-bg);
+  --font-sans: "Onest", system-ui, sans-serif;
+  --font-display: "Unbounded", system-ui, sans-serif;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

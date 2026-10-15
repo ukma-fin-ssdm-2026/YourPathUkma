@@ -78,3 +78,13 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 /.claude/
+
+# =========================
+# Frontend / AI tooling
+# =========================
+
+.superpowers/
+docs/superpowers/
+frontend/node_modules/
+frontend/dist/
+frontend/src/api/generated/

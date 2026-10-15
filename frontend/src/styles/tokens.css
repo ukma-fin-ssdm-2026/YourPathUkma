@@ -1,0 +1,52 @@
+/* Використання ШІ: файл створено за допомогою Claude (Anthropic). Значення скопійовано зі спеки
+   (docs/superpowers/specs/2026-10-14-frontend-mvp-design.md, §5) і плану. Перевірка: npm run build. */
+:root {
+  --ink: #212c45;
+  --ink-2: #56627b;
+  --paper: #e9edf3;
+  --surface: #f7f8fb;
+  --rule: #d3d9e4;
+  --cobalt: #4560c0;
+  --cobalt-d: #374fa5;
+  --on-accent: #ffffff;
+  --violet: #7b68be;
+  --violet-text: #5b47a8;
+  --normative: #a6afc3;
+  --autumn: #d3a150;
+  --spring: #5e9f82;
+  --summer: #5ba2c4;
+  --ok: #2f7d5b;
+  --ok-bg: #e1f2ea;
+  --warn: #6b4b00;
+  --warn-bg: #fff4d6;
+  --bad: #b4483e;
+  --bad-bg: #fbe4e1;
+  --info-bg: #e3e9f9;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e2e7f2;
+    --ink-2: #9aa5be;
+    --paper: #11151d;
+    --surface: #191f2b;
+    --rule: #2a3242;
+    --cobalt: #8ca2ec;
+    --cobalt-d: #a5b7f2;
+    --on-accent: #10162a;
+    --violet: #a797e6;
+    --violet-text: #bcaef2;
+    --normative: #5b677f;
+    --autumn: #d9ae63;
+    --spring: #6db394;
+    --summer: #6db3d4;
+    --ok: #7ccba3;
+    --ok-bg: #1b3128;
+    --warn: #f0d58a;
+    --warn-bg: #3a311a;
+    --bad: #f0a097;
+    --bad-bg: #3a2220;
+    --info-bg: #222c4a;
+  }
+}
