@@ -514,3 +514,80 @@ async def validate_plan(payload: PlanPayload):
             credits_by_trimester=by_trimester,
         ),
     )
+
+@router.post(
+    "/plans/{plan_id}/submit",
+    response_model=PlanResponse,
+    summary="Подати індивідуальний план",
+    description="Переводить план зі статусу draft у submitted. Перевіряє всі нормативи.",
+    responses={
+        200: {"description": "План успішно подано"},
+        **error_responses(
+            401, 403, 404, 409, 422,
+            overrides={
+                404: _PLAN_NOT_FOUND,
+                409: ("PLAN_NOT_SUBMITTABLE", "Подати можна лише план у статусі draft"),
+                422: ("PLAN_VALIDATION_FAILED", "План не проходить перевірку нормативів")
+            }
+        ),
+    },
+)
+def submit_plan(
+    plan_id: int = Path(..., gt=0, examples=[1]),
+    student_id: int = Depends(get_current_student_id),
+    db: Session = Depends(get_db),
+):
+    plan = _find_plan(db, plan_id, student_id)
+    if plan.status != db_enums.PlanStatus.DRAFT:
+        raise ApiError(409, "PLAN_NOT_SUBMITTABLE", "Подати можна лише план у статусі draft")
+    
+    # 1. Базові перевірки (дублікати, ліміти)
+    fake_items = [
+        PlanItem(
+            course_id=item.course_id, 
+            title=item.course.title, 
+            trimester=item.trimester.number, 
+            credits=item.course.credits, 
+            is_free_elective=(item.category == db_enums.PlanItemCategory.FREE_CHOICE)
+        ) for item in plan.items
+    ]
+    errors = collect_rule_errors(fake_items)
+    
+    if errors:
+        details = [ErrorDetail(field=e.field or "plan", message=e.message) for e in errors]
+        raise ApiError(422, "PLAN_VALIDATION_FAILED", "План не проходить перевірку нормативів при поданні", details)
+        
+    plan.status = db_enums.PlanStatus.SUBMITTED
+    db.commit()
+    return _to_response(plan)
+
+
+@router.get(
+    "/plans/{plan_id}/export",
+    summary="Експорт плану в PDF",
+    description="Фіксація і експорт плану у форматі PDF (use-case 16).",
+    responses={
+        200: {"description": "Файл PDF", "content": {"application/pdf": {}}},
+        **error_responses(401, 403, 404, 422, overrides={404: _PLAN_NOT_FOUND}),
+    },
+)
+def export_plan(
+    plan_id: int = Path(..., gt=0, examples=[1]),
+    format: str = Query("pdf", description="Формат експорту (поки лише pdf)"),
+    student_id: int = Depends(get_current_student_id),
+    db: Session = Depends(get_db),
+):
+    plan = _find_plan(db, plan_id, student_id)
+    
+    if format.lower() != "pdf":
+        raise ApiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", [ErrorDetail(field="format", message="Підтримується лише формат pdf")])
+
+    # TODO (Команда): Реалізувати генерацію реального PDF документа з даними плану.
+    # Зараз повертаємо заглушку
+    pdf_content = b"%PDF-1.4\n%Fake PDF content for endpoint testing\n%%EOF"
+    
+    return Response(
+        content=pdf_content, 
+        media_type="application/pdf", 
+        headers={"Content-Disposition": f'attachment; filename="plan-{plan.academic_year}.pdf"'}
+    )

@@ -81,11 +81,13 @@ class ApiError(Exception):
         code: str,
         message: str,
         details: Optional[List[ErrorDetail]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ):
         self.status_code = status_code
         self.code = code
         self.message = message
         self.details = details or []
+        self.headers = headers
 
 
 _ERROR_DESCRIPTIONS: Dict[int, str] = {
@@ -94,7 +96,10 @@ _ERROR_DESCRIPTIONS: Dict[int, str] = {
     403: "Доступ заборонено: ресурс належить іншому студенту",
     404: "Ресурс не знайдено",
     409: "Конфлікт: дія неможлива в поточному стані ресурсу",
+    413: "Файл завеликий",
+    415: "Непідтримуваний тип файлу",
     422: "Помилка валідації вхідних даних",
+    429: "Забагато запитів",
 }
 _DEFAULT_EXAMPLES: Dict[int, Tuple[str, str]] = {
     400: ("BAD_REQUEST", "Некоректний запит"),
@@ -102,7 +107,10 @@ _DEFAULT_EXAMPLES: Dict[int, Tuple[str, str]] = {
     403: ("PLAN_FORBIDDEN", "Цей план належить іншому студенту"),
     404: ("NOT_FOUND", "Ресурс не знайдено"),
     409: ("CONFLICT", "Дія неможлива в поточному стані ресурсу"),
+    413: ("FILE_TOO_LARGE", "Файл більший за 10 МБ"),
+    415: ("UNSUPPORTED_FILE_TYPE", "Дозволені лише PDF і DOCX"),
     422: ("VALIDATION_ERROR", "Невалідні вхідні дані"),
+    429: ("RATE_LIMITED", "Забагато запитів, спробуйте пізніше"),
 }
 
 

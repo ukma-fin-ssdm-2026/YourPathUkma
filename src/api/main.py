@@ -24,6 +24,11 @@ from pathlib import Path
 import yaml
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from .routes.admin import users as admin_users
+from .routes.admin import catalog as admin_catalog
+from .routes.admin import sync as admin_sync
+from .routes.admin import audit as admin_audit
+
 
 from .common import RequestIdMiddleware, assert_safe_environment, register_error_handlers
 from .routes import auth, disciplines, plans, reference, system
@@ -92,6 +97,22 @@ app = FastAPI(
             "name": "Reference",
             "description": "Довідники: напрямки розвитку і викладачі",
         },
+        {
+            "name": "Preferences", 
+            "description": "Побажання студента на навчальний рік"
+        },
+        {
+            "name": "Deanery documents", 
+            "description": "Документи деканату"
+        },
+        {
+            "name": "Admin", 
+            "description": "Адміністрування: користувачі, довідники, синхронізація, аудит"
+        },
+        {
+            "name": "User", 
+            "description": "Профіль студента, онбординг, академічна історія"
+        },
     ],
     lifespan=lifespan,
 )
@@ -115,7 +136,13 @@ app.include_router(disciplines.router)
 app.include_router(auth.router)
 app.include_router(reference.router)
 app.include_router(system.router)
-
+app.include_router(preferences.router)
+app.include_router(user.router)
+app.include_router(deanery.router)
+app.include_router(admin_users.router)
+app.include_router(admin_catalog.router)
+app.include_router(admin_sync.router)
+app.include_router(admin_audit.router)
 
 @app.get("/health", tags=["System"], summary="Перевірка стану системи (Healthcheck)")
 async def health_check():
