@@ -49,3 +49,8 @@ body {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* Числа в таблицях не «стрибають» при оновленні. */
+table {
+  font-variant-numeric: tabular-nums;
+}

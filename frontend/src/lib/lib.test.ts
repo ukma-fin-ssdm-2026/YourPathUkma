@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
 import { fieldErrors } from "../api/errors";
 import { creditsPercent, formatCredits } from "./credits";
+import { initials } from "./initials";
 import { trimesterFromKey, trimesterKey, trimesterLabel } from "./trimester";
 
 describe("formatCredits", () => {
@@ -52,5 +53,25 @@ describe("fieldErrors", () => {
 
   it("порожнє поле теж іде у форму", () => {
     expect(fieldErrors([{ field: "", message: "Щось не так" }]).form).toEqual(["Щось не так"]);
+  });
+});
+
+describe("initials", () => {
+  it("бере першу й останню літеру слів", () => {
+    expect(initials("Владислав Смирнов")).toBe("ВС");
+    expect(initials("Олександра Вишневська-Коваленко")).toBe("ОВ");
+    expect(initials("Іван Петрович Коваль")).toBe("ІК");
+  });
+
+  it("з одного слова дає одну літеру", () => {
+    expect(initials("Йо")).toBe("Й");
+  });
+
+  it("порожнє ім'я дає «?»", () => {
+    expect(initials("   ")).toBe("?");
+  });
+
+  it("не ламає емодзі на початку імені", () => {
+    expect(initials("👩‍💻 Марія")).toBe("👩‍💻М");
   });
 });

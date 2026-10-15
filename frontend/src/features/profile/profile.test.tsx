@@ -70,7 +70,7 @@ describe("CreditsLedger", () => {
     }
     expect(
       screen.getByRole("img", {
-        name: "Набрано 118,5 кредитів: нормативні 82,5, профорієнтовні 27, вільний вибір 9",
+        name: "Набрано 118,5 кредита: нормативні 82,5, профорієнтовні 27, вільний вибір 9",
       }),
     ).toBeInTheDocument();
     for (const label of ["Нормативні", "Профорієнтовні", "Вільний вибір"]) {
@@ -144,7 +144,7 @@ describe("ProfilePage", () => {
     expect(await screen.findByText("3 курс · Інженерія програмного забезпечення")).toBeInTheDocument();
     const link = await screen.findByRole("link", { name: `Створити план на ${new Date().getFullYear()}` });
     expect(link).toHaveAttribute("href", "/path/create");
-    expect(await screen.findByRole("img", { name: /Набрано 118,5 кредитів/ })).toBeInTheDocument();
+    expect(await screen.findByRole("img", { name: /Набрано 118,5 кредита/ })).toBeInTheDocument();
   });
 
   it("для 1 курсу кнопка неактивна з поясненням", async () => {

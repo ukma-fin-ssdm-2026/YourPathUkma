@@ -1,16 +1,8 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: AppLayout.test.tsx.
 import { Link, NavLink, Outlet } from "react-router";
 import { Button } from "../ui/Button";
+import { initials } from "../lib/initials";
 import { NAV_ITEMS, type Role } from "./nav";
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]!.toUpperCase())
-    .join("");
-}
 
 export function AppLayout({
   role,
@@ -29,7 +21,7 @@ export function AppLayout({
           <Link to="/" className="font-display text-[15px] font-semibold">
             YourPath
           </Link>
-          <nav aria-label="Основна навігація" className="flex h-full gap-0.5">
+          <nav aria-label="Основна навігація" className="flex h-full min-w-0 gap-0.5 overflow-x-auto">
             {items.map((item) => (
               <NavLink
                 key={item.to}
@@ -47,16 +39,16 @@ export function AppLayout({
               </NavLink>
             ))}
           </nav>
-          <div className="ml-auto flex items-center gap-2.5 font-medium">
-            <span>{userName}</span>
+          <div className="ml-auto flex min-w-0 items-center gap-2.5 font-medium">
+            <span className="min-w-0 max-w-[180px] truncate">{userName}</span>
             <span
               aria-hidden="true"
-              className="grid size-8 place-items-center rounded-full bg-ink text-xs text-surface"
+              className="grid size-8 shrink-0 place-items-center rounded-full bg-ink text-xs text-surface"
             >
               {initials(userName)}
             </span>
             {onSignOut && (
-              <Button variant="ghost" size="sm" onClick={onSignOut}>
+              <Button variant="ghost" size="sm" className="shrink-0" onClick={onSignOut}>
                 Вийти
               </Button>
             )}

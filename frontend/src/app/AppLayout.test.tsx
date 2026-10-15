@@ -4,11 +4,11 @@ import { RouterProvider, createMemoryRouter } from "react-router";
 import { AppLayout } from "./AppLayout";
 import type { Role } from "./nav";
 
-function renderLayout(role: Role, initialPath = "/") {
+function renderLayout(role: Role, initialPath = "/", userName = "Владислав") {
   const router = createMemoryRouter(
     [
       {
-        element: <AppLayout role={role} userName="Владислав" />,
+        element: <AppLayout role={role} userName={userName} onSignOut={() => {}} />,
         children: [
           { path: "/", element: <p>головна</p> },
           { path: "/catalog", element: <p>каталог</p> },
@@ -42,5 +42,13 @@ describe("AppLayout", () => {
     renderLayout("student");
     expect(screen.getByText("Владислав")).toBeInTheDocument();
     expect(screen.getByText("головна")).toBeInTheDocument();
+  });
+
+  it("дуже довге ім'я скорочується, а «Вийти» і аватар не стискаються", () => {
+    const long = "Олександра-Вікторія Вишневська-Коваленко-Голощапова-Сердюченко-Прокопенко Гнатюк";
+    renderLayout("student", "/", long);
+    expect(screen.getByText(long)).toHaveClass("truncate");
+    expect(screen.getByRole("button", { name: "Вийти" })).toHaveClass("shrink-0");
+    expect(screen.getByText("ОГ")).toHaveClass("shrink-0");
   });
 });
