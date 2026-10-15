@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(1, str(ROOT / "src" / "api"))
 
-from src.api.main import app  
+from src.api.main import app  # noqa: E402
 
 OUT_DIR = ROOT / "docs" / "api"
 
