@@ -175,9 +175,11 @@ export function validateHandler(
 export function plansCrudHandlers(initial: PlanResponse[] = []): {
   handlers: RequestHandler[];
   calls: { post: number; put: number; get: number };
+  bodies: PlanBody[];
 } {
   const plans = new Map(initial.map((plan) => [plan.id, plan]));
   const calls = { post: 0, put: 0, get: 0 };
+  const bodies: PlanBody[] = [];
   let nextId = Math.max(0, ...initial.map((plan) => plan.id)) + 1;
   const fromBody = (id: number, body: PlanBody, status: PlanResponse["status"]): PlanResponse =>
     planFixture({
@@ -195,7 +197,9 @@ export function plansCrudHandlers(initial: PlanResponse[] = []): {
   const handlers = [
     http.post("*/api/v1/plans", async ({ request }) => {
       calls.post += 1;
-      const plan = fromBody(nextId++, (await request.json()) as PlanBody, "draft");
+      const body = (await request.json()) as PlanBody;
+      bodies.push(body);
+      const plan = fromBody(nextId++, body, "draft");
       plans.set(plan.id, plan);
       return HttpResponse.json(plan, { status: 201 });
     }),
@@ -214,10 +218,12 @@ export function plansCrudHandlers(initial: PlanResponse[] = []): {
           { status: 409 },
         );
       }
-      const plan = fromBody(existing.id, (await request.json()) as PlanBody, "draft");
+      const body = (await request.json()) as PlanBody;
+      bodies.push(body);
+      const plan = fromBody(existing.id, body, "draft");
       plans.set(plan.id, plan);
       return HttpResponse.json(plan);
     }),
   ];
-  return { handlers, calls };
+  return { handlers, calls, bodies };
 }

@@ -8,6 +8,7 @@ export function ConfirmDialog({
   description,
   confirmLabel,
   busy = false,
+  variant = "danger",
   onConfirm,
   onCancel,
 }: {
@@ -16,6 +17,7 @@ export function ConfirmDialog({
   description?: string;
   confirmLabel: string;
   busy?: boolean;
+  variant?: "danger" | "primary";
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -53,7 +55,7 @@ export function ConfirmDialog({
           >
             Скасувати
           </button>
-          <Button variant="danger" disabled={busy} onClick={onConfirm}>
+          <Button variant={variant} disabled={busy} onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </div>
