@@ -21,6 +21,7 @@ import { ModerationPage } from "../features/admin/moderation/ModerationPage";
 import { SyncPage } from "../features/admin/sync/SyncPage";
 import { UsersPage } from "../features/admin/users/UsersPage";
 import { ConnectedLayout } from "./ConnectedLayout";
+import { NotFoundPage, RouteErrorPage } from "./ErrorPages";
 
 export function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -32,45 +33,50 @@ export function PlaceholderPage({ title }: { title: string }) {
 }
 
 export const appRoutes: RouteObject[] = [
-  { path: "/login", element: <LoginPage /> },
-  { path: "/auth/callback", element: <CallbackPage /> },
   {
-    element: <RequireAuth />,
+    errorElement: <RouteErrorPage />,
     children: [
-      { path: "/onboarding", element: <OnboardingPage /> },
+      { path: "/login", element: <LoginPage /> },
+      { path: "/auth/callback", element: <CallbackPage /> },
       {
-        element: <ConnectedLayout />,
+        element: <RequireAuth />,
         children: [
+          { path: "/onboarding", element: <OnboardingPage /> },
           {
-            element: <RequireOnboarded />,
+            element: <ConnectedLayout />,
             children: [
-              { path: "/", element: <ProfilePage /> },
               {
-                path: "/path",
-                element: <PathLayout />,
+                element: <RequireOnboarded />,
                 children: [
-                  { path: "plan", element: <PlansPage mode="all" /> },
-                  { path: "saved", element: <PlansPage mode="saved" /> },
-                  { path: "create", element: <BuilderPage /> },
-                  { path: "create/document", element: <DeaneryPage /> },
-                  { path: "create/preferences", element: <PreferencesPage /> },
-                  { path: "plan/:id", element: <PlanViewPage /> },
-                ],
-              },
-              { path: "/catalog", element: <CatalogPage /> },
-              {
-                element: <RequireAdmin />,
-                children: [
+                  { path: "/", element: <ProfilePage /> },
                   {
-                    path: "/admin",
-                    element: <AdminLayout />,
+                    path: "/path",
+                    element: <PathLayout />,
                     children: [
-                      { index: true, element: <OverviewPage /> },
-                      { path: "moderation", element: <ModerationPage /> },
-                      { path: "sync", element: <SyncPage /> },
-                      { path: "users", element: <UsersPage /> },
-                      { path: "directions", element: <DirectionsPage /> },
-                      { path: "audit", element: <AuditPage /> },
+                      { path: "plan", element: <PlansPage mode="all" /> },
+                      { path: "saved", element: <PlansPage mode="saved" /> },
+                      { path: "create", element: <BuilderPage /> },
+                      { path: "create/document", element: <DeaneryPage /> },
+                      { path: "create/preferences", element: <PreferencesPage /> },
+                      { path: "plan/:id", element: <PlanViewPage /> },
+                    ],
+                  },
+                  { path: "/catalog", element: <CatalogPage /> },
+                  {
+                    element: <RequireAdmin />,
+                    children: [
+                      {
+                        path: "/admin",
+                        element: <AdminLayout />,
+                        children: [
+                          { index: true, element: <OverviewPage /> },
+                          { path: "moderation", element: <ModerationPage /> },
+                          { path: "sync", element: <SyncPage /> },
+                          { path: "users", element: <UsersPage /> },
+                          { path: "directions", element: <DirectionsPage /> },
+                          { path: "audit", element: <AuditPage /> },
+                        ],
+                      },
                     ],
                   },
                 ],
@@ -79,6 +85,7 @@ export const appRoutes: RouteObject[] = [
           },
         ],
       },
+      { path: "*", element: <NotFoundPage /> },
     ],
   },
 ];
