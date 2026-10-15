@@ -1,6 +1,15 @@
-// Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm run typecheck, ручний запуск dev.
+// Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm run typecheck, auth-ui.test.tsx.
 import type { RouteObject } from "react-router";
-import { AppLayout } from "./AppLayout";
+import { CallbackPage } from "../auth/CallbackPage";
+import { LoginPage } from "../auth/LoginPage";
+import { RequireAdmin, RequireAuth } from "../auth/RequireAuth";
+import { CatalogPage } from "../features/catalog/CatalogPage";
+import { PathLayout } from "../features/plans/PathLayout";
+import { PlansPage } from "../features/plans/PlansPage";
+import { OnboardingPage } from "../features/profile/OnboardingPage";
+import { ProfilePage } from "../features/profile/ProfilePage";
+import { RequireOnboarded } from "../features/profile/RequireOnboarded";
+import { ConnectedLayout } from "./ConnectedLayout";
 
 export function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -11,20 +20,40 @@ export function PlaceholderPage({ title }: { title: string }) {
   );
 }
 
-// Роль і ім'я поки сталі; реальні значення приходять із автентифікації в наступному плані.
 export const appRoutes: RouteObject[] = [
-  { path: "/login", element: <PlaceholderPage title="Вхід" /> },
-  { path: "/onboarding", element: <PlaceholderPage title="Онбординг" /> },
+  { path: "/login", element: <LoginPage /> },
+  { path: "/auth/callback", element: <CallbackPage /> },
   {
-    element: <AppLayout role="student" userName="Студент" />,
+    element: <RequireAuth />,
     children: [
-      { path: "/", element: <PlaceholderPage title="Профіль" /> },
-      { path: "/path/plan", element: <PlaceholderPage title="Індивідуальний план" /> },
-      { path: "/path/saved", element: <PlaceholderPage title="Збережені плани" /> },
-      { path: "/path/create", element: <PlaceholderPage title="Створити план" /> },
-      { path: "/path/create/document", element: <PlaceholderPage title="Документ деканату" /> },
-      { path: "/catalog", element: <PlaceholderPage title="Каталог" /> },
-      { path: "/admin", element: <PlaceholderPage title="Адмінка" /> },
+      { path: "/onboarding", element: <OnboardingPage /> },
+      {
+        element: <ConnectedLayout />,
+        children: [
+          {
+            element: <RequireOnboarded />,
+            children: [
+              { path: "/", element: <ProfilePage /> },
+              {
+                path: "/path",
+                element: <PathLayout />,
+                children: [
+                  { path: "plan", element: <PlansPage mode="all" /> },
+                  { path: "saved", element: <PlansPage mode="saved" /> },
+                  { path: "create", element: <PlaceholderPage title="Створити план" /> },
+                  { path: "create/document", element: <PlaceholderPage title="Документ деканату" /> },
+                  { path: "plan/:id", element: <PlaceholderPage title="Перегляд плану" /> },
+                ],
+              },
+              { path: "/catalog", element: <CatalogPage /> },
+              {
+                element: <RequireAdmin />,
+                children: [{ path: "/admin", element: <PlaceholderPage title="Адмінка" /> }],
+              },
+            ],
+          },
+        ],
+      },
     ],
   },
 ];

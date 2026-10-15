@@ -82,3 +82,35 @@ export interface Me {
   role: UserRole;
   student: StudentProfile | null;
 }
+
+export type AcademicCategory = "normative" | "professional" | "free_choice";
+
+export interface AcademicRecord {
+  id: number;
+  academic_year: number;
+  course_year: number;
+  course_id: number | null;
+  title: string;
+  trimester: number;
+  credits: number;
+  category: AcademicCategory;
+  source: string;
+  verified: boolean;
+}
+
+export interface AcademicYear {
+  academic_year: number;
+  course_year: number;
+  total_credits: number;
+  records: AcademicRecord[];
+}
+
+// ✅-моделі беруться зі згенерованої схеми OpenAPI (`npm run gen:api`).
+import type { components } from "./generated/schema";
+
+export type Discipline = components["schemas"]["Discipline"];
+export type Direction = components["schemas"]["Direction"];
+export type PaginationInfo = components["schemas"]["PaginationInfo"];
+export type PaginatedDisciplinesResponse = components["schemas"]["PaginatedDisciplinesResponse"];
+export type PlanResponse = components["schemas"]["PlanResponse"];
+export type PaginatedPlansResponse = components["schemas"]["PaginatedPlansResponse"];

@@ -28,6 +28,8 @@
   --color-bad: var(--bad);
   --color-bad-bg: var(--bad-bg);
   --color-info-bg: var(--info-bg);
+  --color-hero: var(--hero);
+  --color-on-hero: var(--on-hero);
   --font-sans: "Onest", system-ui, sans-serif;
   --font-display: "Unbounded", system-ui, sans-serif;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);

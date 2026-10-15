@@ -11,3 +11,14 @@ export function creditsPercent(used: number, limit: number): number {
   if (limit <= 0) return 0;
   return Math.min(100, Math.max(0, (used / limit) * 100));
 }
+
+/** «кредит» / «кредити» / «кредитів» за правилами української мови; дробові числа йдуть як «кредити». */
+export function creditsWord(value: number): string {
+  if (!Number.isInteger(value)) return "кредити";
+  const lastTwo = value % 100;
+  const last = value % 10;
+  if (lastTwo >= 11 && lastTwo <= 14) return "кредитів";
+  if (last === 1) return "кредит";
+  if (last >= 2 && last <= 4) return "кредити";
+  return "кредитів";
+}

@@ -22,6 +22,8 @@
   --bad: #b4483e;
   --bad-bg: #fbe4e1;
   --info-bg: #e3e9f9;
+  --hero: #212c45;
+  --on-hero: #f7f8fb;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -48,5 +50,7 @@
     --bad: #f0a097;
     --bad-bg: #3a2220;
     --info-bg: #222c4a;
+    --hero: #1e2740;
+    --on-hero: #e2e7f2;
   }
 }
