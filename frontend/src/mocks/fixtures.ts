@@ -8,6 +8,7 @@ import type {
   AuthUser,
   Credits,
   Me,
+  ModerationItem,
   NormativeCourse,
   SyncJob,
 } from "../api/types";
@@ -132,6 +133,53 @@ export function seedSyncJobs(): SyncJob[] {
       added_count: 4,
       updated_count: 11,
       error_message: null,
+    },
+  ];
+}
+
+/** Початкова черга модерації для dev: дві зміни, два додавання й одне видалення. */
+export function seedModerationItems(): ModerationItem[] {
+  const base = { sync_job_id: 2, status: "pending", reviewed_by: null, reviewed_at: null } as const;
+  return [
+    {
+      ...base,
+      id: 501,
+      course_id: 101,
+      change_type: "update",
+      payload: { title: "Функціональне програмування", credits: 4, trimester: 1 },
+      diff: { credits: { old: 5, new: 4 } },
+    },
+    {
+      ...base,
+      id: 502,
+      course_id: 102,
+      change_type: "update",
+      payload: { title: "Бази даних", credits: 5, trimester: 2 },
+      diff: { trimester: { old: 1, new: 2 }, title: { old: "Реляційні БД", new: "Бази даних" } },
+    },
+    {
+      ...base,
+      id: 503,
+      course_id: null,
+      change_type: "add",
+      payload: { title: "Машинне навчання", credits: 4, trimester: 2 },
+      diff: null,
+    },
+    {
+      ...base,
+      id: 504,
+      course_id: null,
+      change_type: "add",
+      payload: { title: "Хмарні обчислення", credits: 3, trimester: 3 },
+      diff: null,
+    },
+    {
+      ...base,
+      id: 505,
+      course_id: 110,
+      change_type: "remove",
+      payload: { title: "Основи Pascal" },
+      diff: null,
     },
   ];
 }

@@ -1,7 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: тести розділів адмінки.
 // Обробники `/admin/*` (🟡) зі станом у `db.admin`.
 import { http, HttpResponse } from "msw";
-import type { SyncJob } from "../api/types";
+import type { BulkReviewResult, ModerationItem, SyncJob } from "../api/types";
 import { db } from "./db";
 import { API, apiError, hasAuth, paginate, unauthorized } from "./http";
 
@@ -56,4 +56,62 @@ const syncHandlers = [
   }),
 ];
 
-export const adminHandlers = [...syncHandlers];
+function review(item: ModerationItem, decision: "approve" | "reject"): void {
+  item.status = decision === "approve" ? "approved" : "rejected";
+  item.reviewed_by = { id: 1, full_name: "Адміністратор" };
+  item.reviewed_at = new Date().toISOString();
+}
+
+const moderationHandlers = [
+  http.get(`${API}/admin/moderation-items`, ({ request }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status") ?? "pending";
+    const type = url.searchParams.get("change_type");
+    const items = db.admin.moderationItems.filter(
+      (item) => item.status === status && (!type || item.change_type === type),
+    );
+    const { page, pagination } = paginate(items, url);
+    return HttpResponse.json({ moderation_items: page, pagination });
+  }),
+
+  http.post(`${API}/admin/moderation-items/bulk-review`, async ({ request }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const { item_ids, decision } = (await request.json()) as {
+      item_ids: number[];
+      decision: "approve" | "reject";
+    };
+    if (item_ids.length < 1 || item_ids.length > 100) {
+      return apiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", [
+        { field: "item_ids", message: "Потрібно від 1 до 100 записів" },
+      ]);
+    }
+    const result: BulkReviewResult = { approved: [], rejected: [], skipped: [] };
+    for (const id of item_ids) {
+      const item = db.admin.moderationItems.find((i) => i.id === id);
+      if (!item || item.status !== "pending") {
+        result.skipped.push({
+          id,
+          code: item ? "MODERATION_ITEM_ALREADY_REVIEWED" : "MODERATION_ITEM_NOT_FOUND",
+        });
+        continue;
+      }
+      review(item, decision);
+      (decision === "approve" ? result.approved : result.rejected).push(id);
+    }
+    return HttpResponse.json(result);
+  }),
+
+  http.post(`${API}/admin/moderation-items/:id/:decision`, ({ request, params }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const item = db.admin.moderationItems.find((i) => String(i.id) === params.id);
+    if (!item) return apiError(404, "MODERATION_ITEM_NOT_FOUND", "Запис не знайдено");
+    if (item.status !== "pending") {
+      return apiError(409, "MODERATION_ITEM_ALREADY_REVIEWED", "Запис уже розглянуто");
+    }
+    review(item, params.decision === "approve" ? "approve" : "reject");
+    return HttpResponse.json(item);
+  }),
+];
+
+export const adminHandlers = [...syncHandlers, ...moderationHandlers];

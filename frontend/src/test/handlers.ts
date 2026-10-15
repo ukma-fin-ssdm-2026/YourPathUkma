@@ -245,3 +245,20 @@ export function syncJobFixture(overrides: Partial<SyncJob> = {}): SyncJob {
     ...overrides,
   };
 }
+
+import type { ModerationItem } from "../api/types";
+
+export function moderationItemFixture(overrides: Partial<ModerationItem> = {}): ModerationItem {
+  return {
+    id: 501,
+    sync_job_id: 31,
+    course_id: 101,
+    change_type: "update",
+    payload: { title: "Функціональне програмування", credits: 4, trimester: 1 },
+    diff: { credits: { old: 5, new: 4 } },
+    status: "pending",
+    reviewed_by: null,
+    reviewed_at: null,
+    ...overrides,
+  };
+}
