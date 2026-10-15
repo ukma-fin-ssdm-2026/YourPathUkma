@@ -44,7 +44,7 @@ export function DeaneryPage({ pollMs }: { pollMs?: number }) {
   const remove = useDeleteDocument();
   const documents = useDeaneryDocuments(year).data?.deanery_documents ?? [];
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [uploadedId, setUploadedId] = useState<number | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [target, setTarget] = useState<DeaneryDocument | null>(null);
@@ -55,13 +55,17 @@ export function DeaneryPage({ pollMs }: { pollMs?: number }) {
   const active = useDeaneryDocument(activeId, { pollMs });
   const courses = active.data?.parse_status === "parsed" ? active.data.normative_courses : null;
 
+  // Повідомлення живе, поки щойно завантажений документ ще розпізнається.
+  const uploaded = documents.find((doc) => doc.id === uploadedId);
+  const recognizing = uploadedId !== null && (!uploaded || uploaded.parse_status === "pending");
+
   function handleFile(file: File) {
     setUploadError(null);
-    setNotice(null);
+    setUploadedId(null);
     upload.mutate(
       { file, academicYear: year },
       {
-        onSuccess: () => setNotice("Завантажено, розпізнаємо…"),
+        onSuccess: (doc) => setUploadedId(doc.id),
         onError: (error) => setUploadError(uploadMessage(error)),
       },
     );
@@ -109,9 +113,9 @@ export function DeaneryPage({ pollMs }: { pollMs?: number }) {
               onFile={handleFile}
               error={uploadError}
             />
-            {notice && (
+            {recognizing && (
               <p role="status" className="mt-3 text-ok">
-                {notice}
+                Завантажено, розпізнаємо…
               </p>
             )}
           </Card>

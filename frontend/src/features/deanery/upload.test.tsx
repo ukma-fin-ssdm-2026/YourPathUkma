@@ -12,11 +12,11 @@ import { DeaneryPage } from "./DeaneryPage";
 
 const MAX = 10_485_760;
 
-function renderPage(entry = "/path/create/document?year=2026") {
+function renderPage(entry = "/path/create/document?year=2026", pollMs?: number) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const router = createMemoryRouter(
     [
-      { path: "/path/create/document", element: <DeaneryPage /> },
+      { path: "/path/create/document", element: <DeaneryPage pollMs={pollMs} /> },
       { path: "/path/create", element: <p>конструктор</p> },
     ],
     { initialEntries: [entry] },
@@ -44,6 +44,14 @@ describe("DeaneryPage: завантаження", () => {
     expect(await screen.findByText("Завантажено, розпізнаємо…")).toBeInTheDocument();
     expect(db.documents).toHaveLength(1);
     expect(db.documents[0]).toMatchObject({ original_filename: "plan_2026.pdf", academic_year: 2026 });
+  });
+
+  it("повідомлення про розпізнавання зникає, коли документ розпізнано", async () => {
+    renderPage("/path/create/document?year=2026", 20);
+    await user().upload(fileInput(), pdf());
+    expect(await screen.findByText("Завантажено, розпізнаємо…")).toBeInTheDocument();
+    expect(await screen.findByText("Розпізнано")).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText("Завантажено, розпізнаємо…")).not.toBeInTheDocument());
   });
 
   it("невідомий тип показує причину й не надсилає запит", async () => {
