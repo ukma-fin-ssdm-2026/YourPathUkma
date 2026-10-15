@@ -15,6 +15,7 @@ import { ProfilePage } from "../features/profile/ProfilePage";
 import { RequireOnboarded } from "../features/profile/RequireOnboarded";
 import { AdminLayout } from "../features/admin/AdminLayout";
 import { OverviewPage } from "../features/admin/OverviewPage";
+import { AuditPage } from "../features/admin/audit/AuditPage";
 import { DirectionsPage } from "../features/admin/directions/DirectionsPage";
 import { ModerationPage } from "../features/admin/moderation/ModerationPage";
 import { SyncPage } from "../features/admin/sync/SyncPage";
@@ -69,7 +70,7 @@ export const appRoutes: RouteObject[] = [
                       { path: "sync", element: <SyncPage /> },
                       { path: "users", element: <UsersPage /> },
                       { path: "directions", element: <DirectionsPage /> },
-                      { path: "audit", element: <PlaceholderPage title="Журнал дій" /> },
+                      { path: "audit", element: <AuditPage /> },
                     ],
                   },
                 ],

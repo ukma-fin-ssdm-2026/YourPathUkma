@@ -263,7 +263,21 @@ export function moderationItemFixture(overrides: Partial<ModerationItem> = {}): 
   };
 }
 
-import type { AdminUser } from "../api/types";
+import type { AdminUser, AuditLogEntry } from "../api/types";
+
+export function auditEntryFixture(overrides: Partial<AuditLogEntry> = {}): AuditLogEntry {
+  return {
+    id: 9001,
+    actor: { id: 42, full_name: "Владислав Смирнов" },
+    action: "plan.read",
+    object_type: "IndividualPlan",
+    object_id: 3,
+    outcome: "denied",
+    ip: "10.0.0.15",
+    created_at: "2026-10-08T10:00:00Z",
+    ...overrides,
+  };
+}
 
 export function adminUserFixture(overrides: Partial<AdminUser> = {}): AdminUser {
   return {

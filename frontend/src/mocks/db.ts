@@ -1,6 +1,6 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: handlers.test.ts.
-import type { AdminUser, DeaneryDocument, Direction, Me, ModerationItem, Preferences, SyncJob } from "../api/types";
-import { emptyMe, seedAdminUsers, seedDirections, seedModerationItems, seedSyncJobs } from "./fixtures";
+import type { AdminUser, AuditLogEntry, DeaneryDocument, Direction, Me, ModerationItem, Preferences, SyncJob } from "../api/types";
+import { emptyMe, seedAdminUsers, seedAuditLog, seedDirections, seedModerationItems, seedSyncJobs } from "./fixtures";
 
 const initialAdminState = () => ({
   syncJobs: seedSyncJobs(),
@@ -8,6 +8,7 @@ const initialAdminState = () => ({
   moderationItems: seedModerationItems(),
   users: seedAdminUsers(),
   directions: seedDirections(),
+  auditLog: seedAuditLog(),
 });
 
 /** Стан моків у пам'яті; у тестах скидається після кожного тесту. */
@@ -24,6 +25,7 @@ export const db: {
     moderationItems: ModerationItem[];
     users: AdminUser[];
     directions: Direction[];
+    auditLog: AuditLogEntry[];
   };
 } = {
   signedIn: false,

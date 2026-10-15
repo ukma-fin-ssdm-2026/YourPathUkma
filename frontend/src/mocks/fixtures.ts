@@ -3,6 +3,7 @@
 import type {
   AcademicCategory,
   AdminUser,
+  AuditLogEntry,
   Direction,
   AcademicRecord,
   AcademicYear,
@@ -234,5 +235,43 @@ export function seedDirections(): Direction[] {
     { id: 1, name: "Data Science", description: "Дані та ML" },
     { id: 2, name: "Веброзробка", description: null },
     { id: 3, name: "Кібербезпека", description: "Захист систем" },
+  ];
+}
+
+/** Журнал дій для dev; `old_value`/`new_value` віддає лише GET /admin/audit-log/{id}. */
+export function seedAuditLog(): AuditLogEntry[] {
+  const student = { id: 42, full_name: "Владислав Смирнов" };
+  const admin = { id: MOCK_ADMIN_ID, full_name: "Адміністратор" };
+  const entry = (
+    id: number,
+    actor: AuditLogEntry["actor"],
+    action: string,
+    object_type: string,
+    object_id: number,
+    outcome: AuditLogEntry["outcome"],
+    extra: Partial<AuditLogEntry> = {},
+  ): AuditLogEntry => ({
+    id,
+    actor,
+    action,
+    object_type,
+    object_id,
+    outcome,
+    ip: "10.0.0.15",
+    created_at: `2026-10-08T10:0${id - 9000}:00Z`,
+    ...extra,
+  });
+  return [
+    entry(9001, student, "plan.read", "IndividualPlan", 3, "denied"),
+    entry(9002, admin, "auth.login", "User", MOCK_ADMIN_ID, "allowed"),
+    entry(9003, admin, "user.update", "User", 42, "allowed", {
+      old_value: { role: "student" },
+      new_value: { role: "admin" },
+    }),
+    entry(9004, admin, "plan.update", "IndividualPlan", 3, "allowed", {
+      new_value: { note: "<img src=x onerror=alert(1)>" },
+    }),
+    entry(9005, admin, "moderation.approve", "ModerationItem", 501, "allowed"),
+    entry(9006, admin, "discipline.directions.update", "Discipline", 101, "allowed"),
   ];
 }

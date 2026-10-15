@@ -209,9 +209,32 @@ const directionHandlers = [
   }),
 ];
 
+const auditHandlers = [
+  http.get(`${API}/admin/audit-log`, ({ request }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const url = new URL(request.url);
+    const action = url.searchParams.get("action");
+    const outcome = url.searchParams.get("outcome");
+    const entries = db.admin.auditLog
+      .filter((e) => (!action || e.action === action) && (!outcome || e.outcome === outcome))
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .map((entry) => ({ ...entry, old_value: undefined, new_value: undefined }));
+    const { page, pagination } = paginate(entries, url, 50);
+    return HttpResponse.json({ audit_log: page, pagination });
+  }),
+
+  http.get(`${API}/admin/audit-log/:id`, ({ request, params }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const entry = db.admin.auditLog.find((e) => String(e.id) === params.id);
+    if (!entry) return apiError(404, "AUDIT_ENTRY_NOT_FOUND", "Запис журналу не знайдено");
+    return HttpResponse.json(entry);
+  }),
+];
+
 export const adminHandlers = [
   ...syncHandlers,
   ...moderationHandlers,
   ...userHandlers,
   ...directionHandlers,
+  ...auditHandlers,
 ];
