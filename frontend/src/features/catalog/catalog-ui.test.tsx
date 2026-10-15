@@ -14,7 +14,7 @@ describe("creditsWord", () => {
   it("узгоджує слово «кредит» з числом", () => {
     expect(creditsWord(1)).toBe("кредит");
     expect(creditsWord(3)).toBe("кредити");
-    expect(creditsWord(4.5)).toBe("кредити");
+    expect(creditsWord(4.5)).toBe("кредита");
     expect(creditsWord(5)).toBe("кредитів");
     expect(creditsWord(21)).toBe("кредит");
     expect(creditsWord(12)).toBe("кредитів");

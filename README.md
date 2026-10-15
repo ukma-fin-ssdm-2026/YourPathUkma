@@ -33,6 +33,8 @@ Students sign in via their corporate NaUKMA email.
 
 ---
 Full documentation: [Project-Description.md](Project-Description.md)
+
+Frontend: [frontend/README.md](frontend/README.md)
 ## Артефакти вимог
 Документація за результатами Лабораторної роботи №2:
 - [Системні вимоги (FR та NFR)](docs/requirements/requirements.md)

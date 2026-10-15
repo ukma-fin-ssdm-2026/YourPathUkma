@@ -12,9 +12,9 @@ export function creditsPercent(used: number, limit: number): number {
   return Math.min(100, Math.max(0, (used / limit) * 100));
 }
 
-/** «кредит» / «кредити» / «кредитів» за правилами української мови; дробові числа йдуть як «кредити». */
+/** «кредит» / «кредити» / «кредитів» за правилами української мови; дробові числа керують родовим відмінком однини: «4,5 кредита». */
 export function creditsWord(value: number): string {
-  if (!Number.isInteger(value)) return "кредити";
+  if (!Number.isInteger(value)) return "кредита";
   const lastTwo = value % 100;
   const last = value % 10;
   if (lastTwo >= 11 && lastTwo <= 14) return "кредитів";

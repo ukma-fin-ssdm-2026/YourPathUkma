@@ -1,6 +1,6 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: profile.test.tsx.
 import type { AcademicYear } from "../../api/types";
-import { formatCredits } from "../../lib/credits";
+import { creditsWord, formatCredits } from "../../lib/credits";
 import { buildLedgerRow, sumByCategory } from "./ledger";
 
 const COURSES = [1, 2, 3, 4];
@@ -41,7 +41,7 @@ export function CreditsLedger({ years }: { years: AcademicYear[] }) {
   const totals = sumByCategory(years.flatMap((year) => year.records));
   const total = totals.normative + totals.professional + totals.free_choice;
   const summary =
-    `Набрано ${formatCredits(total)} кредитів: нормативні ${formatCredits(totals.normative)}, ` +
+    `Набрано ${formatCredits(total)} ${creditsWord(total)}: нормативні ${formatCredits(totals.normative)}, ` +
     `профорієнтовні ${formatCredits(totals.professional)}, вільний вибір ${formatCredits(totals.free_choice)}`;
   const legend = [
     { tone: TONES.normative, label: "Нормативні", value: totals.normative },

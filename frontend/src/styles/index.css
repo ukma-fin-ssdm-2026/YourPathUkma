@@ -48,4 +48,51 @@ body {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+
+  .dialog-backdrop,
+  .dialog-panel {
+    animation: none;
+  }
+}
+
+/* Числа в таблицях не «стрибають» при оновленні. */
+table {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Вхід діалогів: підкладка проявляється, панель трохи «підростає» (не з нуля). */
+@keyframes dialog-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.dialog-backdrop {
+  animation: dialog-fade 150ms var(--ease-out);
+}
+
+.dialog-panel {
+  animation: dialog-in 180ms var(--ease-out);
+}
+
+/* Touch-пристрої: цілі дотику не менші за 44px. */
+@media (pointer: coarse) {
+  button,
+  a[href],
+  select,
+  input:not([type="checkbox"]) {
+    min-height: 44px;
+  }
+
+  input[type="checkbox"] {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
 }

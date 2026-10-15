@@ -227,3 +227,71 @@ export function plansCrudHandlers(initial: PlanResponse[] = []): {
   ];
   return { handlers, calls, bodies };
 }
+
+import type { SyncJob } from "../api/types";
+
+export function syncJobFixture(overrides: Partial<SyncJob> = {}): SyncJob {
+  return {
+    id: 1,
+    source: "saz_catalog",
+    initiator: "admin",
+    initiated_by: { id: 1, full_name: "Адміністратор" },
+    status: "succeeded",
+    started_at: "2026-10-08T09:00:00Z",
+    finished_at: "2026-10-08T09:04:10Z",
+    added_count: 0,
+    updated_count: 0,
+    error_message: null,
+    ...overrides,
+  };
+}
+
+import type { ModerationItem } from "../api/types";
+
+export function moderationItemFixture(overrides: Partial<ModerationItem> = {}): ModerationItem {
+  return {
+    id: 501,
+    sync_job_id: 31,
+    course_id: 101,
+    change_type: "update",
+    payload: { title: "Функціональне програмування", credits: 4, trimester: 1 },
+    diff: { credits: { old: 5, new: 4 } },
+    status: "pending",
+    reviewed_by: null,
+    reviewed_at: null,
+    ...overrides,
+  };
+}
+
+import type { AdminUser, AuditLogEntry } from "../api/types";
+
+export function auditEntryFixture(overrides: Partial<AuditLogEntry> = {}): AuditLogEntry {
+  return {
+    id: 9001,
+    actor: { id: 42, full_name: "Владислав Смирнов" },
+    action: "plan.read",
+    object_type: "IndividualPlan",
+    object_id: 3,
+    outcome: "denied",
+    ip: "10.0.0.15",
+    created_at: "2026-10-08T10:00:00Z",
+    ...overrides,
+  };
+}
+
+export function adminUserFixture(overrides: Partial<AdminUser> = {}): AdminUser {
+  return {
+    id: 42,
+    email: "vl.smyrnov@ukma.edu.ua",
+    full_name: "Владислав Смирнов",
+    role: "student",
+    created_at: "2026-09-01T08:00:00Z",
+    last_login_at: "2026-10-08T09:55:00Z",
+    student: {
+      specialty: "Інженерія програмного забезпечення",
+      course_year: 3,
+      course_year_source: "self_declared",
+    },
+    ...overrides,
+  };
+}

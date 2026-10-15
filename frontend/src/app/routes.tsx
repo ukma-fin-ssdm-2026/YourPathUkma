@@ -13,6 +13,13 @@ import { PlansPage } from "../features/plans/PlansPage";
 import { OnboardingPage } from "../features/profile/OnboardingPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { RequireOnboarded } from "../features/profile/RequireOnboarded";
+import { AdminLayout } from "../features/admin/AdminLayout";
+import { OverviewPage } from "../features/admin/OverviewPage";
+import { AuditPage } from "../features/admin/audit/AuditPage";
+import { DirectionsPage } from "../features/admin/directions/DirectionsPage";
+import { ModerationPage } from "../features/admin/moderation/ModerationPage";
+import { SyncPage } from "../features/admin/sync/SyncPage";
+import { UsersPage } from "../features/admin/users/UsersPage";
 import { ConnectedLayout } from "./ConnectedLayout";
 
 export function PlaceholderPage({ title }: { title: string }) {
@@ -53,7 +60,20 @@ export const appRoutes: RouteObject[] = [
               { path: "/catalog", element: <CatalogPage /> },
               {
                 element: <RequireAdmin />,
-                children: [{ path: "/admin", element: <PlaceholderPage title="Адмінка" /> }],
+                children: [
+                  {
+                    path: "/admin",
+                    element: <AdminLayout />,
+                    children: [
+                      { index: true, element: <OverviewPage /> },
+                      { path: "moderation", element: <ModerationPage /> },
+                      { path: "sync", element: <SyncPage /> },
+                      { path: "users", element: <UsersPage /> },
+                      { path: "directions", element: <DirectionsPage /> },
+                      { path: "audit", element: <AuditPage /> },
+                    ],
+                  },
+                ],
               },
             ],
           },
