@@ -9,6 +9,7 @@ import { Pagination } from "../catalog/Pagination";
 import { PAGE_SIZE, type DisciplineFilters } from "../catalog/filters";
 import { useDebouncedValue } from "../catalog/useDebouncedValue";
 import { useDirections, useDisciplines } from "../catalog/useDisciplines";
+import { DraggableRow } from "./dnd";
 import { isFreeElective, type BuilderPlan } from "./plan";
 
 const TRIMESTERS = [
@@ -77,12 +78,15 @@ export function CatalogPanel({
   normativeIds,
   takenIds,
   onAdd,
+  draggable = false,
 }: {
   plan: BuilderPlan;
   studentDirections: string[];
   normativeIds: number[];
   takenIds: number[];
   onAdd: (discipline: Discipline) => void;
+  /** Малює ручку перетягування; потребує BuilderDnd вище по дереву. */
+  draggable?: boolean;
 }) {
   const [trimester, setTrimester] = useState(0);
   const [direction, setDirection] = useState("");
@@ -129,15 +133,24 @@ export function CatalogPanel({
   } else {
     list = (
       <div className="grid gap-2">
-        {items.map((discipline) => (
-          <CatalogRow
-            key={discipline.id}
-            discipline={discipline}
-            state={stateOf(discipline)}
-            free={isFreeElective(discipline, studentDirections)}
-            onAdd={onAdd}
-          />
-        ))}
+        {items.map((discipline) => {
+          const state = stateOf(discipline);
+          const row = (
+            <CatalogRow
+              discipline={discipline}
+              state={state}
+              free={isFreeElective(discipline, studentDirections)}
+              onAdd={onAdd}
+            />
+          );
+          return draggable ? (
+            <DraggableRow key={discipline.id} discipline={discipline} disabled={state !== "available"}>
+              {row}
+            </DraggableRow>
+          ) : (
+            <div key={discipline.id}>{row}</div>
+          );
+        })}
       </div>
     );
   }
