@@ -1,13 +1,17 @@
 """
-Ресурс «Індивідуальні плани» (Plans): CRUD-кінцеві точки з відповідями-заглушками.
+Ресурс «Індивідуальні плани» (Plans): CRUD-кінцеві точки.
 
 Використання ШІ: файл доопрацьовано за допомогою Claude (Anthropic): єдиний формат помилок,
 enum-и, бізнес-валідація з AGENTS.md (вільний вибір ≤ 25 кредитів, заборона «лише вільний вибір»,
 унікальність дисциплін), статус 409 для не-чернеток, схема безпеки Bearer.
 Перевірка: ручний запуск, перевірка кожної кінцевої точки у Swagger UI, звірка з docs/api/api-design.md.
+
+Додатково (Claude, Anthropic): виклик enforce_plan_rules у create_plan і update_plan (серверна перевірка
+прапорця вільного вибору проти каталогу, ліміт 25 кредитів за всі роки, заборона load_levels на 4 курсі);
+видалено невикористані заглушки. Перевірка: tests/test_plan_rules.py, Black, flake8, bandit.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 from fastapi import APIRouter, Depends, Path, Query, Response, status
@@ -18,6 +22,7 @@ from ...db import enums as db_enums
 from ...db.models import Course, IndividualPlan, PlanItem as PlanItemRow
 from ...db.session import get_db
 from ..common import ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
+from ..plan_checks import enforce_plan_rules
 
 router = APIRouter(prefix="/api/v1", tags=["Plans"])
 
@@ -201,28 +206,6 @@ class PlanValidationResponse(BaseModel):
     summary: PlanSummary = Field(..., description="Підсумок кредитів для індикаторів у конструкторі")
 
 
-_SAMPLE_PAYLOAD = CreatePlanRequest(
-    academic_year=2026,
-    course=2,
-    load_levels=LoadLevels(),
-    items=[
-        PlanItem(course_id=101, title="Функціональне програмування", trimester=1, credits=5.0),
-        PlanItem(
-            course_id=205,
-            title="Управління цифровим продуктом",
-            trimester=2,
-            credits=3.0,
-            is_free_elective=True,
-        ),
-    ],
-)
-
-_MOCK_PLANS = {
-    1: (42, PlanStatus.DRAFT),
-    2: (42, PlanStatus.SUBMITTED),
-    3: (7, PlanStatus.DRAFT),
-}
-
 def _to_response(plan: IndividualPlan) -> PlanResponse:
     items = [
         PlanItem(
@@ -345,6 +328,7 @@ def create_plan(
     db: Session = Depends(get_db),
 ):
     courses = _check_catalog(db, payload.items)
+    enforce_plan_rules(db, student_id, payload, courses)
     plan = IndividualPlan(student_id=student_id, status=db_enums.PlanStatus.DRAFT, origin=db_enums.PlanOrigin.MANUAL)
     _apply_payload(plan, payload, courses)
     db.add(plan)
@@ -438,6 +422,7 @@ def update_plan(
     if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_EDITABLE", "Редагувати можна лише план у статусі draft")
     courses = _check_catalog(db, payload.items)
+    enforce_plan_rules(db, student_id, payload, courses, exclude_plan_id=plan.id)
     # Старі елементи видаляються до вставки нових, інакше спрацює UNIQUE (plan_id, course_id)
     plan.items.clear()
     db.flush()
