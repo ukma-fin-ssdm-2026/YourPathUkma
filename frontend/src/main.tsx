@@ -8,9 +8,9 @@ import { App } from "./App";
 import { queryClient } from "./api/queryClient";
 import { installAuth, restoreSession } from "./auth/session";
 
-/** Моки лише для ендпоінтів, яких немає в бекенді; решта запитів іде на реальний сервер. */
+/** `true`: моки лише для ендпоінтів без бекенду. `full`: ще й каталог, плани та конфіг, бекенд не потрібен. */
 async function enableMocks(): Promise<void> {
-  if (import.meta.env.VITE_USE_MOCKS !== "true") return;
+  if (!["true", "full"].includes(import.meta.env.VITE_USE_MOCKS ?? "")) return;
   const { worker } = await import("./mocks/browser");
   await worker.start({ onUnhandledRequest: "bypass" });
 }

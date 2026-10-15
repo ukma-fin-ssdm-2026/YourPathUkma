@@ -20,7 +20,7 @@ export const mockUser: AuthUser = {
   id: 42,
   email: "student@ukma.edu.ua",
   full_name: "Владислав Смирнов",
-  role: "student",
+  role: import.meta.env.VITE_MOCK_ROLE === "admin" ? "admin" : "student",
 };
 
 /** Студент, який щойно зайшов: онбординг ще не пройдено. */

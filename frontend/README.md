@@ -47,7 +47,8 @@ CI (`.github/workflows/ci.yaml`, job `frontend`) запускає: `npm ci`, `ge
 
 | Змінна | Значення за замовчуванням | Для чого |
 |---|---|---|
-| `VITE_USE_MOCKS` | `true` | Вмикає MSW-моки для ендпоінтів, яких ще немає в бекенді |
+| `VITE_USE_MOCKS` | `true` | `true`: MSW-моки лише для ендпоінтів без бекенду. `full`: моки всього (каталог, плани, конфіг), бекенд не потрібен |
+| `VITE_MOCK_ROLE` | (порожньо) | `admin`: мок-користувач стає адміністратором, відкриваються екрани `/admin` |
 | `VITE_API_BASE` | `/api/v1` | Префікс API |
 | `VITE_MS_CLIENT_ID` | порожньо | Application (client) ID застосунку Microsoft Entra; без нього вхід показує «Вхід не налаштовано» |
 | `VITE_MS_TENANT` | `organizations` | Tenant для авторизації Microsoft |

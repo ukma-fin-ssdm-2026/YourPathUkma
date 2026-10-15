@@ -13,6 +13,7 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     globals: true,
+    env: { VITE_MOCK_ROLE: "", VITE_USE_MOCKS: "" },
     css: true,
   },
 });
