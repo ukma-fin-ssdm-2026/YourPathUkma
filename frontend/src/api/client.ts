@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: client.test.ts.
+import { parseDispositionFilename } from "../lib/download";
 import { ApiError, type ErrorDetail } from "./errors";
 import { getAccessToken, setAccessToken } from "./token";
 
@@ -11,6 +12,8 @@ export interface RequestOptions {
   /** За замовчуванням true: додає Bearer-токен і один раз пробує refresh на 401. */
   auth?: boolean;
   signal?: AbortSignal;
+  /** Заголовок Accept; за замовчуванням JSON. */
+  accept?: string;
 }
 
 interface AuthHandlers {
@@ -63,7 +66,7 @@ async function send(
   useAuth: boolean,
 ): Promise<{ response: Response; tokenUsed: string | null }> {
   const tokenUsed = useAuth ? getAccessToken() : null;
-  const headers = new Headers({ Accept: "application/json" });
+  const headers = new Headers({ Accept: options.accept ?? "application/json" });
   const isForm = options.body instanceof FormData;
   if (options.body !== undefined && !isForm) headers.set("Content-Type", "application/json");
   if (tokenUsed) headers.set("Authorization", `Bearer ${tokenUsed}`);
@@ -111,7 +114,8 @@ async function toApiError(response: Response): Promise<ApiError> {
   );
 }
 
-export async function request<T = void>(path: string, options: RequestOptions = {}): Promise<T> {
+/** Виконує запит з автентифікацією та одноразовим refresh; повертає лише успішну відповідь. */
+async function execute(path: string, options: RequestOptions): Promise<Response> {
   const useAuth = options.auth !== false;
   let { response, tokenUsed } = await send(path, options, useAuth);
 
@@ -132,6 +136,23 @@ export async function request<T = void>(path: string, options: RequestOptions = 
   }
 
   if (!response.ok) throw await toApiError(response);
+  return response;
+}
+
+export async function request<T = void>(path: string, options: RequestOptions = {}): Promise<T> {
+  const response = await execute(path, options);
   if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
+}
+
+/** Бінарна відповідь (наприклад, PDF) з іменем файлу з Content-Disposition. */
+export async function requestBlob(
+  path: string,
+  options: RequestOptions = {},
+): Promise<{ blob: Blob; filename: string | null }> {
+  const response = await execute(path, { accept: "application/pdf, application/json;q=0.5", ...options });
+  return {
+    blob: await response.blob(),
+    filename: parseDispositionFilename(response.headers.get("Content-Disposition")),
+  };
 }
