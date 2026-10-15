@@ -7,6 +7,7 @@ import { useDirections } from "../../catalog/useDisciplines";
 import { ConfirmDialog } from "../../plans/ConfirmDialog";
 import { DirectionForm } from "./DirectionForm";
 import { useDeleteDirection } from "./useDirectionsAdmin";
+import { toast } from "sonner";
 
 type FormState = { mode: "create" } | { mode: "edit"; direction: Direction } | null;
 
@@ -22,7 +23,10 @@ export function DirectionsPage() {
     if (!deleting) return;
     setError(null);
     remove.mutate(deleting.id, {
-      onSuccess: () => setDeleting(null),
+      onSuccess: () => {
+        setDeleting(null);
+        toast.success("Напрямок видалено");
+      },
       onError: (e) => {
         setDeleting(null);
         setError(

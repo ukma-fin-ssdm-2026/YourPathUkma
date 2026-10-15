@@ -15,6 +15,7 @@ import {
   useModerationItems,
   useReviewItem,
 } from "./useModeration";
+import { toast } from "sonner";
 
 const STATUS_OPTIONS: { value: ModerationStatus; label: string }[] = [
   { value: "pending", label: "Очікують" },
@@ -79,7 +80,10 @@ export function ModerationPage() {
     review.mutate(
       { id, decision, reason },
       {
-        onSuccess: () => setSelected((prev) => new Set([...prev].filter((x) => x !== id))),
+        onSuccess: () => {
+          setSelected((prev) => new Set([...prev].filter((x) => x !== id)));
+          toast.success(decision === "approve" ? "Запис схвалено" : "Запис відхилено");
+        },
         onError: (e: ApiError) =>
           setError(e.code === "MODERATION_ITEM_ALREADY_REVIEWED" ? "Запис уже розглянуто" : e.message),
       },

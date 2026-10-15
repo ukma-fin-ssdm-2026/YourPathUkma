@@ -5,6 +5,7 @@ import type { AdminUser, AdminUserPatch, UserRole } from "../../../api/types";
 import { Button } from "../../../ui/Button";
 import { Segmented } from "../../../ui/Segmented";
 import { usePatchUser } from "./useUsers";
+import { toast } from "sonner";
 
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
   { value: "student", label: "Студент" },
@@ -46,7 +47,12 @@ export function UserEditor({ user, onClose }: { user: AdminUser; onClose: () => 
       return;
     }
     setClientError(null);
-    patchUser.mutate({ id: user.id, patch }, { onSuccess: onClose });
+    patchUser.mutate({ id: user.id, patch }, {
+      onSuccess: () => {
+        toast.success("Зміни збережено");
+        onClose();
+      },
+    });
   };
 
   const error = patchUser.error;

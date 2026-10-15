@@ -5,6 +5,7 @@ import type { Direction, DirectionInput } from "../../../api/types";
 import { Button } from "../../../ui/Button";
 import { Card } from "../../../ui/Card";
 import { useSaveDirection } from "./useDirectionsAdmin";
+import { toast } from "sonner";
 
 const INPUT = "rounded-[10px] border border-rule bg-surface px-3 py-2 font-normal";
 
@@ -30,7 +31,12 @@ export function DirectionForm({ direction, onDone }: { direction?: Direction; on
       onDone();
       return;
     }
-    save.mutate({ id: direction?.id, input }, { onSuccess: onDone });
+    save.mutate({ id: direction?.id, input }, {
+      onSuccess: () => {
+        toast.success("Напрямок збережено");
+        onDone();
+      },
+    });
   };
 
   const error = save.error;

@@ -14,6 +14,7 @@ import {
   useRunSync,
   useSyncJobs,
 } from "./useSync";
+import { toast } from "sonner";
 
 const SOURCE_LABEL: Record<SyncSource, string> = {
   saz_catalog: "Каталог САЗ",
@@ -64,7 +65,7 @@ export function SyncPage({ pollMs }: { pollMs?: number }) {
             ))}
           </select>
         </label>
-        <Button disabled={run.isPending} onClick={() => run.mutate(source)}>
+        <Button disabled={run.isPending} onClick={() => run.mutate(source, { onSuccess: () => toast.success("Парсинг запущено") })}>
           Запустити парсинг
         </Button>
         {message && (
