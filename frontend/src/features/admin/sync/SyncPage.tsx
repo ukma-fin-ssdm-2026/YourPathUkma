@@ -75,7 +75,7 @@ export function SyncPage({ pollMs }: { pollMs?: number }) {
         )}
       </Card>
 
-      <div className="mt-6 overflow-x-auto">
+      <div className="relative mt-6 overflow-x-auto">
         {jobs.isError ? (
           <p role="alert" className="text-bad">
             Не вдалося завантажити журнал

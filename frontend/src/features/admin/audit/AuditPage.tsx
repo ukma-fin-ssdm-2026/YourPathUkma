@@ -76,7 +76,7 @@ export function AuditPage() {
         />
       </div>
 
-      <div className="mt-4 overflow-x-auto">
+      <div className="relative mt-4 overflow-x-auto">
         {log.isError ? (
           <p role="alert" className="text-bad">
             Не вдалося завантажити журнал

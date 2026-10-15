@@ -82,7 +82,7 @@ export function ItemCard({
         )}
       </div>
       {pending && !rejecting && (
-        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+        <div className="flex shrink-0 flex-col gap-2 self-start sm:flex-row">
           <Button size="sm" disabled={busy} onClick={onApprove}>
             Схвалити
           </Button>

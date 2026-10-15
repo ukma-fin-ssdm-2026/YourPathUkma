@@ -52,7 +52,7 @@ export function UsersPage() {
         />
       </div>
 
-      <div className="mt-4 overflow-x-auto">
+      <div className="relative mt-4 overflow-x-auto">
         {users.isError ? (
           <p role="alert" className="text-bad">
             Не вдалося завантажити користувачів
