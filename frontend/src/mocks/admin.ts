@@ -1,8 +1,10 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: тести розділів адмінки.
 // Обробники `/admin/*` (🟡) зі станом у `db.admin`.
 import { http, HttpResponse } from "msw";
-import type { BulkReviewResult, ModerationItem, SyncJob } from "../api/types";
+import type { ErrorDetail } from "../api/errors";
+import type { AdminUserPatch, BulkReviewResult, ModerationItem, SyncJob } from "../api/types";
 import { db } from "./db";
+import { MOCK_ADMIN_ID } from "./fixtures";
 import { API, apiError, hasAuth, paginate, unauthorized } from "./http";
 
 const isActive = (job: SyncJob) => job.status === "queued" || job.status === "running";
@@ -127,6 +129,31 @@ const userHandlers = [
     );
     const { page, pagination } = paginate(users, url);
     return HttpResponse.json({ users: page, pagination });
+  }),
+
+  http.patch(`${API}/admin/users/:id`, async ({ request, params }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const user = db.admin.users.find((u) => String(u.id) === params.id);
+    if (!user) return apiError(404, "USER_NOT_FOUND", "Користувача не знайдено");
+    const patch = (await request.json()) as AdminUserPatch;
+    if (patch.role && patch.role !== user.role && user.id === MOCK_ADMIN_ID) {
+      return apiError(409, "CANNOT_CHANGE_OWN_ROLE", "Адмін не може змінити власну роль");
+    }
+    const details: ErrorDetail[] = [];
+    const year = patch.student?.course_year;
+    if (year !== undefined && !(Number.isInteger(year) && year >= 1 && year <= 4)) {
+      details.push({ field: "student.course_year", message: "Input should be between 1 and 4" });
+    }
+    const specialty = patch.student?.specialty;
+    if (specialty !== undefined && (specialty.length < 2 || specialty.length > 150)) {
+      details.push({ field: "student.specialty", message: "String should have from 2 to 150 characters" });
+    }
+    if (details.length > 0) return apiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details);
+    if (patch.role) user.role = patch.role;
+    if (patch.student && user.student) {
+      Object.assign(user.student, patch.student, { course_year_source: "admin" });
+    }
+    return HttpResponse.json(user);
   }),
 ];
 

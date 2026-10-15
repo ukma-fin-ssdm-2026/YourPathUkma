@@ -1,10 +1,12 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: users.test.tsx.
 import { useState } from "react";
-import type { UserRole } from "../../../api/types";
+import type { AdminUser, UserRole } from "../../../api/types";
 import { formatDateTime } from "../../../lib/datetime";
+import { Button } from "../../../ui/Button";
 import { Segmented } from "../../../ui/Segmented";
 import { Pagination } from "../../catalog/Pagination";
 import { useDebouncedValue } from "../../catalog/useDebouncedValue";
+import { UserEditor } from "./UserEditor";
 import { USERS_PAGE_SIZE, courseYearSourceLabel, useAdminUsers } from "./useUsers";
 
 const ROLE_FILTER: { value: UserRole | "all"; label: string }[] = [
@@ -19,6 +21,7 @@ export function UsersPage() {
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<UserRole | "all">("all");
   const [page, setPage] = useState(1);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
   const q = useDebouncedValue(search.trim(), 250);
   const users = useAdminUsers({ q, role: role === "all" ? undefined : role, page });
   const list = users.data?.users ?? [];
@@ -66,6 +69,9 @@ export function UsersPage() {
                 <th className={CELL}>Спеціальність</th>
                 <th className={CELL}>Джерело курсу</th>
                 <th className={CELL}>Остання активність</th>
+                <th className={CELL}>
+                  <span className="sr-only">Дії</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -80,6 +86,11 @@ export function UsersPage() {
                   <td className={`${CELL} break-words`}>{user.student?.specialty ?? "—"}</td>
                   <td className={CELL}>{courseYearSourceLabel(user.student?.course_year_source ?? null)}</td>
                   <td className={CELL}>{formatDateTime(user.last_login_at)}</td>
+                  <td className={CELL}>
+                    <Button variant="ghost" size="sm" onClick={() => setEditing(user)}>
+                      Змінити
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -89,6 +100,7 @@ export function UsersPage() {
       {users.data && (
         <Pagination page={page} pageSize={USERS_PAGE_SIZE} total={users.data.pagination.total} onPage={setPage} />
       )}
+      {editing && <UserEditor key={editing.id} user={editing} onClose={() => setEditing(null)} />}
     </section>
   );
 }

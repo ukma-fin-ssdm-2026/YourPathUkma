@@ -1,7 +1,8 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: users.test.tsx.
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../../../api/client";
-import type { AdminUser, PaginationInfo, UserRole } from "../../../api/types";
+import type { ApiError } from "../../../api/errors";
+import type { AdminUser, AdminUserPatch, PaginationInfo, UserRole } from "../../../api/types";
 
 export const USERS_PAGE_SIZE = 20;
 
@@ -29,5 +30,14 @@ export function useAdminUsers({ q, role, page }: { q: string; role?: UserRole; p
           role,
         },
       }),
+  });
+}
+
+export function usePatchUser() {
+  const queryClient = useQueryClient();
+  return useMutation<AdminUser, ApiError, { id: number; patch: AdminUserPatch }>({
+    mutationFn: ({ id, patch }) =>
+      request<AdminUser>(`/admin/users/${id}`, { method: "PATCH", body: patch }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin", "users"] }),
   });
 }
