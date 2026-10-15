@@ -142,7 +142,27 @@ const preferencesHandlers = [
   }),
 ];
 
+const planHandlers = [
+  // POST /plans/{id}/submit ще не реалізовано в бекенді (🟡): повертаємо заглушку з новим статусом.
+  http.post(`${API}/plans/:id/submit`, ({ request, params }) => {
+    if (!hasAuth(request)) return unauthorized();
+    return HttpResponse.json({
+      id: Number(params.id),
+      student_id: 42,
+      academic_year: new Date().getFullYear(),
+      course: 3,
+      load_levels: { autumn: "medium", spring: "medium", summer: "medium" },
+      items: [],
+      status: "submitted",
+      total_credits: 0,
+      free_elective_credits: 0,
+      created_at: new Date().toISOString(),
+    });
+  }),
+];
+
 export const handlers = [
+  ...planHandlers,
   ...preferencesHandlers,
   ...documentHandlers,
   http.post(`${API}/auth/microsoft`, async ({ request }) => {

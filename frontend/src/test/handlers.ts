@@ -116,3 +116,114 @@ export function instructorsHandler(items: Instructor[], onRequest?: (url: URL) =
     });
   });
 }
+
+import { delay, type RequestHandler } from "msw";
+import type { PlanItem } from "../api/types";
+
+interface PlanBody {
+  academic_year: number;
+  course: number;
+  load_levels: PlanResponse["load_levels"];
+  items: PlanItem[];
+}
+
+/** POST /plans/validate: ті самі правила, що в бекенді. `delayMs` дозволяє змоделювати повільну відповідь. */
+export function validateHandler(
+  onRequest?: (body: PlanBody) => void,
+  delayMs?: (body: PlanBody) => number,
+) {
+  return http.post("*/api/v1/plans/validate", async ({ request }) => {
+    const body = (await request.json()) as PlanBody;
+    onRequest?.(body);
+    if (delayMs) await delay(delayMs(body));
+    const items = body.items;
+    const free = items.filter((i) => i.is_free_elective).reduce((s, i) => s + i.credits, 0);
+    const total = items.reduce((s, i) => s + i.credits, 0);
+    const errors: { code: string; message: string; field: string | null }[] = [];
+    const ids = items.map((i) => i.course_id);
+    if (new Set(ids).size !== ids.length) {
+      errors.push({ code: "DUPLICATE_COURSE", message: "Дисципліни в плані не повинні повторюватись", field: null });
+    }
+    if (items.length > 0 && items.every((i) => i.is_free_elective)) {
+      errors.push({ code: "ONLY_FREE_ELECTIVES", message: "Не можна обрати лише вільний вибір", field: null });
+    }
+    if (free > 25) {
+      errors.push({ code: "FREE_ELECTIVE_LIMIT_EXCEEDED", message: `Перевищено ліміт: ${free} > 25`, field: null });
+    }
+    const warnings = Object.values(body.load_levels).includes("low")
+      ? [{ code: "LOW_LOAD_FUTURE_INCREASE", message: "Низьке навантаження", field: null }]
+      : [];
+    const byTrimester: Record<string, number> = { "1": 0, "2": 0, "3": 0 };
+    for (const item of items) byTrimester[String(item.trimester)]! += item.credits;
+    return HttpResponse.json({
+      valid: errors.length === 0,
+      errors,
+      warnings,
+      summary: {
+        total_credits: total,
+        free_elective_credits: free,
+        free_elective_used_all_years: free,
+        free_elective_remaining: 25 - free,
+        year_total_credits: total,
+        credits_by_trimester: byTrimester,
+      },
+    });
+  });
+}
+
+/** POST /plans, GET і PUT /plans/{id} зі станом у пам'яті; `calls` рахує звернення. */
+export function plansCrudHandlers(initial: PlanResponse[] = []): {
+  handlers: RequestHandler[];
+  calls: { post: number; put: number; get: number };
+  bodies: PlanBody[];
+} {
+  const plans = new Map(initial.map((plan) => [plan.id, plan]));
+  const calls = { post: 0, put: 0, get: 0 };
+  const bodies: PlanBody[] = [];
+  let nextId = Math.max(0, ...initial.map((plan) => plan.id)) + 1;
+  const fromBody = (id: number, body: PlanBody, status: PlanResponse["status"]): PlanResponse =>
+    planFixture({
+      id,
+      academic_year: body.academic_year,
+      course: body.course,
+      load_levels: body.load_levels,
+      items: body.items,
+      status,
+      total_credits: body.items.reduce((s, i) => s + i.credits, 0),
+      free_elective_credits: body.items.filter((i) => i.is_free_elective).reduce((s, i) => s + i.credits, 0),
+    });
+  const notFound = () =>
+    HttpResponse.json({ code: "PLAN_NOT_FOUND", message: "План не знайдено", details: [] }, { status: 404 });
+  const handlers = [
+    http.post("*/api/v1/plans", async ({ request }) => {
+      calls.post += 1;
+      const body = (await request.json()) as PlanBody;
+      bodies.push(body);
+      const plan = fromBody(nextId++, body, "draft");
+      plans.set(plan.id, plan);
+      return HttpResponse.json(plan, { status: 201 });
+    }),
+    http.get("*/api/v1/plans/:id", ({ params }) => {
+      calls.get += 1;
+      const plan = plans.get(Number(params.id));
+      return plan ? HttpResponse.json(plan) : notFound();
+    }),
+    http.put("*/api/v1/plans/:id", async ({ params, request }) => {
+      calls.put += 1;
+      const existing = plans.get(Number(params.id));
+      if (!existing) return notFound();
+      if (existing.status !== "draft") {
+        return HttpResponse.json(
+          { code: "PLAN_NOT_EDITABLE", message: "Редагувати можна лише чернетку", details: [] },
+          { status: 409 },
+        );
+      }
+      const body = (await request.json()) as PlanBody;
+      bodies.push(body);
+      const plan = fromBody(existing.id, body, "draft");
+      plans.set(plan.id, plan);
+      return HttpResponse.json(plan);
+    }),
+  ];
+  return { handlers, calls, bodies };
+}
