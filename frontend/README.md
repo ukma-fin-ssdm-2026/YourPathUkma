@@ -47,7 +47,7 @@ CI (`.github/workflows/ci.yaml`, job `frontend`) запускає: `npm ci`, `ge
 
 | Змінна | Значення за замовчуванням | Для чого |
 |---|---|---|
-| `VITE_USE_MOCKS` | `true` | `true`: MSW-моки лише для ендпоінтів без бекенду. `full`: моки всього (каталог, плани, конфіг), бекенд не потрібен |
+| `VITE_USE_MOCKS` | `true` | `true`: MSW-моки лише для того, чого бекенд ще не має (вхід, `/admin/*`). `full`: моки всього, бекенд не потрібен |
 | `VITE_MOCK_ROLE` | (порожньо) | `admin`: мок-користувач стає адміністратором, відкриваються екрани `/admin` |
 | `VITE_API_BASE` | `/api/v1` | Префікс API |
 | `VITE_MS_CLIENT_ID` | порожньо | Application (client) ID застосунку Microsoft Entra; без нього вхід показує «Вхід не налаштовано» |
@@ -59,23 +59,23 @@ Dev-сервер проксює `/api` на `http://localhost:3000` (`vite.confi
 
 Контракт: [`docs/api/contract.md`](../docs/api/contract.md). Позначки: ✅ є в бекенді, 🟡 лише запропоновано.
 
-З `VITE_USE_MOCKS=true` моки (`src/mocks/`) закривають:
+З `VITE_USE_MOCKS=true` моки (`src/mocks/`) закривають лише те, чого бекенд ще не має:
 
-- вхід і сесію: `/auth/microsoft`, `/auth/refresh`, `/auth/logout`;
-- `/me`, `/me/onboarding`, `/me/academic-history`;
-- `/preferences/{year}`;
-- `/deanery-documents*`;
-- `POST /plans/{id}/submit`, `GET /plans/{id}/export` (віддає заглушку PDF);
-- усе `/admin/*`.
+- вхід і сесію: `/auth/microsoft`, `/auth/refresh`, `/auth/logout` (бекенд має лише заглушку `/auth/google`, яка видає будь-якому токену студента №42);
+- усе `/admin/*` (ендпоінти в бекенді є, але без справжнього входу кожен запит дає 403, бо токен завжди студентський).
 
-Решта запитів іде на реальний бекенд: `/config`, `/plans*`, `/plans/validate`, `/disciplines`, `/directions`, `/instructors`. У `contract.md` `/directions`, `/instructors` і `/plans/validate` поки позначені 🟡, тому якщо в запущеному бекенді їх немає, відповідні екрани в dev не працюватимуть, поки їх не додадуть.
+Усе інше йде на реальний бекенд: `/config`, `/me*`, `/preferences/*`, `/disciplines`, `/directions`, `/instructors`, `/plans*` (разом із `submit` і `export`), `/deanery-documents*`. Бекенд-заглушки, які це торкається: експорт повертає фальшивий PDF, а розпізнавання документа деканату ще не реалізоване, тож будь-яке завантаження закінчується статусом «Не розпізнано».
 
-У тестах моки теж вмикаються (`src/test/setup.ts`); ✅-ендпоінти там перекриваються в самих тестах через `server.use(...)` (`src/test/handlers.ts`).
+З `VITE_USE_MOCKS=full` додатково вмикаються моки всіх цих ендпоінтів (`coreHandlers` у `core.ts` і `backendHandlers` у `handlers.ts`), тож застосунок працює без запущеного бекенду.
+
+Запуск проти реального бекенду: `uvicorn src.api.main:app --port 3000` (корінь репозиторію), у фронтенді `VITE_USE_MOCKS=true npm run dev`, вхід через мок. Змінні оболонки мають пріоритет над `.env.local`.
+
+У тестах (`src/test/setup.ts`) вмикаються і `handlers`, і `backendHandlers`; окремі тести перекривають їх через `server.use(...)` (`src/test/handlers.ts`).
 
 ### Що потрібно від бекенду
 
 - Вхід через Microsoft 365. Назва `POST /auth/microsoft` і форма запиту — **припущення фронтенду**; у контракті зараз `POST /auth/google`.
-- Реалізація 🟡-ендпоінтів зі списку вище.
+- Справжній вхід, який видає токени різних користувачів (зокрема адміна), щоб замінити мок і відкрити `/admin/*`.
 - CORS: для refresh-cookie потрібні явні origins і `allow_credentials` (зараз `*`).
 - Заголовок `X-Request-ID` має бути в `Access-Control-Expose-Headers`, щоб фронтенд показував «Код помилки».
 
