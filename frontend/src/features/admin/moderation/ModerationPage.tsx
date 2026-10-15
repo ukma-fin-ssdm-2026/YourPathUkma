@@ -59,8 +59,12 @@ export function ModerationPage() {
   const review = useReviewItem();
   const bulk = useBulkReview();
   const list = items.data?.moderation_items ?? [];
+  const lastPage = Math.max(1, Math.ceil((items.data?.pagination.total ?? 0) / MODERATION_PAGE_SIZE));
   const busy = review.isPending || bulk.isPending;
   const selectable = status === "pending";
+
+  // Після розгляду останнього запису сторінки повертаємося на останню наявну.
+  if (items.data && page > lastPage) setPage(lastPage);
 
   const resetView = () => {
     setSelected(new Set());

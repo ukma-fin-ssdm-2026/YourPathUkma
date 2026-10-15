@@ -142,3 +142,24 @@ describe("ModerationPage", () => {
     expect(screen.queryByRole("group", { name: "Запис 501" })).not.toBeInTheDocument();
   });
 });
+
+describe("ModerationPage: пагінація", () => {
+  it("після розгляду останнього запису сторінки повертає на попередню, а не показує «Черга порожня»", async () => {
+    db.admin.moderationItems = Array.from({ length: 21 }, (_, index) => ({
+      ...db.admin.moderationItems[0]!,
+      id: 600 + index,
+      course_id: 100 + index,
+      payload: { title: `Дисципліна ${index + 1}` },
+      diff: null,
+      change_type: "add" as const,
+    }));
+    renderPage();
+    await screen.findByRole("group", { name: "Запис 600" });
+    await userEvent.click(screen.getByRole("button", { name: "Далі" }));
+    const last = await screen.findByRole("group", { name: "Запис 620" });
+    await userEvent.click(within(last).getByRole("button", { name: "Схвалити" }));
+    expect(await screen.findByRole("group", { name: "Запис 600" })).toBeInTheDocument();
+    expect(screen.queryByText("Черга порожня")).not.toBeInTheDocument();
+    expect(screen.getByText("Сторінка 1 з 1")).toBeInTheDocument();
+  });
+});
