@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+import { useState } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import css from "../styles/index.css?raw";
@@ -85,5 +86,60 @@ describe("анімація діалогів", () => {
   it("для prefers-reduced-motion анімація діалогів вимкнена", () => {
     const reduced = /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\r?\n\}\r?\n/.exec(css)?.[0] ?? "";
     expect(reduced).toMatch(/\.dialog-backdrop[\s\S]*animation:\s*none/);
+  });
+});
+
+function DialogHarness() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button onClick={() => setOpen(true)}>Відкрити</button>
+      <ConfirmDialog
+        open={open}
+        title="Видалити?"
+        confirmLabel="Видалити"
+        onConfirm={() => {}}
+        onCancel={() => setOpen(false)}
+      />
+    </>
+  );
+}
+
+describe("фокус у діалозі", () => {
+  it("переносить фокус у діалог, тримає Tab у його межах і повертає фокус після Escape", async () => {
+    render(<DialogHarness />);
+    const opener = screen.getByRole("button", { name: "Відкрити" });
+    await userEvent.click(opener);
+    const cancel = screen.getByRole("button", { name: "Скасувати" });
+    const confirm = screen.getByRole("button", { name: "Видалити" });
+    expect(cancel).toHaveFocus();
+
+    await userEvent.tab();
+    expect(confirm).toHaveFocus();
+    await userEvent.tab();
+    expect(cancel).toHaveFocus();
+    await userEvent.tab({ shift: true });
+    expect(confirm).toHaveFocus();
+
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(opener).toHaveFocus();
+  });
+
+  it("після скасування кнопкою фокус теж повертається", async () => {
+    render(<DialogHarness />);
+    const opener = screen.getByRole("button", { name: "Відкрити" });
+    await userEvent.click(opener);
+    await userEvent.click(screen.getByRole("button", { name: "Скасувати" }));
+    expect(opener).toHaveFocus();
+  });
+});
+
+describe("цілі дотику", () => {
+  it("на touch-пристроях кнопки, посилання й поля мають висоту не менше 44px", () => {
+    const block = /@media \(pointer: coarse\)[\s\S]*?\r?\n\}\r?\n/.exec(css)?.[0] ?? "";
+    expect(block).toMatch(/min-height:\s*44px/);
+    expect(block).toMatch(/button/);
+    expect(block).toMatch(/a\[href\]/);
   });
 });

@@ -51,4 +51,14 @@ describe("AppLayout", () => {
     expect(screen.getByRole("button", { name: "Вийти" })).toHaveClass("shrink-0");
     expect(screen.getByText("ОГ")).toHaveClass("shrink-0");
   });
+
+  it("перше посилання — «Перейти до вмісту», яке веде на main", () => {
+    renderLayout("student");
+    const skip = screen.getAllByRole("link")[0]!;
+    expect(skip).toHaveTextContent("Перейти до вмісту");
+    expect(skip).toHaveAttribute("href", "#main");
+    const main = screen.getByRole("main");
+    expect(main).toHaveAttribute("id", "main");
+    expect(main).toHaveAttribute("tabindex", "-1");
+  });
 });

@@ -81,3 +81,18 @@ table {
 .dialog-panel {
   animation: dialog-in 180ms var(--ease-out);
 }
+
+/* Touch-пристрої: цілі дотику не менші за 44px. */
+@media (pointer: coarse) {
+  button,
+  a[href],
+  select,
+  input:not([type="checkbox"]) {
+    min-height: 44px;
+  }
+
+  input[type="checkbox"] {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}

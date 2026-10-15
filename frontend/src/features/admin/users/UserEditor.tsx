@@ -1,9 +1,10 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: users.test.tsx.
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { fieldErrors } from "../../../api/errors";
 import type { AdminUser, AdminUserPatch, UserRole } from "../../../api/types";
 import { Button } from "../../../ui/Button";
 import { Segmented } from "../../../ui/Segmented";
+import { useDialogFocus } from "../../../ui/useDialogFocus";
 import { usePatchUser } from "./useUsers";
 import { toast } from "sonner";
 
@@ -21,13 +22,8 @@ export function UserEditor({ user, onClose }: { user: AdminUser; onClose: () => 
   const [clientError, setClientError] = useState<string | null>(null);
   const patchUser = usePatchUser();
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(panelRef, onClose);
 
   const patch: AdminUserPatch = {};
   if (role !== user.role) patch.role = role;
@@ -67,6 +63,7 @@ export function UserEditor({ user, onClose }: { user: AdminUser; onClose: () => 
   return (
     <div className="dialog-backdrop fixed inset-0 z-10 grid place-items-center bg-black/40 p-4">
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Змінити користувача"
