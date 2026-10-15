@@ -13,6 +13,8 @@ import { PlansPage } from "../features/plans/PlansPage";
 import { OnboardingPage } from "../features/profile/OnboardingPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { RequireOnboarded } from "../features/profile/RequireOnboarded";
+import { AdminLayout } from "../features/admin/AdminLayout";
+import { OverviewPage } from "../features/admin/OverviewPage";
 import { ConnectedLayout } from "./ConnectedLayout";
 
 export function PlaceholderPage({ title }: { title: string }) {
@@ -53,7 +55,20 @@ export const appRoutes: RouteObject[] = [
               { path: "/catalog", element: <CatalogPage /> },
               {
                 element: <RequireAdmin />,
-                children: [{ path: "/admin", element: <PlaceholderPage title="Адмінка" /> }],
+                children: [
+                  {
+                    path: "/admin",
+                    element: <AdminLayout />,
+                    children: [
+                      { index: true, element: <OverviewPage /> },
+                      { path: "moderation", element: <PlaceholderPage title="Модерація" /> },
+                      { path: "sync", element: <PlaceholderPage title="Синхронізація" /> },
+                      { path: "users", element: <PlaceholderPage title="Користувачі" /> },
+                      { path: "directions", element: <PlaceholderPage title="Напрямки" /> },
+                      { path: "audit", element: <PlaceholderPage title="Журнал дій" /> },
+                    ],
+                  },
+                ],
               },
             ],
           },
