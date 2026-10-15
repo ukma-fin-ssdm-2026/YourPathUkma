@@ -148,13 +148,13 @@ def _reset_identity_sequences(db: Session) -> None:
     """Після вставки з явними id PostgreSQL-лічильник identity треба зсунути, інакше наступний INSERT дасть конфлікт."""
     if db.get_bind().dialect.name != "postgresql":
         return
-    for table in _TABLES_WITH_FIXED_IDS:
-        max_id = db.scalar(text(f"SELECT MAX(id) FROM {table}"))
+    # Запити будуються через SQLAlchemy, а не f-рядком (bandit B608): ім'я таблиці йде як bind-параметр,
+    # а не вклеюється в текст SQL. Див. docs/code-quality/static-analysis.md.
+    for model in _MODELS_WITH_FIXED_IDS:
+        max_id = db.scalar(select(func.max(model.id)))
         if max_id is not None:
-            db.execute(
-                text(f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), :max_id)"),
-                {"max_id": max_id},
-            )
+            sequence = func.pg_get_serial_sequence(model.__tablename__, "id")
+            db.execute(select(func.setval(sequence, max_id)))
 
 
 def main() -> None:
