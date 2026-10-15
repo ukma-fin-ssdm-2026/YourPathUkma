@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: save.test.tsx.
 import { fieldErrors, type ApiError } from "../../api/errors";
 import type { PlanItem } from "../../api/types";
+import { ERROR_TEXT } from "./SummaryStrip";
 
 const ITEM_TEXT: Record<string, string> = {
   COURSE_NOT_FOUND: "Дисципліни немає в каталозі",
@@ -12,6 +13,12 @@ const CODE_TEXT: Record<string, string> = {
   PLAN_NOT_EDITABLE: "Цей план уже подано, редагувати його не можна",
   PLAN_NOT_SUBMITTABLE: "Подати можна лише чернетку",
 };
+
+/** Бекенд пише помилки плану як «КОД: текст». Відомий код перекладаємо, в іншому прибираємо префікс. */
+function planMessage(message: string): string {
+  const match = /^([A-Z_]+): (.*)$/s.exec(message);
+  return match ? (ERROR_TEXT[match[1]!] ?? match[2]!) : message;
+}
 
 export interface SaveErrors {
   /** Повідомлення біля карток, за course_id. */
@@ -35,7 +42,7 @@ export function describeSaveError(error: ApiError, items: PlanItem[]): SaveError
       if (item && code && ITEM_TEXT[code]) itemErrors[item.course_id] = ITEM_TEXT[code]!;
       else rest.push(detail);
     }
-    return { itemErrors, form: fieldErrors(rest).form.concat(rest.filter((d) => d.field && d.field !== "body").map((d) => d.message)) };
+    return { itemErrors, form: fieldErrors(rest).form.concat(rest.filter((d) => d.field && d.field !== "body").map((d) => planMessage(d.message))) };
   }
   return { itemErrors: {}, form: [error.message] };
 }
