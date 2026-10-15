@@ -23,18 +23,24 @@ export function AppLayout({
         Перейти до вмісту
       </a>
       <header className="border-b border-rule bg-surface">
-        <div className="mx-auto flex h-[60px] max-w-[1160px] items-center gap-8 px-6">
-          <Link to="/" className="font-display text-[15px] font-semibold">
+        <div className="mx-auto flex max-w-[1160px] flex-wrap items-center gap-x-4 px-4 sm:h-[60px] sm:flex-nowrap sm:gap-8 sm:px-6">
+          <Link
+            to="/"
+            className="flex h-[52px] items-center font-display text-[15px] font-semibold sm:h-auto"
+          >
             YourPath
           </Link>
-          <nav aria-label="Основна навігація" className="flex h-full min-w-0 gap-0.5 overflow-x-auto">
+          <nav
+            aria-label="Основна навігація"
+            className="order-last flex h-11 w-full min-w-0 gap-0.5 overflow-x-auto overflow-y-hidden [scrollbar-width:none] sm:order-none sm:h-full sm:w-auto [&::-webkit-scrollbar]:hidden"
+          >
             {items.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === "/"}
                 className={({ isActive }) =>
-                  "-mb-px flex items-center border-b-[3px] px-3.5 font-medium transition-colors duration-150 ease-out " +
+                  "-mb-px flex items-center whitespace-nowrap border-b-[3px] px-3.5 font-medium transition-colors duration-150 ease-out " +
                   "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cobalt " +
                   (isActive
                     ? "border-cobalt text-ink"
@@ -45,7 +51,7 @@ export function AppLayout({
               </NavLink>
             ))}
           </nav>
-          <div className="ml-auto flex min-w-0 items-center gap-2.5 font-medium">
+          <div className="ml-auto flex h-[52px] min-w-0 items-center gap-2.5 font-medium sm:h-auto">
             <span className="min-w-0 max-w-[180px] truncate">{userName}</span>
             <span
               aria-hidden="true"
@@ -61,7 +67,11 @@ export function AppLayout({
           </div>
         </div>
       </header>
-      <main id="main" tabIndex={-1} className="outline-none mx-auto max-w-[1160px] px-6 py-6">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="outline-none mx-auto max-w-[1160px] px-4 py-6 sm:px-6"
+      >
         <Outlet />
       </main>
     </div>

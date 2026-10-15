@@ -2,7 +2,7 @@
 // Справжнє перетягування вказівником у jsdom не відтворити (нема геометрії), тож тестуємо чисту логіку
 // рішень і обробники подій dnd-kit напряму, а розмітку звичайним рендером.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import type { CollisionDetection, DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { server } from "../../mocks/server";
@@ -15,11 +15,36 @@ import {
   columnState,
   decideDrop,
   makeDragHandlers,
+  pointerFirst,
 } from "./dnd";
 import type { BuilderPlan } from "./plan";
 import { TrimesterColumn } from "./TrimesterColumn";
 
 const spring = disciplineFixture({ id: 5, title: "Машинне навчання", trimester: 2 });
+
+describe("pointerFirst", () => {
+  const rect = (left: number, width: number) => ({ left, top: 0, width, height: 100, right: left + width, bottom: 100 });
+  const container = (id: string) => ({ id, data: { current: undefined }, disabled: false, node: { current: null }, rect: { current: null } });
+  const args = (pointer: { x: number; y: number } | null) =>
+    ({
+      active: { id: "card", data: { current: undefined }, rect: { current: { initial: null, translated: null } } },
+      collisionRect: rect(90, 100),
+      droppableRects: new Map([
+        ["A", rect(0, 100)],
+        ["B", rect(100, 100)],
+      ]),
+      droppableContainers: [container("A"), container("B")],
+      pointerCoordinates: pointer,
+    }) as unknown as Parameters<CollisionDetection>[0];
+
+  it("обирає колонку під вказівником, а не ту, де більше площі картки", () => {
+    expect(pointerFirst(args({ x: 50, y: 10 }))[0]?.id).toBe("A");
+  });
+
+  it("без вказівника (клавіатура) обирає за площею перетину", () => {
+    expect(pointerFirst(args(null))[0]?.id).toBe("B");
+  });
+});
 
 describe("decideDrop", () => {
   it("у свою колонку: додати", () => {

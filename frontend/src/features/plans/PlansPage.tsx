@@ -86,7 +86,7 @@ export function PlansPage({ mode }: { mode: "all" | "saved" }) {
     );
   } else {
     content = (
-      <Card className="overflow-x-auto p-2">
+      <Card className="relative overflow-x-auto p-2">
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="text-[13px] text-ink-2">
