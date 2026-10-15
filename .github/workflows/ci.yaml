@@ -38,6 +38,8 @@ jobs:
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - name: Lint (ruff)
         run: pip install ruff && ruff check src tests scripts mcp
+      - name: Security scan (bandit)
+        run: pip install "bandit[toml]" && bandit -c pyproject.toml -r src mcp scripts tests
       - name: Generate OpenAPI from code
         run: python scripts/generate_openapi.py
       - name: Fail if committed spec is out of date
@@ -58,6 +60,8 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - name: Security audit (npm audit)
+        run: npm audit --audit-level=high
       - run: npm run gen:api
       - run: npm run lint
       - run: npm run typecheck
