@@ -10,20 +10,26 @@ OpenAPI-специфікація генерується з коду при ст�
 Перевірка: запуск сервера, перевірка появи/оновлення openapi-generated.yaml після зміни коду,
 перегляд Swagger UI (/api-docs) і ReDoc (/redoc).
 
-При старті застосовуються міграції Alembic і (у порожню БД) демо-дані: src/db/migrate.py.
-Ініціалізацію БД при старті додано за допомогою Claude (Claude Code); перевірено запуском uvicorn на SQLite.
+Правки за зовнішнім рев'ю (review/received/review-report.md) внесено за допомогою Claude (Claude Code):
+імпорти нагорі, журналювання замість print, X-Request-ID, CORS з env, захист від MCP_DEV_MODE у продакшні.
+Перевірено: pytest і ruff check src/api.
 """
 
 import json
+import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 import yaml
 from fastapi import FastAPI
-from ..db.migrate import init_database
-from .common import register_error_handlers
-from .routes import disciplines, plans, auth, reference, system
 from fastapi.middleware.cors import CORSMiddleware
+
+from .common import RequestIdMiddleware, assert_safe_environment, register_error_handlers
+from .routes import auth, disciplines, plans, reference, system
+
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logger = logging.getLogger("yourpath.api")
 
 DOCS_DIR = Path(__file__).resolve().parents[2] / "docs" / "api"
 
@@ -31,20 +37,26 @@ DOCS_DIR = Path(__file__).resolve().parents[2] / "docs" / "api"
 def save_openapi_spec(app: FastAPI) -> None:
     """Зберігає автоматично згенеровану специфікацію OpenAPI у файли."""
     spec = app.openapi()
-    DOCS_DIR.mkdir(parents=True, exist_ok=True)
-    (DOCS_DIR / "openapi-generated.yaml").write_text(
-        yaml.safe_dump(spec, sort_keys=False, allow_unicode=True), encoding="utf-8"
-    )
-    (DOCS_DIR / "openapi-generated.json").write_text(json.dumps(spec, indent=2, ensure_ascii=False), encoding="utf-8")
-    print("✅ OpenAPI spec auto-generated from code!")
-    print(f"📁 Saved to: {DOCS_DIR / 'openapi-generated.yaml'}")
+    try:
+        DOCS_DIR.mkdir(parents=True, exist_ok=True)
+        (DOCS_DIR / "openapi-generated.yaml").write_text(
+            yaml.safe_dump(spec, sort_keys=False, allow_unicode=True), encoding="utf-8"
+        )
+        (DOCS_DIR / "openapi-generated.json").write_text(
+            json.dumps(spec, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+    except OSError:
+        # Файлова система може бути лише для читання (контейнер): це не повинно блокувати запуск API.
+        logger.warning("Не вдалося зберегти OpenAPI-специфікацію в %s", DOCS_DIR, exc_info=True)
+        return
+    logger.info("OpenAPI-специфікацію згенеровано з коду: %s", DOCS_DIR / "openapi-generated.yaml")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    assert_safe_environment()
     save_openapi_spec(app)
-    print("Swagger UI: http://127.0.0.1:3000/api-docs")
-    print("ReDoc:      http://127.0.0.1:3000/redoc")
+    logger.info("Swagger UI: http://127.0.0.1:3000/api-docs, ReDoc: http://127.0.0.1:3000/redoc")
     yield
 
 
@@ -84,13 +96,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# У продакшні задайте CORS_ORIGINS=https://your-frontend.example (через кому); за замовчуванням "*" лише для розробки.
+_cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Request-ID"],
 )
+app.add_middleware(RequestIdMiddleware)
 
 register_error_handlers(app)
 app.include_router(plans.router)
@@ -102,12 +119,11 @@ app.include_router(system.router)
 
 @app.get("/health", tags=["System"], summary="Перевірка стану системи (Healthcheck)")
 async def health_check():
-
+    """Повертає стан сервісу для моніторингу."""
     return {"status": "ok", "version": "1.0.0", "message": "All systems operational"}
 
 
 if __name__ == "__main__":
-    import os
     import uvicorn
 
     uvicorn.run("src.api.main:app", host=os.getenv("API_HOST", "127.0.0.1"), port=3000, reload=True)
