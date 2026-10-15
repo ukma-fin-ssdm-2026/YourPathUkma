@@ -262,3 +262,22 @@ export function moderationItemFixture(overrides: Partial<ModerationItem> = {}): 
     ...overrides,
   };
 }
+
+import type { AdminUser } from "../api/types";
+
+export function adminUserFixture(overrides: Partial<AdminUser> = {}): AdminUser {
+  return {
+    id: 42,
+    email: "vl.smyrnov@ukma.edu.ua",
+    full_name: "Владислав Смирнов",
+    role: "student",
+    created_at: "2026-09-01T08:00:00Z",
+    last_login_at: "2026-10-08T09:55:00Z",
+    student: {
+      specialty: "Інженерія програмного забезпечення",
+      course_year: 3,
+      course_year_source: "self_declared",
+    },
+    ...overrides,
+  };
+}

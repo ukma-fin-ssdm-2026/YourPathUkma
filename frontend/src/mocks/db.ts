@@ -1,6 +1,13 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: handlers.test.ts.
-import type { DeaneryDocument, Me, ModerationItem, Preferences, SyncJob } from "../api/types";
-import { emptyMe, seedModerationItems, seedSyncJobs } from "./fixtures";
+import type { AdminUser, DeaneryDocument, Me, ModerationItem, Preferences, SyncJob } from "../api/types";
+import { emptyMe, seedAdminUsers, seedModerationItems, seedSyncJobs } from "./fixtures";
+
+const initialAdminState = () => ({
+  syncJobs: seedSyncJobs(),
+  syncPolls: {} as Record<number, number>,
+  moderationItems: seedModerationItems(),
+  users: seedAdminUsers(),
+});
 
 /** Стан моків у пам'яті; у тестах скидається після кожного тесту. */
 export const db: {
@@ -14,6 +21,7 @@ export const db: {
     syncJobs: SyncJob[];
     syncPolls: Record<number, number>;
     moderationItems: ModerationItem[];
+    users: AdminUser[];
   };
 } = {
   signedIn: false,
@@ -22,7 +30,7 @@ export const db: {
   docPolls: {},
   nextDocId: 1,
   preferences: {},
-  admin: { syncJobs: seedSyncJobs(), syncPolls: {}, moderationItems: seedModerationItems() },
+  admin: initialAdminState(),
 };
 
 export function resetMockDb(): void {
@@ -32,5 +40,5 @@ export function resetMockDb(): void {
   db.docPolls = {};
   db.nextDocId = 1;
   db.preferences = {};
-  db.admin = { syncJobs: seedSyncJobs(), syncPolls: {}, moderationItems: seedModerationItems() };
+  db.admin = initialAdminState();
 }

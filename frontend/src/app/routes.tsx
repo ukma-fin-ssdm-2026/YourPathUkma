@@ -17,6 +17,7 @@ import { AdminLayout } from "../features/admin/AdminLayout";
 import { OverviewPage } from "../features/admin/OverviewPage";
 import { ModerationPage } from "../features/admin/moderation/ModerationPage";
 import { SyncPage } from "../features/admin/sync/SyncPage";
+import { UsersPage } from "../features/admin/users/UsersPage";
 import { ConnectedLayout } from "./ConnectedLayout";
 
 export function PlaceholderPage({ title }: { title: string }) {
@@ -65,7 +66,7 @@ export const appRoutes: RouteObject[] = [
                       { index: true, element: <OverviewPage /> },
                       { path: "moderation", element: <ModerationPage /> },
                       { path: "sync", element: <SyncPage /> },
-                      { path: "users", element: <PlaceholderPage title="Користувачі" /> },
+                      { path: "users", element: <UsersPage /> },
                       { path: "directions", element: <PlaceholderPage title="Напрямки" /> },
                       { path: "audit", element: <PlaceholderPage title="Журнал дій" /> },
                     ],

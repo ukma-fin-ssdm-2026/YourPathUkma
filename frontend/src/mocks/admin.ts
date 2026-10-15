@@ -114,4 +114,20 @@ const moderationHandlers = [
   }),
 ];
 
-export const adminHandlers = [...syncHandlers, ...moderationHandlers];
+const userHandlers = [
+  http.get(`${API}/admin/users`, ({ request }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const url = new URL(request.url);
+    const q = url.searchParams.get("q")?.toLowerCase();
+    const role = url.searchParams.get("role");
+    const users = db.admin.users.filter(
+      (user) =>
+        (!role || user.role === role) &&
+        (!q || user.email.toLowerCase().includes(q) || user.full_name.toLowerCase().includes(q)),
+    );
+    const { page, pagination } = paginate(users, url);
+    return HttpResponse.json({ users: page, pagination });
+  }),
+];
+
+export const adminHandlers = [...syncHandlers, ...moderationHandlers, ...userHandlers];

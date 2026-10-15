@@ -2,6 +2,7 @@
 // Форми відповідей за docs/api/contract.md §3.1-§3.2.
 import type {
   AcademicCategory,
+  AdminUser,
   AcademicRecord,
   AcademicYear,
   AuthResponse,
@@ -181,5 +182,45 @@ export function seedModerationItems(): ModerationItem[] {
       payload: { title: "Основи Pascal" },
       diff: null,
     },
+  ];
+}
+
+/** Ідентифікатор адміністратора, від імені якого працюють адмін-моки (для CANNOT_CHANGE_OWN_ROLE). */
+export const MOCK_ADMIN_ID = 1;
+
+/** Початкові користувачі для dev: адміністратор і троє студентів. */
+export function seedAdminUsers(): AdminUser[] {
+  const student = (
+    id: number,
+    full_name: string,
+    email: string,
+    course_year: 1 | 2 | 3 | 4 | null,
+    source: "self_declared" | "admin" | "saz_sync" | null,
+  ): AdminUser => ({
+    id,
+    email,
+    full_name,
+    role: "student",
+    created_at: "2026-09-01T08:00:00Z",
+    last_login_at: "2026-10-08T09:55:00Z",
+    student: {
+      specialty: "Інженерія програмного забезпечення",
+      course_year,
+      course_year_source: source,
+    },
+  });
+  return [
+    {
+      id: MOCK_ADMIN_ID,
+      email: "admin@ukma.edu.ua",
+      full_name: "Адміністратор",
+      role: "admin",
+      created_at: "2026-08-20T08:00:00Z",
+      last_login_at: "2026-10-09T07:30:00Z",
+      student: null,
+    },
+    student(42, "Владислав Смирнов", "vl.smyrnov@ukma.edu.ua", 3, "self_declared"),
+    student(43, "Олена Коваль", "o.koval@ukma.edu.ua", 2, "saz_sync"),
+    student(44, "Андрій Мельник", "a.melnyk@ukma.edu.ua", null, null),
   ];
 }
