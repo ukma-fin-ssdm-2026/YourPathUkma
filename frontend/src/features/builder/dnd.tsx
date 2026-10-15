@@ -4,10 +4,13 @@ import {
   DndContext,
   KeyboardSensor,
   PointerSensor,
+  pointerWithin,
+  rectIntersection,
   useDraggable,
   useDroppable,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
@@ -37,6 +40,15 @@ export function columnState(
   const verdict = dropVerdict(active, column);
   return verdict.ok ? { over: true, hint: null } : { over: false, hint: verdict.message };
 }
+
+/**
+ * Колонка визначається за вказівником: хендл стоїть на краю широкої картки, і за площею перетину
+ * картка «потрапляла» б у сусідню колонку. Без вказівника (клавіатура) лишається площа перетину.
+ */
+export const pointerFirst: CollisionDetection = (args) => {
+  const underPointer = pointerWithin(args);
+  return underPointer.length > 0 ? underPointer : rectIntersection(args);
+};
 
 export function makeDragHandlers(deps: {
   setActive: (discipline: Discipline | null) => void;
@@ -80,7 +92,7 @@ export function BuilderDnd({
   );
   const handlers = makeDragHandlers({ setActive, setMessage, onDropDiscipline });
   return (
-    <DndContext sensors={sensors} {...handlers}>
+    <DndContext sensors={sensors} collisionDetection={pointerFirst} {...handlers}>
       <ActiveContext.Provider value={active}>
         {message && (
           <p role="status" className="mb-3 rounded-[10px] bg-warn-bg px-4 py-2.5 text-warn">
