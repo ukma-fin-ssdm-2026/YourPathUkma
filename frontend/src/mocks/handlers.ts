@@ -143,6 +143,17 @@ const preferencesHandlers = [
 ];
 
 const planHandlers = [
+  // GET /plans/{id}/export ще не реалізовано в бекенді (🟡): віддаємо короткий PDF-заглушку.
+  http.get(`${API}/plans/:id/export`, ({ request }) => {
+    if (!hasAuth(request)) return unauthorized();
+    return new HttpResponse("%PDF-1.4\n% mock plan\n", {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": 'attachment; filename="plan-2026.pdf"',
+      },
+    });
+  }),
+
   // POST /plans/{id}/submit ще не реалізовано в бекенді (🟡): повертаємо заглушку з новим статусом.
   http.post(`${API}/plans/:id/submit`, ({ request, params }) => {
     if (!hasAuth(request)) return unauthorized();

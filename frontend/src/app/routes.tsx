@@ -7,6 +7,7 @@ import { PreferencesPage } from "../features/preferences/PreferencesPage";
 import { CatalogPage } from "../features/catalog/CatalogPage";
 import { BuilderPage } from "../features/builder/BuilderPage";
 import { DeaneryPage } from "../features/deanery/DeaneryPage";
+import { PlanViewPage } from "../features/plan-view/PlanViewPage";
 import { PathLayout } from "../features/plans/PathLayout";
 import { PlansPage } from "../features/plans/PlansPage";
 import { OnboardingPage } from "../features/profile/OnboardingPage";
@@ -46,7 +47,7 @@ export const appRoutes: RouteObject[] = [
                   { path: "create", element: <BuilderPage /> },
                   { path: "create/document", element: <DeaneryPage /> },
                   { path: "create/preferences", element: <PreferencesPage /> },
-                  { path: "plan/:id", element: <PlaceholderPage title="Перегляд плану" /> },
+                  { path: "plan/:id", element: <PlanViewPage /> },
                 ],
               },
               { path: "/catalog", element: <CatalogPage /> },
