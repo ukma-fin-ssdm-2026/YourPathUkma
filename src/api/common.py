@@ -59,11 +59,13 @@ class ApiError(Exception):
         code: str,
         message: str,
         details: Optional[List[ErrorDetail]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ):
         self.status_code = status_code
         self.code = code
         self.message = message
         self.details = details or []
+        self.headers = headers
 
 
 _ERROR_DESCRIPTIONS: Dict[int, str] = {
@@ -72,7 +74,10 @@ _ERROR_DESCRIPTIONS: Dict[int, str] = {
     403: "Доступ заборонено: ресурс належить іншому студенту",
     404: "Ресурс не знайдено",
     409: "Конфлікт: дія неможлива в поточному стані ресурсу",
+    413: "Файл завеликий",
+    415: "Непідтримуваний тип файлу",
     422: "Помилка валідації вхідних даних",
+    429: "Забагато запитів",
 }
 _DEFAULT_EXAMPLES: Dict[int, Tuple[str, str]] = {
     400: ("BAD_REQUEST", "Некоректний запит"),
@@ -80,7 +85,10 @@ _DEFAULT_EXAMPLES: Dict[int, Tuple[str, str]] = {
     403: ("PLAN_FORBIDDEN", "Цей план належить іншому студенту"),
     404: ("NOT_FOUND", "Ресурс не знайдено"),
     409: ("CONFLICT", "Дія неможлива в поточному стані ресурсу"),
+    413: ("FILE_TOO_LARGE", "Файл більший за 10 МБ"),
+    415: ("UNSUPPORTED_FILE_TYPE", "Дозволені лише PDF і DOCX"),
     422: ("VALIDATION_ERROR", "Невалідні вхідні дані"),
+    429: ("RATE_LIMITED", "Забагато запитів, спробуйте пізніше"),
 }
 
 
@@ -116,7 +124,9 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApiError)
     async def api_error_handler(request: Request, exc: ApiError):
         body = ErrorResponse(code=exc.code, message=exc.message, details=exc.details)
-        return JSONResponse(status_code=exc.status_code, content=body.model_dump(mode="json"))
+        return JSONResponse(
+            status_code=exc.status_code, content=body.model_dump(mode="json"), headers=exc.headers
+        )
 
     @app.exception_handler(RequestValidationError)
     async def validation_error_handler(request: Request, exc: RequestValidationError):
@@ -161,9 +171,6 @@ bearer_scheme = HTTPBearer(
 async def get_current_student_id(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
 ) -> int:
-    # MCP-сервер (mcp/mcp_server.py) викликає API без HTTP-заголовків, тож credentials == None.
-    # Для нього встановлюється MCP_DEV_MODE=1, і тоді повертається тестовий студент.
-    # В усіх інших випадках запит без токена отримує 401.
     if credentials is None:
         if os.getenv("MCP_DEV_MODE") == "1":
             return MOCK_STUDENT_ID
