@@ -13,6 +13,11 @@ const CODE_TEXT: Record<string, string> = {
   PLAN_NOT_SUBMITTABLE: "Подати можна лише чернетку",
 };
 
+/** Текст для коду з відповіді сервера; лише власні ключі таблиці, щоб "constructor" чи "__proto__" не читали прототип. */
+function textFor(table: Record<string, string>, code: string | undefined): string | undefined {
+  return code !== undefined && Object.hasOwn(table, code) ? table[code] : undefined;
+}
+
 export interface SaveErrors {
   /** Повідомлення біля карток, за course_id. */
   itemErrors: Record<number, string>;
@@ -32,7 +37,7 @@ export function describeSaveError(error: ApiError, items: PlanItem[]): SaveError
       const match = /^items\.(\d+)\./.exec(detail.field);
       const item = match ? items[Number(match[1])] : undefined;
       const code = /^([A-Z_]+):/.exec(detail.message)?.[1];
-      if (item && code && ITEM_TEXT[code]) itemErrors[item.course_id] = ITEM_TEXT[code]!;
+      if (item && text) itemErrors[item.course_id] = text;
       else rest.push(detail);
     }
     return { itemErrors, form: fieldErrors(rest).form.concat(rest.filter((d) => d.field && d.field !== "body").map((d) => d.message)) };
