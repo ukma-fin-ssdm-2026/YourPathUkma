@@ -65,12 +65,12 @@ export function UserEditor({ user, onClose }: { user: AdminUser; onClose: () => 
     : null;
 
   return (
-    <div className="fixed inset-0 z-10 grid place-items-center bg-black/40 p-4">
+    <div className="dialog-backdrop fixed inset-0 z-10 grid place-items-center bg-black/40 p-4">
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Змінити користувача"
-        className="w-full max-w-md rounded-2xl border border-rule bg-surface p-6 shadow-xl"
+        className="dialog-panel w-full max-w-md rounded-2xl border border-rule bg-surface p-6 shadow-xl"
       >
         <h2 className="font-display text-base">{user.full_name}</h2>
         <p className="text-ink-2">{user.email}</p>

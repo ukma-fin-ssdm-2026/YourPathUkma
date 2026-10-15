@@ -1,6 +1,8 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import css from "../styles/index.css?raw";
+import { ConfirmDialog } from "../features/plans/ConfirmDialog";
 import { Button } from "./Button";
 import { StatusBadge, type PlanStatus } from "./Badge";
 import { Segmented } from "./Segmented";
@@ -60,5 +62,28 @@ describe("Segmented", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: "Середнє" }));
     expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+describe("анімація діалогів", () => {
+  it("ConfirmDialog має класи входу на підкладці й панелі", () => {
+    render(
+      <ConfirmDialog open title="Видалити?" confirmLabel="Видалити" onConfirm={() => {}} onCancel={() => {}} />,
+    );
+    const panel = screen.getByRole("dialog");
+    expect(panel).toHaveClass("dialog-panel");
+    expect(panel.parentElement).toHaveClass("dialog-backdrop");
+  });
+
+  it("кадри входу не стартують зі scale(0), тривалість до 300 мс, ease-out", () => {
+    const block = /@keyframes dialog-in[\s\S]*?\n\}/.exec(css)?.[0] ?? "";
+    expect(block).not.toBe("");
+    expect(block).not.toMatch(/scale\(0\)/);
+    expect(css).toMatch(/\.dialog-panel\s*{[^}]*animation:[^;]*(1[0-9]{2}|2[0-9]{2})ms var\(--ease-out\)/);
+  });
+
+  it("для prefers-reduced-motion анімація діалогів вимкнена", () => {
+    const reduced = /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\r?\n\}\r?\n/.exec(css)?.[0] ?? "";
+    expect(reduced).toMatch(/\.dialog-backdrop[\s\S]*animation:\s*none/);
   });
 });
