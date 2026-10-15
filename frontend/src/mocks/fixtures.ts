@@ -3,6 +3,7 @@
 import type {
   AcademicCategory,
   AdminUser,
+  Direction,
   AcademicRecord,
   AcademicYear,
   AuthResponse,
@@ -222,5 +223,16 @@ export function seedAdminUsers(): AdminUser[] {
     student(42, "Владислав Смирнов", "vl.smyrnov@ukma.edu.ua", 3, "self_declared"),
     student(43, "Олена Коваль", "o.koval@ukma.edu.ua", 2, "saz_sync"),
     student(44, "Андрій Мельник", "a.melnyk@ukma.edu.ua", null, null),
+  ];
+}
+
+/** Напрямки, на які посилаються дисципліни/побажання: їх видалення дає 409 DIRECTION_IN_USE. */
+export const DIRECTION_IDS_IN_USE = [3];
+
+export function seedDirections(): Direction[] {
+  return [
+    { id: 1, name: "Data Science", description: "Дані та ML" },
+    { id: 2, name: "Веброзробка", description: null },
+    { id: 3, name: "Кібербезпека", description: "Захист систем" },
   ];
 }

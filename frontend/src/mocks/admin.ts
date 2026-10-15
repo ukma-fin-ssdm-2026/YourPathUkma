@@ -4,7 +4,7 @@ import { http, HttpResponse } from "msw";
 import type { ErrorDetail } from "../api/errors";
 import type { AdminUserPatch, BulkReviewResult, ModerationItem, SyncJob } from "../api/types";
 import { db } from "./db";
-import { MOCK_ADMIN_ID } from "./fixtures";
+import { DIRECTION_IDS_IN_USE, MOCK_ADMIN_ID } from "./fixtures";
 import { API, apiError, hasAuth, paginate, unauthorized } from "./http";
 
 const isActive = (job: SyncJob) => job.status === "queued" || job.status === "running";
@@ -157,4 +157,61 @@ const userHandlers = [
   }),
 ];
 
-export const adminHandlers = [...syncHandlers, ...moderationHandlers, ...userHandlers];
+function validateDirection(body: { name?: string; description?: string | null }, id?: number) {
+  const details: ErrorDetail[] = [];
+  if (body.name !== undefined) {
+    if (body.name.length < 2 || body.name.length > 50) {
+      details.push({ field: "name", message: "String should have from 2 to 50 characters" });
+    } else if (
+      db.admin.directions.some((d) => d.id !== id && d.name.toLowerCase() === body.name!.toLowerCase())
+    ) {
+      return apiError(409, "DIRECTION_NAME_TAKEN", "Напрямок із такою назвою вже існує");
+    }
+  }
+  return details.length > 0 ? apiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details) : null;
+}
+
+const directionHandlers = [
+  http.post(`${API}/admin/directions`, async ({ request }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const body = (await request.json()) as { name: string; description?: string | null };
+    const invalid = validateDirection(body);
+    if (invalid) return invalid;
+    const direction = {
+      id: Math.max(0, ...db.admin.directions.map((d) => d.id)) + 1,
+      name: body.name,
+      description: body.description ?? null,
+    };
+    db.admin.directions.push(direction);
+    return HttpResponse.json(direction, { status: 201 });
+  }),
+
+  http.patch(`${API}/admin/directions/:id`, async ({ request, params }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const direction = db.admin.directions.find((d) => String(d.id) === params.id);
+    if (!direction) return apiError(404, "DIRECTION_NOT_FOUND", "Напрямок не знайдено");
+    const body = (await request.json()) as { name?: string; description?: string | null };
+    const invalid = validateDirection(body, direction.id);
+    if (invalid) return invalid;
+    Object.assign(direction, body);
+    return HttpResponse.json(direction);
+  }),
+
+  http.delete(`${API}/admin/directions/:id`, ({ request, params }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const direction = db.admin.directions.find((d) => String(d.id) === params.id);
+    if (!direction) return apiError(404, "DIRECTION_NOT_FOUND", "Напрямок не знайдено");
+    if (DIRECTION_IDS_IN_USE.includes(direction.id)) {
+      return apiError(409, "DIRECTION_IN_USE", "Напрямок прив'язаний до дисциплін або побажань");
+    }
+    db.admin.directions = db.admin.directions.filter((d) => d.id !== direction.id);
+    return new HttpResponse(null, { status: 204 });
+  }),
+];
+
+export const adminHandlers = [
+  ...syncHandlers,
+  ...moderationHandlers,
+  ...userHandlers,
+  ...directionHandlers,
+];
