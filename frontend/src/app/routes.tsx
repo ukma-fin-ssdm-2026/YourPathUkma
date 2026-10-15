@@ -15,6 +15,7 @@ import { ProfilePage } from "../features/profile/ProfilePage";
 import { RequireOnboarded } from "../features/profile/RequireOnboarded";
 import { AdminLayout } from "../features/admin/AdminLayout";
 import { OverviewPage } from "../features/admin/OverviewPage";
+import { ModerationPage } from "../features/admin/moderation/ModerationPage";
 import { SyncPage } from "../features/admin/sync/SyncPage";
 import { ConnectedLayout } from "./ConnectedLayout";
 
@@ -62,7 +63,7 @@ export const appRoutes: RouteObject[] = [
                     element: <AdminLayout />,
                     children: [
                       { index: true, element: <OverviewPage /> },
-                      { path: "moderation", element: <PlaceholderPage title="Модерація" /> },
+                      { path: "moderation", element: <ModerationPage /> },
                       { path: "sync", element: <SyncPage /> },
                       { path: "users", element: <PlaceholderPage title="Користувачі" /> },
                       { path: "directions", element: <PlaceholderPage title="Напрямки" /> },

@@ -50,7 +50,7 @@ export function useReviewItem() {
         method: "POST",
         body: decision === "reject" && reason ? { reason } : undefined,
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin", "moderation"] }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["admin", "moderation"] }),
   });
 }
 
@@ -59,7 +59,7 @@ export function useBulkReview() {
   return useMutation<BulkReviewResult, ApiError, { item_ids: number[]; decision: Decision }>({
     mutationFn: (body) =>
       request<BulkReviewResult>("/admin/moderation-items/bulk-review", { method: "POST", body }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin", "moderation"] }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["admin", "moderation"] }),
   });
 }
 
