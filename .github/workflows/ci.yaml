@@ -36,6 +36,8 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Lint (ruff)
+        run: pip install ruff && ruff check src tests scripts mcp
       - name: Generate OpenAPI from code
         run: python scripts/generate_openapi.py
       - name: Fail if committed spec is out of date

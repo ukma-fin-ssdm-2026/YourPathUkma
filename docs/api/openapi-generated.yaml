@@ -45,6 +45,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
@@ -57,6 +58,7 @@ paths:
                 details:
                 - field: items.0.credits
                   message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     get:
@@ -127,6 +129,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
@@ -139,6 +142,7 @@ paths:
                 details:
                 - field: items.0.credits
                   message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
   /api/v1/plans/{plan_id}:
@@ -178,6 +182,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
@@ -188,6 +193,7 @@ paths:
                 code: PLAN_FORBIDDEN
                 message: Цей план належить іншому студенту
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
@@ -198,6 +204,7 @@ paths:
                 code: PLAN_NOT_FOUND
                 message: План з ID 5 не знайдено
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
@@ -210,6 +217,7 @@ paths:
                 details:
                 - field: items.0.credits
                   message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     put:
@@ -254,6 +262,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
@@ -264,6 +273,7 @@ paths:
                 code: PLAN_FORBIDDEN
                 message: Цей план належить іншому студенту
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
@@ -274,6 +284,7 @@ paths:
                 code: PLAN_NOT_FOUND
                 message: План з ID 5 не знайдено
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '409':
@@ -284,6 +295,7 @@ paths:
                 code: PLAN_NOT_EDITABLE
                 message: Редагувати можна лише план у статусі draft
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
@@ -296,6 +308,7 @@ paths:
                 details:
                 - field: items.0.credits
                   message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     delete:
@@ -329,6 +342,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
@@ -339,6 +353,7 @@ paths:
                 code: PLAN_FORBIDDEN
                 message: Цей план належить іншому студенту
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
@@ -349,6 +364,7 @@ paths:
                 code: PLAN_NOT_FOUND
                 message: План з ID 5 не знайдено
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '409':
@@ -359,6 +375,7 @@ paths:
                 code: PLAN_NOT_DELETABLE
                 message: Видаляти можна лише план у статусі draft
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
@@ -371,6 +388,7 @@ paths:
                 details:
                 - field: items.0.credits
                   message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
   /api/v1/plans/validate:
@@ -406,6 +424,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
         '422':
           description: Помилка валідації вхідних даних
           content:
@@ -418,6 +437,7 @@ paths:
                 details:
                 - field: items.0.credits
                   message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
       security:
       - HTTPBearer: []
   /api/v1/disciplines:
@@ -547,6 +567,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
@@ -559,6 +580,7 @@ paths:
                 details:
                 - field: items.0.credits
                   message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
   /api/v1/disciplines/{discipline_id}:
@@ -597,6 +619,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
@@ -607,6 +630,7 @@ paths:
                 code: DISCIPLINE_NOT_FOUND
                 message: Дисципліну з ID 999 не знайдено
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
@@ -619,6 +643,7 @@ paths:
                 details:
                 - field: items.0.credits
                   message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
   /api/v1/auth/google:
@@ -651,6 +676,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
         '422':
           description: Помилка валідації вхідних даних
           content:
@@ -663,6 +689,7 @@ paths:
                 details:
                 - field: items.0.credits
                   message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
   /api/v1/auth/refresh:
     post:
       tags:
@@ -694,6 +721,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
@@ -737,6 +765,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
       security:
       - HTTPBearer: []
   /api/v1/instructors:
@@ -798,6 +827,7 @@ paths:
                 code: UNAUTHORIZED
                 message: Відсутній або некоректний токен авторизації
                 details: []
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
@@ -810,6 +840,7 @@ paths:
                 details:
                 - field: items.0.credits
                   message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
   /api/v1/config:
@@ -832,6 +863,7 @@ paths:
       tags:
       - System
       summary: Перевірка стану системи (Healthcheck)
+      description: Повертає стан сервісу для моніторингу.
       operationId: health_check_health_get
       responses:
         '200':
@@ -1123,10 +1155,18 @@ components:
           type: array
           title: Details
           description: Деталі по полях (для помилок валідації)
+        request_id:
+          type: string
+          title: Request Id
+          description: Ідентифікатор запиту для пошуку в журналах (збігається із заголовком
+            X-Request-ID)
+          examples:
+          - req_3f9a1c7e2b4d4a6e
       type: object
       required:
       - code
       - message
+      - request_id
       title: ErrorResponse
       description: Єдиний формат відповіді для всіх помилок 4xx/5xx.
       examples:
@@ -1135,6 +1175,7 @@ components:
         - field: items.0.credits
           message: Input should be greater than 0
         message: Невалідні вхідні дані
+        request_id: req_3f9a1c7e2b4d4a6e
     Features:
       properties:
         ai_generation:

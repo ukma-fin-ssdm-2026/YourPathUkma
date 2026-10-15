@@ -7,15 +7,18 @@ enum-и, бізнес-валідація з AGENTS.md (вільний вибір
 Перевірка: ручний запуск, перевірка кожної кінцевої точки у Swagger UI, звірка з docs/api/api-design.md.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
+
 from fastapi import APIRouter, Depends, Path, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+
 from ...db import enums as db_enums
-from ...db.models import Course, IndividualPlan, PlanItem as PlanItemRow
+from ...db.models import Course, IndividualPlan
+from ...db.models import PlanItem as PlanItemRow
 from ...db.session import get_db
 from ..common import ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
 
@@ -223,7 +226,9 @@ _MOCK_PLANS = {
     3: (7, PlanStatus.DRAFT),
 }
 
+
 def _to_response(plan: IndividualPlan) -> PlanResponse:
+    """Перетворює ORM-план на PlanResponse з підрахунком кредитів."""
     items = [
         PlanItem(
             course_id=item.course_id,

@@ -4,16 +4,32 @@
 Використання ШІ: файл створено за допомогою Claude (Anthropic) за вимогами ЛР4 та api-design.md.
 Перевірка: ручний запуск сервера, перегляд у Swagger UI (/api-docs), перевірка
 відповідей 401/404/409/422 для кожної кінцевої точки, звірка форматів з docs/api/api-design.md.
+
+Правки за зовнішнім рев'ю (review/received/review-report.md) внесено за допомогою Claude (Claude Code):
+`request_id` у ErrorResponse і заголовок X-Request-ID, журналювання замість print, обмеження
+MCP_DEV_MODE. Перевірено: pytest (tests/test_request_id.py) і ruff check src/api.
 """
 
+import logging
 import os
+import re
+import uuid
 from typing import Dict, List, Optional, Tuple
+
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+logger = logging.getLogger("yourpath.api")
+
+REQUEST_ID_HEADER = "X-Request-ID"
+_REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
+_EXAMPLE_REQUEST_ID = "req_3f9a1c7e2b4d4a6e"
+_UNAUTHORIZED_MESSAGE = "Відсутній або некоректний токен авторизації"
 
 
 class ErrorDetail(BaseModel):
@@ -31,6 +47,11 @@ class ErrorResponse(BaseModel):
         examples=["План з ID 5 не знайдено"],
     )
     details: List[ErrorDetail] = Field(default_factory=list, description="Деталі по полях (для помилок валідації)")
+    request_id: str = Field(
+        ...,
+        description="Ідентифікатор запиту для пошуку в журналах (збігається із заголовком X-Request-ID)",
+        examples=[_EXAMPLE_REQUEST_ID],
+    )
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -44,6 +65,7 @@ class ErrorResponse(BaseModel):
                             "message": "Input should be greater than 0",
                         }
                     ],
+                    "request_id": _EXAMPLE_REQUEST_ID,
                 }
             ]
         }
@@ -76,7 +98,7 @@ _ERROR_DESCRIPTIONS: Dict[int, str] = {
 }
 _DEFAULT_EXAMPLES: Dict[int, Tuple[str, str]] = {
     400: ("BAD_REQUEST", "Некоректний запит"),
-    401: ("UNAUTHORIZED", "Відсутній або некоректний токен авторизації"),
+    401: ("UNAUTHORIZED", _UNAUTHORIZED_MESSAGE),
     403: ("PLAN_FORBIDDEN", "Цей план належить іншому студенту"),
     404: ("NOT_FOUND", "Ресурс не знайдено"),
     409: ("CONFLICT", "Дія неможлива в поточному стані ресурсу"),
@@ -105,6 +127,7 @@ def error_responses(*codes: int, overrides: Optional[Dict[int, Tuple[str, str]]]
                         "code": error_code,
                         "message": message,
                         "details": details,
+                        "request_id": _EXAMPLE_REQUEST_ID,
                     }
                 }
             },
@@ -112,11 +135,64 @@ def error_responses(*codes: int, overrides: Optional[Dict[int, Tuple[str, str]]]
     return result
 
 
+def get_request_id(request: Request) -> str:
+    """Повертає request_id поточного запиту (його виставляє RequestIdMiddleware)."""
+    return getattr(request.state, "request_id", None) or f"req_{uuid.uuid4().hex[:16]}"
+
+
+class RequestIdMiddleware:
+    """Бере X-Request-ID від клієнта (якщо він безпечний) або генерує новий і додає його у відповідь."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        incoming = Request(scope).headers.get(REQUEST_ID_HEADER, "")
+        request_id = incoming if _REQUEST_ID_RE.match(incoming) else f"req_{uuid.uuid4().hex[:16]}"
+        scope.setdefault("state", {})["request_id"] = request_id
+
+        async def send_with_header(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                headers = [(k, v) for k, v in message.get("headers", []) if k.lower() != b"x-request-id"]
+                headers.append((REQUEST_ID_HEADER.lower().encode(), request_id.encode()))
+                message["headers"] = headers
+            await send(message)
+
+        await self.app(scope, receive, send_with_header)
+
+
+def _error_response(
+    request: Request,
+    status_code: int,
+    code: str,
+    message: str,
+    details: Optional[List[ErrorDetail]] = None,
+) -> JSONResponse:
+    request_id = get_request_id(request)
+    body = ErrorResponse(code=code, message=message, details=details or [], request_id=request_id)
+    return JSONResponse(
+        status_code=status_code,
+        content=body.model_dump(mode="json"),
+        headers={REQUEST_ID_HEADER: request_id},
+    )
+
+
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApiError)
     async def api_error_handler(request: Request, exc: ApiError):
-        body = ErrorResponse(code=exc.code, message=exc.message, details=exc.details)
-        return JSONResponse(status_code=exc.status_code, content=body.model_dump(mode="json"))
+        if exc.status_code in (401, 403):
+            logger.warning(
+                "%s %s -> %s %s [%s]",
+                request.method,
+                request.url.path,
+                exc.status_code,
+                exc.code,
+                get_request_id(request),
+            )
+        return _error_response(request, exc.status_code, exc.code, exc.message, exc.details)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error_handler(request: Request, exc: RequestValidationError):
@@ -125,18 +201,17 @@ def register_error_handlers(app: FastAPI) -> None:
             loc = err["loc"]
             field = ".".join(str(part) for part in loc[1:]) or str(loc[0])
             details.append(ErrorDetail(field=field, message=err["msg"]))
-        body = ErrorResponse(code="VALIDATION_ERROR", message="Невалідні вхідні дані", details=details)
-        return JSONResponse(status_code=422, content=body.model_dump(mode="json"))
+        logger.info("%s %s -> 422 VALIDATION_ERROR [%s]", request.method, request.url.path, get_request_id(request))
+        return _error_response(request, 422, "VALIDATION_ERROR", "Невалідні вхідні дані", details)
 
     @app.exception_handler(StarletteHTTPException)
     async def http_error_handler(request: Request, exc: StarletteHTTPException):
-        body = ErrorResponse(code=f"HTTP_{exc.status_code}", message=str(exc.detail))
-        return JSONResponse(status_code=exc.status_code, content=body.model_dump(mode="json"))
+        return _error_response(request, exc.status_code, f"HTTP_{exc.status_code}", str(exc.detail))
 
     @app.exception_handler(Exception)
     async def unhandled_error_handler(request: Request, exc: Exception):
-        body = ErrorResponse(code="INTERNAL_ERROR", message="Внутрішня помилка сервера")
-        return JSONResponse(status_code=500, content=body.model_dump(mode="json"))
+        logger.exception("Необроблена помилка %s %s [%s]", request.method, request.url.path, get_request_id(request))
+        return _error_response(request, 500, "INTERNAL_ERROR", "Внутрішня помилка сервера")
 
 
 class PaginationInfo(BaseModel):
@@ -158,16 +233,29 @@ bearer_scheme = HTTPBearer(
 )
 
 
+def dev_bypass_enabled() -> bool:
+    """Обхід автентифікації для MCP дозволено лише поза продакшном (APP_ENV != production)."""
+    return os.getenv("MCP_DEV_MODE") == "1" and os.getenv("APP_ENV", "development") != "production"
+
+
+def assert_safe_environment() -> None:
+    """Відмовляє у запуску, якщо обхід автентифікації ввімкнено в продакшні."""
+    if os.getenv("MCP_DEV_MODE") == "1" and os.getenv("APP_ENV") == "production":
+        raise RuntimeError("MCP_DEV_MODE=1 заборонено при APP_ENV=production")
+
+
 async def get_current_student_id(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
 ) -> int:
+    """Заглушка автентифікації: повертає тестового студента для будь-якого непорожнього Bearer-токена."""
     # MCP-сервер (mcp/mcp_server.py) викликає API без HTTP-заголовків, тож credentials == None.
     # Для нього встановлюється MCP_DEV_MODE=1, і тоді повертається тестовий студент.
     # В усіх інших випадках запит без токена отримує 401.
     if credentials is None:
-        if os.getenv("MCP_DEV_MODE") == "1":
+        if dev_bypass_enabled():
+            logger.warning("MCP_DEV_MODE: запит без токена пропущено як студента %s", MOCK_STUDENT_ID)
             return MOCK_STUDENT_ID
-        raise ApiError(401, "UNAUTHORIZED", "Відсутній або некоректний токен авторизації")
+        raise ApiError(401, "UNAUTHORIZED", _UNAUTHORIZED_MESSAGE)
     if not credentials.credentials.strip():
-        raise ApiError(401, "UNAUTHORIZED", "Відсутній або некоректний токен авторизації")
+        raise ApiError(401, "UNAUTHORIZED", _UNAUTHORIZED_MESSAGE)
     return MOCK_STUDENT_ID

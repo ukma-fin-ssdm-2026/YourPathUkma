@@ -5,10 +5,12 @@
 
 from enum import Enum
 from typing import List, Optional
+
 from fastapi import APIRouter, Depends, Path, Query
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
+
 from ...db.base import normalize_text
 from ...db.enums import CourseKind, PublicationStatus, Trimester
 from ...db.models import Course, CourseDirection, CourseInstructor, Direction, Instructor
