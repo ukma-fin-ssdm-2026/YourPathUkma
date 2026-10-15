@@ -154,3 +154,8 @@ export interface Preferences {
   certificate_program_id: number | null;
   updated_at?: string;
 }
+
+export type PlanItem = components["schemas"]["PlanItem"];
+export type PlanValidationResponse = components["schemas"]["PlanValidationResponse"];
+export type RuleIssue = components["schemas"]["RuleIssue"];
+export type PlanSummary = components["schemas"]["PlanSummary"];
