@@ -101,3 +101,18 @@ export function plansHandler(plans: PlanResponse[], onRequest?: (url: URL) => vo
     });
   });
 }
+
+import type { Instructor } from "../api/types";
+
+/** GET /instructors: віддає items як є; `onRequest` бачить адресу запиту. */
+export function instructorsHandler(items: Instructor[], onRequest?: (url: URL) => void) {
+  return http.get("*/api/v1/instructors", ({ request }) => {
+    const url = new URL(request.url);
+    onRequest?.(url);
+    const limit = Number(url.searchParams.get("limit") ?? 20);
+    return HttpResponse.json({
+      instructors: items,
+      pagination: { limit, offset: 0, total: items.length, has_more: false },
+    });
+  });
+}

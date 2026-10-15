@@ -114,3 +114,43 @@ export type PaginationInfo = components["schemas"]["PaginationInfo"];
 export type PaginatedDisciplinesResponse = components["schemas"]["PaginatedDisciplinesResponse"];
 export type PlanResponse = components["schemas"]["PlanResponse"];
 export type PaginatedPlansResponse = components["schemas"]["PaginatedPlansResponse"];
+
+export type ParseStatus = "pending" | "parsed" | "failed";
+
+export interface NormativeCourse {
+  course_id: number | null;
+  raw_title: string;
+  trimester: 1 | 2 | 3;
+  credits: number;
+}
+
+export interface DeaneryDocument {
+  id: number;
+  academic_year: number;
+  original_filename: string;
+  mime_type: "pdf" | "docx";
+  size_bytes: number;
+  parse_status: ParseStatus;
+  parse_error: string | null;
+  uploaded_at: string;
+  normative_courses: NormativeCourse[];
+}
+
+export type LoadLevels = Partial<Record<"autumn" | "spring" | "summer", LoadLevel>>;
+
+export interface Instructor {
+  id: number;
+  full_name: string;
+}
+
+export interface Preferences {
+  academic_year: number;
+  load_levels: LoadLevels;
+  direction_ids: number[];
+  include_free_electives: boolean;
+  preferred_instructor_ids: number[];
+  unwanted_instructor_ids: number[];
+  wants_certificate: boolean;
+  certificate_program_id: number | null;
+  updated_at?: string;
+}

@@ -64,13 +64,19 @@ async function send(
 ): Promise<{ response: Response; tokenUsed: string | null }> {
   const tokenUsed = useAuth ? getAccessToken() : null;
   const headers = new Headers({ Accept: "application/json" });
-  if (options.body !== undefined) headers.set("Content-Type", "application/json");
+  const isForm = options.body instanceof FormData;
+  if (options.body !== undefined && !isForm) headers.set("Content-Type", "application/json");
   if (tokenUsed) headers.set("Authorization", `Bearer ${tokenUsed}`);
   try {
     const response = await doFetch(buildUrl(path, options.query), {
       method: options.method ?? "GET",
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body:
+        options.body === undefined
+          ? undefined
+          : isForm
+            ? (options.body as FormData)
+            : JSON.stringify(options.body),
       credentials: "include",
       signal: options.signal,
     });
