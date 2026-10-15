@@ -5,6 +5,7 @@ import { LoginPage } from "../auth/LoginPage";
 import { RequireAdmin, RequireAuth } from "../auth/RequireAuth";
 import { PreferencesPage } from "../features/preferences/PreferencesPage";
 import { CatalogPage } from "../features/catalog/CatalogPage";
+import { BuilderPage } from "../features/builder/BuilderPage";
 import { DeaneryPage } from "../features/deanery/DeaneryPage";
 import { PathLayout } from "../features/plans/PathLayout";
 import { PlansPage } from "../features/plans/PlansPage";
@@ -42,7 +43,7 @@ export const appRoutes: RouteObject[] = [
                 children: [
                   { path: "plan", element: <PlansPage mode="all" /> },
                   { path: "saved", element: <PlansPage mode="saved" /> },
-                  { path: "create", element: <PlaceholderPage title="Створити план" /> },
+                  { path: "create", element: <BuilderPage /> },
                   { path: "create/document", element: <DeaneryPage /> },
                   { path: "create/preferences", element: <PreferencesPage /> },
                   { path: "plan/:id", element: <PlaceholderPage title="Перегляд плану" /> },
