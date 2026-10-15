@@ -10,28 +10,27 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, UploadFile, File, Form, BackgroundTasks, Path, Response, status, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Path, Query, Response, UploadFile, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ...db import enums as db_enums
 from ...db.base import normalize_text, utcnow
+from ...db.models import IndividualPlan
 from ...db.models.catalog import Course
 from ...db.models.deanery import DeaneryPlanDocument, NormativeCourseEntry
 from ...db.models.history import AcademicRecord
 from ...db.models.users import StudentProfile
-from ...db.session import session_factory, get_db
+from ...db.session import get_db, session_factory
 from ..common import ApiError, error_responses, get_current_student_id
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/deanery-documents", tags=["Deanery documents"])
 
-MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 МБ
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
-
-# ---------- Схеми API ----------
 
 class NormativeCourseResponse(BaseModel):
     course_id: Optional[int] = Field(None, description="null, якщо не знайдено в каталозі")
@@ -54,7 +53,6 @@ class DeaneryDocumentResponse(BaseModel):
 
 class DeaneryDocumentsListResponse(BaseModel):
     deanery_documents: List[DeaneryDocumentResponse]
-
 
 
 @dataclass(frozen=True)
@@ -116,7 +114,7 @@ def _add_history(db: Session, document: DeaneryPlanDocument, parsed: List[Parsed
         return
     profile = db.get(StudentProfile, document.student_id)
     if profile is None or profile.course_year is None:
-        return  
+        return
     course_year = profile.course_year - (this_year - document.academic_year)
     if not 1 <= course_year <= 4:
         return
@@ -177,7 +175,7 @@ def _to_response(doc: DeaneryPlanDocument) -> DeaneryDocumentResponse:
                 course_id=nc.course_id,
                 raw_title=nc.raw_title,
                 trimester=nc.trimester.number,
-                credits=nc.credits
+                credits=nc.credits,
             )
             for nc in doc.normative_courses
         ]
@@ -190,7 +188,7 @@ def _to_response(doc: DeaneryPlanDocument) -> DeaneryDocumentResponse:
         parse_status=doc.parse_status.value,
         parse_error=doc.parse_error,
         uploaded_at=doc.uploaded_at,
-        normative_courses=courses
+        normative_courses=courses,
     )
 
 
@@ -203,13 +201,16 @@ def _to_response(doc: DeaneryPlanDocument) -> DeaneryDocumentResponse:
     responses={
         202: {"description": "Документ прийнято на обробку"},
         **error_responses(
-            401, 413, 415, 422,
+            401,
+            413,
+            415,
+            422,
             overrides={
                 413: ("FILE_TOO_LARGE", "Файл більший за 10 МБ"),
-                415: ("UNSUPPORTED_FILE_TYPE", "Не PDF і не DOCX")
-            }
-        )
-    }
+                415: ("UNSUPPORTED_FILE_TYPE", "Не PDF і не DOCX"),
+            },
+        ),
+    },
 )
 async def upload_document(
     response: Response,
@@ -217,7 +218,7 @@ async def upload_document(
     file: UploadFile = File(...),
     academic_year: int = Form(..., ge=2024, le=2030),
     student_id: int = Depends(get_current_student_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     content = await file.read()
     size = len(content)
@@ -228,10 +229,9 @@ async def upload_document(
     mime_map = {
         "application/pdf": db_enums.DocumentMimeType.PDF,
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document": db_enums.DocumentMimeType.DOCX,
-        "application/msword": db_enums.DocumentMimeType.DOCX  # fallback
+        "application/msword": db_enums.DocumentMimeType.DOCX,
     }
-    
-    # Для базової валідації покладаємося на content_type з UploadFile (або розширення)
+
     doc_mime = mime_map.get(file.content_type)
     if not doc_mime:
         if file.filename and file.filename.endswith(".pdf"):
@@ -248,9 +248,9 @@ async def upload_document(
         mime_type=doc_mime,
         size_bytes=size,
         content=content,
-        sha256=hashlib.sha256(content).hexdigest(),  # <-- ДОДАНО
+        sha256=hashlib.sha256(content).hexdigest(),
         parse_status=db_enums.DocumentParseStatus.PENDING,
-        uploaded_at=utcnow()
+        uploaded_at=utcnow(),
     )
     db.add(doc)
     db.commit()
@@ -270,12 +270,12 @@ async def upload_document(
 def list_documents(
     academic_year: Optional[int] = Query(None, description="Фільтр за навчальним роком"),
     student_id: int = Depends(get_current_student_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     query = select(DeaneryPlanDocument).where(DeaneryPlanDocument.student_id == student_id)
     if academic_year:
         query = query.where(DeaneryPlanDocument.academic_year == academic_year)
-    
+
     docs = db.scalars(query.order_by(DeaneryPlanDocument.uploaded_at.desc())).all()
     return DeaneryDocumentsListResponse(deanery_documents=[_to_response(d) for d in docs])
 
@@ -284,12 +284,12 @@ def list_documents(
     "/{document_id}",
     response_model=DeaneryDocumentResponse,
     summary="Отримати документ та розпізнані дисципліни",
-    responses={200: {"description": "Документ знайдено"}, **error_responses(401, 404)}
+    responses={200: {"description": "Документ знайдено"}, **error_responses(401, 404)},
 )
 def get_document(
     document_id: int = Path(...),
     student_id: int = Depends(get_current_student_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     doc = db.get(DeaneryPlanDocument, document_id)
     if not doc or doc.student_id != student_id:
@@ -300,23 +300,27 @@ def get_document(
 @router.get(
     "/{document_id}/file",
     summary="Завантажити оригінальний файл",
-    responses={200: {"description": "Файл"}, **error_responses(401, 404)}
+    responses={200: {"description": "Файл"}, **error_responses(401, 404)},
 )
 def download_document_file(
     document_id: int = Path(...),
     student_id: int = Depends(get_current_student_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     doc = db.get(DeaneryPlanDocument, document_id)
     if not doc or doc.student_id != student_id:
         raise ApiError(404, "DOCUMENT_NOT_FOUND", "Документ не знайдено")
-    
-    media_type = "application/pdf" if doc.mime_type == db_enums.DocumentMimeType.PDF else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    
+
+    media_type = (
+        "application/pdf"
+        if doc.mime_type == db_enums.DocumentMimeType.PDF
+        else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+
     return Response(
         content=doc.content,
         media_type=media_type,
-        headers={"Content-Disposition": f'attachment; filename="{doc.original_filename}"'}
+        headers={"Content-Disposition": f'attachment; filename="{doc.original_filename}"'},
     )
 
 
@@ -324,20 +328,24 @@ def download_document_file(
     "/{document_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Видалити документ",
-    responses={204: {"description": "Документ видалено"}, **error_responses(401, 404, 409)}
+    responses={204: {"description": "Документ видалено"}, **error_responses(401, 404, 409)},
 )
 def delete_document(
     document_id: int = Path(...),
     student_id: int = Depends(get_current_student_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     doc = db.get(DeaneryPlanDocument, document_id)
     if not doc or doc.student_id != student_id:
         raise ApiError(404, "DOCUMENT_NOT_FOUND", "Документ не знайдено")
-    
-    # TODO (команда): згодом додати перевірку 409 DOCUMENT_IN_USE, коли буде готова інтеграція з планами 
-    # (якщо документ прив'язаний до плану, який не у статусі DRAFT).
-    
+
+    # Перевіряємо, чи документ не прив'язаний до активних/використовуваних планів (DOCUMENT_IN_USE)
+    used_in_plans = db.scalar(
+        select(IndividualPlan.id).where(IndividualPlan.deanery_document_id == document_id).limit(1)
+    )
+    if used_in_plans is not None:
+        raise ApiError(409, "DOCUMENT_IN_USE", "Неможливо видалити документ, оскільки він прив'язаний до навчального плану")
+
     db.delete(doc)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

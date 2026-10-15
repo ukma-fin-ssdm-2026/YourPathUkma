@@ -191,7 +191,12 @@ def get_discipline(
     discipline_id: int = Path(..., gt=0, description="Унікальний ідентифікатор дисципліни", examples=[101]),
     db: Session = Depends(get_db),
 ):
-    course = db.get(Course, discipline_id)
-    if course is not None and course.publication_status == PublicationStatus.PUBLISHED:
+    query = (
+        select(Course)
+        .where(Course.id == discipline_id, Course.publication_status == PublicationStatus.PUBLISHED)
+        .options(selectinload(Course.course_instructors), selectinload(Course.directions))
+    )
+    course = db.scalar(query)
+    if course is not None:
         return to_discipline(course)
     raise ApiError(404, "DISCIPLINE_NOT_FOUND", f"Дисципліну з ID {discipline_id} не знайдено")

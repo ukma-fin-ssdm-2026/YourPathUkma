@@ -13,9 +13,6 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from src.api.routes.admin.common import require_admin
-
-from .common import client_ip, require_admin, write_audit
 from ....db.base import normalize_text
 from ....db.models.catalog import Course, CourseDirection, Direction
 from ....db.models.preferences import PreferenceDirection
@@ -23,6 +20,7 @@ from ....db.models.users import User
 from ....db.session import get_db
 from ...common import ApiError, ErrorDetail, error_responses
 from ..disciplines import Discipline, to_discipline
+from .common import client_ip, require_admin, write_audit
 
 router = APIRouter(
     prefix="/api/v1/admin",

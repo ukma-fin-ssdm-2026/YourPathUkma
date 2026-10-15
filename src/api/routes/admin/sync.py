@@ -21,9 +21,6 @@ from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from src.api.routes.admin.common import require_admin
-
-from .common import client_ip, require_admin, write_audit
 from ....db import enums as db_enums
 from ....db.base import normalize_text, utcnow
 from ....db.models.admin import ModerationItem, SyncJob
@@ -31,6 +28,7 @@ from ....db.models.catalog import Course
 from ....db.models.users import User
 from ....db.session import get_db
 from ...common import ApiError, ErrorDetail, PaginationInfo, error_responses
+from .common import client_ip, require_admin, write_audit
 
 router = APIRouter(
     prefix="/api/v1/admin",
@@ -181,10 +179,6 @@ def _payload_error(message: str, details: Optional[List[ErrorDetail]] = None) ->
 
 
 def _check_change(db: Session, item: ModerationItem) -> Tuple[Optional[Course], Optional[CoursePayload]]:
-    """
-    Усі перевірки перед змінами в БД: якщо payload непридатний, елемент лишається `pending`
-    і нічого не змінюється.
-    """
     if item.change_type == db_enums.ModerationChangeType.REMOVE:
         course = db.get(Course, item.course_id) if item.course_id else None
         if course is None:
@@ -252,7 +246,7 @@ def _apply_change(db: Session, item: ModerationItem, course: Optional[Course], d
         if data.kind is not None:
             course.kind = data.kind
         course.last_sync_job_id = item.sync_job_id
-    else:  # REMOVE: дисципліну не видаляють, а архівують (FK з планів RESTRICT)
+    else:  # REMOVE
         course.publication_status = db_enums.PublicationStatus.ARCHIVED
         course.last_sync_job_id = item.sync_job_id
 
@@ -276,7 +270,6 @@ def _review_item(
         course, data = _check_change(db, item)
 
     new_status = db_enums.ModerationStatus.APPROVED if decision == "approve" else db_enums.ModerationStatus.REJECTED
-    # Умовний UPDATE: якщо інший запит устиг раніше, rowcount = 0, і зміна каталогу не застосовується двічі
     claimed = db.execute(
         update(ModerationItem)
         .where(ModerationItem.id == item.id, ModerationItem.status == db_enums.ModerationStatus.PENDING)
@@ -355,7 +348,7 @@ def start_sync_job(
     )
     db.add(job)
     try:
-        db.flush()  # часткова унікальність у БД ловить одночасні запити
+        db.flush()
         write_audit(
             db,
             actor_id=admin.id,
@@ -474,14 +467,17 @@ def bulk_review(
     skipped: List[SkippedItem] = []
     for item_id in dict.fromkeys(payload.item_ids):
         try:
-            _review_item(db, item_id, payload.decision, admin, ip)
+            with db.begin_nested():
+                _review_item(db, item_id, payload.decision, admin, ip)
         except ApiError as exc:
             skipped.append(SkippedItem(id=item_id, code=exc.code))
         except IntegrityError:
-            db.rollback()
             skipped.append(SkippedItem(id=item_id, code="CONFLICT"))
+        except Exception:
+            skipped.append(SkippedItem(id=item_id, code="INTERNAL_ERROR"))
         else:
             (approved if payload.decision == "approve" else rejected).append(item_id)
+    db.commit()
     return BulkReviewResponse(approved=approved, rejected=rejected, skipped=skipped)
 
 

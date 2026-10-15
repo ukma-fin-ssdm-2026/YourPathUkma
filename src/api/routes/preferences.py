@@ -174,7 +174,6 @@ def save_preferences(
     is_auto = profile.course_year == 4
     if is_auto:
         # TODO(команда): правило розрахунку рівнів для 4 курсу з залишку до 240 кредитів у контракті не описане
-        # (contract.md §2.3). Поки всі триместри `medium`, `is_auto = true`.
         levels = LoadLevels()
     else:
         levels = payload.load_levels
@@ -184,7 +183,6 @@ def save_preferences(
         prefs = PlanPreferences(student_id=profile.user_id, academic_year=academic_year)
         db.add(prefs)
     else:
-        # Складені PK: старі рядки треба видалити до вставки нових, інакше конфлікт ідентичності
         prefs.directions.clear()
         prefs.trimester_loads.clear()
         prefs.instructor_preferences.clear()
@@ -193,7 +191,7 @@ def save_preferences(
     prefs.include_free_electives = payload.include_free_electives
     prefs.wants_certificate = payload.wants_certificate
     prefs.certificate_program_id = payload.certificate_program_id
-    prefs.updated_at = utcnow()  # onupdate не спрацює, якщо змінилися лише дочірні таблиці
+    prefs.updated_at = utcnow()  
     prefs.directions = [PreferenceDirection(direction_id=i) for i in direction_ids]
     prefs.trimester_loads = [
         TrimesterLoad(

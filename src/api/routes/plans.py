@@ -1,10 +1,20 @@
 """
-Ресурс «Індивідуальні плани» (Plans): CRUD-кінцеві точки з відповідями-заглушками.
+Ресурс «Індивідуальні плани» (Plans): CRUD, перевірка, подання, експорт.
 
 Використання ШІ: файл доопрацьовано за допомогою Claude (Anthropic): єдиний формат помилок,
 enum-и, бізнес-валідація з AGENTS.md (вільний вибір ≤ 25 кредитів, заборона «лише вільний вибір»,
 унікальність дисциплін), статус 409 для не-чернеток, схема безпеки Bearer.
 Перевірка: ручний запуск, перевірка кожної кінцевої точки у Swagger UI, звірка з docs/api/api-design.md.
+
+Додатково (Claude, Anthropic): виклик enforce_plan_rules у create_plan і update_plan (серверна перевірка
+прапорця вільного вибору проти каталогу, ліміт 25 кредитів за всі роки, заборона load_levels на 4 курсі);
+видалено невикористані заглушки. Перевірка: tests/test_plan_rules.py, Black, flake8, bandit.
+
+Додатково (Claude, Anthropic): розв'язано конфлікт злиття (submit і export збережено, заглушки видалено);
+бізнес-правила винесено в plan_rules і збираються разом у enforce_plan_rules (усі порушення в одній 422,
+а не лише перше з model_validator); submit перевіряє план через enforce_submit_rules (каталог, деканат, ліміти);
+title елемента до 300 символів (як у БД); кредити округлюються до 0.1. Перевірка: ручний огляд, pytest і
+лінтери запустити перед комітом.
 """
 
 from datetime import datetime
@@ -12,7 +22,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, Path, Query, Response, status
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -20,7 +30,9 @@ from ...db import enums as db_enums
 from ...db.models import Course, IndividualPlan
 from ...db.models import PlanItem as PlanItemRow
 from ...db.session import get_db
+from ...services import plan_rules
 from ..common import ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
+from ..plan_checks import enforce_plan_rules, enforce_submit_rules
 
 router = APIRouter(prefix="/api/v1", tags=["Plans"])
 
@@ -28,7 +40,7 @@ _PLAN_NOT_FOUND = ("PLAN_NOT_FOUND", "План з ID 5 не знайдено")
 _PLAN_NOT_EDITABLE = ("PLAN_NOT_EDITABLE", "Редагувати можна лише план у статусі draft")
 _PLAN_NOT_DELETABLE = ("PLAN_NOT_DELETABLE", "Видаляти можна лише план у статусі draft")
 
-FREE_ELECTIVE_LIMIT = 25
+FREE_ELECTIVE_LIMIT = plan_rules.FREE_ELECTIVE_LIMIT
 
 
 class PlanStatus(str, Enum):
@@ -51,11 +63,11 @@ class LoadLevels(BaseModel):
 
 
 class PlanItem(BaseModel):
-    course_id: int = Field(..., description="Унікальний ID дисципліни з каталогу САЗ", examples=[101])
+    course_id: int = Field(..., gt=0, description="Унікальний ID дисципліни з каталогу САЗ", examples=[101])
     title: str = Field(
         ...,
         min_length=2,
-        max_length=150,
+        max_length=300,
         description="Назва дисципліни",
         examples=["Функціональне програмування"],
     )
@@ -81,32 +93,11 @@ class RuleIssue(BaseModel):
 
 
 def collect_rule_errors(items: List[PlanItem]) -> List[RuleIssue]:
-    """Бізнес-правила плану, яким не потрібні БД чи каталог (contract.md, §2.4). Єдине джерело правил."""
-    errors: List[RuleIssue] = []
-    ids = [item.course_id for item in items]
-    if len(ids) != len(set(ids)):
-        errors.append(
-            RuleIssue(
-                code="DUPLICATE_COURSE",
-                message="Дисципліни в плані не повинні повторюватись (course_id має бути унікальним)",
-            )
-        )
-    if all(item.is_free_elective for item in items):
-        errors.append(
-            RuleIssue(
-                code="ONLY_FREE_ELECTIVES",
-                message="Не можна обрати лише дисципліни вільного вибору без профорієнтовних",
-            )
-        )
-    free_credits = sum(item.credits for item in items if item.is_free_elective)
-    if free_credits > FREE_ELECTIVE_LIMIT:
-        errors.append(
-            RuleIssue(
-                code="FREE_ELECTIVE_LIMIT_EXCEEDED",
-                message=f"Перевищено ліміт вільного вибору: {free_credits} > {FREE_ELECTIVE_LIMIT} кредитів",
-            )
-        )
-    return errors
+    """Бізнес-правила плану, яким не потрібні БД чи каталог (contract.md, §2.4). Правила лежать у plan_rules."""
+    violations = plan_rules.check_duplicate_courses([item.course_id for item in items])
+    violations += plan_rules.check_not_only_free_electives([item.is_free_elective for item in items])
+    violations += plan_rules.check_free_elective_in_plan(sum(item.credits for item in items if item.is_free_elective))
+    return [RuleIssue(code=v.code, message=v.message, field=v.field) for v in violations]
 
 
 class PlanPayload(BaseModel):
@@ -125,12 +116,7 @@ class PlanPayload(BaseModel):
 
 
 class CreatePlanRequest(PlanPayload):
-    @model_validator(mode="after")
-    def validate_business_rules(self):
-        errors = collect_rule_errors(self.items)
-        if errors:
-            raise ValueError(errors[0].message)
-        return self
+    """Тіло POST/PUT /plans. Бізнес-правила перевіряє enforce_plan_rules, щоб повернути всі порушення разом."""
 
 
 class PlanResponse(BaseModel):
@@ -204,32 +190,8 @@ class PlanValidationResponse(BaseModel):
     summary: PlanSummary = Field(..., description="Підсумок кредитів для індикаторів у конструкторі")
 
 
-_SAMPLE_PAYLOAD = CreatePlanRequest(
-    academic_year=2026,
-    course=2,
-    load_levels=LoadLevels(),
-    items=[
-        PlanItem(course_id=101, title="Функціональне програмування", trimester=1, credits=5.0),
-        PlanItem(
-            course_id=205,
-            title="Управління цифровим продуктом",
-            trimester=2,
-            credits=3.0,
-            is_free_elective=True,
-        ),
-    ],
-)
-
-_MOCK_PLANS = {
-    1: (42, PlanStatus.DRAFT),
-    2: (42, PlanStatus.SUBMITTED),
-    3: (7, PlanStatus.DRAFT),
-}
-
-
-def _to_response(plan: IndividualPlan) -> PlanResponse:
-    """Перетворює ORM-план на PlanResponse з підрахунком кредитів."""
-    items = [
+def _plan_items(plan: IndividualPlan) -> List[PlanItem]:
+    return [
         PlanItem(
             course_id=item.course_id,
             title=item.course.title,
@@ -239,6 +201,11 @@ def _to_response(plan: IndividualPlan) -> PlanResponse:
         )
         for item in plan.items
     ]
+
+
+def _to_response(plan: IndividualPlan) -> PlanResponse:
+    """Перетворює ORM-план на PlanResponse з підрахунком кредитів."""
+    items = _plan_items(plan)
     return PlanResponse(
         id=plan.id,
         student_id=plan.student_id,
@@ -251,8 +218,8 @@ def _to_response(plan: IndividualPlan) -> PlanResponse:
         ),
         items=items,
         status=PlanStatus(plan.status.value),
-        total_credits=sum(item.credits for item in items),
-        free_elective_credits=sum(item.credits for item in items if item.is_free_elective),
+        total_credits=round(sum(item.credits for item in items), 1),
+        free_elective_credits=round(sum(item.credits for item in items if item.is_free_elective), 1),
         created_at=plan.created_at,
     )
 
@@ -312,7 +279,7 @@ def _apply_payload(plan: IndividualPlan, payload: CreatePlanRequest, courses: Di
     plan.load_autumn = db_enums.LoadLevel(payload.load_levels.autumn.value)
     plan.load_spring = db_enums.LoadLevel(payload.load_levels.spring.value)
     plan.load_summer = db_enums.LoadLevel(payload.load_levels.summer.value)
-    plan.total_credits = sum(courses[item.course_id].credits for item in payload.items)
+    plan.total_credits = round(sum(courses[item.course_id].credits for item in payload.items), 1)
     plan.items = [
         PlanItemRow(
             course_id=item.course_id,
@@ -336,7 +303,7 @@ def _apply_payload(plan: IndividualPlan, payload: CreatePlanRequest, courses: Di
     description=(
         "Створює план вибіркових дисциплін для поточного студента. "
         "Серверна валідація: унікальність дисциплін, ліміт вільного вибору (25 кредитів), "
-        "заборона плану лише з вільного вибору."
+        "заборона плану лише з вільного вибору, конфлікт з нормативними дисциплінами деканату."
     ),
     responses={
         201: {"description": "План успішно створено"},
@@ -350,6 +317,7 @@ def create_plan(
     db: Session = Depends(get_db),
 ):
     courses = _check_catalog(db, payload.items)
+    enforce_plan_rules(db, student_id, payload, courses)
     plan = IndividualPlan(student_id=student_id, status=db_enums.PlanStatus.DRAFT, origin=db_enums.PlanOrigin.MANUAL)
     _apply_payload(plan, payload, courses)
     db.add(plan)
@@ -443,7 +411,7 @@ def update_plan(
     if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_EDITABLE", "Редагувати можна лише план у статусі draft")
     courses = _check_catalog(db, payload.items)
-    # Старі елементи видаляються до вставки нових, інакше спрацює UNIQUE (plan_id, course_id)
+    enforce_plan_rules(db, student_id, payload, courses, exclude_plan_id=plan.id)
     plan.items.clear()
     db.flush()
     _apply_payload(plan, payload, courses)
@@ -495,11 +463,12 @@ def delete_plan(
 )
 async def validate_plan(payload: PlanPayload):
     errors = collect_rule_errors(payload.items)
-    total = sum(item.credits for item in payload.items)
-    free = sum(item.credits for item in payload.items if item.is_free_elective)
+    total = round(sum(item.credits for item in payload.items), 1)
+    free = round(sum(item.credits for item in payload.items if item.is_free_elective), 1)
     by_trimester = {"1": 0.0, "2": 0.0, "3": 0.0}
     for item in payload.items:
         by_trimester[str(item.trimester)] += item.credits
+    by_trimester = {key: round(value, 1) for key, value in by_trimester.items()}
 
     return PlanValidationResponse(
         valid=not errors,
@@ -509,11 +478,12 @@ async def validate_plan(payload: PlanPayload):
             total_credits=total,
             free_elective_credits=free,
             free_elective_used_all_years=free,  # TODO: додати вільний вибір попередніх років з історії студента
-            free_elective_remaining=max(0.0, FREE_ELECTIVE_LIMIT - free),
+            free_elective_remaining=max(0.0, round(FREE_ELECTIVE_LIMIT - free, 1)),
             year_total_credits=total,  # TODO: додати нормативні дисципліни року
             credits_by_trimester=by_trimester,
         ),
     )
+
 
 @router.post(
     "/plans/{plan_id}/submit",
@@ -523,12 +493,16 @@ async def validate_plan(payload: PlanPayload):
     responses={
         200: {"description": "План успішно подано"},
         **error_responses(
-            401, 403, 404, 409, 422,
+            401,
+            403,
+            404,
+            409,
+            422,
             overrides={
                 404: _PLAN_NOT_FOUND,
                 409: ("PLAN_NOT_SUBMITTABLE", "Подати можна лише план у статусі draft"),
-                422: ("PLAN_VALIDATION_FAILED", "План не проходить перевірку нормативів")
-            }
+                422: ("PLAN_VALIDATION_FAILED", "План не проходить перевірку нормативів"),
+            },
         ),
     },
 )
@@ -540,23 +514,10 @@ def submit_plan(
     plan = _find_plan(db, plan_id, student_id)
     if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_SUBMITTABLE", "Подати можна лише план у статусі draft")
-    
-    # 1. Базові перевірки (дублікати, ліміти)
-    fake_items = [
-        PlanItem(
-            course_id=item.course_id, 
-            title=item.course.title, 
-            trimester=item.trimester.number, 
-            credits=item.course.credits, 
-            is_free_elective=(item.category == db_enums.PlanItemCategory.FREE_CHOICE)
-        ) for item in plan.items
-    ]
-    errors = collect_rule_errors(fake_items)
-    
-    if errors:
-        details = [ErrorDetail(field=e.field or "plan", message=e.message) for e in errors]
-        raise ApiError(422, "PLAN_VALIDATION_FAILED", "План не проходить перевірку нормативів при поданні", details)
-        
+
+    courses = {row.course_id: row.course for row in plan.items}
+    enforce_submit_rules(db, plan, _plan_items(plan), courses)
+
     plan.status = db_enums.PlanStatus.SUBMITTED
     db.commit()
     return _to_response(plan)
@@ -573,21 +534,25 @@ def submit_plan(
 )
 def export_plan(
     plan_id: int = Path(..., gt=0, examples=[1]),
-    format: str = Query("pdf", description="Формат експорту (поки лише pdf)"),
+    export_format: str = Query("pdf", alias="format", description="Формат експорту (поки лише pdf)"),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
     plan = _find_plan(db, plan_id, student_id)
-    
-    if format.lower() != "pdf":
-        raise ApiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", [ErrorDetail(field="format", message="Підтримується лише формат pdf")])
 
-    # TODO (Команда): Реалізувати генерацію реального PDF документа з даними плану.
-    # Зараз повертаємо заглушку
+    if export_format.lower() != "pdf":
+        raise ApiError(
+            422,
+            "VALIDATION_ERROR",
+            "Невалідні вхідні дані",
+            [ErrorDetail(field="format", message="Підтримується лише формат pdf")],
+        )
+
+    # TODO (команда): реалізувати генерацію реального PDF з даними плану. Поки повертається заглушка.
     pdf_content = b"%PDF-1.4\n%Fake PDF content for endpoint testing\n%%EOF"
-    
+
     return Response(
-        content=pdf_content, 
-        media_type="application/pdf", 
-        headers={"Content-Disposition": f'attachment; filename="plan-{plan.academic_year}.pdf"'}
+        content=pdf_content,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="plan-{plan.academic_year}.pdf"'},
     )

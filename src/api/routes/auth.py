@@ -4,14 +4,20 @@
 ЗАГЛУШКА: код Google не перевіряється, повертається тестовий студент. Реальна перевірка
 ID-токена (iss, aud, exp, email_verified, hd == ukma.edu.ua) і збереження refresh-токенів
 у БД додаються пізніше, форма відповідей уже відповідає контракту (§3.1).
+
+Використання ШІ: валідацію GoogleLoginRequest (формат PKCE code_verifier за RFC 7636, перевірка redirect_uri
+зі списком дозволених адрес ALLOWED_REDIRECT_URIS) додано за допомогою Claude (Anthropic).
+Перевірка: tests/test_plan_rules.py (тести схеми входу), Black, flake8, bandit.
 """
 
+import os
 import secrets
 from enum import Enum
 from typing import Optional
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, Cookie, Response, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from ..common import MOCK_STUDENT_ID, ApiError, error_responses
 
@@ -22,6 +28,9 @@ REFRESH_COOKIE_PATH = "/api/v1/auth"
 ACCESS_TOKEN_TTL_SECONDS = 900
 REFRESH_COOKIE_TTL_SECONDS = 7 * 24 * 3600
 
+# RFC 7636: code_verifier складається з [A-Z] [a-z] [0-9] - . _ ~ і має довжину 43-128 символів
+_PKCE_PATTERN = r"^[A-Za-z0-9\-._~]{43,128}$"
+
 
 class UserRole(str, Enum):
     STUDENT = "student"
@@ -30,13 +39,27 @@ class UserRole(str, Enum):
 
 class GoogleLoginRequest(BaseModel):
     code: str = Field(..., min_length=1, max_length=2048, description="Код авторизації Google")
-    code_verifier: str = Field(..., min_length=43, max_length=128, description="PKCE code_verifier")
+    code_verifier: str = Field(..., pattern=_PKCE_PATTERN, description="PKCE code_verifier (43-128 символів RFC 7636)")
     redirect_uri: str = Field(
         ...,
         min_length=1,
         max_length=512,
         description="redirect_uri, використаний на фронтенді",
     )
+
+    @field_validator("redirect_uri")
+    @classmethod
+    def validate_redirect_uri(cls, value: str) -> str:
+        """Якщо задано ALLOWED_REDIRECT_URIS (через кому), приймаються лише ці адреси; інакше базова перевірка."""
+        allowed = [uri.strip() for uri in os.getenv("ALLOWED_REDIRECT_URIS", "").split(",") if uri.strip()]
+        if allowed:
+            if value not in allowed:
+                raise ValueError("redirect_uri не входить до дозволеного списку")
+            return value
+        parsed = urlparse(value)
+        if parsed.scheme not in ("http", "https") or not parsed.netloc or parsed.fragment:
+            raise ValueError("redirect_uri має бути абсолютною http(s)-адресою без фрагмента")
+        return value
 
 
 class AuthUser(BaseModel):
@@ -106,7 +129,12 @@ async def refresh_session(response: Response, refresh_token: Optional[str] = Coo
     description="Очищає refresh-cookie. Заглушка: токени в БД ще не відкликаються.",
     responses={204: {"description": "Вихід виконано"}},
 )
-async def logout():
-    response = Response(status_code=status.HTTP_204_NO_CONTENT)
-    response.delete_cookie(key=REFRESH_COOKIE, path=REFRESH_COOKIE_PATH)
-    return response
+async def logout(response: Response):
+    response.delete_cookie(
+        key=REFRESH_COOKIE,
+        path=REFRESH_COOKIE_PATH,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

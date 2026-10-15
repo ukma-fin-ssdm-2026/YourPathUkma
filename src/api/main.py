@@ -13,6 +13,10 @@ OpenAPI-специфікація генерується з коду при ст�
 Правки за зовнішнім рев'ю (review/received/review-report.md) внесено за допомогою Claude (Claude Code):
 імпорти нагорі, журналювання замість print, X-Request-ID, CORS з env, захист від MCP_DEV_MODE у продакшні.
 Перевірено: pytest і ruff check src/api.
+
+Додатково (Claude, Anthropic): додано відсутні імпорти роутерів preferences, user, deanery (без них застосунок
+не стартував з NameError) і виклик init_database() при старті (міграції та демо-дані).
+Перевірка: ручний огляд; запуск сервера, pytest і ruff check src/api виконати перед комітом.
 """
 
 import json
@@ -36,6 +40,17 @@ from .routes import auth, disciplines, plans, reference, system
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("yourpath.api")
 
+from ..db.migrate import init_database
+from .common import RequestIdMiddleware, assert_safe_environment, register_error_handlers
+from .routes import auth, deanery, disciplines, plans, preferences, reference, system, user
+from .routes.admin import audit as admin_audit
+from .routes.admin import catalog as admin_catalog
+from .routes.admin import sync as admin_sync
+from .routes.admin import users as admin_users
+
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logger = logging.getLogger("yourpath.api")
+
 DOCS_DIR = Path(__file__).resolve().parents[2] / "docs" / "api"
 
 
@@ -51,7 +66,6 @@ def save_openapi_spec(app: FastAPI) -> None:
             json.dumps(spec, indent=2, ensure_ascii=False), encoding="utf-8"
         )
     except OSError:
-        # Файлова система може бути лише для читання (контейнер): це не повинно блокувати запуск API.
         logger.warning("Не вдалося зберегти OpenAPI-специфікацію в %s", DOCS_DIR, exc_info=True)
         return
     logger.info("OpenAPI-специфікацію згенеровано з коду: %s", DOCS_DIR / "openapi-generated.yaml")
@@ -60,6 +74,7 @@ def save_openapi_spec(app: FastAPI) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     assert_safe_environment()
+    init_database()
     save_openapi_spec(app)
     logger.info("Swagger UI: http://127.0.0.1:3000/api-docs, ReDoc: http://127.0.0.1:3000/redoc")
     yield
@@ -84,42 +99,21 @@ app = FastAPI(
     ],
     openapi_tags=[
         {"name": "System", "description": "Системні маршрути (моніторинг)"},
-        {
-            "name": "Plans",
-            "description": "Індивідуальні навчальні плани студента (CRUD)",
-        },
+        {"name": "Plans", "description": "Індивідуальні навчальні плани студента (CRUD)"},
         {"name": "Disciplines", "description": "Каталог дисциплін (читання, фільтри)"},
-        {
-            "name": "Auth",
-            "description": "Вхід через Google, оновлення і відкликання токена (заглушка)",
-        },
-        {
-            "name": "Reference",
-            "description": "Довідники: напрямки розвитку і викладачі",
-        },
-        {
-            "name": "Preferences", 
-            "description": "Побажання студента на навчальний рік"
-        },
-        {
-            "name": "Deanery documents", 
-            "description": "Документи деканату"
-        },
-        {
-            "name": "Admin", 
-            "description": "Адміністрування: користувачі, довідники, синхронізація, аудит"
-        },
-        {
-            "name": "User", 
-            "description": "Профіль студента, онбординг, академічна історія"
-        },
+        {"name": "Auth", "description": "Вхід через Google, оновлення і відкликання токена (заглушка)"},
+        {"name": "Reference", "description": "Довідники: напрямки розвитку і викладачі"},
+        {"name": "Preferences", "description": "Побажання студента на навчальний рік"},
+        {"name": "Deanery documents", "description": "Документи деканату"},
+        {"name": "Admin", "description": "Адміністрування: користувачі, довідники, синхронізація, аудит"},
+        {"name": "User", "description": "Профіль студента, онбординг, академічна історія"},
     ],
     lifespan=lifespan,
 )
 
-# У продакшні задайте CORS_ORIGINS=https://your-frontend.example (через кому); за замовчуванням "*" лише для розробки.
 _cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()]
 
+app.add_middleware(RequestIdMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
@@ -143,6 +137,7 @@ app.include_router(admin_users.router)
 app.include_router(admin_catalog.router)
 app.include_router(admin_sync.router)
 app.include_router(admin_audit.router)
+
 
 @app.get("/health", tags=["System"], summary="Перевірка стану системи (Healthcheck)")
 async def health_check():

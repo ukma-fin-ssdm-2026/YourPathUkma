@@ -256,9 +256,6 @@ async def get_current_student_id(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
 ) -> int:
     """Заглушка автентифікації: повертає тестового студента для будь-якого непорожнього Bearer-токена."""
-    # MCP-сервер (mcp/mcp_server.py) викликає API без HTTP-заголовків, тож credentials == None.
-    # Для нього встановлюється MCP_DEV_MODE=1, і тоді повертається тестовий студент.
-    # В усіх інших випадках запит без токена отримує 401.
     if credentials is None:
         if dev_bypass_enabled():
             logger.warning("MCP_DEV_MODE: запит без токена пропущено як студента %s", MOCK_STUDENT_ID)

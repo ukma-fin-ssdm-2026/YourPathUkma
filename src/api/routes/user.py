@@ -4,6 +4,10 @@
 Кінцеві точки: GET /me, POST /me/onboarding, GET/POST /me/academic-history, DELETE /me/academic-history/{id}.
 Лічильники кредитів не зберігаються: вони рахуються з academic_records (записи з approved_plan
 створюватиме перехід плану в `approved`, див. contract.md §3.2.2).
+
+Використання ШІ: файл доопрацьовано за допомогою Claude (Anthropic): серверна перевірка ліміту 240 кредитів
+за програму при додаванні історії (AGENTS.md §10), порядок перевірок у add_academic_history.
+Перевірка: ручний огляд; pytest і лінтери запустити перед комітом.
 """
 
 from collections import defaultdict
@@ -27,14 +31,8 @@ from .auth import AuthUser
 from .system import Limits
 
 router = APIRouter(prefix="/api/v1", tags=["User"])
-
-# Контракт не обмежує academic_year історії (на відміну від планів, 2024–2030): студент 4 курсу почав у 2023
 HISTORY_YEAR_MIN = 2015
 HISTORY_YEAR_MAX = 2030
-
-
-# ---------- Схеми: профіль ----------
-
 
 class CreditsInfo(BaseModel):
     total_used: float = Field(..., description="Усього пройдено кредитів", examples=[118.5])
@@ -66,10 +64,6 @@ class OnboardingRequest(BaseModel):
 
     course_year: int = Field(..., ge=1, le=4, description="Курс навчання", examples=[3])
     specialty: str = Field(..., min_length=2, max_length=150, examples=["Інженерія програмного забезпечення"])
-
-
-# ---------- Схеми: академічна історія ----------
-
 
 class AcademicRecordResponse(BaseModel):
     id: int = Field(..., examples=[310])
@@ -112,10 +106,6 @@ class AddRecordsRequest(BaseModel):
 
 class AddRecordsResponse(BaseModel):
     records: List[AcademicRecordResponse]
-
-
-# ---------- Допоміжні функції ----------
-
 
 def _get_user(db: Session, user_id: int) -> User:
     user = db.get(User, user_id)
@@ -198,10 +188,6 @@ def _group_by_year(records: List[AcademicRecord]) -> AcademicHistoryResponse:
         )
     return AcademicHistoryResponse(years=years)
 
-
-# ---------- Профіль ----------
-
-
 @router.get(
     "/me",
     response_model=MeResponse,
@@ -248,10 +234,6 @@ def onboard(
     db.commit()
     return _build_me(db, user)
 
-
-# ---------- Академічна історія ----------
-
-
 @router.get(
     "/me/academic-history",
     response_model=AcademicHistoryResponse,
@@ -280,7 +262,7 @@ def list_academic_history(
     description=(
         "Додає 1–60 записів із `source = self_declared`. Якщо задано `course_id`, `title` і `credits` "
         "беруться з каталогу. `course_year` запису не може перевищувати курс студента; "
-        "вільний вибір за всі роки ≤ 25 кредитів."
+        "вільний вибір за всі роки ≤ 25 кредитів, усього за програму ≤ 240 кредитів."
     ),
     responses={
         201: {"description": "Записи додано"},
@@ -371,19 +353,37 @@ def add_academic_history(
         )
 
     if not details:
-        limit = Limits().free_choice_credits
-        used = db.scalar(
-            select(func.coalesce(func.sum(AcademicRecord.credits), 0)).where(
-                AcademicRecord.student_id == student_id,
-                AcademicRecord.category == db_enums.AcademicCategory.FREE_CHOICE,
-            )
-        )
-        new = sum(r.credits for r in rows if r.category == db_enums.AcademicCategory.FREE_CHOICE)
-        if used + new > limit:
+        limits = Limits()
+        used_rows = db.execute(
+            select(AcademicRecord.category, func.coalesce(func.sum(AcademicRecord.credits), 0))
+            .where(AcademicRecord.student_id == student_id)
+            .group_by(AcademicRecord.category)
+        ).all()
+        used_by_category = {category: float(total or 0) for category, total in used_rows}
+
+        used_free = used_by_category.get(db_enums.AcademicCategory.FREE_CHOICE, 0.0)
+        new_free = sum(r.credits for r in rows if r.category == db_enums.AcademicCategory.FREE_CHOICE)
+        if used_free + new_free > limits.free_choice_credits:
             details.append(
                 ErrorDetail(
                     field="records",
-                    message=f"FREE_ELECTIVE_LIMIT_EXCEEDED: вільний вибір за всі роки {round(used + new, 1)} > {limit} кредитів",
+                    message=(
+                        f"FREE_ELECTIVE_LIMIT_EXCEEDED: вільний вибір за всі роки "
+                        f"{round(used_free + new_free, 1)} > {limits.free_choice_credits} кредитів"
+                    ),
+                )
+            )
+
+        used_total = sum(used_by_category.values())
+        new_total = sum(r.credits for r in rows)
+        if used_total + new_total > limits.total_credits:
+            details.append(
+                ErrorDetail(
+                    field="records",
+                    message=(
+                        f"TOTAL_CREDITS_EXCEEDED: усього за програму "
+                        f"{round(used_total + new_total, 1)} > {limits.total_credits} кредитів"
+                    ),
                 )
             )
     if details:
@@ -393,7 +393,6 @@ def add_academic_history(
     try:
         db.commit()
     except IntegrityError:
-        # Одночасний запит устиг додати ту саму дисципліну (UNIQUE student_id, course_id)
         db.rollback()
         raise ApiError(
             422,
@@ -429,7 +428,6 @@ def delete_academic_record(
     db: Session = Depends(get_db),
 ):
     record = db.get(AcademicRecord, record_id)
-    # Чужий запис не розкриваємо: 404, як і для неіснуючого (R3)
     if record is None or record.student_id != student_id:
         raise ApiError(404, "RECORD_NOT_FOUND", f"Запис з ID {record_id} не знайдено")
     if record.source != db_enums.RecordSource.SELF_DECLARED or record.verified:

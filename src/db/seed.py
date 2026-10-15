@@ -6,7 +6,7 @@
 
 Запуск: `python -m src.db.seed` (лише якщо в БД ще немає користувачів).
 
-Використання ШІ: файл створено за допомогою Claude (Claude Code) з даних колишніх заглушок
+Використання ШІ: файл створено за допомогою Claude (Claude Code) з даних колишніх заглушек
 src/api/routes/{disciplines,reference,plans}.py. Перевірка: pytest на SQLite і PostgreSQL.
 """
 
@@ -45,7 +45,6 @@ _DIRECTIONS = [
 
 _INSTRUCTORS = [(7, "Петренко І. М."), (8, "Коваленко О. В."), (9, "Мельник Т. С."), (10, "Шевченко А. П.")]
 
-# id, назва, опис, тип, викладач, рік, триместр, кредити, напрямки
 _COURSES = [
     (101, "Функціональне програмування", "Основи функціональної парадигми.", CourseKind.ELECTIVE, 7, 2, 1, 5.0, [3, 1]),
     (102, "Основи кібербезпеки", "Базові принципи захисту інформації.", CourseKind.ELECTIVE, 8, 3, 2, 4.0, [2]),
@@ -63,14 +62,12 @@ _COURSES = [
     ),
 ]
 
-# id, email, ПІБ, роль, курс
 _USERS = [
     (1, "admin@ukma.edu.ua", "Адміністратор", UserRole.ADMIN, None),
     (7, "other.student@ukma.edu.ua", "Інший Студент", UserRole.STUDENT, 3),
     (42, "student@ukma.edu.ua", "Тестовий Студент", UserRole.STUDENT, 2),
 ]
 
-# id, власник, статус
 _PLANS = [(1, 42, PlanStatus.DRAFT), (2, 42, PlanStatus.SUBMITTED), (3, 7, PlanStatus.DRAFT)]
 
 _TABLES_WITH_FIXED_IDS = ["directions", "instructors", "courses", "users", "individual_plans", "plan_items"]
@@ -152,7 +149,12 @@ def _reset_identity_sequences(db: Session) -> None:
     if db.get_bind().dialect.name != "postgresql":
         return
     for table in _TABLES_WITH_FIXED_IDS:
-        db.execute(text(f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), (SELECT MAX(id) FROM {table}))"))
+        max_id = db.scalar(text(f"SELECT MAX(id) FROM {table}"))
+        if max_id is not None:
+            db.execute(
+                text(f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), :max_id)"),
+                {"max_id": max_id},
+            )
 
 
 def main() -> None:

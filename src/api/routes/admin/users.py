@@ -16,9 +16,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from src.api.routes.admin.common import require_admin
-
-from .common import client_ip, require_admin, write_audit
 from ....db import enums as db_enums
 from ....db.base import utcnow
 from ....db.models.history import AcademicRecord
@@ -27,6 +24,7 @@ from ....db.session import get_db
 from ...common import ApiError, PaginationInfo, error_responses
 from ..auth import UserRole
 from ..user import AcademicHistoryResponse, MeResponse, _build_me, _group_by_year
+from .common import client_ip, require_admin, write_audit
 
 router = APIRouter(
     prefix="/api/v1/admin",
@@ -159,7 +157,7 @@ def list_users(
         if onboarding_required:
             filters.append(and_(User.role == db_enums.UserRole.STUDENT, incomplete))
         else:
-            filters.append(~incomplete)
+            filters.append(and_(User.role == db_enums.UserRole.STUDENT, ~incomplete))
 
     joined = User.id == StudentProfile.user_id
     total = db.scalar(select(func.count(User.id)).select_from(User).outerjoin(StudentProfile, joined).where(*filters))
