@@ -5,10 +5,12 @@
 
 from enum import Enum
 from typing import List, Optional
+
 from fastapi import APIRouter, Depends, Path, Query
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
+
 from ...db.base import normalize_text
 from ...db.enums import CourseKind, PublicationStatus, Trimester
 from ...db.models import Course, CourseDirection, CourseInstructor, Direction, Instructor
@@ -189,7 +191,12 @@ def get_discipline(
     discipline_id: int = Path(..., gt=0, description="Унікальний ідентифікатор дисципліни", examples=[101]),
     db: Session = Depends(get_db),
 ):
-    course = db.get(Course, discipline_id)
-    if course is not None and course.publication_status == PublicationStatus.PUBLISHED:
+    query = (
+        select(Course)
+        .where(Course.id == discipline_id, Course.publication_status == PublicationStatus.PUBLISHED)
+        .options(selectinload(Course.course_instructors), selectinload(Course.directions))
+    )
+    course = db.scalar(query)
+    if course is not None:
         return to_discipline(course)
     raise ApiError(404, "DISCIPLINE_NOT_FOUND", f"Дисципліну з ID {discipline_id} не знайдено")

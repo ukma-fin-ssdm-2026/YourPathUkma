@@ -129,7 +129,12 @@ async def refresh_session(response: Response, refresh_token: Optional[str] = Coo
     description="Очищає refresh-cookie. Заглушка: токени в БД ще не відкликаються.",
     responses={204: {"description": "Вихід виконано"}},
 )
-async def logout():
-    response = Response(status_code=status.HTTP_204_NO_CONTENT)
-    response.delete_cookie(key=REFRESH_COOKIE, path=REFRESH_COOKIE_PATH)
-    return response
+async def logout(response: Response):
+    response.delete_cookie(
+        key=REFRESH_COOKIE,
+        path=REFRESH_COOKIE_PATH,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

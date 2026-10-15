@@ -11,7 +11,7 @@ from typing import List, Optional
 from sqlalchemy import CheckConstraint, ForeignKey, Identity, Index, Numeric, SmallInteger, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..base import Base, BigIntId, Credits, UTCDateTime, db_enum, utcnow
+from ..base import Base, BigIntId, UTCDateTime, db_enum, utcnow
 from ..enums import LoadLevel, PlanItemCategory, PlanOrigin, PlanStatus, Trimester
 from .catalog import Course
 

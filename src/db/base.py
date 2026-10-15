@@ -17,7 +17,7 @@ from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import INET, JSONB
 from sqlalchemy.orm import DeclarativeBase
 
-# Стабільні імена обмежень: потрібні Alembic для downgrade і змін схеми
+# Стабільні імена обмежень: потрібні Alembic для downgrade і змін схемы
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
     "uq": "uq_%(table_name)s_%(column_0_N_name)s",
@@ -31,11 +31,9 @@ class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
 
-# bigint у PostgreSQL; у SQLite автоінкремент працює лише для INTEGER PRIMARY KEY
 BigIntId = BigInteger().with_variant(Integer(), "sqlite")
 JsonDoc = JSON().with_variant(JSONB(), "postgresql")
 IpAddress = String(45).with_variant(INET(), "postgresql")
-# Кредити ECTS: numeric у БД, float в API (§1.1 контракту)
 Credits = Numeric(4, 1, asdecimal=False)
 
 
@@ -51,8 +49,11 @@ class UTCDateTime(TypeDecorator):
         return value
 
     def process_result_value(self, value: Optional[datetime], dialect):
-        if value is not None and value.tzinfo is None:
-            value = value.replace(tzinfo=timezone.utc)
+        if value is not None:
+            if isinstance(value, str):
+                value = datetime.fromisoformat(value)
+            if value.tzinfo is None:
+                value = value.replace(tzinfo=timezone.utc)
         return value
 
 

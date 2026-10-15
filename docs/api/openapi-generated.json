@@ -53,7 +53,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -73,7 +74,8 @@
                       "field": "items.0.credits",
                       "message": "Input should be greater than 0"
                     }
-                  ]
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -180,7 +182,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -200,7 +203,8 @@
                       "field": "items.0.credits",
                       "message": "Input should be greater than 0"
                     }
-                  ]
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -259,7 +263,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -274,7 +279,8 @@
                 "example": {
                   "code": "PLAN_FORBIDDEN",
                   "message": "Цей план належить іншому студенту",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -289,7 +295,8 @@
                 "example": {
                   "code": "PLAN_NOT_FOUND",
                   "message": "План з ID 5 не знайдено",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -309,7 +316,8 @@
                       "field": "items.0.credits",
                       "message": "Input should be greater than 0"
                     }
-                  ]
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -376,7 +384,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -391,7 +400,8 @@
                 "example": {
                   "code": "PLAN_FORBIDDEN",
                   "message": "Цей план належить іншому студенту",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -406,7 +416,8 @@
                 "example": {
                   "code": "PLAN_NOT_FOUND",
                   "message": "План з ID 5 не знайдено",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -421,7 +432,8 @@
                 "example": {
                   "code": "PLAN_NOT_EDITABLE",
                   "message": "Редагувати можна лише план у статусі draft",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -441,7 +453,8 @@
                       "field": "items.0.credits",
                       "message": "Input should be greater than 0"
                     }
-                  ]
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -491,7 +504,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -506,7 +520,8 @@
                 "example": {
                   "code": "PLAN_FORBIDDEN",
                   "message": "Цей план належить іншому студенту",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -521,7 +536,8 @@
                 "example": {
                   "code": "PLAN_NOT_FOUND",
                   "message": "План з ID 5 не знайдено",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -536,7 +552,8 @@
                 "example": {
                   "code": "PLAN_NOT_DELETABLE",
                   "message": "Видаляти можна лише план у статусі draft",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -556,7 +573,8 @@
                       "field": "items.0.credits",
                       "message": "Input should be greater than 0"
                     }
-                  ]
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -606,7 +624,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 }
               }
             }
@@ -626,7 +645,8 @@
                       "field": "items.0.credits",
                       "message": "Input should be greater than 0"
                     }
-                  ]
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 }
               }
             }
@@ -835,7 +855,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -855,7 +876,8 @@
                       "field": "items.0.credits",
                       "message": "Input should be greater than 0"
                     }
-                  ]
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -914,7 +936,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -929,7 +952,8 @@
                 "example": {
                   "code": "DISCIPLINE_NOT_FOUND",
                   "message": "Дисципліну з ID 999 не знайдено",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -949,7 +973,8 @@
                       "field": "items.0.credits",
                       "message": "Input should be greater than 0"
                     }
-                  ]
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -999,7 +1024,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 }
               }
             }
@@ -1019,7 +1045,8 @@
                       "field": "items.0.credits",
                       "message": "Input should be greater than 0"
                     }
-                  ]
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 }
               }
             }
@@ -1071,7 +1098,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -1136,7 +1164,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 }
               }
             }
@@ -1229,7 +1258,8 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
-                  "details": []
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -1249,7 +1279,8 @@
                       "field": "items.0.credits",
                       "message": "Input should be greater than 0"
                     }
-                  ]
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -1288,6 +1319,7 @@
           "System"
         ],
         "summary": "Перевірка стану системи (Healthcheck)",
+        "description": "Повертає стан сервісу для моніторингу.",
         "operationId": "health_check_health_get",
         "responses": {
           "200": {
@@ -1675,12 +1707,21 @@
             "type": "array",
             "title": "Details",
             "description": "Деталі по полях (для помилок валідації)"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id",
+            "description": "Ідентифікатор запиту для пошуку в журналах (збігається із заголовком X-Request-ID)",
+            "examples": [
+              "req_3f9a1c7e2b4d4a6e"
+            ]
           }
         },
         "type": "object",
         "required": [
           "code",
-          "message"
+          "message",
+          "request_id"
         ],
         "title": "ErrorResponse",
         "description": "Єдиний формат відповіді для всіх помилок 4xx/5xx.",
@@ -1693,7 +1734,8 @@
                 "message": "Input should be greater than 0"
               }
             ],
-            "message": "Невалідні вхідні дані"
+            "message": "Невалідні вхідні дані",
+            "request_id": "req_3f9a1c7e2b4d4a6e"
           }
         ]
       },

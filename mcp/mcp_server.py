@@ -1,7 +1,7 @@
 # Згенеровано за допомогою ШІ (Antigravity)
+import os
 import sys
 from pathlib import Path
-import os
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ["MCP_DEV_MODE"] = "1"
 
 from fastmcp import FastMCP
+
 from src.api.main import app
 
 mcp = FastMCP.from_fastapi(app=app)
