@@ -1,6 +1,6 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: handlers.test.ts.
-import type { DeaneryDocument, Me, Preferences } from "../api/types";
-import { emptyMe } from "./fixtures";
+import type { DeaneryDocument, Me, Preferences, SyncJob } from "../api/types";
+import { emptyMe, seedSyncJobs } from "./fixtures";
 
 /** Стан моків у пам'яті; у тестах скидається після кожного тесту. */
 export const db: {
@@ -10,7 +10,16 @@ export const db: {
   docPolls: Record<number, number>;
   nextDocId: number;
   preferences: Record<number, Preferences>;
-} = { signedIn: false, me: emptyMe(), documents: [], docPolls: {}, nextDocId: 1, preferences: {} };
+  admin: { syncJobs: SyncJob[]; syncPolls: Record<number, number> };
+} = {
+  signedIn: false,
+  me: emptyMe(),
+  documents: [],
+  docPolls: {},
+  nextDocId: 1,
+  preferences: {},
+  admin: { syncJobs: seedSyncJobs(), syncPolls: {} },
+};
 
 export function resetMockDb(): void {
   db.signedIn = false;
@@ -19,4 +28,5 @@ export function resetMockDb(): void {
   db.docPolls = {};
   db.nextDocId = 1;
   db.preferences = {};
+  db.admin = { syncJobs: seedSyncJobs(), syncPolls: {} };
 }

@@ -9,6 +9,7 @@ import type {
   Credits,
   Me,
   NormativeCourse,
+  SyncJob,
 } from "../api/types";
 
 export const mockUser: AuthUser = {
@@ -101,5 +102,36 @@ export function normativeCourses(): NormativeCourse[] {
     { course_id: 302, raw_title: "Проєктний практикум", trimester: 2, credits: 9 },
     { course_id: 303, raw_title: "Виробнича практика", trimester: 3, credits: 12 },
     { course_id: null, raw_title: "Фізичне виховання", trimester: 2, credits: 2 },
+  ];
+}
+
+/** Початковий журнал синхронізації для dev: одна невдала й одна успішна задача. */
+export function seedSyncJobs(): SyncJob[] {
+  const admin = { id: 1, full_name: "Адміністратор" };
+  return [
+    {
+      id: 2,
+      source: "saz_catalog",
+      initiator: "admin",
+      initiated_by: admin,
+      status: "failed",
+      started_at: "2026-10-08T09:00:00Z",
+      finished_at: "2026-10-08T09:04:10Z",
+      added_count: 0,
+      updated_count: 0,
+      error_message: "Не вдалося знайти таблицю дисциплін на сторінці САЗ",
+    },
+    {
+      id: 1,
+      source: "saz_catalog",
+      initiator: "scheduler",
+      initiated_by: null,
+      status: "succeeded",
+      started_at: "2026-10-01T03:00:00Z",
+      finished_at: "2026-10-01T03:05:42Z",
+      added_count: 4,
+      updated_count: 11,
+      error_message: null,
+    },
   ];
 }

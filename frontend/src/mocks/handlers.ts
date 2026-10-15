@@ -4,23 +4,10 @@
 import { http, HttpResponse } from "msw";
 import type { ErrorDetail } from "../api/errors";
 import type { DeaneryDocument, Preferences } from "../api/types";
+import { adminHandlers } from "./admin";
 import { db } from "./db";
+import { API, apiError, hasAuth, unauthorized } from "./http";
 import { academicHistory, authResponse, historyCredits, normativeCourses } from "./fixtures";
-
-const API = "*/api/v1";
-
-function apiError(
-  status: number,
-  code: string,
-  message: string,
-  details: ErrorDetail[] = [],
-  headers?: Record<string, string>,
-) {
-  return HttpResponse.json({ code, message, details }, { status, headers });
-}
-
-const unauthorized = () =>
-  apiError(401, "UNAUTHORIZED", "Відсутній або некоректний токен авторизації");
 
 function validateOnboarding(body: unknown): ErrorDetail[] {
   const { course_year, specialty } = (body ?? {}) as { course_year?: unknown; specialty?: unknown };
@@ -34,8 +21,6 @@ function validateOnboarding(body: unknown): ErrorDetail[] {
   }
   return details;
 }
-
-const hasAuth = (request: Request) => Boolean(request.headers.get("Authorization"));
 
 /** Документ «розпізнається» після другого запиту; "scan" у назві дає помилку розпізнавання. */
 function resolveDocument(doc: DeaneryDocument): DeaneryDocument {
@@ -173,6 +158,7 @@ const planHandlers = [
 ];
 
 export const handlers = [
+  ...adminHandlers,
   ...planHandlers,
   ...preferencesHandlers,
   ...documentHandlers,

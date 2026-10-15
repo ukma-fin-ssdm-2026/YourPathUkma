@@ -227,3 +227,21 @@ export function plansCrudHandlers(initial: PlanResponse[] = []): {
   ];
   return { handlers, calls, bodies };
 }
+
+import type { SyncJob } from "../api/types";
+
+export function syncJobFixture(overrides: Partial<SyncJob> = {}): SyncJob {
+  return {
+    id: 1,
+    source: "saz_catalog",
+    initiator: "admin",
+    initiated_by: { id: 1, full_name: "Адміністратор" },
+    status: "succeeded",
+    started_at: "2026-10-08T09:00:00Z",
+    finished_at: "2026-10-08T09:04:10Z",
+    added_count: 0,
+    updated_count: 0,
+    error_message: null,
+    ...overrides,
+  };
+}
