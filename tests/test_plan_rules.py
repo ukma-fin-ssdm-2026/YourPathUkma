@@ -150,11 +150,7 @@ def test_load_levels_allowed_otherwise(course_year, sent):
     # Assert
     assert violations == []
 
-@pytest.mark.parametrize(
-    "extra_fields,expected_sent",
-    [({}, False), ({"load_levels": {"autumn": "low"}}, True)],
-    ids=["without-load-levels", "with-load-levels"],
-)
+
 def test_payload_tracks_whether_load_levels_were_sent():
     # Arrange
     item = PlanItem(course_id=101, title="Функціональне програмування", trimester=1, credits=5.0)
