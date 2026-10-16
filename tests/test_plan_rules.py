@@ -53,6 +53,7 @@ def test_check_not_only_free_electives_passes_with_regular_courses():
 # --- Ліміт вільного вибору в межах плану ---
 
 
+@pytest.mark.parametrize("free_credits", [25.5, 30.0], ids=["just-over-limit", "well-over-limit"])
 def test_check_free_elective_in_plan_exceeded():
     # Arrange
     free_credits = 25.5
@@ -64,6 +65,7 @@ def test_check_free_elective_in_plan_exceeded():
     assert [v.code for v in violations] == ["FREE_ELECTIVE_LIMIT_EXCEEDED"]
 
 
+@pytest.mark.parametrize("free_credits", [25.0, 15.0, 0.0], ids=["at-limit", "below-limit", "none"])
 def test_check_free_elective_in_plan_ok():
     # Arrange
     at_limit, below_limit = 25.0, 15.0
@@ -92,20 +94,14 @@ def test_free_flag_mismatch_when_course_has_no_directions():
     assert violations[0].field == "items.0.is_free_elective"
 
 
-def test_free_flag_ok_when_course_without_directions_is_marked_free():
+@pytest.mark.parametrize(
+    "has_directions,is_free_elective",
+    [(False, True), (True, False), (True, True)],
+    ids=["no-directions-marked-free", "with-directions-not-free", "with-directions-marked-free"],
+)
+def test_free_flag_ok(has_directions, is_free_elective):
     # Arrange
-    flags = [CatalogFlag(0, False, True)]
-
-    # Act
-    violations = plan_rules.check_free_elective_flags(flags)
-
-    # Assert
-    assert violations == []
-
-
-def test_free_flag_ok_for_course_with_directions():
-    # Arrange
-    flags = [CatalogFlag(0, True, False), CatalogFlag(1, True, True)]
+    flags = [CatalogFlag(0, has_directions=has_directions, is_free_elective=is_free_elective)]
 
     # Act
     violations = plan_rules.check_free_elective_flags(flags)
