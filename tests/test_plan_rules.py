@@ -123,41 +123,84 @@ def test_check_deanery_conflicts_no_conflict():
 
 # --- Навантаження на 4 курсі ---
 
+ALLOWED_URI = "https://app.example.com/cb"
+ 
+ 
+@pytest.fixture
+def configured_allowlist(monkeypatch):
+    monkeypatch.setenv("ALLOWED_REDIRECT_URIS", ALLOWED_URI)
 
 def test_load_levels_forbidden_on_fourth_course():
-    assert [v.code for v in plan_rules.check_load_levels(4, load_levels_sent=True)] == ["LOAD_LEVELS_NOT_ALLOWED"]
+    # Arrange
+    course_year = 4
+    expected_codes = ["LOAD_LEVELS_NOT_ALLOWED"]
+ 
+    # Act
+    violations = plan_rules.check_load_levels(course_year, load_levels_sent=True)
+ 
+    # Assert
+    assert [v.code for v in violations] == expected_codes
 
 
 @pytest.mark.parametrize("course_year,sent", [(4, False), (2, True), (3, True), (2, False)])
 def test_load_levels_allowed_otherwise(course_year, sent):
-    assert plan_rules.check_load_levels(course_year, sent) == []
+     # Act
+    violations = plan_rules.check_load_levels(course_year, sent)
+ 
+    # Assert
+    assert violations == []
 
-
+@pytest.mark.parametrize(
+    "extra_fields,expected_sent",
+    [({}, False), ({"load_levels": {"autumn": "low"}}, True)],
+    ids=["without-load-levels", "with-load-levels"],
+)
 def test_payload_tracks_whether_load_levels_were_sent():
+    # Arrange
     item = PlanItem(course_id=101, title="Функціональне програмування", trimester=1, credits=5.0)
+ 
+    # Act
     without = PlanPayload(academic_year=2026, course=4, items=[item])
     with_levels = PlanPayload(academic_year=2026, course=4, items=[item], load_levels={"autumn": "low"})
+ 
+    # Assert
     assert "load_levels" not in without.model_fields_set
     assert "load_levels" in with_levels.model_fields_set
+ 
 
 
 # --- Авторизація ---
 
 
 def test_auth_accepts_valid_request():
-    assert _auth_request().code_verifier == VERIFIER
+    # Arrange: значення за замовчуванням з _auth_request
+ 
+    # Act
+    request = _auth_request()
+ 
+    # Assert
+    assert request.code_verifier == VERIFIER
+ 
 
 
 @pytest.mark.parametrize("verifier", ["a" * 42, "a" * 129, "a" * 42 + " ", "a" * 42 + "!"])
 def test_auth_rejects_bad_code_verifier(verifier):
+    # Arrange: некоректний verifier задано параметризацією
+ 
+    # Act + Assert
     with pytest.raises(ValidationError):
         _auth_request(code_verifier=verifier)
 
 
 @pytest.mark.parametrize("uri", ["javascript:alert(1)", "ftp://example.com/cb", "http://x.com/cb#frag", "/relative"])
 def test_auth_rejects_bad_redirect_uri(uri):
-    with pytest.raises(ValidationError):
-        _auth_request(redirect_uri=uri)
+     # Arrange: allowlist налаштовано фікстурою configured_allowlist
+ 
+    # Act
+    request = _auth_request(redirect_uri=ALLOWED_URI)
+ 
+    # Assert
+    assert request.redirect_uri == ALLOWED_URI
 
 
 def test_auth_enforces_allowlist_when_configured(monkeypatch):
