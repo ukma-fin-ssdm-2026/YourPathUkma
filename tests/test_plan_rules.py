@@ -28,27 +28,44 @@ def _auth_request(**overrides) -> GoogleLoginRequest:
 # --- Дублікати дисциплін ---
 
 
-def test_check_duplicate_courses_fails_on_duplicates():
-    violations = plan_rules.check_duplicate_courses([101, 102, 101])
-    assert [v.code for v in violations] == ["DUPLICATE_COURSE"]
+@pytest.mark.parametrize(
+    "course_ids, expected_codes",
+    [
+        ([101, 102, 101], ["DUPLICATE_COURSE"]),
+        ([101, 101], ["DUPLICATE_COURSE"]),
+        ([101, 102, 103], []),
+        ([101], []),
+        ([], []),
+    ],
+    ids=["one_duplicate", "only_duplicates", "all_unique", "single_course", "empty"],
+)
+def test_check_duplicate_courses(course_ids, expected_codes):
+    # Act
+    violations = plan_rules.check_duplicate_courses(course_ids)
 
-
-def test_check_duplicate_courses_passes_unique():
-    assert plan_rules.check_duplicate_courses([101, 102, 103]) == []
+    # Assert
+    assert [v.code for v in violations] == expected_codes
 
 
 # --- Лише вільний вибір ---
 
 
-def test_check_not_only_free_electives_fails_when_all_free():
-    violations = plan_rules.check_not_only_free_electives([True, True])
-    assert [v.code for v in violations] == ["ONLY_FREE_ELECTIVES"]
+@pytest.mark.parametrize(
+    "is_free_flags, expected_codes",
+    [
+        ([True, True], ["ONLY_FREE_ELECTIVES"]),
+        ([True], ["ONLY_FREE_ELECTIVES"]),
+        ([True, False], []),
+        ([False, False], []),
+    ],
+    ids=["all_free", "single_free", "mixed", "all_regular"],
+)
+def test_check_not_only_free_electives(is_free_flags, expected_codes):
+    # Act
+    violations = plan_rules.check_not_only_free_electives(is_free_flags)
 
-
-def test_check_not_only_free_electives_passes_with_regular_courses():
-    assert plan_rules.check_not_only_free_electives([True, False]) == []
-    assert plan_rules.check_not_only_free_electives([False, False]) == []
-
+    # Assert
+    assert [v.code for v in violations] == expected_codes
 
 # --- Ліміт вільного вибору в межах плану ---
 
