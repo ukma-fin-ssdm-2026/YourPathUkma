@@ -71,9 +71,8 @@ def test_check_not_only_free_electives(is_free_flags, expected_codes):
 
 
 @pytest.mark.parametrize("free_credits", [25.5, 30.0], ids=["just-over-limit", "well-over-limit"])
-def test_check_free_elective_in_plan_exceeded():
-    # Arrange
-    free_credits = 25.5
+def test_check_free_elective_in_plan_exceeded(free_credits):
+    # Arrange: кредити вільного вибору надходять з параметра
 
     # Act
     violations = plan_rules.check_free_elective_in_plan(free_credits)
@@ -83,17 +82,14 @@ def test_check_free_elective_in_plan_exceeded():
 
 
 @pytest.mark.parametrize("free_credits", [25.0, 15.0, 0.0], ids=["at-limit", "below-limit", "none"])
-def test_check_free_elective_in_plan_ok():
-    # Arrange
-    at_limit, below_limit = 25.0, 15.0
+def test_check_free_elective_in_plan_ok(free_credits):
+    # Arrange: кредити вільного вибору надходять з параметра
 
     # Act
-    at_limit_violations = plan_rules.check_free_elective_in_plan(at_limit)
-    below_limit_violations = plan_rules.check_free_elective_in_plan(below_limit)
+    violations = plan_rules.check_free_elective_in_plan(free_credits)
 
     # Assert
-    assert at_limit_violations == []
-    assert below_limit_violations == []
+    assert violations == []
 
 
 # --- Прапорець вільного вибору ---
