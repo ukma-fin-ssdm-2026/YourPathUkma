@@ -44,8 +44,16 @@ jobs:
         run: python scripts/generate_openapi.py
       - name: Fail if committed spec is out of date
         run: git diff --exit-code docs/api/
-      - name: Smoke tests
-        run: pytest -q
+      - name: Tests with coverage report
+        run: pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-report=html --cov-report=xml
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            htmlcov/
+            coverage.xml
 
   frontend:
     runs-on: ubuntu-latest
