@@ -91,34 +91,43 @@ def test_catalog_flags_collected_from_items_and_courses():
 # --- Загальний ліміт вільного вибору з урахуванням минулих років ---
 
 
-def test_total_limit_exceeded_with_previous_years():
-    violations = plan_rules.check_free_elective_total(current_credits=10.0, used_in_other_years=18.0)
-    assert [v.code for v in violations] == ["FREE_ELECTIVE_TOTAL_EXCEEDED"]
+@pytest.mark.parametrize(
+    "current_credits, used_in_other_years, expected_codes",
+    [
+        (10.0, 18.0, ["FREE_ELECTIVE_TOTAL_EXCEEDED"]),  # 28 > 25 з урахуванням минулих років
+        (10.0, 15.0, []),  # рівно 25: межа дозволена
+        (30.0, 0.0, []),  # без історії ліміт за всі роки не застосовується
+    ],
+)
+def test_check_free_elective_total_with_previous_years(current_credits, used_in_other_years, expected_codes):
+    # Arrange: кредити поточного плану та кредити вільного вибору за інші роки (параметри)
 
+    # Act
+    violations = plan_rules.check_free_elective_total(current_credits, used_in_other_years)
 
-def test_total_limit_exactly_25_is_allowed():
-    assert plan_rules.check_free_elective_total(10.0, 15.0) == []
-
-
-def test_total_limit_ignored_without_history():
-    assert plan_rules.check_free_elective_total(30.0, 0.0) == []
+    # Assert
+    assert [v.code for v in violations] == expected_codes
 
 
 # --- Конфлікт з нормативними дисциплінами деканату ---
 
 
-def test_check_deanery_conflicts_detects_conflict():
+@pytest.mark.parametrize(
+    "normative_ids, expected",
+    [
+        ({102, 103}, [("NORMATIVE_CONFLICT", "items.1.course_id")]),  # 102 уже в плані деканату
+        ({103, 104}, []),  # перетину немає
+    ],
+)
+def test_check_deanery_conflicts(normative_ids, expected):
+    # Arrange
     courses = [(0, 101), (1, 102)]
-    normative_ids = {102, 103}
+
+    # Act
     violations = plan_rules.check_deanery_conflicts(courses, normative_ids)
-    assert [v.code for v in violations] == ["NORMATIVE_CONFLICT"]
-    assert violations[0].field == "items.1.course_id"
 
-
-def test_check_deanery_conflicts_no_conflict():
-    courses = [(0, 101), (1, 102)]
-    normative_ids = {103, 104}
-    assert plan_rules.check_deanery_conflicts(courses, normative_ids) == []
+    # Assert
+    assert [(v.code, v.field) for v in violations] == expected
 
 
 # --- Навантаження на 4 курсі ---
