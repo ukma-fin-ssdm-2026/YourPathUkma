@@ -70,38 +70,75 @@ def test_check_not_only_free_electives(is_free_flags, expected_codes):
 # --- Ліміт вільного вибору в межах плану ---
 
 
+@pytest.mark.parametrize("free_credits", [25.5, 30.0], ids=["just-over-limit", "well-over-limit"])
 def test_check_free_elective_in_plan_exceeded():
-    violations = plan_rules.check_free_elective_in_plan(25.5)
+    # Arrange
+    free_credits = 25.5
+
+    # Act
+    violations = plan_rules.check_free_elective_in_plan(free_credits)
+
+    # Assert
     assert [v.code for v in violations] == ["FREE_ELECTIVE_LIMIT_EXCEEDED"]
 
 
+@pytest.mark.parametrize("free_credits", [25.0, 15.0, 0.0], ids=["at-limit", "below-limit", "none"])
 def test_check_free_elective_in_plan_ok():
-    assert plan_rules.check_free_elective_in_plan(25.0) == []
-    assert plan_rules.check_free_elective_in_plan(15.0) == []
+    # Arrange
+    at_limit, below_limit = 25.0, 15.0
+
+    # Act
+    at_limit_violations = plan_rules.check_free_elective_in_plan(at_limit)
+    below_limit_violations = plan_rules.check_free_elective_in_plan(below_limit)
+
+    # Assert
+    assert at_limit_violations == []
+    assert below_limit_violations == []
 
 
 # --- Прапорець вільного вибору ---
 
 
 def test_free_flag_mismatch_when_course_has_no_directions():
-    violations = plan_rules.check_free_elective_flags([CatalogFlag(0, has_directions=False, is_free_elective=False)])
+    # Arrange
+    flags = [CatalogFlag(0, has_directions=False, is_free_elective=False)]
+
+    # Act
+    violations = plan_rules.check_free_elective_flags(flags)
+
+    # Assert
     assert [v.code for v in violations] == ["FREE_ELECTIVE_FLAG_MISMATCH"]
     assert violations[0].field == "items.0.is_free_elective"
 
 
-def test_free_flag_ok_when_course_without_directions_is_marked_free():
-    assert plan_rules.check_free_elective_flags([CatalogFlag(0, False, True)]) == []
+@pytest.mark.parametrize(
+    "has_directions,is_free_elective",
+    [(False, True), (True, False), (True, True)],
+    ids=["no-directions-marked-free", "with-directions-not-free", "with-directions-marked-free"],
+)
+def test_free_flag_ok(has_directions, is_free_elective):
+    # Arrange
+    flags = [CatalogFlag(0, has_directions=has_directions, is_free_elective=is_free_elective)]
 
+    # Act
+    violations = plan_rules.check_free_elective_flags(flags)
 
-def test_free_flag_ok_for_course_with_directions():
-    flags = [CatalogFlag(0, True, False), CatalogFlag(1, True, True)]
-    assert plan_rules.check_free_elective_flags(flags) == []
+    # Assert
+    assert violations == []
 
 
 def test_catalog_flags_collected_from_items_and_courses():
-    items = [SimpleNamespace(course_id=205, is_free_elective=False), SimpleNamespace(course_id=101, is_free_elective=False)]
+    # Arrange
+    items = [
+        SimpleNamespace(course_id=205, is_free_elective=False),
+        SimpleNamespace(course_id=101, is_free_elective=False),
+    ]
     courses = {205: SimpleNamespace(directions=[]), 101: SimpleNamespace(directions=["Data Science"])}
+
+    # Act
     violations = collect_catalog_flag_violations(items, courses)
+
+    # Assert
     assert [v.field for v in violations] == ["items.0.is_free_elective"]
 
 
