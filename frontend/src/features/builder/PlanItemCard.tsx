@@ -15,7 +15,7 @@ export function PlanItemCard({
     <div
       data-testid={`item-${item.course_id}`}
       className={
-        "grid gap-1 rounded-[10px] bg-paper px-3 py-2.5 " +
+        "pop-in grid gap-1 rounded-[10px] bg-paper px-3 py-2.5 transition-[translate] duration-200 ease-out hover:-translate-y-0.5 " +
         (item.is_free_elective ? "shadow-[inset_3px_0_0_var(--violet)]" : "")
       }
     >

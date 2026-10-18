@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: catalog-ui.test.tsx.
+import type { CSSProperties } from "react";
 import type { Discipline } from "../../api/types";
 import { creditsWord, formatCredits } from "../../lib/credits";
 import { trimesterLabel, type Trimester } from "../../lib/trimester";
@@ -9,14 +10,19 @@ const tagClass = "rounded-full px-2 py-px text-[11px] ring-1 ring-inset";
 export function DisciplineCard({
   discipline,
   reviewsUrl,
+  index = 0,
 }: {
   discipline: Discipline;
   reviewsUrl?: string;
+  index?: number;
 }) {
   const directions = discipline.directions ?? [];
   const trimester = trimesterLabel(discipline.trimester as Trimester);
   return (
-    <Card className="flex flex-col gap-2">
+    <Card
+      className="rise flex flex-col gap-2 transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg"
+      style={{ "--i": Math.min(index, 8) } as CSSProperties}
+    >
       <div className="flex flex-wrap gap-1.5">
         {directions.length === 0 ? (
           <span className={`${tagClass} text-violet-text ring-violet`}>вільний вибір</span>

@@ -1,5 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: AppLayout.test.tsx.
-import { Link, NavLink, Outlet } from "react-router";
+import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { Button } from "../ui/Button";
 import { initials } from "../lib/initials";
 import { NAV_ITEMS, type Role } from "./nav";
@@ -13,6 +13,7 @@ export function AppLayout({
   userName: string;
   onSignOut?: () => void;
 }) {
+  const { pathname } = useLocation();
   const items = NAV_ITEMS.filter((item) => !item.adminOnly || role === "admin");
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -72,7 +73,9 @@ export function AppLayout({
         tabIndex={-1}
         className="outline-none mx-auto max-w-[1160px] px-4 py-6 sm:px-6"
       >
-        <Outlet />
+        <div key={pathname} className="rise">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

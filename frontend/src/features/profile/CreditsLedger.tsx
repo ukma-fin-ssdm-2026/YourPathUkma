@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: profile.test.tsx.
+import type { CSSProperties } from "react";
 import type { AcademicYear } from "../../api/types";
 import { creditsWord, formatCredits } from "../../lib/credits";
 import { buildLedgerRow, sumByCategory } from "./ledger";
@@ -18,8 +19,15 @@ function academicYearLabel(year: number): string {
 
 function Row({ course, data }: { course: number; data: AcademicYear | undefined }) {
   const row = buildLedgerRow(data?.records ?? []);
+  let position = 0;
   const cells = (Object.keys(TONES) as (keyof typeof TONES)[]).flatMap((tone) =>
-    Array.from({ length: row[tone] }, (_, index) => <i key={`${tone}-${index}`} className={`block aspect-square rounded-[2px] ${TONES[tone]}`} />),
+    Array.from({ length: row[tone] }, (_, index) => (
+      <i
+        key={`${tone}-${index}`}
+        className={`cell-in block aspect-square rounded-[2px] ${TONES[tone]}`}
+        style={{ "--i": position++, "--row": course } as CSSProperties}
+      />
+    )),
   );
   return (
     <div className="grid grid-cols-[78px_1fr_64px] items-center gap-4">
