@@ -1,5 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: plans.test.tsx.
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { ApiError } from "../../api/errors";
@@ -25,11 +25,11 @@ function LoadDots({ levels }: { levels: PlanResponse["load_levels"] }) {
   const summary = SEASONS.map((s) => `${s.label} ${LEVEL_LABEL[levels[s.key] ?? "medium"]}`).join(", ");
   return (
     <span role="img" aria-label={`Навантаження: ${summary}`} className="inline-flex gap-1">
-      {SEASONS.map((s) => (
+      {SEASONS.map((s, index) => (
         <i
           key={s.key}
-          className={`block size-2.5 rounded-full ${s.color}`}
-          style={{ opacity: LEVEL_OPACITY[levels[s.key] ?? "medium"] }}
+          className={`cell-in block size-2.5 rounded-full ${s.color}`}
+          style={{ opacity: LEVEL_OPACITY[levels[s.key] ?? "medium"], "--i": index * 8 } as CSSProperties}
         />
       ))}
     </span>
@@ -65,7 +65,7 @@ export function PlansPage({ mode }: { mode: "all" | "saved" }) {
 
   let content;
   if (plans.isPending) {
-    content = <div aria-busy="true" aria-label="Завантажуємо плани" className="h-40 animate-pulse rounded-2xl bg-rule" />;
+    content = <div aria-busy="true" aria-label="Завантажуємо плани" className="h-40 shimmer rounded-2xl bg-rule" />;
   } else if (plans.isError) {
     const error = plans.error;
     content = (
@@ -105,8 +105,13 @@ export function PlansPage({ mode }: { mode: "all" | "saved" }) {
                   {courseHeading(group)}
                 </th>
               </tr>,
-              ...group.plans.map((plan) => (
-                <tr key={plan.id} data-testid={`plan-${plan.id}`} className="border-b border-rule last:border-b-0">
+              ...group.plans.map((plan, row) => (
+                <tr
+                  key={plan.id}
+                  data-testid={`plan-${plan.id}`}
+                  className="rise border-b border-rule transition-colors duration-150 ease-out last:border-b-0 hover:bg-paper"
+                  style={{ "--i": row + 1 } as CSSProperties}
+                >
                   <td className="px-3.5 py-3">
                     <b className="font-semibold">
                       План {plan.academic_year}/{plan.academic_year + 1}

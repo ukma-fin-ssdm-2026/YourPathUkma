@@ -159,3 +159,22 @@ table {
   animation: cell-in 0.4s var(--ease-out) backwards;
   animation-delay: calc(var(--i, 0) * 9ms + var(--row, 0) * 140ms);
 }
+
+/* Скелетон: світла смуга пробігає по заглушці замість миготіння. */
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.shimmer {
+  background-image: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--surface) 65%, transparent) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+  }
+}

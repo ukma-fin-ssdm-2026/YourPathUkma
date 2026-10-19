@@ -142,14 +142,14 @@ export function SummaryStrip({
       </div>
 
       {errors.length > 0 && (
-        <ul role="alert" className="grid gap-1 rounded-[10px] bg-bad-bg px-4 py-3 text-bad">
+        <ul role="alert" className="rise grid gap-1 rounded-[10px] bg-bad-bg px-4 py-3 text-bad">
           {errors.map((issue) => (
             <li key={issue.code}>{ERROR_TEXT[issue.code] ?? issue.message}</li>
           ))}
         </ul>
       )}
       {warnings.length > 0 && (
-        <ul className="grid gap-1 rounded-[10px] bg-warn-bg px-4 py-3 text-warn">
+        <ul className="rise grid gap-1 rounded-[10px] bg-warn-bg px-4 py-3 text-warn">
           {warnings.map((issue) => (
             <li key={issue.code}>{WARNING_TEXT[issue.code] ?? issue.message}</li>
           ))}

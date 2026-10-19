@@ -118,7 +118,7 @@ export function CatalogPanel({
     list = (
       <div aria-label="Завантажуємо каталог" aria-busy="true" className="grid gap-2">
         {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="h-16 animate-pulse rounded-[10px] bg-rule" />
+          <div key={i} className="h-16 shimmer rounded-[10px] bg-rule" />
         ))}
       </div>
     );
@@ -148,7 +148,9 @@ export function CatalogPanel({
               {row}
             </DraggableRow>
           ) : (
-            <div key={discipline.id}>{row}</div>
+            <div key={discipline.id} className="rise">
+              {row}
+            </div>
           );
         })}
       </div>

@@ -121,7 +121,7 @@ export function DraggableRow({
   });
   const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
   return (
-    <div ref={setNodeRef} style={style} className={isDragging ? "relative z-10 opacity-90 shadow-lg" : ""}>
+    <div ref={setNodeRef} style={style} className={"rise " + (isDragging ? "relative z-10 opacity-90 shadow-lg" : "")}>
       <div className="flex items-stretch gap-1">
         <button
           type="button"
@@ -153,7 +153,9 @@ export function DroppableColumn({
     <div
       ref={setNodeRef}
       data-over={over}
-      className={"rounded-2xl transition-shadow duration-150 ease-out " + (over ? "ring-2 ring-cobalt" : "")}
+      className={
+        "rounded-2xl transition-[box-shadow,scale] duration-200 ease-out " + (over ? "scale-[1.01] ring-2 ring-cobalt" : "")
+      }
     >
       {children(hint)}
     </div>

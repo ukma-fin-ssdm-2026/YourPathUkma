@@ -52,8 +52,8 @@ export function Dropzone({
         onDragLeave={(event) => onDrag(event, false)}
         onDrop={onDrop}
         className={
-          "grid justify-items-center gap-2 rounded-2xl border-2 border-dashed px-5 py-9 text-center transition-[background-color,border-color] duration-200 ease-out " +
-          (dragging ? "border-cobalt bg-info-bg" : "border-rule bg-paper")
+          "grid justify-items-center gap-2 rounded-2xl border-2 border-dashed px-5 py-9 text-center transition-[background-color,border-color,scale] duration-200 ease-out " +
+          (dragging ? "scale-[1.01] border-cobalt bg-info-bg" : "border-rule bg-paper")
         }
       >
         <b className="text-base">Перетягніть файл сюди</b>

@@ -35,7 +35,7 @@ export function ItemCard({
   const pending = item.status === "pending";
 
   return (
-    <Card role="group" aria-label={`Запис ${item.id}`} className="flex gap-3">
+    <Card role="group" aria-label={`Запис ${item.id}`} className="rise flex gap-3">
       {onSelect && (
         <input
           type="checkbox"
