@@ -36,7 +36,7 @@ export function Switch({
         <span
           aria-hidden="true"
           className={
-            "absolute top-[3px] left-[3px] size-[18px] rounded-full bg-white transition-transform duration-200 ease-out " +
+            "absolute top-[3px] left-[3px] size-[18px] rounded-full bg-white transition-transform duration-300 ease-[var(--ease-spring)] " +
             (checked ? "translate-x-[18px]" : "")
           }
         />
