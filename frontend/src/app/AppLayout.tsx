@@ -73,7 +73,7 @@ export function AppLayout({
         tabIndex={-1}
         className="outline-none mx-auto max-w-[1160px] px-4 py-6 sm:px-6"
       >
-        <div key={pathname} className="rise">
+        <div key={pathname.split("/")[1]} className="rise">
           <Outlet />
         </div>
       </main>

@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: summary.test.tsx, profile.test.tsx, npm run build.
 import { useLayoutEffect, useRef } from "react";
 import { formatCredits } from "../lib/credits";
+import { canAnimate } from "./motion";
 
 const DURATION_MS = 800;
 
@@ -12,9 +13,7 @@ export function CountUp({ value }: { value: number }) {
   useLayoutEffect(() => {
     const el = ref.current;
     const from = shown.current;
-    const canAnimate =
-      typeof window.matchMedia === "function" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!el || !canAnimate || from === value) {
+    if (!el || !canAnimate() || from === value) {
       shown.current = value;
       return;
     }
