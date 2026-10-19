@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   relabel:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     steps:
       - name: Remove in-progress/review labels, add done
         env:
