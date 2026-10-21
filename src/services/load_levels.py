@@ -1,2 +1,4 @@
 def classify_load_level(hours_per_week):
-    return "low"
+    if hours_per_week < 20:
+        return "low"
+    return "medium"
