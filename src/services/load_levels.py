@@ -16,6 +16,6 @@ def classify_load_level(hours_per_week: float) -> str:
         raise ValueError(f"Очікується 0–{MAX_HOURS_PER_WEEK:g} год/тиждень, отримано {hours_per_week:g}")
     if hours_per_week < LOW_LOAD_UPPER_BOUND:
         return "low"
-    if hours_per_week < HIGH_LOAD_LOWER_BOUND:
+    if hours_per_week <= HIGH_LOAD_LOWER_BOUND:
         return "medium"
     return "high"
