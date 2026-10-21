@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "YourPathUkma API",
-    "description": "REST API платформи для побудови індивідуального навчального плану студентів НаУКМА: плани вибіркових дисциплін, каталог дисциплін, контроль кредитного навантаження.\n\n**Автентифікація:** JWT Bearer (Google Workspace SSO). У поточній заглушці приймається будь-який непорожній токен: натисніть Authorize і введіть, наприклад, `test`.",
+    "description": "REST API платформи для побудови індивідуального навчального плану студентів НаУКМА: плани вибіркових дисциплін, каталог дисциплін, контроль кредитного навантаження.\n\n**Автентифікація:** JWT Bearer (Microsoft 365 SSO). У поточній заглушці приймається будь-який непорожній токен: натисніть Authorize і введіть, наприклад, `test`.",
     "version": "1.0.0"
   },
   "servers": [
@@ -1239,7 +1239,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "Вхід: обмін коду Google на токени",
+        "summary": "Вхід: обмін коду Microsoft на токени",
         "description": "Заглушка: приймає будь-який код і повертає тестового студента.",
         "operationId": "login_with_google_api_v1_auth_google_post",
         "requestBody": {
@@ -5846,7 +5846,7 @@
           "google_client_id": {
             "type": "string",
             "title": "Google Client Id",
-            "description": "Публічний client_id для входу через Google"
+            "description": "Публічний client_id для входу через Microsoft"
           },
           "allowed_email_domain": {
             "type": "string",
@@ -6478,7 +6478,7 @@
             "maxLength": 2048,
             "minLength": 1,
             "title": "Code",
-            "description": "Код авторизації Google"
+            "description": "Код авторизації Microsoft"
           },
           "code_verifier": {
             "type": "string",
@@ -7967,7 +7967,7 @@
     "securitySchemes": {
       "HTTPBearer": {
         "type": "http",
-        "description": "JWT після входу через Google Workspace SSO. У заглушці приймається будь-який непорожній токен.",
+        "description": "JWT після входу через Microsoft 365 SSO. У заглушці приймається будь-який непорожній токен.",
         "scheme": "bearer"
       }
     }
@@ -7987,7 +7987,7 @@
     },
     {
       "name": "Auth",
-      "description": "Вхід через Google, оновлення і відкликання токена (заглушка)"
+      "description": "Вхід через Microsoft, оновлення і відкликання токена (заглушка)"
     },
     {
       "name": "Reference",
