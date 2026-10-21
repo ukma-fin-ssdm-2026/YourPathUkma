@@ -156,5 +156,11 @@ def free_elective_remaining(used: float) -> float:
 
 def check_annual_minimum(year_credits: float) -> List[Violation]:
     if year_credits < 57:
-        return [Violation(code="ANNUAL_MINIMUM_NOT_MET", message="Замало кредитів за рік")]
+        missing = round(57 - year_credits, 1)
+        return [
+            Violation(
+                code="ANNUAL_MINIMUM_NOT_MET",
+                message=f"Замало кредитів за рік: {year_credits:g} < 57, бракує {missing:g}"
+            )
+        ]
     return []
