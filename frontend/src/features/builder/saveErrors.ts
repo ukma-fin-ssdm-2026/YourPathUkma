@@ -27,7 +27,7 @@ export interface SaveErrors {
 
 /** Перетворює відповідь сервера на повідомлення, які можна показати біля карток і над планом. */
 export function describeSaveError(error: ApiError, items: PlanItem[]): SaveErrors {
-  const known = CODE_TEXT[error.code];
+  const known = textFor(CODE_TEXT, error.code);
   if (known) return { itemErrors: {}, form: [known] };
 
   if (error.status === 422 && error.details.length > 0) {
@@ -36,7 +36,7 @@ export function describeSaveError(error: ApiError, items: PlanItem[]): SaveError
     for (const detail of error.details) {
       const match = /^items\.(\d+)\./.exec(detail.field);
       const item = match ? items[Number(match[1])] : undefined;
-      const code = /^([A-Z_]+):/.exec(detail.message)?.[1];
+      const text = textFor(ITEM_TEXT, /^([A-Z_]+):/.exec(detail.message)?.[1]);
       if (item && text) itemErrors[item.course_id] = text;
       else rest.push(detail);
     }
