@@ -118,11 +118,58 @@ frontend/src/
 
 ## 4. Відомі розриви та обмеження
 
-1. **Назви Google у коді бекенду.** Тексти оновлено, але ідентифікатори лишилися: маршрут `POST /auth/google`, модель `GoogleLoginRequest`, колонка `User.google_sub`, поле `google_client_id` у `/config`, змінна `GOOGLE_CLIENT_ID`. Фронтенд викликає `POST /auth/microsoft` і очікує `VITE_MS_CLIENT_ID`, тому для інтеграції потрібне окреме перейменування (маршрут, схема, міграція Alembic, тести, OpenAPI).
+1. **Назви Google у коді бекенду.** Тексти оновлено, але ідентифікатори лишилися Google; фронтенд викликає `POST /auth/microsoft`. Що саме перенести, дивіться в розділі 5.
 2. **Автентифікація й дані бекенду.** Перевірка коду Microsoft ще заглушка; реальної перевірки ID-токена немає.
 3. **Тести бекенду.** 3 тести падають (див. таблицю статусу), їх треба виправити окремо.
 4. **Фронтенд.** Працює проти MSW-моків; з живим бекендом не запускався. Анімації перевірено юніт-тестами та вручну в мок-режимі, автоматичних візуальних тестів немає. Prettier (CRLF) повідомляє про стильові розбіжності в 155 файлах, відомі й не виправлялися.
 5. **Діаграми.** SVG-файли UML відредаговано вручну (PlantUML не запускався), ширину підписів може знадобитися уточнити перегенерацією.
+
+
+## 5. Що потрібно перенести з Google на Microsoft
+
+Тексти документації вже оновлено. Лишається змінити код і дані, перелік нижче.
+
+### Бекенд (`src/`)
+
+| Файл | Зараз | Потрібно |
+|---|---|---|
+| `src/api/routes/auth.py:102,108` | маршрут `POST /auth/google`, функція `login_with_google` | маршрут `POST /auth/microsoft`, функція `login_with_microsoft` (фронтенд викликає саме його: `frontend/src/auth/login.ts`) |
+| `src/api/routes/auth.py:8,40` | схема `GoogleLoginRequest` | `MicrosoftLoginRequest` (поля `code`, `code_verifier`, `redirect_uri` лишаються); оновити згадку в docstring |
+| `src/api/routes/auth.py` (логіка) | код не перевіряється, повертається тестовий студент | обмін коду з Microsoft Entra ID, перевірка ID-токена (`iss`, `aud`, `exp`, `tid` = tenant НаУКМА, домен пошти `ukma.edu.ua`), відповідь `403 DOMAIN_NOT_ALLOWED` для чужих доменів (її очікує мок `frontend/src/mocks/handlers.ts`) |
+| `src/api/routes/system.py:46,64` | поле `google_client_id`, змінна `GOOGLE_CLIENT_ID` зі значенням `...apps.googleusercontent.com` | `microsoft_client_id` (або `ms_client_id`), змінна `MS_CLIENT_ID`, плюс `MS_TENANT`; фронтенд бере їх з `VITE_MS_CLIENT_ID` і `VITE_MS_TENANT`, тому узгодити назви |
+
+### База даних
+
+| Файл | Зараз | Потрібно |
+|---|---|---|
+| `src/db/models/users.py:24` | колонка `User.google_sub` (unique) | `User.ms_sub` (субʼєкт `oid`/`sub` із токена Microsoft) |
+| `migrations/versions/0001_initial_schema.py:56,68` | `google_sub`, constraint `uq_users_google_sub` | не редагувати, а додати нову міграцію Alembic: `op.alter_column("users", "google_sub", new_column_name="ms_sub")` і перейменування constraint `uq_users_ms_sub`; для вже існуючих користувачів `sub` Google не збігається із Microsoft, тому потрібен план звʼязування акаунтів за `email` |
+| `src/db/seed.py:106` | `User(..., google_sub=f"seed-{user_id}")` | `ms_sub=...` |
+
+### Тести
+
+| Файл | Потрібно |
+|---|---|
+| `tests/test_auth.py:1,16,32` | URL `/api/v1/auth/microsoft`, оновити docstring |
+| `tests/test_api_smoke.py:60` | шлях `/api/v1/auth/microsoft` у перевірці наявності маршрутів |
+| `tests/test_plan_rules.py:2,14,22,25` | імпорт і використання `MicrosoftLoginRequest`, docstring |
+
+### Контракт і документація
+
+| Файл | Потрібно |
+|---|---|
+| `docs/api/openapi-generated.{json,yaml}` | перегенерувати: `python scripts/generate_openapi.py` (зміниться шлях, `operationId`, схема, поле `/config`); CI вимагає коміту цих файлів |
+| `docs/api/contract.md:262,336,375,404,1394,1542,1575` | `/auth/google` → `/auth/microsoft`, `google_client_id` → нове поле, приклад `client_id` без `googleusercontent.com`, заголовок розділу `POST /auth/google` |
+| `docs/architecture/data-model.md:43,70`, `threat-model.md:16,46`, `uml/data-model.plantuml:32`, `uml/deployment.puml:48` (+ `svg/`) | `google_sub` → `ms_sub` |
+
+### Порядок виконання
+
+1. Нова гілка від `main`: перейменування у `auth.py`, `system.py`, `users.py`, `seed.py`.
+2. Міграція Alembic для колонки й constraint.
+3. Оновити тести, прогнати `pytest -q`.
+4. `python scripts/generate_openapi.py`, оновити `contract.md` і діаграми, закомітити.
+5. `cd frontend && npm run gen:api && npm test`, щоб переконатися, що згенеровані типи збігаються зі схемою.
+6. Задати `MS_CLIENT_ID`/`MS_TENANT` на бекенді та `VITE_MS_CLIENT_ID`/`VITE_MS_TENANT` на фронтенді, перевірити вхід з реальним акаунтом `@ukma.edu.ua`.
 
 ---
 
