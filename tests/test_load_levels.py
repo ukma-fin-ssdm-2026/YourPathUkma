@@ -18,3 +18,9 @@ def test_high_load():
 def test_negative_hours_rejected():
     with pytest.raises(ValueError):
         classify_load_level(-1)
+
+
+def test_over_maximum_rejected():
+    with pytest.raises(ValueError):
+        classify_load_level(25.5)
+
