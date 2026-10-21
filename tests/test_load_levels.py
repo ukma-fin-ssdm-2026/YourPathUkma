@@ -7,3 +7,7 @@ def test_low_load():
 
 def test_medium_load():
     assert classify_load_level(21) == "medium"
+
+
+def test_high_load():
+    assert classify_load_level(24) == "high"
