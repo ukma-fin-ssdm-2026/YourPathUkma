@@ -6,7 +6,7 @@
 """
 
 from src.services.plan_rules import check_annual_minimum
-
+import pytest
 
 def test_enough_credits_has_no_violations():
     assert check_annual_minimum(60) == []
@@ -18,3 +18,7 @@ def test_too_few_credits_is_violation():
 def test_message_shows_missing_credits():
     violations = check_annual_minimum(50)
     assert "бракує 7" in violations[0].message
+
+def test_negative_credits_are_rejected():
+    with pytest.raises(ValueError):
+        check_annual_minimum(-1)
