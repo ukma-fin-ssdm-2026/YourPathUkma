@@ -45,7 +45,7 @@ jobs:
       - name: Fail if committed spec is out of date
         run: git diff --exit-code docs/api/
       - name: Tests with coverage report
-        run: pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-report=html --cov-report=xml
+        run: pytest -q --cov=src --cov-fail-under=80 --cov-branch --cov-report=term-missing --cov-report=html --cov-report=xml
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4

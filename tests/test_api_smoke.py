@@ -57,7 +57,7 @@ def test_openapi_has_new_endpoints():
     paths = client.get("/openapi.json").json()["paths"]
     assert {
         "/api/v1/config",
-        "/api/v1/auth/google",
+        "/api/v1/auth/microsoft",
         "/api/v1/auth/refresh",
         "/api/v1/auth/logout",
         "/api/v1/directions",
