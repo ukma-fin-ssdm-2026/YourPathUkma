@@ -5,8 +5,10 @@
 запущено й побачено падіння (RED), потім проходження після мінімального коду (GREEN).
 """
 
-from src.services.plan_rules import check_annual_minimum
 import pytest
+
+from src.services.plan_rules import check_annual_minimum
+
 
 @pytest.mark.parametrize(
     ("credits", "expected_codes"),
