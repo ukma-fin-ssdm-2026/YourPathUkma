@@ -15,7 +15,7 @@ function SkeletonGrid() {
   return (
     <div aria-label="Завантажуємо каталог" aria-busy="true" className="grid gap-4 sm:grid-cols-2">
       {Array.from({ length: 6 }, (_, index) => (
-        <div key={index} className="h-44 animate-pulse rounded-2xl bg-rule" />
+        <div key={index} className="h-44 shimmer rounded-2xl bg-rule" />
       ))}
     </div>
   );
@@ -76,9 +76,10 @@ export function CatalogPage() {
     content = (
       <>
         <div className="grid gap-4 sm:grid-cols-2">
-          {items.map((discipline) => (
+          {items.map((discipline, index) => (
             <DisciplineCard
               key={discipline.id}
+              index={index}
               discipline={discipline}
               reviewsUrl={config.data?.reviews_url}
             />

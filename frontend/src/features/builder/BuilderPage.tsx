@@ -261,7 +261,9 @@ export function BuilderPage() {
       </div>
       <div className="min-h-5 text-sm" aria-live="polite">
         {busy && <p role="status" className="text-ink-2">Зберігається…</p>}
-        {!busy && savedAt && !dirty && <p role="status" className="text-ok">Збережено о {savedAt}</p>}
+        {!busy && savedAt && !dirty && <p role="status" className="rise text-ok">
+            Збережено о {savedAt}
+          </p>}
       </div>
       {errors.form.length > 0 && (
         <ul role="alert" className="grid gap-1 rounded-[10px] bg-bad-bg px-4 py-3 text-bad">

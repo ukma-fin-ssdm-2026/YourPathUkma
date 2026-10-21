@@ -1,5 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: plans.test.tsx.
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet, useLocation } from "react-router";
 
 const TABS = [
   { to: "/path/plan", label: "Індивідуальний план" },
@@ -9,6 +9,7 @@ const TABS = [
 
 /** Підвкладки розділу «Науковий шлях». */
 export function PathLayout() {
+  const { pathname } = useLocation();
   return (
     <div>
       <nav aria-label="Науковий шлях" className="mb-5 flex flex-wrap gap-1.5">
@@ -26,7 +27,9 @@ export function PathLayout() {
           </NavLink>
         ))}
       </nav>
-      <Outlet />
+      <div key={pathname} className="rise">
+        <Outlet />
+      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: profile.test.tsx.
+import type { CSSProperties } from "react";
 import { Link } from "react-router";
 import { useConfig } from "../../api/config";
 import { Button } from "../../ui/Button";
@@ -67,14 +68,14 @@ export function ProfilePage() {
         </div>
       </div>
 
-      <Card className="p-7">
+      <Card className="rise p-7" style={{ "--i": 1 } as CSSProperties}>
         <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3">
           <h2 className="font-display text-base">Кредити за чотири роки</h2>
         </div>
         <LimitsStrip credits={student.credits} />
         <div className="mt-7">
           {history.isPending ? (
-            <div role="status" aria-label="Завантажуємо журнал кредитів" className="h-40 animate-pulse rounded-xl bg-rule" />
+            <div role="status" aria-label="Завантажуємо журнал кредитів" className="h-40 shimmer rounded-xl bg-rule" />
           ) : history.isError ? (
             <p role="alert" className="text-bad">
               Не вдалося завантажити історію навчання.

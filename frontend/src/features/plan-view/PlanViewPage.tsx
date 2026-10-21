@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: view.test.tsx.
+import type { CSSProperties } from "react";
 import { Link, useParams } from "react-router";
 import { useConfig } from "../../api/config";
 import { ApiError } from "../../api/errors";
@@ -8,6 +9,7 @@ import { trimesterKey, trimesterLabel, type Trimester } from "../../lib/trimeste
 import { StatusBadge } from "../../ui/Badge";
 import { Button } from "../../ui/Button";
 import { Card } from "../../ui/Card";
+import { CountUp } from "../../ui/CountUp";
 import { linkButtonClass, linkGhostClass } from "../../ui/linkButton";
 import { usePlan } from "../builder/useBuilderData";
 import { useExportPlan } from "./useExportPlan";
@@ -32,11 +34,13 @@ function NotFound() {
   );
 }
 
-function Metric({ title, value }: { title: string; value: string }) {
+function Metric({ title, value }: { title: string; value: number }) {
   return (
     <div className="p-4">
       <div className="text-[13px] text-ink-2">{title}</div>
-      <div className="font-display text-xl">{value}</div>
+      <div className="font-display text-xl">
+        <CountUp value={value} />
+      </div>
     </div>
   );
 }
@@ -115,9 +119,9 @@ export function PlanViewPage() {
       )}
 
       <div className="grid divide-rule overflow-hidden rounded-2xl border border-rule bg-surface sm:grid-cols-3 sm:divide-x">
-        <Metric title="Кредитів у плані" value={formatCredits(plan.total_credits)} />
-        <Metric title="Вільний вибір" value={formatCredits(plan.free_elective_credits)} />
-        <Metric title="Дисциплін" value={String(plan.items.length)} />
+        <Metric title="Кредитів у плані" value={plan.total_credits} />
+        <Metric title="Вільний вибір" value={plan.free_elective_credits} />
+        <Metric title="Дисциплін" value={plan.items.length} />
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
@@ -129,7 +133,8 @@ export function PlanViewPage() {
             <section
               key={trimester}
               aria-label={trimesterLabel(trimester)}
-              className="grid content-start gap-2 rounded-2xl border border-rule bg-surface p-3"
+              className="rise grid content-start gap-2 rounded-2xl border border-rule bg-surface p-3"
+              style={{ "--i": trimester } as CSSProperties}
             >
               <div className="flex items-baseline justify-between">
                 <h2 className="font-display text-[15px]">{trimesterLabel(trimester)}</h2>
@@ -146,7 +151,7 @@ export function PlanViewPage() {
                     <li
                       key={item.course_id}
                       className={
-                        "flex items-start justify-between gap-2 rounded-[10px] bg-paper px-3 py-2.5 " +
+                        "flex items-start justify-between gap-2 rounded-[10px] bg-paper px-3 py-2.5 transition-[translate] duration-200 ease-out hover:-translate-y-0.5 " +
                         (item.is_free_elective ? "shadow-[inset_3px_0_0_var(--violet)]" : "")
                       }
                     >

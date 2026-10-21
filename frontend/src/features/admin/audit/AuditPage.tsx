@@ -101,7 +101,7 @@ export function AuditPage() {
             <tbody>
               {list.map((entry) => (
                 <Fragment key={entry.id}>
-                  <tr className="border-b border-rule">
+                  <tr className="border-b border-rule transition-colors duration-150 ease-out hover:bg-paper">
                     <td className={CELL}>{formatDateTime(entry.created_at)}</td>
                     <td className={`${CELL} break-words`}>{entry.actor?.full_name ?? "Анонімно"}</td>
                     <td className={`${CELL} break-words`}>{entry.action}</td>

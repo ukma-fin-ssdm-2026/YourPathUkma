@@ -76,7 +76,7 @@ export function UsersPage() {
             </thead>
             <tbody>
               {list.map((user) => (
-                <tr key={user.id} className="border-b border-rule">
+                <tr key={user.id} className="border-b border-rule transition-colors duration-150 ease-out hover:bg-paper">
                   <td className={`${CELL} break-words`}>
                     <div className="font-medium">{user.full_name}</div>
                     <div className="text-ink-2">{user.email}</div>

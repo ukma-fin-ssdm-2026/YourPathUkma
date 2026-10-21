@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: summary.test.tsx.
 import type { Credits, PlanValidationResponse, RuleIssue } from "../../api/types";
-import { creditsPercent, formatCredits } from "../../lib/credits";
+import { creditsPercent } from "../../lib/credits";
+import { CountUp } from "../../ui/CountUp";
 import { FREE_LIMIT, MIN_YEAR_CREDITS, summarize, type BuilderPlan } from "./plan";
 
 const YEAR_MAX = 60;
@@ -38,7 +39,7 @@ function Metric({
     <div className="p-4">
       <div className="text-[13px] text-ink-2">{title}</div>
       <div className="font-display text-lg">
-        {formatCredits(value)} <small className="font-sans text-[13px] text-ink-2">{of}</small>
+        <CountUp value={value} /> <small className="font-sans text-[13px] text-ink-2">{of}</small>
       </div>
       <div className="relative mt-2 h-1.5 rounded-full bg-rule">
         <div
@@ -47,7 +48,7 @@ function Metric({
           aria-valuemin={0}
           aria-valuemax={barMax}
           aria-valuenow={barValue}
-          className={`h-full rounded-full transition-[width] duration-200 ease-out ${barClass}`}
+          className={`bar-grow h-full rounded-full ${barClass}`}
           style={{ width: `${creditsPercent(barValue, barMax)}%` }}
         />
         {mark !== undefined && (
@@ -141,14 +142,14 @@ export function SummaryStrip({
       </div>
 
       {errors.length > 0 && (
-        <ul role="alert" className="grid gap-1 rounded-[10px] bg-bad-bg px-4 py-3 text-bad">
+        <ul role="alert" className="rise grid gap-1 rounded-[10px] bg-bad-bg px-4 py-3 text-bad">
           {errors.map((issue) => (
             <li key={issue.code}>{ERROR_TEXT[issue.code] ?? issue.message}</li>
           ))}
         </ul>
       )}
       {warnings.length > 0 && (
-        <ul className="grid gap-1 rounded-[10px] bg-warn-bg px-4 py-3 text-warn">
+        <ul className="rise grid gap-1 rounded-[10px] bg-warn-bg px-4 py-3 text-warn">
           {warnings.map((issue) => (
             <li key={issue.code}>{WARNING_TEXT[issue.code] ?? issue.message}</li>
           ))}

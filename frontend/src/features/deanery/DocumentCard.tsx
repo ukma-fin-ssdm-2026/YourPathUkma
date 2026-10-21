@@ -32,7 +32,7 @@ export function DocumentCard({
     <div
       data-testid={`doc-${doc.id}`}
       className={
-        "grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-xl border bg-surface px-4 py-3.5 " +
+        "pop-in grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-xl border bg-surface px-4 py-3.5 transition-colors duration-200 ease-out " +
         (selected ? "border-cobalt" : "border-rule")
       }
     >
@@ -54,8 +54,8 @@ export function DocumentCard({
         <small className="block text-ink-2">{formatBytes(current.size_bytes)}</small>
         {current.parse_status === "pending" && (
           <div aria-hidden="true" className="mt-2 grid gap-1.5">
-            <i className="block h-2.5 w-3/5 animate-pulse rounded-full bg-rule" />
-            <i className="block h-2.5 w-2/5 animate-pulse rounded-full bg-rule" />
+            <i className="block h-2.5 w-3/5 shimmer rounded-full bg-rule" />
+            <i className="block h-2.5 w-2/5 shimmer rounded-full bg-rule" />
           </div>
         )}
         {current.parse_status === "failed" && current.parse_error && (

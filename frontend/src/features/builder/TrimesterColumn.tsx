@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: columns.test.tsx.
+import type { CSSProperties } from "react";
 import type { LoadLevel, NormativeCourse, PlanItem } from "../../api/types";
 import { formatCredits } from "../../lib/credits";
 import { trimesterLabel, type Trimester } from "../../lib/trimester";
@@ -59,7 +60,8 @@ export function TrimesterColumn({
     <section
       aria-label={label}
       data-trimester={trimester}
-      className={`grid content-start gap-2 rounded-2xl border border-t-4 border-rule bg-surface p-3 ${ACCENT[trimester]}`}
+      className={`rise grid content-start gap-2 rounded-2xl border border-t-4 border-rule bg-surface p-3 ${ACCENT[trimester]}`}
+      style={{ "--i": trimester } as CSSProperties}
     >
       <div className="flex items-baseline justify-between">
         <h2 className="font-display text-[15px]">{label}</h2>

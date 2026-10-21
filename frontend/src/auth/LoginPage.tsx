@@ -78,7 +78,7 @@ export function LoginPage({ onLogin = () => startLogin() }: { onLogin?: () => Pr
         type="button"
         onClick={handleLogin}
         disabled={busy}
-        className="flex w-full max-w-[420px] cursor-pointer items-center justify-center gap-3.5 rounded-xl border border-rule bg-white px-5 py-4 text-[17px] font-semibold text-[#1b1b1b] transition-[transform,box-shadow] duration-150 ease-out hover:shadow-lg active:scale-[.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:opacity-70"
+        className="flex w-full max-w-[420px] cursor-pointer items-center justify-center gap-3.5 rounded-xl border border-rule bg-white px-5 py-4 text-[17px] font-semibold text-[#1b1b1b] transition-[transform,translate,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg active:scale-[.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-wait disabled:opacity-70"
       >
         <MicrosoftLogo />
         {failed ? "Обрати інший обліковий запис" : "Увійти через Microsoft"}

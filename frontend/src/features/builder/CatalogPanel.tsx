@@ -43,7 +43,7 @@ export function CatalogRow({
 }) {
   const disabled = state !== "available";
   return (
-    <div className={"grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 rounded-[10px] bg-paper px-3 py-2.5 " + (disabled ? "opacity-60" : "")}>
+    <div className={"grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 rounded-[10px] bg-paper px-3 py-2.5 transition-[translate,opacity] duration-200 ease-out " + (disabled ? "opacity-60" : "hover:-translate-y-0.5")}>
       <div className="min-w-0">
         <b className="break-words font-semibold">{discipline.title}</b>
         <small className="block break-words text-ink-2">
@@ -118,7 +118,7 @@ export function CatalogPanel({
     list = (
       <div aria-label="Завантажуємо каталог" aria-busy="true" className="grid gap-2">
         {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="h-16 animate-pulse rounded-[10px] bg-rule" />
+          <div key={i} className="h-16 shimmer rounded-[10px] bg-rule" />
         ))}
       </div>
     );
@@ -148,7 +148,9 @@ export function CatalogPanel({
               {row}
             </DraggableRow>
           ) : (
-            <div key={discipline.id}>{row}</div>
+            <div key={discipline.id} className="rise">
+              {row}
+            </div>
           );
         })}
       </div>

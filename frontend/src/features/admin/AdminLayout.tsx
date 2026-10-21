@@ -1,5 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: admin.test.tsx.
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet, useLocation } from "react-router";
 
 export const ADMIN_SECTIONS: { to: string; label: string; end?: boolean }[] = [
   { to: "/admin", label: "Огляд", end: true },
@@ -11,6 +11,7 @@ export const ADMIN_SECTIONS: { to: string; label: string; end?: boolean }[] = [
 ];
 
 export function AdminLayout() {
+  const { pathname } = useLocation();
   return (
     <div className="flex flex-col gap-6 md:flex-row">
       <nav
@@ -32,7 +33,7 @@ export function AdminLayout() {
           </NavLink>
         ))}
       </nav>
-      <div className="min-w-0 flex-1">
+      <div key={pathname} className="rise min-w-0 flex-1">
         <Outlet />
       </div>
     </div>

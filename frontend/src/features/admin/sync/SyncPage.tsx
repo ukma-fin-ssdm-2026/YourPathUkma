@@ -97,7 +97,7 @@ export function SyncPage({ pollMs }: { pollMs?: number }) {
             </thead>
             <tbody>
               {list.map((job) => (
-                <tr key={job.id} className="border-b border-rule">
+                <tr key={job.id} className="border-b border-rule transition-colors duration-150 ease-out hover:bg-paper">
                   <td className={CELL}>{formatDateTime(job.started_at)}</td>
                   <td className={CELL}>{SOURCE_LABEL[job.source]}</td>
                   <td className={CELL}>{job.initiated_by?.full_name ?? "Планувальник"}</td>

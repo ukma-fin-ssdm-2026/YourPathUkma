@@ -14,8 +14,16 @@ export function Segmented<T extends string | number>({
   ariaLabel,
   disabled = false,
 }: SegmentedProps<T>) {
+  const activeIndex = options.findIndex((option) => option.value === value);
   return (
-    <div role="group" aria-label={ariaLabel} className="flex rounded-[10px] bg-paper p-[3px]">
+    <div role="group" aria-label={ariaLabel} className="relative flex rounded-[10px] bg-paper p-[3px]">
+      {activeIndex >= 0 && (
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-[3px] left-[3px] rounded-lg bg-surface shadow-sm transition-transform duration-300 ease-[var(--ease-out)]"
+          style={{ width: `calc((100% - 6px) / ${options.length})`, transform: `translateX(${activeIndex * 100}%)` }}
+        />
+      )}
       {options.map((option) => {
         const active = option.value === value;
         return (
@@ -26,10 +34,10 @@ export function Segmented<T extends string | number>({
             disabled={disabled}
             onClick={() => onChange(option.value)}
             className={
-              "flex-1 cursor-pointer rounded-lg px-1.5 py-2 font-medium transition-[background-color,color] duration-150 ease-out " +
+              "relative z-10 flex-1 cursor-pointer rounded-lg px-1.5 py-2 font-medium transition-colors duration-150 ease-out active:scale-[.97] " +
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt " +
               "disabled:cursor-not-allowed disabled:opacity-60 " +
-              (active ? "bg-surface text-ink shadow-sm" : "text-ink-2")
+              (active ? "text-ink" : "text-ink-2 hover:text-ink")
             }
           >
             {option.label}

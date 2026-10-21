@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: documents.test.tsx.
+import type { CSSProperties } from "react";
 import { Link } from "react-router";
 import type { NormativeCourse } from "../../api/types";
 import { formatCredits } from "../../lib/credits";
@@ -30,8 +31,12 @@ export function NormativePanel({
             <p className="text-sm text-ink-2">З вибраного документа. Їх не можна змінити.</p>
             <table className="w-full border-collapse text-left">
               <tbody>
-                {courses.map((course) => (
-                  <tr key={`${course.raw_title}-${course.trimester}`} className="border-b border-rule">
+                {courses.map((course, index) => (
+                  <tr
+                    key={`${course.raw_title}-${course.trimester}`}
+                    className="rise border-b border-rule"
+                    style={{ "--i": index } as CSSProperties}
+                  >
                     <td className="py-2 pr-2">
                       <span className="break-words">{course.raw_title}</span>
                       <small className="block text-[13px] text-ink-2">
