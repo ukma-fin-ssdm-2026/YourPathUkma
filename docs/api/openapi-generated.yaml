@@ -20,7 +20,7 @@ paths:
       summary: Створити новий індивідуальний план (чернетку)
       description: 'Створює план вибіркових дисциплін для поточного студента. Серверна
         валідація: унікальність дисциплін, ліміт вільного вибору (25 кредитів), заборона
-        плану лише з вільного вибору.'
+        плану лише з вільного вибору, конфлікт з нормативними дисциплінами деканату.'
       operationId: create_plan_api_v1_plans_post
       security:
       - HTTPBearer: []
@@ -440,6 +440,170 @@ paths:
                 request_id: req_3f9a1c7e2b4d4a6e
       security:
       - HTTPBearer: []
+  /api/v1/plans/{plan_id}/submit:
+    post:
+      tags:
+      - Plans
+      summary: Подати індивідуальний план
+      description: Переводить план зі статусу draft у submitted. Перевіряє всі нормативи.
+      operationId: submit_plan_api_v1_plans__plan_id__submit_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plan_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 1
+          title: Plan Id
+      responses:
+        '200':
+          description: План успішно подано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: PLAN_FORBIDDEN
+                message: Цей план належить іншому студенту
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: PLAN_NOT_FOUND
+                message: План з ID 5 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: PLAN_NOT_SUBMITTABLE
+                message: Подати можна лише план у статусі draft
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: PLAN_VALIDATION_FAILED
+                message: План не проходить перевірку нормативів
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/plans/{plan_id}/export:
+    get:
+      tags:
+      - Plans
+      summary: Експорт плану в PDF
+      description: Фіксація і експорт плану у форматі PDF (use-case 16).
+      operationId: export_plan_api_v1_plans__plan_id__export_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plan_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 1
+          title: Plan Id
+      - name: format
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Формат експорту (поки лише pdf)
+          default: pdf
+          title: Format
+        description: Формат експорту (поки лише pdf)
+      responses:
+        '200':
+          description: Файл PDF
+          content:
+            application/json:
+              schema: {}
+            application/pdf: {}
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: PLAN_FORBIDDEN
+                message: Цей план належить іншому студенту
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: PLAN_NOT_FOUND
+                message: План з ID 5 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/disciplines:
     get:
       tags:
@@ -858,6 +1022,2201 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConfigResponse'
+  /api/v1/preferences/{academic_year}:
+    get:
+      tags:
+      - Preferences
+      summary: Збережені побажання на рік
+      description: 404 `PREFERENCES_NOT_FOUND`, якщо побажань ще не збережено (фронтенд
+        показує порожню форму).
+      operationId: get_preferences_api_v1_preferences__academic_year__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: academic_year
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2030
+          minimum: 2024
+          description: Рік початку навчального року
+          examples:
+          - 2026
+          title: Academic Year
+        description: Рік початку навчального року
+      responses:
+        '200':
+          description: Побажання отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreferencesResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: PREFERENCES_NOT_FOUND
+                message: Побажань на 2026 рік ще не збережено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: ONBOARDING_REQUIRED
+                message: Спершу вкажіть курс і спеціальність
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+      - Preferences
+      summary: Зберегти побажання на рік
+      description: Створює або повністю замінює побажання. Напрямків 0–3; бажані й
+        небажані викладачі не перетинаються, усі id мають існувати. Для 4 курсу `load_levels`
+        ігноруються.
+      operationId: save_preferences_api_v1_preferences__academic_year__put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: academic_year
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2030
+          minimum: 2024
+          description: Рік початку навчального року
+          examples:
+          - 2026
+          title: Academic Year
+        description: Рік початку навчального року
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferencesRequest'
+      responses:
+        '200':
+          description: Побажання збережено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreferencesResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: ONBOARDING_REQUIRED
+                message: Спершу вкажіть курс і спеціальність
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/me:
+    get:
+      tags:
+      - User
+      summary: Профіль поточного користувача
+      description: Профіль і лічильники кредитів. `student` = null для адміна без
+        студентського профілю.
+      operationId: get_me_api_v1_me_get
+      responses:
+        '200':
+          description: Профіль отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+      security:
+      - HTTPBearer: []
+  /api/v1/me/onboarding:
+    post:
+      tags:
+      - User
+      summary: 'Онбординг: курс і спеціальність'
+      description: Одноразове заповнення профілю. Повторний виклик → 409, змінити
+        може лише адмін.
+      operationId: onboard_api_v1_me_onboarding_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnboardingRequest'
+        required: true
+      responses:
+        '200':
+          description: Профіль заповнено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: ALREADY_ONBOARDED
+                message: Курс і спеціальність уже вказано, змінити їх може лише адміністратор
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+      security:
+      - HTTPBearer: []
+  /api/v1/me/academic-history:
+    get:
+      tags:
+      - User
+      summary: Академічна історія студента
+      description: Пройдені дисципліни, згруповані за навчальним роком. Без пагінації.
+      operationId: list_academic_history_api_v1_me_academic_history_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: academic_year
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 2030
+            minimum: 2015
+          - type: 'null'
+          description: Лише цей навчальний рік
+          title: Academic Year
+        description: Лише цей навчальний рік
+      responses:
+        '200':
+          description: Історію отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicHistoryResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+      - User
+      summary: Додати пройдені дисципліни
+      description: Додає 1–60 записів із `source = self_declared`. Якщо задано `course_id`,
+        `title` і `credits` беруться з каталогу. `course_year` запису не може перевищувати
+        курс студента; вільний вибір за всі роки ≤ 25 кредитів, усього за програму
+        ≤ 240 кредитів.
+      operationId: add_academic_history_api_v1_me_academic_history_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddRecordsRequest'
+      responses:
+        '201':
+          description: Записи додано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddRecordsResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: ONBOARDING_REQUIRED
+                message: Спершу вкажіть курс і спеціальність
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/me/academic-history/{record_id}:
+    delete:
+      tags:
+      - User
+      summary: Видалити власний запис історії
+      description: Лише записи `self_declared`, які ще не підтверджені адміном.
+      operationId: delete_academic_record_api_v1_me_academic_history__record_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: record_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          description: ID запису історії
+          examples:
+          - 310
+          title: Record Id
+        description: ID запису історії
+      responses:
+        '204':
+          description: Запис видалено
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: RECORD_NOT_FOUND
+                message: Запис з ID 310 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: RECORD_NOT_DELETABLE
+                message: Видаляти можна лише непідтверджені записи, додані вручну
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/deanery-documents:
+    post:
+      tags:
+      - Deanery documents
+      summary: Завантажити документ деканату
+      description: Приймає PDF або DOCX до 10 МБ. Відповідь 202, розпізнавання асинхронне.
+      operationId: upload_document_api_v1_deanery_documents_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_document_api_v1_deanery_documents_post'
+      responses:
+        '202':
+          description: Документ прийнято на обробку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeaneryDocumentResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: Файл завеликий
+          content:
+            application/json:
+              example:
+                code: FILE_TOO_LARGE
+                message: Файл більший за 10 МБ
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: Непідтримуваний тип файлу
+          content:
+            application/json:
+              example:
+                code: UNSUPPORTED_FILE_TYPE
+                message: Не PDF і не DOCX
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+      - Deanery documents
+      summary: Отримати всі документи студента
+      operationId: list_documents_api_v1_deanery_documents_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: academic_year
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          description: Фільтр за навчальним роком
+          title: Academic Year
+        description: Фільтр за навчальним роком
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeaneryDocumentsListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/deanery-documents/{document_id}:
+    get:
+      tags:
+      - Deanery documents
+      summary: Отримати документ та розпізнані дисципліни
+      operationId: get_document_api_v1_deanery_documents__document_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Document Id
+      responses:
+        '200':
+          description: Документ знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeaneryDocumentResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: NOT_FOUND
+                message: Ресурс не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Deanery documents
+      summary: Видалити документ
+      operationId: delete_document_api_v1_deanery_documents__document_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Document Id
+      responses:
+        '204':
+          description: Документ видалено
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: NOT_FOUND
+                message: Ресурс не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: CONFLICT
+                message: Дія неможлива в поточному стані ресурсу
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/deanery-documents/{document_id}/file:
+    get:
+      tags:
+      - Deanery documents
+      summary: Завантажити оригінальний файл
+      operationId: download_document_file_api_v1_deanery_documents__document_id__file_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Document Id
+      responses:
+        '200':
+          description: Файл
+          content:
+            application/json:
+              schema: {}
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: NOT_FOUND
+                message: Ресурс не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/admin/users:
+    get:
+      tags:
+      - Admin
+      summary: Користувачі (студенти й адміни)
+      description: 'Фільтри комбінуються через AND. `q` шукає підрядок в email або
+        ПІБ. Сортування за `id`. Примітка: на SQLite пошук за кирилицею чутливий до
+        регістру, на PostgreSQL — ні.'
+      operationId: list_users_api_v1_admin_users_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
+      - name: q
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            minLength: 2
+            maxLength: 100
+          - type: 'null'
+          description: Підрядок email або ПІБ
+          title: Q
+        description: Підрядок email або ПІБ
+      - name: role
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/UserRole'
+          - type: 'null'
+          title: Role
+      - name: course_year
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 4
+            minimum: 1
+          - type: 'null'
+          title: Course Year
+      - name: course_year_source
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/CourseYearSource'
+          - type: 'null'
+          title: Course Year Source
+      - name: onboarding_required
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          description: Лише студенти без курсу чи спеціальності (true) або з ними
+            (false)
+          title: Onboarding Required
+        description: Лише студенти без курсу чи спеціальності (true) або з ними (false)
+      responses:
+        '200':
+          description: Список отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminUsers'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/users/{user_id}:
+    get:
+      tags:
+      - Admin
+      summary: Користувач і профіль студента
+      description: '`student` має повну форму з `GET /me`, разом з лічильниками кредитів.
+        Планів студента тут немає.'
+      operationId: get_user_api_v1_admin_users__user_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 42
+          title: User Id
+      responses:
+        '200':
+          description: Користувача знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserDetail'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: USER_NOT_FOUND
+                message: Користувача з ID 42 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      tags:
+      - Admin
+      summary: Змінити роль, курс або спеціальність
+      description: Усі поля необов'язкові. Зміна `course_year` або `specialty` ставить
+        `course_year_source = admin`. Адмін не може змінити роль сам собі (409). Кожна
+        зміна пишеться в журнал аудиту.
+      operationId: patch_user_api_v1_admin_users__user_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 42
+          title: User Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserPatch'
+      responses:
+        '200':
+          description: Користувача оновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: USER_NOT_FOUND
+                message: Користувача з ID 42 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: CANNOT_CHANGE_OWN_ROLE
+                message: Адміністратор не може змінити власну роль
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/users/{user_id}/academic-history:
+    get:
+      tags:
+      - Admin
+      summary: Академічна історія студента
+      description: Та сама форма, що `GET /me/academic-history`, згруповано за навчальним
+        роком.
+      operationId: get_user_history_api_v1_admin_users__user_id__academic_history_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 42
+          title: User Id
+      - name: academic_year
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 2030
+            minimum: 2015
+          - type: 'null'
+          title: Academic Year
+      responses:
+        '200':
+          description: Історію отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicHistoryResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: USER_NOT_FOUND
+                message: Користувача з ID 42 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/users/{user_id}/academic-history/verify:
+    post:
+      tags:
+      - Admin
+      summary: Підтвердити записи історії
+      description: 'Підтверджує записи `self_declared`. Пропущені записи повертаються
+        в `skipped`: `RECORD_NOT_FOUND` (немає або належить іншому студенту) і `RECORD_NOT_VERIFIABLE`
+        (не `self_declared` або вже підтверджено).'
+      operationId: verify_records_api_v1_admin_users__user_id__academic_history_verify_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 42
+          title: User Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRecordsRequest'
+      responses:
+        '200':
+          description: Записи оброблено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyRecordsResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: USER_NOT_FOUND
+                message: Користувача з ID 42 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/directions:
+    post:
+      tags:
+      - Admin
+      summary: Створити напрямок
+      description: Назва унікальна без урахування регістру й зайвих пробілів.
+      operationId: create_direction_api_v1_admin_directions_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DirectionCreate'
+        required: true
+      responses:
+        '201':
+          description: Напрямок створено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectionResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: DIRECTION_NAME_TAKEN
+                message: Напрямок з назвою «Data Science» уже існує
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+      security:
+      - HTTPBearer: []
+  /api/v1/admin/directions/{direction_id}:
+    patch:
+      tags:
+      - Admin
+      summary: Змінити напрямок
+      description: '`name` і/або `description`. Явний `description: null` очищає опис.'
+      operationId: patch_direction_api_v1_admin_directions__direction_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: direction_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 1
+          title: Direction Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DirectionPatch'
+      responses:
+        '200':
+          description: Напрямок оновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectionResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: DIRECTION_NOT_FOUND
+                message: Напрямку з ID 1 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: DIRECTION_NAME_TAKEN
+                message: Напрямок з назвою «Data Science» уже існує
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+      - Admin
+      summary: Видалити напрямок
+      description: '409 `DIRECTION_IN_USE`, якщо напрямок прив''язаний до дисциплін
+        або збережених побажань: спершу відв''язати.'
+      operationId: delete_direction_api_v1_admin_directions__direction_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: direction_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 1
+          title: Direction Id
+      responses:
+        '204':
+          description: Напрямок видалено
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: DIRECTION_NOT_FOUND
+                message: Напрямку з ID 1 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: DIRECTION_IN_USE
+                message: Напрямок використовується, видалити його не можна
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/disciplines/{discipline_id}/directions:
+    put:
+      tags:
+      - Admin
+      summary: Прив'язати дисципліну до напрямків
+      description: Повністю замінює перелік напрямків, для яких дисципліна профорієнтовна.
+        Порожній масив робить дисципліну вільним вибором для всіх.
+      operationId: set_discipline_directions_api_v1_admin_disciplines__discipline_id__directions_put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: discipline_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 101
+          title: Discipline Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisciplineDirectionsRequest'
+      responses:
+        '200':
+          description: Прив'язку оновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discipline'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: DISCIPLINE_NOT_FOUND
+                message: Дисципліну з ID 101 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/sync-jobs:
+    post:
+      tags:
+      - Admin
+      summary: Запустити парсинг
+      description: Створює задачу зі статусом `queued`. На джерело не більше однієї
+        активної задачі (409).
+      operationId: start_sync_job_api_v1_admin_sync_jobs_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncJobCreate'
+      responses:
+        '202':
+          description: Задачу поставлено в чергу
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncJobResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: SYNC_JOB_ALREADY_RUNNING
+                message: Для цього джерела вже виконується синхронізація
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+      - Admin
+      summary: Журнал синхронізацій
+      description: Сортування за `started_at` за спаданням.
+      operationId: list_sync_jobs_api_v1_admin_sync_jobs_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
+      - name: source
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/SyncSource'
+          - type: 'null'
+          title: Source
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/SyncJobStatus'
+          - type: 'null'
+          title: Status
+      responses:
+        '200':
+          description: Журнал отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSyncJobs'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/sync-jobs/{job_id}:
+    get:
+      tags:
+      - Admin
+      summary: Деталі синхронізації
+      description: Сирий HTML-знімок (`raw_snapshot`) в API не повертається. Фронтенд
+        опитує, доки статус `queued`/`running`.
+      operationId: get_sync_job_api_v1_admin_sync_jobs__job_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 31
+          title: Job Id
+      responses:
+        '200':
+          description: Задачу знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncJobResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: SYNC_JOB_NOT_FOUND
+                message: Задачу синхронізації з ID 31 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/moderation-items:
+    get:
+      tags:
+      - Admin
+      summary: Черга модерації
+      description: 'За замовчуванням лише `pending`. Сортування за `id` зростанням:
+        найстаріші першими.'
+      operationId: list_moderation_items_api_v1_admin_moderation_items_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
+      - name: status
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/ModerationStatus'
+          default: pending
+      - name: sync_job_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0
+          - type: 'null'
+          title: Sync Job Id
+      - name: change_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/ModerationChangeType'
+          - type: 'null'
+          title: Change Type
+      responses:
+        '200':
+          description: Чергу отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedModerationItems'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/moderation-items/bulk-review:
+    post:
+      tags:
+      - Admin
+      summary: Масово схвалити або відхилити
+      description: Кожен елемент обробляється окремо. Те, що не вдалося, повертається
+        в `skipped` з кодом (`MODERATION_ITEM_NOT_FOUND`, `MODERATION_ITEM_ALREADY_REVIEWED`,
+        `MODERATION_PAYLOAD_INVALID`).
+      operationId: bulk_review_api_v1_admin_moderation_items_bulk_review_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkReviewRequest'
+        required: true
+      responses:
+        '200':
+          description: Пакет оброблено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkReviewResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+      security:
+      - HTTPBearer: []
+  /api/v1/admin/moderation-items/{item_id}/approve:
+    post:
+      tags:
+      - Admin
+      summary: Схвалити зміну
+      description: 'Застосовує зміну до каталогу: `add` створює дисципліну, `update`
+        змінює поля, `remove` архівує. Якщо `payload` непридатний — 422 `MODERATION_PAYLOAD_INVALID`,
+        елемент лишається `pending`.'
+      operationId: approve_item_api_v1_admin_moderation_items__item_id__approve_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 501
+          title: Item Id
+      responses:
+        '200':
+          description: Зміну схвалено й застосовано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModerationItemResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: MODERATION_ITEM_NOT_FOUND
+                message: Елемент модерації з ID 501 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: MODERATION_ITEM_ALREADY_REVIEWED
+                message: Елемент модерації вже схвалено або відхилено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/moderation-items/{item_id}/reject:
+    post:
+      tags:
+      - Admin
+      summary: Відхилити зміну
+      description: 'Тіло необов''язкове: `{ "reason": "..." }`. Каталог не змінюється.'
+      operationId: reject_item_api_v1_admin_moderation_items__item_id__reject_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 501
+          title: Item Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+              - $ref: '#/components/schemas/RejectRequest'
+              - type: 'null'
+              title: Payload
+      responses:
+        '200':
+          description: Зміну відхилено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModerationItemResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: MODERATION_ITEM_NOT_FOUND
+                message: Елемент модерації з ID 501 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              example:
+                code: MODERATION_ITEM_ALREADY_REVIEWED
+                message: Елемент модерації вже схвалено або відхилено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/audit-log:
+    get:
+      tags:
+      - Admin
+      summary: Журнал доступу і змін
+      description: Сортування за `created_at` за спаданням. Приклад у контракті показує
+        `limit = 50`, тому для журналу значення за замовчуванням 50 (максимум 100).
+      operationId: list_audit_log_api_v1_admin_audit_log_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 50
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
+      - name: actor_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0
+          - type: 'null'
+          title: Actor Id
+      - name: action
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            minLength: 1
+            maxLength: 64
+          - type: 'null'
+          description: Напр. plan.read, user.update
+          title: Action
+        description: Напр. plan.read, user.update
+      - name: object_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            minLength: 1
+            maxLength: 64
+          - type: 'null'
+          title: Object Type
+      - name: object_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0
+          - type: 'null'
+          title: Object Id
+      - name: outcome
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/AuditOutcome'
+          - type: 'null'
+          title: Outcome
+      - name: from
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          description: created_at >= from
+          title: From
+        description: created_at >= from
+      - name: to
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          description: created_at <= to
+          title: To
+        description: created_at <= to
+      responses:
+        '200':
+          description: Журнал отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditLog'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/audit-log/{entry_id}:
+    get:
+      tags:
+      - Admin
+      summary: Запис журналу з old_value/new_value
+      operationId: get_audit_entry_api_v1_admin_audit_log__entry_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: entry_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 9001
+          title: Entry Id
+      responses:
+        '200':
+          description: Запис знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogEntryDetail'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: AUDIT_ENTRY_NOT_FOUND
+                message: Запис журналу з ID 9001 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /health:
     get:
       tags:
@@ -873,6 +3232,454 @@ paths:
               schema: {}
 components:
   schemas:
+    AcademicCategory:
+      type: string
+      enum:
+      - normative
+      - professional
+      - free_choice
+      title: AcademicCategory
+    AcademicHistoryResponse:
+      properties:
+        years:
+          items:
+            $ref: '#/components/schemas/AcademicYearGroup'
+          type: array
+          title: Years
+          description: Записи, згруповані за навчальним роком
+      type: object
+      required:
+      - years
+      title: AcademicHistoryResponse
+    AcademicRecordInput:
+      properties:
+        academic_year:
+          type: integer
+          maximum: 2030.0
+          minimum: 2015.0
+          title: Academic Year
+          examples:
+          - 2024
+        course_year:
+          type: integer
+          maximum: 4.0
+          minimum: 1.0
+          title: Course Year
+          examples:
+          - 1
+        course_id:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Course Id
+          description: Дисципліна з каталогу; null — вказати title і credits
+        title:
+          anyOf:
+          - type: string
+            maxLength: 300
+            minLength: 2
+          - type: 'null'
+          title: Title
+          description: Обов'язково, якщо course_id = null
+        trimester:
+          type: integer
+          maximum: 3.0
+          minimum: 1.0
+          title: Trimester
+          examples:
+          - 1
+        credits:
+          anyOf:
+          - type: number
+            maximum: 30.0
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Credits
+          description: Обов'язково, якщо course_id = null
+        category:
+          $ref: '#/components/schemas/AcademicCategory'
+      type: object
+      required:
+      - academic_year
+      - course_year
+      - trimester
+      - category
+      title: AcademicRecordInput
+    AcademicRecordResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+          examples:
+          - 310
+        academic_year:
+          type: integer
+          title: Academic Year
+          description: Рік початку навчального року
+          examples:
+          - 2024
+        course_year:
+          type: integer
+          maximum: 4.0
+          minimum: 1.0
+          title: Course Year
+          examples:
+          - 1
+        course_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Course Id
+          description: null, якщо дисципліни вже немає в каталозі
+          examples:
+          - 301
+        title:
+          type: string
+          title: Title
+          examples:
+          - Алгоритми та структури даних
+        trimester:
+          type: integer
+          maximum: 3.0
+          minimum: 1.0
+          title: Trimester
+          description: 1 — осінь, 2 — весна, 3 — літо
+          examples:
+          - 1
+        credits:
+          type: number
+          title: Credits
+          examples:
+          - 6.0
+        category:
+          $ref: '#/components/schemas/AcademicCategory'
+        source:
+          $ref: '#/components/schemas/RecordSource'
+        verified:
+          type: boolean
+          title: Verified
+          description: Підтверджено адміністратором
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - academic_year
+      - course_year
+      - title
+      - trimester
+      - credits
+      - category
+      - source
+      - verified
+      - created_at
+      title: AcademicRecordResponse
+    AcademicYearGroup:
+      properties:
+        academic_year:
+          type: integer
+          title: Academic Year
+        course_year:
+          type: integer
+          title: Course Year
+        total_credits:
+          type: number
+          title: Total Credits
+        records:
+          items:
+            $ref: '#/components/schemas/AcademicRecordResponse'
+          type: array
+          title: Records
+      type: object
+      required:
+      - academic_year
+      - course_year
+      - total_credits
+      - records
+      title: AcademicYearGroup
+    Actor:
+      properties:
+        id:
+          type: integer
+          title: Id
+        full_name:
+          type: string
+          title: Full Name
+      type: object
+      required:
+      - id
+      - full_name
+      title: Actor
+    AddRecordsRequest:
+      properties:
+        records:
+          items:
+            $ref: '#/components/schemas/AcademicRecordInput'
+          type: array
+          maxItems: 60
+          minItems: 1
+          title: Records
+      type: object
+      required:
+      - records
+      title: AddRecordsRequest
+    AddRecordsResponse:
+      properties:
+        records:
+          items:
+            $ref: '#/components/schemas/AcademicRecordResponse'
+          type: array
+          title: Records
+      type: object
+      required:
+      - records
+      title: AddRecordsResponse
+    AdminStudentInfo:
+      properties:
+        specialty:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Specialty
+        course_year:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Course Year
+        course_year_source:
+          anyOf:
+          - $ref: '#/components/schemas/CourseYearSource'
+          - type: 'null'
+      type: object
+      title: AdminStudentInfo
+    AdminStudentPatch:
+      properties:
+        course_year:
+          anyOf:
+          - type: integer
+            maximum: 4.0
+            minimum: 1.0
+          - type: 'null'
+          title: Course Year
+        specialty:
+          anyOf:
+          - type: string
+            maxLength: 150
+            minLength: 2
+          - type: 'null'
+          title: Specialty
+      type: object
+      title: AdminStudentPatch
+    AdminUser:
+      properties:
+        id:
+          type: integer
+          title: Id
+          examples:
+          - 42
+        email:
+          type: string
+          title: Email
+          examples:
+          - vl.smyrnov@ukma.edu.ua
+        full_name:
+          type: string
+          title: Full Name
+        role:
+          $ref: '#/components/schemas/UserRole'
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        last_login_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Login At
+        student:
+          anyOf:
+          - $ref: '#/components/schemas/AdminStudentInfo'
+          - type: 'null'
+          description: null, якщо студентського профілю немає
+      type: object
+      required:
+      - id
+      - email
+      - full_name
+      - role
+      - created_at
+      title: AdminUser
+    AdminUserDetail:
+      properties:
+        id:
+          type: integer
+          title: Id
+          description: ID користувача
+          examples:
+          - 42
+        email:
+          type: string
+          title: Email
+          description: Пошта користувача
+          examples:
+          - student@ukma.edu.ua
+        full_name:
+          type: string
+          title: Full Name
+          description: Повне ім'я
+          examples:
+          - Тестовий Студент
+        role:
+          $ref: '#/components/schemas/UserRole'
+          description: Роль користувача
+        student:
+          anyOf:
+          - $ref: '#/components/schemas/StudentInfo'
+          - type: 'null'
+          description: null для адміна без студентського профілю
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        last_login_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Login At
+      type: object
+      required:
+      - id
+      - email
+      - full_name
+      - role
+      - created_at
+      title: AdminUserDetail
+      description: Та сама форма, що GET /me, плюс службові дати.
+    AdminUserPatch:
+      properties:
+        role:
+          anyOf:
+          - $ref: '#/components/schemas/UserRole'
+          - type: 'null'
+        student:
+          anyOf:
+          - $ref: '#/components/schemas/AdminStudentPatch'
+          - type: 'null'
+      type: object
+      title: AdminUserPatch
+    AuditLogEntry:
+      properties:
+        id:
+          type: integer
+          title: Id
+          examples:
+          - 9001
+        actor:
+          anyOf:
+          - $ref: '#/components/schemas/Actor'
+          - type: 'null'
+          description: null для анонімних спроб
+        action:
+          type: string
+          title: Action
+          examples:
+          - plan.read
+        object_type:
+          type: string
+          title: Object Type
+          examples:
+          - IndividualPlan
+        object_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Object Id
+        outcome:
+          $ref: '#/components/schemas/AuditOutcome'
+        ip:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ip
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - action
+      - object_type
+      - outcome
+      - created_at
+      title: AuditLogEntry
+    AuditLogEntryDetail:
+      properties:
+        id:
+          type: integer
+          title: Id
+          examples:
+          - 9001
+        actor:
+          anyOf:
+          - $ref: '#/components/schemas/Actor'
+          - type: 'null'
+          description: null для анонімних спроб
+        action:
+          type: string
+          title: Action
+          examples:
+          - plan.read
+        object_type:
+          type: string
+          title: Object Type
+          examples:
+          - IndividualPlan
+        object_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Object Id
+        outcome:
+          $ref: '#/components/schemas/AuditOutcome'
+        ip:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ip
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        old_value:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Old Value
+        new_value:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: New Value
+      type: object
+      required:
+      - id
+      - action
+      - object_type
+      - outcome
+      - created_at
+      title: AuditLogEntryDetail
+    AuditOutcome:
+      type: string
+      enum:
+      - allowed
+      - denied
+      title: AuditOutcome
     AuthResponse:
       properties:
         access_token:
@@ -926,6 +3733,65 @@ components:
       - full_name
       - role
       title: AuthUser
+    Body_upload_document_api_v1_deanery_documents_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+        academic_year:
+          type: integer
+          maximum: 2030.0
+          minimum: 2024.0
+          title: Academic Year
+      type: object
+      required:
+      - file
+      - academic_year
+      title: Body_upload_document_api_v1_deanery_documents_post
+    BulkReviewRequest:
+      properties:
+        item_ids:
+          items:
+            type: integer
+          type: array
+          maxItems: 100
+          minItems: 1
+          title: Item Ids
+        decision:
+          type: string
+          enum:
+          - approve
+          - reject
+          title: Decision
+      type: object
+      required:
+      - item_ids
+      - decision
+      title: BulkReviewRequest
+    BulkReviewResponse:
+      properties:
+        approved:
+          items:
+            type: integer
+          type: array
+          title: Approved
+        rejected:
+          items:
+            type: integer
+          type: array
+          title: Rejected
+        skipped:
+          items:
+            $ref: '#/components/schemas/SkippedItem'
+          type: array
+          title: Skipped
+      type: object
+      required:
+      - approved
+      - rejected
+      - skipped
+      title: BulkReviewResponse
     ConfigResponse:
       properties:
         api_version:
@@ -964,6 +3830,13 @@ components:
       - load_levels
       - features
       title: ConfigResponse
+    CourseYearSource:
+      type: string
+      enum:
+      - self_declared
+      - admin
+      - saz_sync
+      title: CourseYearSource
     CreatePlanRequest:
       properties:
         academic_year:
@@ -999,6 +3872,113 @@ components:
       - course
       - items
       title: CreatePlanRequest
+      description: Тіло POST/PUT /plans. Бізнес-правила перевіряє enforce_plan_rules,
+        щоб повернути всі порушення разом.
+    CreditsInfo:
+      properties:
+        total_used:
+          type: number
+          title: Total Used
+          description: Усього пройдено кредитів
+          examples:
+          - 118.5
+        total_limit:
+          type: integer
+          title: Total Limit
+          description: Ліміт за програму
+          examples:
+          - 240
+        free_choice_used:
+          type: number
+          title: Free Choice Used
+          description: Вільний вибір за всі роки
+          examples:
+          - 9.0
+        free_choice_limit:
+          type: integer
+          title: Free Choice Limit
+          description: Ліміт вільного вибору
+          examples:
+          - 25
+        professional_used:
+          type: number
+          title: Professional Used
+          description: Профорієнтовні кредити
+          examples:
+          - 27.0
+        professional_limit:
+          type: integer
+          title: Professional Limit
+          description: Орієнтир профорієнтовних кредитів
+          examples:
+          - 54
+      type: object
+      required:
+      - total_used
+      - total_limit
+      - free_choice_used
+      - free_choice_limit
+      - professional_used
+      - professional_limit
+      title: CreditsInfo
+    DeaneryDocumentResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+        academic_year:
+          type: integer
+          title: Academic Year
+        original_filename:
+          type: string
+          title: Original Filename
+        mime_type:
+          type: string
+          title: Mime Type
+        size_bytes:
+          type: integer
+          title: Size Bytes
+        parse_status:
+          type: string
+          title: Parse Status
+        parse_error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parse Error
+        uploaded_at:
+          type: string
+          format: date-time
+          title: Uploaded At
+        normative_courses:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/NormativeCourseResponse'
+            type: array
+          - type: 'null'
+          title: Normative Courses
+      type: object
+      required:
+      - id
+      - academic_year
+      - original_filename
+      - mime_type
+      - size_bytes
+      - parse_status
+      - parse_error
+      - uploaded_at
+      title: DeaneryDocumentResponse
+    DeaneryDocumentsListResponse:
+      properties:
+        deanery_documents:
+          items:
+            $ref: '#/components/schemas/DeaneryDocumentResponse'
+          type: array
+          title: Deanery Documents
+      type: object
+      required:
+      - deanery_documents
+      title: DeaneryDocumentsListResponse
     Direction:
       properties:
         id:
@@ -1024,6 +4004,65 @@ components:
       - id
       - name
       title: Direction
+    DirectionCreate:
+      properties:
+        name:
+          type: string
+          maxLength: 50
+          minLength: 2
+          title: Name
+          examples:
+          - Data Science
+        description:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Description
+      type: object
+      required:
+      - name
+      title: DirectionCreate
+    DirectionPatch:
+      properties:
+        name:
+          anyOf:
+          - type: string
+            maxLength: 50
+            minLength: 2
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Description
+          description: Явний null очищає опис
+      type: object
+      title: DirectionPatch
+    DirectionResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+          examples:
+          - 1
+        name:
+          type: string
+          title: Name
+          examples:
+          - Data Science
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+      type: object
+      required:
+      - id
+      - name
+      title: DirectionResponse
     DirectionsResponse:
       properties:
         directions:
@@ -1110,6 +4149,19 @@ components:
         recommended_year: 2
         title: Функціональне програмування
         trimester: 1
+    DisciplineDirectionsRequest:
+      properties:
+        direction_ids:
+          items:
+            type: integer
+          type: array
+          maxItems: 50
+          title: Direction Ids
+          description: Повна заміна переліку; порожній масив = вільний вибір для всіх
+      type: object
+      required:
+      - direction_ids
+      title: DisciplineDirectionsRequest
     DisciplineType:
       type: string
       enum:
@@ -1210,10 +4262,9 @@ components:
           description: Код авторизації Google
         code_verifier:
           type: string
-          maxLength: 128
-          minLength: 43
+          pattern: ^[A-Za-z0-9\-._~]{43,128}$
           title: Code Verifier
-          description: PKCE code_verifier
+          description: PKCE code_verifier (43-128 символів RFC 7636)
         redirect_uri:
           type: string
           maxLength: 512
@@ -1347,6 +4398,178 @@ components:
           default: medium
       type: object
       title: LoadLevels
+    MeResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+          description: ID користувача
+          examples:
+          - 42
+        email:
+          type: string
+          title: Email
+          description: Пошта користувача
+          examples:
+          - student@ukma.edu.ua
+        full_name:
+          type: string
+          title: Full Name
+          description: Повне ім'я
+          examples:
+          - Тестовий Студент
+        role:
+          $ref: '#/components/schemas/UserRole'
+          description: Роль користувача
+        student:
+          anyOf:
+          - $ref: '#/components/schemas/StudentInfo'
+          - type: 'null'
+          description: null для адміна без студентського профілю
+      type: object
+      required:
+      - id
+      - email
+      - full_name
+      - role
+      title: MeResponse
+    ModerationChangeType:
+      type: string
+      enum:
+      - add
+      - update
+      - remove
+      title: ModerationChangeType
+    ModerationItemResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+          examples:
+          - 501
+        sync_job_id:
+          type: integer
+          title: Sync Job Id
+        course_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Course Id
+          description: null для change_type = add до схвалення
+        change_type:
+          $ref: '#/components/schemas/ModerationChangeType'
+        payload:
+          additionalProperties: true
+          type: object
+          title: Payload
+          description: 'Рендерити як текст: вміст із САЗ недовірений (R5, R7)'
+        diff:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Diff
+          description: null для add
+        status:
+          $ref: '#/components/schemas/ModerationStatus'
+        reviewed_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserRef'
+          - type: 'null'
+        reviewed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Reviewed At
+      type: object
+      required:
+      - id
+      - sync_job_id
+      - change_type
+      - payload
+      - status
+      title: ModerationItemResponse
+    ModerationStatus:
+      type: string
+      enum:
+      - pending
+      - approved
+      - rejected
+      title: ModerationStatus
+    NormativeCourseResponse:
+      properties:
+        course_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Course Id
+          description: null, якщо не знайдено в каталозі
+        raw_title:
+          type: string
+          title: Raw Title
+        trimester:
+          type: integer
+          title: Trimester
+        credits:
+          type: number
+          title: Credits
+      type: object
+      required:
+      - raw_title
+      - trimester
+      - credits
+      title: NormativeCourseResponse
+    OnboardingRequest:
+      properties:
+        course_year:
+          type: integer
+          maximum: 4.0
+          minimum: 1.0
+          title: Course Year
+          description: Курс навчання
+          examples:
+          - 3
+        specialty:
+          type: string
+          maxLength: 150
+          minLength: 2
+          title: Specialty
+          examples:
+          - Інженерія програмного забезпечення
+      type: object
+      required:
+      - course_year
+      - specialty
+      title: OnboardingRequest
+    PaginatedAdminUsers:
+      properties:
+        users:
+          items:
+            $ref: '#/components/schemas/AdminUser'
+          type: array
+          title: Users
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+      type: object
+      required:
+      - users
+      - pagination
+      title: PaginatedAdminUsers
+    PaginatedAuditLog:
+      properties:
+        audit_log:
+          items:
+            $ref: '#/components/schemas/AuditLogEntry'
+          type: array
+          title: Audit Log
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+      type: object
+      required:
+      - audit_log
+      - pagination
+      title: PaginatedAuditLog
     PaginatedDisciplinesResponse:
       properties:
         disciplines:
@@ -1379,6 +4602,20 @@ components:
       - instructors
       - pagination
       title: PaginatedInstructorsResponse
+    PaginatedModerationItems:
+      properties:
+        moderation_items:
+          items:
+            $ref: '#/components/schemas/ModerationItemResponse'
+          type: array
+          title: Moderation Items
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+      type: object
+      required:
+      - moderation_items
+      - pagination
+      title: PaginatedModerationItems
     PaginatedPlansResponse:
       properties:
         plans:
@@ -1395,6 +4632,20 @@ components:
       - plans
       - pagination
       title: PaginatedPlansResponse
+    PaginatedSyncJobs:
+      properties:
+        sync_jobs:
+          items:
+            $ref: '#/components/schemas/SyncJobResponse'
+          type: array
+          title: Sync Jobs
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+      type: object
+      required:
+      - sync_jobs
+      - pagination
+      title: PaginatedSyncJobs
     PaginationInfo:
       properties:
         limit:
@@ -1433,13 +4684,14 @@ components:
       properties:
         course_id:
           type: integer
+          exclusiveMinimum: 0.0
           title: Course Id
           description: Унікальний ID дисципліни з каталогу САЗ
           examples:
           - 101
         title:
           type: string
-          maxLength: 150
+          maxLength: 300
           minLength: 2
           title: Title
           description: Назва дисципліни
@@ -1680,6 +4932,127 @@ components:
       - warnings
       - summary
       title: PlanValidationResponse
+    PreferencesRequest:
+      properties:
+        academic_year:
+          anyOf:
+          - type: integer
+            maximum: 2030.0
+            minimum: 2024.0
+          - type: 'null'
+          title: Academic Year
+          description: Необов'язково; якщо передано, має збігатися зі шляхом
+        load_levels:
+          $ref: '#/components/schemas/LoadLevels'
+          description: 'Для 4 курсу ігнорується: рівні розраховує сервер (FR-003)'
+        direction_ids:
+          items:
+            type: integer
+          type: array
+          maxItems: 3
+          title: Direction Ids
+          description: 0–3 напрямки
+        include_free_electives:
+          type: boolean
+          title: Include Free Electives
+          description: false — лише профорієнтовні
+          default: true
+        preferred_instructor_ids:
+          items:
+            type: integer
+          type: array
+          maxItems: 50
+          title: Preferred Instructor Ids
+        unwanted_instructor_ids:
+          items:
+            type: integer
+          type: array
+          maxItems: 50
+          title: Unwanted Instructor Ids
+        wants_certificate:
+          type: boolean
+          title: Wants Certificate
+          default: false
+        certificate_program_id:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Certificate Program Id
+          description: 'Етап 2: поки лише зберігається'
+      type: object
+      title: PreferencesRequest
+    PreferencesResponse:
+      properties:
+        academic_year:
+          type: integer
+          title: Academic Year
+          examples:
+          - 2026
+        load_levels:
+          $ref: '#/components/schemas/LoadLevels'
+        direction_ids:
+          items:
+            type: integer
+          type: array
+          title: Direction Ids
+        include_free_electives:
+          type: boolean
+          title: Include Free Electives
+        preferred_instructor_ids:
+          items:
+            type: integer
+          type: array
+          title: Preferred Instructor Ids
+        unwanted_instructor_ids:
+          items:
+            type: integer
+          type: array
+          title: Unwanted Instructor Ids
+        wants_certificate:
+          type: boolean
+          title: Wants Certificate
+        certificate_program_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Certificate Program Id
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - academic_year
+      - load_levels
+      - direction_ids
+      - include_free_electives
+      - preferred_instructor_ids
+      - unwanted_instructor_ids
+      - wants_certificate
+      - certificate_program_id
+      - updated_at
+      title: PreferencesResponse
+    RecordSource:
+      type: string
+      enum:
+      - self_declared
+      - deanery_document
+      - approved_plan
+      - admin
+      - saz_sync
+      title: RecordSource
+    RejectRequest:
+      properties:
+        reason:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Reason
+          description: Необов'язкова причина відхилення
+      type: object
+      title: RejectRequest
     RuleIssue:
       properties:
         code:
@@ -1703,6 +5076,183 @@ components:
       - code
       - message
       title: RuleIssue
+    SkippedItem:
+      properties:
+        id:
+          type: integer
+          title: Id
+        code:
+          type: string
+          title: Code
+      type: object
+      required:
+      - id
+      - code
+      title: SkippedItem
+    SkippedRecord:
+      properties:
+        id:
+          type: integer
+          title: Id
+        code:
+          type: string
+          title: Code
+      type: object
+      required:
+      - id
+      - code
+      title: SkippedRecord
+    StudentInfo:
+      properties:
+        faculty:
+          type: string
+          title: Faculty
+          examples:
+          - ФІ
+        specialty:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Specialty
+          examples:
+          - Інженерія програмного забезпечення
+        course_year:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Course Year
+          description: null до онбордингу
+          examples:
+          - 3
+        course_year_source:
+          anyOf:
+          - $ref: '#/components/schemas/CourseYearSource'
+          - type: 'null'
+          description: Хто вказав курс
+        onboarding_required:
+          type: boolean
+          title: Onboarding Required
+          description: true, якщо курс або спеціальність не заповнені
+        can_create_plan:
+          type: boolean
+          title: Can Create Plan
+          description: false для 1 курсу і до онбордингу
+        load_levels_mode:
+          type: string
+          enum:
+          - manual
+          - auto
+          title: Load Levels Mode
+          description: auto для 4 курсу (FR-003)
+        credits:
+          $ref: '#/components/schemas/CreditsInfo'
+        saz_synced_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Saz Synced At
+          description: Остання синхронізація з САЗ (заблоковано, R14)
+      type: object
+      required:
+      - faculty
+      - onboarding_required
+      - can_create_plan
+      - load_levels_mode
+      - credits
+      title: StudentInfo
+    SyncInitiator:
+      type: string
+      enum:
+      - admin
+      - scheduler
+      title: SyncInitiator
+    SyncJobCreate:
+      properties:
+        source:
+          $ref: '#/components/schemas/SyncSource'
+          examples:
+          - saz_catalog
+      type: object
+      required:
+      - source
+      title: SyncJobCreate
+    SyncJobResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+          examples:
+          - 31
+        source:
+          $ref: '#/components/schemas/SyncSource'
+        initiator:
+          $ref: '#/components/schemas/SyncInitiator'
+        initiated_by:
+          anyOf:
+          - $ref: '#/components/schemas/UserRef'
+          - type: 'null'
+          description: null, якщо задачу запустив планувальник
+        status:
+          $ref: '#/components/schemas/SyncJobStatus'
+        started_at:
+          type: string
+          format: date-time
+          title: Started At
+        finished_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Finished At
+        added_count:
+          type: integer
+          title: Added Count
+        updated_count:
+          type: integer
+          title: Updated Count
+        error_message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error Message
+      type: object
+      required:
+      - id
+      - source
+      - initiator
+      - status
+      - started_at
+      - added_count
+      - updated_count
+      title: SyncJobResponse
+    SyncJobStatus:
+      type: string
+      enum:
+      - queued
+      - running
+      - succeeded
+      - failed
+      title: SyncJobStatus
+    SyncSource:
+      type: string
+      enum:
+      - saz_catalog
+      - faculty_certificates
+      title: SyncSource
+    UserRef:
+      properties:
+        id:
+          type: integer
+          title: Id
+        full_name:
+          type: string
+          title: Full Name
+      type: object
+      required:
+      - id
+      - full_name
+      title: UserRef
     UserRole:
       type: string
       enum:
@@ -1735,6 +5285,36 @@ components:
       - msg
       - type
       title: ValidationError
+    VerifyRecordsRequest:
+      properties:
+        record_ids:
+          items:
+            type: integer
+          type: array
+          maxItems: 100
+          minItems: 1
+          title: Record Ids
+      type: object
+      required:
+      - record_ids
+      title: VerifyRecordsRequest
+    VerifyRecordsResponse:
+      properties:
+        verified:
+          items:
+            type: integer
+          type: array
+          title: Verified
+        skipped:
+          items:
+            $ref: '#/components/schemas/SkippedRecord'
+          type: array
+          title: Skipped
+      type: object
+      required:
+      - verified
+      - skipped
+      title: VerifyRecordsResponse
   securitySchemes:
     HTTPBearer:
       type: http
@@ -1752,3 +5332,11 @@ tags:
   description: Вхід через Google, оновлення і відкликання токена (заглушка)
 - name: Reference
   description: 'Довідники: напрямки розвитку і викладачі'
+- name: Preferences
+  description: Побажання студента на навчальний рік
+- name: Deanery documents
+  description: Документи деканату
+- name: Admin
+  description: 'Адміністрування: користувачі, довідники, синхронізація, аудит'
+- name: User
+  description: Профіль студента, онбординг, академічна історія

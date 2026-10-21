@@ -8,7 +8,7 @@ import { setAccessToken } from "../../api/token";
 import { server } from "../../mocks/server";
 import { planFixture, plansCrudHandlers, validateHandler } from "../../test/handlers";
 import type { BuilderPlan } from "./plan";
-import { usePlan, useSavePlan, useSubmitPlan, useValidatePlan } from "./useBuilderData";
+import { planPayload, usePlan, useSavePlan, useSubmitPlan, useValidatePlan } from "./useBuilderData";
 
 function wrapper({ children }: { children: ReactNode }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -31,6 +31,17 @@ const planWith = (items: PlanItem[]): BuilderPlan => ({
 });
 
 beforeEach(() => setAccessToken("t"));
+
+describe("planPayload", () => {
+  it("для 4 курсу не надсилає load_levels: бекенд сам вираховує навантаження", () => {
+    const body = planPayload({ ...planWith([item(1)]), course: 4 });
+    expect(body).not.toHaveProperty("load_levels");
+  });
+
+  it("для інших курсів надсилає load_levels", () => {
+    expect(planPayload(planWith([item(1)]))).toHaveProperty("load_levels");
+  });
+});
 
 describe("useValidatePlan", () => {
   it("порожній план не робить запиту", () => {

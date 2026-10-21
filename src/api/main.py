@@ -32,10 +32,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from ..db.migrate import init_database
 from .common import RequestIdMiddleware, assert_safe_environment, register_error_handlers
 from .routes import auth, deanery, disciplines, plans, preferences, reference, system, user
-from .routes.admin import users as admin_users
+from .routes.admin import audit as admin_audit
 from .routes.admin import catalog as admin_catalog
 from .routes.admin import sync as admin_sync
-from .routes.admin import audit as admin_audit
+from .routes.admin import users as admin_users
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("yourpath.api")
@@ -102,7 +102,6 @@ app = FastAPI(
 
 _cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()]
 
-app.add_middleware(RequestIdMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,

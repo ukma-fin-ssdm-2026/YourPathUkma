@@ -302,7 +302,10 @@ def add_academic_history(
             details.append(
                 ErrorDetail(
                     field=f"{prefix}.course_year",
-                    message=f"COURSE_YEAR_TOO_HIGH: запис за {rec.course_year} курс, а студент на {profile.course_year}",
+                    message=(
+                        f"COURSE_YEAR_TOO_HIGH: запис за {rec.course_year} курс, "
+                        f"а студент на {profile.course_year}"
+                    ),
                 )
             )
         if rec.course_id is not None:
