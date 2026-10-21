@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import Iterable, List, Optional, Sequence, Set, Tuple
 
 FREE_ELECTIVE_LIMIT = 25.0
+ANNUAL_MIN_CREDITS = 57.0
 COURSE_WITHOUT_LOAD_CHOICE = 4
 
 
@@ -155,14 +156,15 @@ def free_elective_remaining(used: float) -> float:
     return round(max(0, FREE_ELECTIVE_LIMIT - used), 1)
 
 def check_annual_minimum(year_credits: float) -> List[Violation]:
+    """Мінімум 57 кредитів за навчальний рік, навіть за низького навантаження (AGENTS.md §4)."""
     if year_credits < 0:
         raise ValueError("Кількість кредитів не може бути від'ємною")
-    if year_credits < 57:
-        missing = round(57 - year_credits, 1)
-        return [
-            Violation(
-                code="ANNUAL_MINIMUM_NOT_MET",
-                message=f"Замало кредитів за рік: {year_credits:g} < 57, бракує {missing:g}"
-            )
-        ]
-    return []
+    if year_credits >= ANNUAL_MIN_CREDITS:
+        return []
+    missing = round(ANNUAL_MIN_CREDITS - year_credits, 1)
+    return [
+        Violation(
+            code="ANNUAL_MINIMUM_NOT_MET",
+            message=f"Замало кредитів за рік: {year_credits:g} < {ANNUAL_MIN_CREDITS:g}, бракує {missing:g}"
+        )
+    ]
