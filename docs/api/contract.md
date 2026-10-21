@@ -33,7 +33,7 @@
 
 | Заголовок | Напрямок | Обов'язковий | Опис |
 |---|---|---|---|
-| `Authorization: Bearer <access_token>` | запит | так, для всіх кінцевих точок, крім `/health` і `/auth/*` | Access-токен після входу через Google SSO (§3.1). **Зараз (заглушка):** приймається будь-який непорожній рядок, напр. `Bearer test`. |
+| `Authorization: Bearer <access_token>` | запит | так, для всіх кінцевих точок, крім `/health` і `/auth/*` | Access-токен після входу через Microsoft SSO (§3.1). **Зараз (заглушка):** приймається будь-який непорожній рядок, напр. `Bearer test`. |
 | `Content-Type: application/json` | запит | для POST/PUT з тілом | |
 | `Accept-Language` | запит | ні | Не використовується: усі повідомлення `message` зараз українською. |
 | `X-Request-ID` | запит (необов'язково) і відповідь | ✅ реалізовано | Унікальний id запиту для логів (`quality-attributes.md`: `request_id` / `correlation_id`). Фронтенд показує його в повідомленні про помилку 5xx («Код помилки: …»). Якщо клієнт сам надіслав `X-Request-ID`, сервер повертає той самий. |
@@ -259,7 +259,7 @@ Query-параметри:
 |---|---|---|---|---|
 | GET | `/health` | Стан сервера | ✅ | — |
 | GET | `/config` | Публічна конфігурація для фронтенду (ліміти, `client_id`, прапорці) | 🟡 | старт застосунку |
-| POST | `/auth/google` | Вхід: обмін коду Google на токени | 🟡 | Вхід |
+| POST | `/auth/google` | Вхід: обмін коду Microsoft на токени | 🟡 | Вхід |
 | POST | `/auth/refresh` | Новий access-токен | 🟡 | усі |
 | POST | `/auth/logout` | Вихід | 🟡 | усі |
 | GET | `/me` | Профіль і лічильники кредитів | 🟡 | Профіль |
@@ -368,9 +368,9 @@ Query-параметри:
 
 ### 3.1. Автентифікація 🟡
 
-Потік: SPA перенаправляє на Google (OAuth2 Authorization Code + PKCE, scopes `openid email profile`, параметр `hd=ukma.edu.ua`). Google повертає `code` на сторінку SPA. SPA надсилає `code` на бекенд. Бекенд перевіряє ID-токен (`iss`, `aud`, `exp`, `email_verified`, точний `hd == "ukma.edu.ua"`), створює або знаходить користувача і повертає access-токен (R6, R7).
+Потік: SPA перенаправляє на Microsoft (OAuth2 Authorization Code + PKCE, scopes `openid email profile`, tenant НаУКМА в адресі авторизації). Microsoft повертає `code` на сторінку SPA. SPA надсилає `code` на бекенд. Бекенд перевіряє ID-токен (`iss`, `aud`, `exp`, `email_verified`, `tid` дорівнює tenant НаУКМА, точний збіг домену пошти `ukma.edu.ua`), створює або знаходить користувача і повертає access-токен (R6, R7).
 
-Конфігурація, яку бекенд і фронтенд мають узгодити: Google OAuth `client_id` (публічний, потрібен фронтенду), дозволений `redirect_uri`, дозволений origin фронтенду для CORS.
+Конфігурація, яку бекенд і фронтенд мають узгодити: Microsoft OAuth `client_id` (публічний, потрібен фронтенду), дозволений `redirect_uri`, дозволений origin фронтенду для CORS.
 
 #### `POST /auth/google`
 

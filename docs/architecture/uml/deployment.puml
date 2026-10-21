@@ -29,7 +29,7 @@ node "Хостинг застосунку\n<<TZ-2: наша інфраструк
 }
 
 cloud "External Systems & Sources\n<<TZ-4: треті сторони>>" as Ext #line:orange;line.dashed;line.bold {
-  node "Google Workspace SSO (NaUKMA)" as Google
+  node "Microsoft 365 SSO (NaUKMA)" as Google
   node "External LLM API" as LLM
   node "CA3 (САЗ НаУКМА)" as CA3
   node "Сайт факультету\n(Сертифікатні програми)" as Faculty
@@ -57,7 +57,7 @@ legend right
   **Межі довіри**
   TB1 браузер ↔ сервер застосунку (TZ-1 → TZ-2)
   TB2 застосунок / парсер ↔ БД (TZ-2 → TZ-3)
-  TB3 застосунок ↔ Google SSO (TZ-2 → TZ-4)
+  TB3 застосунок ↔ Microsoft SSO (TZ-2 → TZ-4)
   TB4 застосунок ↔ зовнішній LLM (TZ-2 → TZ-4)
   TB5 парсер ↔ зовнішні сайти (TZ-4 → TZ-2, недовірений вміст)
   TB6 роль student → адмін-функції (логічна, всередині TZ-2)

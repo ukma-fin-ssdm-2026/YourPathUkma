@@ -16,7 +16,7 @@ from ..enums import CourseYearSource, UserRole
 
 
 class User(Base):
-    """Обліковий запис після Google SSO (студент або адмін). Роль — лише з БД, не з клієнта (R2)."""
+    """Обліковий запис після Microsoft SSO (студент або адмін). Роль — лише з БД, не з клієнта (R2)."""
 
     __tablename__ = "users"
 

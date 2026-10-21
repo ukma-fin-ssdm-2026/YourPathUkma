@@ -43,7 +43,7 @@ class Features(BaseModel):
 
 class ConfigResponse(BaseModel):
     api_version: str = Field(API_VERSION, description="Версія API")
-    google_client_id: str = Field(..., description="Публічний client_id для входу через Google")
+    google_client_id: str = Field(..., description="Публічний client_id для входу через Microsoft")
     allowed_email_domain: str = Field("ukma.edu.ua", description="Дозволений домен пошти")
     reviews_url: str = Field(..., description="Посилання «Почитати відгуки»")
     limits: Limits

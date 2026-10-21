@@ -237,7 +237,7 @@ MOCK_STUDENT_ID = 42
 
 bearer_scheme = HTTPBearer(
     auto_error=False,
-    description="JWT після входу через Google Workspace SSO. У заглушці приймається будь-який непорожній токен.",
+    description="JWT після входу через Microsoft 365 SSO. У заглушці приймається будь-який непорожній токен.",
 )
 
 
