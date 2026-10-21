@@ -17,7 +17,6 @@ from ....db.session import get_db
 from ...common import ApiError, get_current_student_id
 
 
-
 def client_ip(request: Request) -> Optional[str]:
     """IP з'єднання. X-Forwarded-For навмисно не читаємо: клієнт може його підробити."""
     return request.client.host if request.client else None

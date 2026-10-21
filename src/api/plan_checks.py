@@ -17,7 +17,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..db import enums as db_enums
-from ..db.models import Course, IndividualPlan, PlanItem as PlanItemRow
+from ..db.models import Course, IndividualPlan
+from ..db.models import PlanItem as PlanItemRow
 from ..db.models.deanery import DeaneryPlanDocument, NormativeCourseEntry
 from ..services import plan_rules
 from .common import ApiError, ErrorDetail
@@ -89,7 +90,9 @@ def _collect_violations(
     violations += plan_rules.check_not_only_free_electives([item.is_free_elective for item in items])
     violations += collect_catalog_flag_violations(items, courses)
 
-    current_free = round(sum(getattr(item, "credits", 0.0) or 0.0 for item in items if getattr(item, "is_free_elective", False)), 1)
+    current_free = round(
+        sum(getattr(item, "credits", 0.0) or 0.0 for item in items if getattr(item, "is_free_elective", False)), 1
+    )
     violations += plan_rules.check_free_elective_in_plan(current_free)
     used = free_elective_used_in_other_years(db, student_id, academic_year, exclude_plan_id)
     violations += plan_rules.check_free_elective_total(current_free, used)

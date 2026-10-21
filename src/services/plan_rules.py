@@ -82,7 +82,10 @@ def check_free_elective_flags(flags: Iterable[CatalogFlag]) -> List[Violation]:
             violations.append(
                 Violation(
                     code="FREE_ELECTIVE_FLAG_MISMATCH",
-                    message="Дисципліна не профорієнтовна для жодного напрямку: це вільний вибір (is_free_elective=true)",
+                    message=(
+                        "Дисципліна не профорієнтовна для жодного напрямку: "
+                        "це вільний вибір (is_free_elective=true)"
+                    ),
                     field=f"items.{flag.index}.is_free_elective",
                 )
             )

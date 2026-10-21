@@ -12,7 +12,7 @@ src/api/routes/{disciplines,reference,plans}.py. Перевірка: pytest на
 
 from datetime import datetime, timezone
 
-from sqlalchemy import func, select, text
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .base import normalize_text
@@ -142,6 +142,9 @@ def seed_demo_data(db: Session) -> bool:
     db.flush()
     _reset_identity_sequences(db)
     return True
+
+
+_MODELS_WITH_FIXED_IDS = [Direction, Instructor, Course, User, IndividualPlan, PlanItem]
 
 
 def _reset_identity_sequences(db: Session) -> None:

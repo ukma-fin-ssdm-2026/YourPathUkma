@@ -190,7 +190,10 @@ def _check_change(db: Session, item: ModerationItem) -> Tuple[Optional[Course], 
     except ValidationError as exc:
         raise _payload_error(
             "Некоректний payload елемента модерації",
-            [ErrorDetail(field=".".join(str(p) for p in e["loc"]) or "payload", message=e["msg"]) for e in exc.errors()],
+            [
+                ErrorDetail(field=".".join(str(p) for p in e["loc"]) or "payload", message=e["msg"])
+                for e in exc.errors()
+            ],
         )
 
     if item.change_type == db_enums.ModerationChangeType.ADD:
@@ -387,7 +390,11 @@ def list_sync_jobs(
         filters.append(SyncJob.status == job_status)
     total = db.scalar(select(func.count(SyncJob.id)).where(*filters))
     jobs = db.scalars(
-        select(SyncJob).where(*filters).order_by(SyncJob.started_at.desc(), SyncJob.id.desc()).offset(offset).limit(limit)
+        select(SyncJob)
+        .where(*filters)
+        .order_by(SyncJob.started_at.desc(), SyncJob.id.desc())
+        .offset(offset)
+        .limit(limit)
     ).all()
     users = _users_by_id(db, {j.initiated_by for j in jobs})
     return PaginatedSyncJobs(
@@ -400,7 +407,10 @@ def list_sync_jobs(
     "/sync-jobs/{job_id}",
     response_model=SyncJobResponse,
     summary="Деталі синхронізації",
-    description="Сирий HTML-знімок (`raw_snapshot`) в API не повертається. Фронтенд опитує, доки статус `queued`/`running`.",
+    description=(
+        "Сирий HTML-знімок (`raw_snapshot`) в API не повертається. "
+        "Фронтенд опитує, доки статус `queued`/`running`."
+    ),
     responses={
         200: {"description": "Задачу знайдено"},
         **error_responses(401, 403, 404, 422, overrides={403: _FORBIDDEN, 404: _JOB_NOT_FOUND}),
@@ -437,7 +447,9 @@ def list_moderation_items(
     if change_type:
         filters.append(ModerationItem.change_type == change_type)
     total = db.scalar(select(func.count(ModerationItem.id)).where(*filters))
-    items = db.scalars(select(ModerationItem).where(*filters).order_by(ModerationItem.id).offset(offset).limit(limit)).all()
+    items = db.scalars(
+        select(ModerationItem).where(*filters).order_by(ModerationItem.id).offset(offset).limit(limit)
+    ).all()
     users = _users_by_id(db, {i.reviewed_by for i in items})
     return PaginatedModerationItems(
         moderation_items=[_item_response(i, users) for i in items],

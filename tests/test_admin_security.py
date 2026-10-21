@@ -1,6 +1,7 @@
 """Тести захисту адміністративної панелі (SEC-001)."""
 
 from fastapi.testclient import TestClient
+
 from src.api.main import app
 
 client = TestClient(app)

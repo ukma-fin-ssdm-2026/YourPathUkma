@@ -174,7 +174,10 @@ def patch_direction(
     "/directions/{direction_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Видалити напрямок",
-    description="409 `DIRECTION_IN_USE`, якщо напрямок прив'язаний до дисциплін або збережених побажань: спершу відв'язати.",
+    description=(
+        "409 `DIRECTION_IN_USE`, якщо напрямок прив'язаний до дисциплін або збережених побажань: "
+        "спершу відв'язати."
+    ),
     responses={
         204: {"description": "Напрямок видалено"},
         **error_responses(
