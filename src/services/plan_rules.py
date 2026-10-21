@@ -147,5 +147,7 @@ def check_load_levels(course_year: int, load_levels_sent: bool) -> List[Violatio
 
 
 def free_elective_remaining(used: float) -> float:
+    if used < 0:
+        raise ValueError
     return max(0,FREE_ELECTIVE_LIMIT - used);
 
