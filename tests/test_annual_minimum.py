@@ -8,12 +8,13 @@
 from src.services.plan_rules import check_annual_minimum
 import pytest
 
-def test_enough_credits_has_no_violations():
-    assert check_annual_minimum(60) == []
-
-def test_too_few_credits_is_violation():
-    violations = check_annual_minimum(50)
-    assert [v.code for v in violations] == ["ANNUAL_MINIMUM_NOT_MET"]
+@pytest.mark.parametrize(
+    ("credits", "expected_codes"),
+    [(60, []), (50, ["ANNUAL_MINIMUM_NOT_MET"])],
+    ids=["enough", "too-few"],
+)
+def test_annual_minimum(credits, expected_codes):
+    assert [v.code for v in check_annual_minimum(credits)] == expected_codes
 
 def test_message_shows_missing_credits():
     violations = check_annual_minimum(50)
