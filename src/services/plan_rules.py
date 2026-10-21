@@ -144,3 +144,8 @@ def check_load_levels(course_year: int, load_levels_sent: bool) -> List[Violatio
             )
         ]
     return []
+
+
+def free_elective_remaining(used: float) -> float:
+    return FREE_ELECTIVE_LIMIT - used;
+
