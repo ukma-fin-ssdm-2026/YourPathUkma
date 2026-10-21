@@ -1,4 +1,6 @@
 def classify_load_level(hours_per_week):
+    if hours_per_week < 0:
+        raise ValueError
     if hours_per_week < 20:
         return "low"
     if hours_per_week < 23:
