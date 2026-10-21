@@ -14,3 +14,7 @@ def test_enough_credits_has_no_violations():
 def test_too_few_credits_is_violation():
     violations = check_annual_minimum(50)
     assert [v.code for v in violations] == ["ANNUAL_MINIMUM_NOT_MET"]
+
+def test_message_shows_missing_credits():
+    violations = check_annual_minimum(50)
+    assert "бракує 7" in violations[0].message
