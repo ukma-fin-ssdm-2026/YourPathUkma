@@ -154,3 +154,7 @@ def free_elective_remaining(used: float) -> float:
         raise ValueError
     return round(max(0, FREE_ELECTIVE_LIMIT - used), 1)
 
+def check_annual_minimum(year_credits: float) -> List[Violation]:
+    if year_credits < 57:
+        return [Violation(code="ANNUAL_MINIMUM_NOT_MET", message="Замало кредитів за рік")]
+    return []
