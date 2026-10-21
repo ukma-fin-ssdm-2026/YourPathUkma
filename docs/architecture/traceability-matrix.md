@@ -15,7 +15,7 @@
 | **FR-009** | FR | 2–3 альтернативні дисципліни (`PlanAlternative`) для кожного слота | `AI Recommendation Adapter`, `Study Plan Service`, `Plan Builder UI`, `External LLM API` | Інтеграція із зовнішнім LLM через внутрішній адаптер (HLD §3.2, §4) | **Test-11** (rtm.md): наявність 2–3 альтернатив для запропонованої дисципліни |
 | **FR-010** | FR | Серверна валідація ліміту 25 кредитів вільного вибору при заміні на альтернативу | `Academic Validation Engine`, `Study Plan Service`, `PostgreSQL` | Обов'язкова серверна валідація в ACID-транзакції (ADR-001; requirements.md, «Припущення та обмеження») | **Test-12** (rtm.md): спроба перевищити 25 кредитів блокується |
 | **FR-011** | FR | Журнал `SyncJob` в адмін-панелі (дата, ініціатор, статус, лічильники, помилка) | `Admin Console`, `Sync Orchestrator`, `PostgreSQL` | Журнал `SyncJob` зберігається в PostgreSQL (HLD §3.3) | **Test-13, Test-14** (rtm.md): відображення журналу та статусу помилки з описом |
-| **FR-012** | FR | Автентифікація лише через Google Workspace SSO домену НаУКМА | `Auth & SSO View`, `Auth Service`, `Google Workspace SSO (NaUKMA)` | OAuth2/OIDC із перевіркою домену `@ukma.edu.ua` (HLD §3.2, §4); вхід ініціюється в `Auth & SSO View`, токен передається в REST API (HLD §3.1) | **Test-15, Test-16** (rtm.md): вхід із дозволеним доменом та відхилення стороннього |
+| **FR-012** | FR | Автентифікація лише через Microsoft 365 SSO домену НаУКМА | `Auth & SSO View`, `Auth Service`, `Microsoft 365 SSO (NaUKMA)` | OAuth2/OIDC із перевіркою домену `@ukma.edu.ua` (HLD §3.2, §4); вхід ініціюється в `Auth & SSO View`, токен передається в REST API (HLD §3.1) | **Test-15, Test-16** (rtm.md): вхід із дозволеним доменом та відхилення стороннього |
 | **FR-013** | FR | Перегляд каталогу затверджених дисциплін і сертифікатних програм у режимі читання | `Catalog & Certificates View`, `Catalog Service`, `Certificate Program Service`, `CA3 & Faculty Parser Task`, `Сайт факультету`, `PostgreSQL` | Модульний моноліт (ADR-001); REST API клієнт–сервер (HLD §4); дані каталогу в PostgreSQL (HLD §3.3); дані каталогу в PostgreSQL (HLD §3.3); дані сертифікатних програм надходять зі сайту факультету через парсер (HLD §4) | **Test-20, Test-21** (rtm.md): перегляд переліку дисциплін і переліку сертифікатних програм |
 | **PERF-001** | NFR | Генерація плану LLM не довше 5 хвилин | `AI Recommendation Adapter`, `External LLM API` | Синхронний/потоковий HTTPS-виклик LLM (HLD §4). Ліміт очікування в адаптері треба уточнити в HLD | **Сценарій 1**: навантажувальне тестування генерації |
 | **PERF-002** | NFR | Повне оновлення каталогу не довше 30 хвилин | `CA3 & Faculty Parser Task`, `Sync Orchestrator` | Фонові асинхронні задачі поза HTTP-запитом (HLD §3.2; ADR-001, наслідки) | Заміри тривалості повного `SyncJob` на реальному обсязі каталогу САЗ |
@@ -44,7 +44,7 @@
 | `Sync Orchestrator` | FR-008, FR-011, PERF-002 |
 | `CA3 & Faculty Parser Task` | FR-008, FR-013 (непряма), PERF-002 |
 | `PostgreSQL` | FR-004, FR-008, FR-010, FR-011, FR-013, SEC-001 |
-| `Google Workspace SSO (NaUKMA)` | FR-012 |
+| `Microsoft 365 SSO (NaUKMA)` | FR-012 |
 | `External LLM API` | FR-005, FR-009, PERF-001 |
 | `САЗ НаУКМА` | FR-008, PERF-002 |
 | `Сайт факультету` | FR-013 (непряма, джерело даних сертифікатних програм) |

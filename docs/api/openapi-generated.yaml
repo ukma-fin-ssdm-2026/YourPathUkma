@@ -6,7 +6,7 @@ info:
     навантаження.
 
 
-    **Автентифікація:** JWT Bearer (Google Workspace SSO). У поточній заглушці приймається
+    **Автентифікація:** JWT Bearer (Microsoft 365 SSO). У поточній заглушці приймається
     будь-який непорожній токен: натисніть Authorize і введіть, наприклад, `test`.'
   version: 1.0.0
 servers:
@@ -814,7 +814,7 @@ paths:
     post:
       tags:
       - Auth
-      summary: 'Вхід: обмін коду Google на токени'
+      summary: 'Вхід: обмін коду Microsoft на токени'
       description: 'Заглушка: приймає будь-який код і повертає тестового студента.'
       operationId: login_with_google_api_v1_auth_google_post
       requestBody:
@@ -3802,7 +3802,7 @@ components:
         google_client_id:
           type: string
           title: Google Client Id
-          description: Публічний client_id для входу через Google
+          description: Публічний client_id для входу через Microsoft
         allowed_email_domain:
           type: string
           title: Allowed Email Domain
@@ -4259,7 +4259,7 @@ components:
           maxLength: 2048
           minLength: 1
           title: Code
-          description: Код авторизації Google
+          description: Код авторизації Microsoft
         code_verifier:
           type: string
           pattern: ^[A-Za-z0-9\-._~]{43,128}$
@@ -5318,7 +5318,7 @@ components:
   securitySchemes:
     HTTPBearer:
       type: http
-      description: JWT після входу через Google Workspace SSO. У заглушці приймається
+      description: JWT після входу через Microsoft 365 SSO. У заглушці приймається
         будь-який непорожній токен.
       scheme: bearer
 tags:
@@ -5329,7 +5329,7 @@ tags:
 - name: Disciplines
   description: Каталог дисциплін (читання, фільтри)
 - name: Auth
-  description: Вхід через Google, оновлення і відкликання токена (заглушка)
+  description: Вхід через Microsoft, оновлення і відкликання токена (заглушка)
 - name: Reference
   description: 'Довідники: напрямки розвитку і викладачі'
 - name: Preferences

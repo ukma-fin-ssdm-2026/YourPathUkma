@@ -40,7 +40,7 @@
 
 | Сутність | Первинний ключ | Унікальні поля (`<<unique>>`) | Призначення | Дані |
 |---|---|---|---|---|
-| `User` | `id` | `google_sub`, `email` | Обліковий запис (студент або адмін) після Google SSO | **PII** |
+| `User` | `id` | `google_sub`, `email` | Обліковий запис (студент або адмін) після Microsoft SSO | **PII** |
 | `StudentProfile` | `user_id` (PK = FK, 1:1 з `User`) | — | Курс, спеціальність, лічильники кредитів | **PII** |
 | `PlanPreferences` | `id` | — | Побажання студента на навчальний рік | **PII** |
 | `PreferenceDirection` | (`preferences_id`, `direction_id`) | — | 1–3 обрані напрямки (FR-007) | — |

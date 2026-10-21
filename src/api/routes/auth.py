@@ -1,8 +1,8 @@
 """
-Ресурс «Автентифікація» (Auth): вхід через Google, оновлення і відкликання токена.
+Ресурс «Автентифікація» (Auth): вхід через Microsoft, оновлення і відкликання токена.
 
-ЗАГЛУШКА: код Google не перевіряється, повертається тестовий студент. Реальна перевірка
-ID-токена (iss, aud, exp, email_verified, hd == ukma.edu.ua) і збереження refresh-токенів
+ЗАГЛУШКА: код Microsoft не перевіряється, повертається тестовий студент. Реальна перевірка
+ID-токена (iss, aud, exp, email_verified, tid == tenant НаУКМА, домен пошти ukma.edu.ua) і збереження refresh-токенів
 у БД додаються пізніше, форма відповідей уже відповідає контракту (§3.1).
 
 Використання ШІ: валідацію GoogleLoginRequest (формат PKCE code_verifier за RFC 7636, перевірка redirect_uri
@@ -38,7 +38,7 @@ class UserRole(str, Enum):
 
 
 class GoogleLoginRequest(BaseModel):
-    code: str = Field(..., min_length=1, max_length=2048, description="Код авторизації Google")
+    code: str = Field(..., min_length=1, max_length=2048, description="Код авторизації Microsoft")
     code_verifier: str = Field(..., pattern=_PKCE_PATTERN, description="PKCE code_verifier (43-128 символів RFC 7636)")
     redirect_uri: str = Field(
         ...,
@@ -101,7 +101,7 @@ def _issue_session(response: Response) -> AuthResponse:
 @router.post(
     "/google",
     response_model=AuthResponse,
-    summary="Вхід: обмін коду Google на токени",
+    summary="Вхід: обмін коду Microsoft на токени",
     description="Заглушка: приймає будь-який код і повертає тестового студента.",
     responses={200: {"description": "Вхід виконано"}, **error_responses(401, 422)},
 )

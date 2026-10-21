@@ -17,7 +17,7 @@ package "Application Server (FastAPI / Modular Monolith)" {
   portin "REST API Gateway" as APIPort
 
   package "Auth & User Module" {
-    [Auth Service\n(Google SSO, JWT)] as AuthMod
+    [Auth Service\n(Microsoft SSO, JWT)] as AuthMod
     [Student Profile Service\n(Лічильники 240/25/54)] as ProfileMod
   }
 
@@ -69,7 +69,7 @@ database "Master DB (PostgreSQL)" as DB {
 }
 
 cloud "External Systems & Sources" {
-  [Google Workspace SSO (NaUKMA)] as GoogleSSO
+  [Microsoft 365 SSO (NaUKMA)] as GoogleSSO
   [External LLM API] as ExtLLM
   [САЗ НаУКМА] as ExtCA3
   [Сайт факультету\n(Сертифікатні програми)] as ExtFaculty
