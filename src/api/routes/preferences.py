@@ -191,7 +191,7 @@ def save_preferences(
     prefs.include_free_electives = payload.include_free_electives
     prefs.wants_certificate = payload.wants_certificate
     prefs.certificate_program_id = payload.certificate_program_id
-    prefs.updated_at = utcnow()  
+    prefs.updated_at = utcnow()
     prefs.directions = [PreferenceDirection(direction_id=i) for i in direction_ids]
     prefs.trimester_loads = [
         TrimesterLoad(

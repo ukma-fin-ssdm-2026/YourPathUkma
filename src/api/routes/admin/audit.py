@@ -15,7 +15,6 @@ from sqlalchemy.orm import Session
 
 from src.api.routes.admin.common import require_admin
 
-
 from ....db import enums as db_enums
 from ....db.models.admin import AuditLog
 from ....db.models.users import User

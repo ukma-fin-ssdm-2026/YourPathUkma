@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     services:
       postgres:
         image: postgres:16
@@ -38,15 +38,25 @@ jobs:
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - name: Lint (ruff)
         run: pip install ruff && ruff check src tests scripts mcp
+      - name: Security scan (bandit)
+        run: pip install "bandit[toml]" && bandit -c pyproject.toml -r src mcp scripts tests
       - name: Generate OpenAPI from code
         run: python scripts/generate_openapi.py
       - name: Fail if committed spec is out of date
         run: git diff --exit-code docs/api/
-      - name: Smoke tests
-        run: pytest -q
+      - name: Tests with coverage report
+        run: pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-report=html --cov-report=xml
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            htmlcov/
+            coverage.xml
 
   frontend:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     defaults:
       run:
         working-directory: frontend
@@ -58,6 +68,8 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - name: Security audit (npm audit)
+        run: npm audit --audit-level=high
       - run: npm run gen:api
       - run: npm run lint
       - run: npm run typecheck

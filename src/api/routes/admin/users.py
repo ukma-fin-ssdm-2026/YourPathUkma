@@ -136,7 +136,9 @@ def list_users(
     role: Optional[UserRole] = Query(None),
     course_year: Optional[int] = Query(None, ge=1, le=4),
     course_year_source: Optional[db_enums.CourseYearSource] = Query(None),
-    onboarding_required: Optional[bool] = Query(None, description="Лише студенти без курсу чи спеціальності (true) або з ними (false)"),
+    onboarding_required: Optional[bool] = Query(
+        None, description="Лише студенти без курсу чи спеціальності (true) або з ними (false)"
+    ),
 ):
     filters = []
     if q:

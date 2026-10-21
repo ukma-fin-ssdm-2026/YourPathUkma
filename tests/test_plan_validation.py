@@ -61,9 +61,15 @@ def test_validate_schema_violation_is_422():
     assert response.status_code == 422
 
 
-def test_create_plan_still_rejects_business_rule_violation():
-    """Регресія: рефакторинг правил не змінив поведінку POST /plans (422 + текст про ліміт)."""
-    body = _plan([_item(101, 5.0), _item(205, 28.0, trimester=2, free=True)])
+def test_create_plan_still_rejects_business_rule_violation(monkeypatch):
+    """Регресія: рефакторинг правил не змінив поведінку POST /plans (422 + текст про ліміт).
+
+    Звірка з каталогом вимагає реальних кредитів (у демо-каталозі вільного вибору лише 3 кредити),
+    тому ліміт вільного вибору тимчасово знижено до 2.
+    """
+    monkeypatch.setattr("src.services.plan_rules.FREE_ELECTIVE_LIMIT", 2.0)
+    body = _plan([_item(101, 5.0), _item(205, 3.0, trimester=2, free=True)])
     response = client.post("/api/v1/plans", json=body, headers=AUTH)
     assert response.status_code == 422
-    assert "28.0 > 25" in response.json()["details"][0]["message"]
+    messages = [detail["message"] for detail in response.json()["details"]]
+    assert any(m.startswith("FREE_ELECTIVE_LIMIT_EXCEEDED") and "3 > 2" in m for m in messages)
