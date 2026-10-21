@@ -1,7 +1,4 @@
-from types import SimpleNamespace
-
 import pytest
-from pydantic import ValidationError
 
 
 from src.services import plan_rules
