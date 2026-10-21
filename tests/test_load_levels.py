@@ -31,3 +31,9 @@ def test_classify_load_level(hours, expected):
 def test_hours_out_of_range_rejected(hours):
     with pytest.raises(ValueError):
         classify_load_level(hours)
+
+
+def test_upper_boundary_belongs_to_high():
+    """Регресія: 23 год/тиждень уже high; межа не належить medium."""
+    assert classify_load_level(23) == "high"
+    assert classify_load_level(22.99) == "medium"
