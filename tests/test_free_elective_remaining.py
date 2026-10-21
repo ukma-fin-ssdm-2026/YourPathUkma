@@ -16,3 +16,6 @@ def test_remaining_partial():
 def test_remaining_never_negative():
     assert plan_rules.free_elective_remaining(30) == 0.0
 
+def test_negative_sed_rejected():
+    pytest.raises(ValueError, lambda: plan_rules.free_elective_remaining(-1))
+
