@@ -263,3 +263,9 @@ def test_auth_enforces_allowlist_when_configured(monkeypatch):
     assert _auth_request(redirect_uri="https://app.example.com/cb")
     with pytest.raises(ValidationError):
         _auth_request(redirect_uri="https://evil.example.com/cb")
+
+
+## Limit check function
+
+def test_remaining_when_nothing_used():
+    assert free_elective_remaining(0) == 25
