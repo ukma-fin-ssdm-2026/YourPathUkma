@@ -5,6 +5,7 @@
 з outcome = denied (SEC-001).
 """
 
+import ipaddress
 from typing import Any, Dict, Optional
 
 from fastapi import Depends, Request
@@ -17,10 +18,16 @@ from ....db.session import get_db
 from ...common import ApiError, get_current_student_id
 
 
-
 def client_ip(request: Request) -> Optional[str]:
-    """IP з'єднання. X-Forwarded-For навмисно не читаємо: клієнт може його підробити."""
-    return request.client.host if request.client else None
+    """IP з'єднання. X-Forwarded-For навмисно не читаємо: клієнт може його підробити.
+
+    Не-IP значення (наприклад, "testclient" у TestClient чи unix-сокет) дають None: колонка `ip` має тип inet.
+    """
+    host = request.client.host if request.client else None
+    try:
+        return str(ipaddress.ip_address(host)) if host else None
+    except ValueError:
+        return None
 
 
 def write_audit(

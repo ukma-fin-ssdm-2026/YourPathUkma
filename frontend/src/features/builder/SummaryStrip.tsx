@@ -5,7 +5,7 @@ import { FREE_LIMIT, MIN_YEAR_CREDITS, summarize, type BuilderPlan } from "./pla
 
 const YEAR_MAX = 60;
 
-const ERROR_TEXT: Record<string, string> = {
+export const ERROR_TEXT: Record<string, string> = {
   DUPLICATE_COURSE: "Дисципліни в плані не повинні повторюватись",
   ONLY_FREE_ELECTIVES: "Оберіть хоча б одну профорієнтовну дисципліну",
   FREE_ELECTIVE_LIMIT_EXCEEDED: `Перевищено ліміт вільного вибору (${FREE_LIMIT} кредитів)`,

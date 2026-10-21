@@ -45,6 +45,17 @@ describe("describeSaveError", () => {
     });
   });
 
+  it("422 рівня плану з бекенду: відомий код перекладається, невідомий втрачає префікс", () => {
+    const error = new ApiError(422, "VALIDATION_ERROR", "x", [
+      { field: "items", message: "ONLY_FREE_ELECTIVES: Не можна обрати лише вільний вибір" },
+      { field: "items", message: "NORMATIVE_CONFLICT: Дисципліна вже є в документі деканату" },
+    ]);
+    expect(describeSaveError(error, items).form).toEqual([
+      "Оберіть хоча б одну профорієнтовну дисципліну",
+      "Дисципліна вже є в документі деканату",
+    ]);
+  });
+
   it("COURSE_NOT_FOUND пояснюється", () => {
     const error = new ApiError(422, "VALIDATION_ERROR", "x", [
       { field: "items.0.course_id", message: "COURSE_NOT_FOUND: немає" },

@@ -1,6 +1,7 @@
 """Тести профілю, онбордингу та академічної історії."""
 
 from fastapi.testclient import TestClient
+
 from src.api.main import app
 
 client = TestClient(app)
@@ -33,7 +34,7 @@ def test_add_academic_history_record():
             {
                 "academic_year": 2025,
                 "course_year": 2,
-                "course_id": 101, 
+                "course_id": 101,
                 "trimester": 1,
                 "category": "professional"
             }

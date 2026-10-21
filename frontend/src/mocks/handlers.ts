@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: handlers.test.ts.
-// Обробники лише для 🟡-ендпоінтів (яких ще немає в бекенді). Ендпоінт входу названо
-// POST /auth/microsoft як припущення (див. спеку, «Рішення автора», п.1).
+// `handlers` — лише те, чого бекенд ще не має (вхід, адмінка); завжди увімкнено при VITE_USE_MOCKS.
+// `backendHandlers` — копії вже реалізованих ендпоінтів для тестів і режиму `full`.
+// Ендпоінт входу названо POST /auth/microsoft як припущення (у бекенді поки лише /auth/google).
 import { http, HttpResponse } from "msw";
 import type { ErrorDetail } from "../api/errors";
 import type { DeaneryDocument, Preferences } from "../api/types";
@@ -157,11 +158,9 @@ const planHandlers = [
   }),
 ];
 
+/** Завжди увімкнені моки: вхід (бекенд має лише заглушку Google) та адмінка. */
 export const handlers = [
   ...adminHandlers,
-  ...planHandlers,
-  ...preferencesHandlers,
-  ...documentHandlers,
   http.post(`${API}/auth/microsoft`, async ({ request }) => {
     const body = (await request.json().catch(() => null)) as { code?: string } | null;
     // Спеціальний код для перевірки помилки домену (FR-012).
@@ -183,6 +182,9 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 });
   }),
 
+];
+
+const meHandlers = [
   http.get(`${API}/me`, ({ request }) =>
     request.headers.get("Authorization") ? HttpResponse.json(db.me) : unauthorized(),
   ),
@@ -221,4 +223,12 @@ export const handlers = [
     };
     return HttpResponse.json(db.me);
   }),
+];
+
+/** Копія ендпоінтів, які бекенд уже реалізував. Лише для тестів і режиму `full`. */
+export const backendHandlers = [
+  ...planHandlers,
+  ...preferencesHandlers,
+  ...documentHandlers,
+  ...meHandlers,
 ];

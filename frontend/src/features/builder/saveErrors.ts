@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: save.test.tsx.
 import { fieldErrors, type ApiError } from "../../api/errors";
 import type { PlanItem } from "../../api/types";
+import { ERROR_TEXT } from "./SummaryStrip";
 
 const ITEM_TEXT: Record<string, string> = {
   COURSE_NOT_FOUND: "Дисципліни немає в каталозі",
@@ -18,6 +19,12 @@ function textFor(table: Record<string, string>, code: string | undefined): strin
   return code !== undefined && Object.hasOwn(table, code) ? table[code] : undefined;
 }
 
+/** Бекенд пише помилки плану як «КОД: текст». Відомий код перекладаємо, в іншому прибираємо префікс. */
+function planMessage(message: string): string {
+  const match = /^([A-Z_]+): (.*)$/s.exec(message);
+  return match ? (textFor(ERROR_TEXT, match[1]) ?? match[2]!) : message;
+}
+
 export interface SaveErrors {
   /** Повідомлення біля карток, за course_id. */
   itemErrors: Record<number, string>;
@@ -27,7 +34,7 @@ export interface SaveErrors {
 
 /** Перетворює відповідь сервера на повідомлення, які можна показати біля карток і над планом. */
 export function describeSaveError(error: ApiError, items: PlanItem[]): SaveErrors {
-  const known = CODE_TEXT[error.code];
+  const known = textFor(CODE_TEXT, error.code);
   if (known) return { itemErrors: {}, form: [known] };
 
   if (error.status === 422 && error.details.length > 0) {
@@ -36,11 +43,11 @@ export function describeSaveError(error: ApiError, items: PlanItem[]): SaveError
     for (const detail of error.details) {
       const match = /^items\.(\d+)\./.exec(detail.field);
       const item = match ? items[Number(match[1])] : undefined;
-      const code = /^([A-Z_]+):/.exec(detail.message)?.[1];
+      const text = textFor(ITEM_TEXT, /^([A-Z_]+):/.exec(detail.message)?.[1]);
       if (item && text) itemErrors[item.course_id] = text;
       else rest.push(detail);
     }
-    return { itemErrors, form: fieldErrors(rest).form.concat(rest.filter((d) => d.field && d.field !== "body").map((d) => d.message)) };
+    return { itemErrors, form: fieldErrors(rest).form.concat(rest.filter((d) => d.field && d.field !== "body").map((d) => planMessage(d.message))) };
   }
   return { itemErrors: {}, form: [error.message] };
 }

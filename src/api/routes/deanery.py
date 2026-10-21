@@ -88,7 +88,10 @@ def _store_courses(db: Session, document: DeaneryPlanDocument, parsed: List[Pars
     if titles:
         for course in db.scalars(
             select(Course)
-            .where(Course.title_normalized.in_(titles), Course.publication_status == db_enums.PublicationStatus.PUBLISHED)
+            .where(
+                Course.title_normalized.in_(titles),
+                Course.publication_status == db_enums.PublicationStatus.PUBLISHED,
+            )
             .order_by(Course.id)
         ):
             catalog.setdefault(course.title_normalized, course)
@@ -344,7 +347,9 @@ def delete_document(
         select(IndividualPlan.id).where(IndividualPlan.deanery_document_id == document_id).limit(1)
     )
     if used_in_plans is not None:
-        raise ApiError(409, "DOCUMENT_IN_USE", "Неможливо видалити документ, оскільки він прив'язаний до навчального плану")
+        raise ApiError(
+            409, "DOCUMENT_IN_USE", "Неможливо видалити документ, оскільки він прив'язаний до навчального плану"
+        )
 
     db.delete(doc)
     db.commit()
