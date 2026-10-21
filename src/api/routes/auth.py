@@ -37,7 +37,7 @@ class UserRole(str, Enum):
     ADMIN = "admin"
 
 
-class GoogleLoginRequest(BaseModel):
+class MicrosoftLoginRequest(BaseModel):
     code: str = Field(..., min_length=1, max_length=2048, description="Код авторизації Microsoft")
     code_verifier: str = Field(..., pattern=_PKCE_PATTERN, description="PKCE code_verifier (43-128 символів RFC 7636)")
     redirect_uri: str = Field(
@@ -99,13 +99,13 @@ def _issue_session(response: Response) -> AuthResponse:
 
 
 @router.post(
-    "/google",
+    "/microsoft",
     response_model=AuthResponse,
     summary="Вхід: обмін коду Microsoft на токени",
     description="Заглушка: приймає будь-який код і повертає тестового студента.",
     responses={200: {"description": "Вхід виконано"}, **error_responses(401, 422)},
 )
-async def login_with_google(payload: GoogleLoginRequest, response: Response):
+async def login_with_microsoft(payload: MicrosoftLoginRequest, response: Response):
     return _issue_session(response)
 
 
