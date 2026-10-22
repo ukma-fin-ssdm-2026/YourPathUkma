@@ -263,3 +263,5 @@ def test_auth_enforces_allowlist_when_configured(monkeypatch):
     assert _auth_request(redirect_uri="https://app.example.com/cb")
     with pytest.raises(ValidationError):
         _auth_request(redirect_uri="https://evil.example.com/cb")
+
+

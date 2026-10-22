@@ -144,3 +144,13 @@ def check_load_levels(course_year: int, load_levels_sent: bool) -> List[Violatio
             )
         ]
     return []
+
+def free_elective_remaining(used: float) -> float:
+    """
+        Функція що дозволяє порахувати к-ть кредитів вільного вибору, що може обрати студент
+        на основі того, скільки у нього вже обрано кредитів вільного вибору.
+    """
+    if used < 0:
+        raise ValueError
+    return round(max(0, FREE_ELECTIVE_LIMIT - used), 1)
+
