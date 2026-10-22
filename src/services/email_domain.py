@@ -5,4 +5,4 @@
 
 
 def is_ukma_email(email: str) -> bool:
-    return email.endswith("@ukma.edu.ua")
+    return email.lower().endswith("@ukma.edu.ua")
