@@ -1,5 +1,5 @@
 """
-Тести валідації: бізнес-правила плану та схема входу через Google.
+Тести валідації: бізнес-правила плану та схема входу через Microsoft.
 
 Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: запуск pytest локально
 і в CI; кожне правило має позитивний і негативний тест.
@@ -13,7 +13,7 @@ import pytest
 from pydantic import ValidationError
 
 from src.api.plan_checks import collect_catalog_flag_violations
-from src.api.routes.auth import GoogleLoginRequest
+from src.api.routes.auth import MicrosoftLoginRequest
 from src.api.routes.plans import PlanItem, PlanPayload
 from src.services import plan_rules
 from src.services.plan_rules import CatalogFlag
@@ -21,10 +21,10 @@ from src.services.plan_rules import CatalogFlag
 VERIFIER = "a" * 43
 
 
-def _auth_request(**overrides) -> GoogleLoginRequest:
+def _auth_request(**overrides) -> MicrosoftLoginRequest:
     data = {"code": "abc", "code_verifier": VERIFIER, "redirect_uri": "http://localhost:5173/callback"}
     data.update(overrides)
-    return GoogleLoginRequest(**data)
+    return MicrosoftLoginRequest(**data)
 
 
 # --- Дублікати дисциплін ---
@@ -68,6 +68,7 @@ def test_check_not_only_free_electives(is_free_flags, expected_codes):
 
     # Assert
     assert [v.code for v in violations] == expected_codes
+
 
 # --- Ліміт вільного вибору в межах плану ---
 
@@ -192,6 +193,7 @@ ALLOWED_URI = "https://app.example.com/cb"
 def configured_allowlist(monkeypatch):
     monkeypatch.setenv("ALLOWED_REDIRECT_URIS", ALLOWED_URI)
 
+
 def test_load_levels_forbidden_on_fourth_course():
     # Arrange
     course_year = 4
@@ -206,7 +208,7 @@ def test_load_levels_forbidden_on_fourth_course():
 
 @pytest.mark.parametrize("course_year,sent", [(4, False), (2, True), (3, True), (2, False)])
 def test_load_levels_allowed_otherwise(course_year, sent):
-     # Act
+    # Act
     violations = plan_rules.check_load_levels(course_year, sent)
 
     # Assert
@@ -226,7 +228,6 @@ def test_payload_tracks_whether_load_levels_were_sent():
     assert "load_levels" in with_levels.model_fields_set
 
 
-
 # --- Авторизація ---
 
 
@@ -240,7 +241,6 @@ def test_auth_accepts_valid_request():
     assert request.code_verifier == VERIFIER
 
 
-
 @pytest.mark.parametrize("verifier", ["a" * 42, "a" * 129, "a" * 42 + " ", "a" * 42 + "!"])
 def test_auth_rejects_bad_code_verifier(verifier):
     # Arrange: некоректний verifier задано параметризацією
@@ -252,7 +252,7 @@ def test_auth_rejects_bad_code_verifier(verifier):
 
 @pytest.mark.parametrize("uri", ["javascript:alert(1)", "ftp://example.com/cb", "http://x.com/cb#frag", "/relative"])
 def test_auth_rejects_bad_redirect_uri(uri):
-     # Arrange: allowlist налаштовано фікстурою configured_allowlist
+    # Arrange: allowlist налаштовано фікстурою configured_allowlist
 
     # Act
     request = _auth_request(redirect_uri=ALLOWED_URI)
