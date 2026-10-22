@@ -1234,19 +1234,19 @@
         }
       }
     },
-    "/api/v1/auth/google": {
+    "/api/v1/auth/microsoft": {
       "post": {
         "tags": [
           "Auth"
         ],
         "summary": "Вхід: обмін коду Microsoft на токени",
         "description": "Заглушка: приймає будь-який код і повертає тестового студента.",
-        "operationId": "login_with_google_api_v1_auth_google_post",
+        "operationId": "login_with_microsoft_api_v1_auth_microsoft_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GoogleLoginRequest"
+                "$ref": "#/components/schemas/MicrosoftLoginRequest"
               }
             }
           },
@@ -6471,37 +6471,6 @@
         "type": "object",
         "title": "Features"
       },
-      "GoogleLoginRequest": {
-        "properties": {
-          "code": {
-            "type": "string",
-            "maxLength": 2048,
-            "minLength": 1,
-            "title": "Code",
-            "description": "Код авторизації Microsoft"
-          },
-          "code_verifier": {
-            "type": "string",
-            "pattern": "^[A-Za-z0-9\\-._~]{43,128}$",
-            "title": "Code Verifier",
-            "description": "PKCE code_verifier (43-128 символів RFC 7636)"
-          },
-          "redirect_uri": {
-            "type": "string",
-            "maxLength": 512,
-            "minLength": 1,
-            "title": "Redirect Uri",
-            "description": "redirect_uri, використаний на фронтенді"
-          }
-        },
-        "type": "object",
-        "required": [
-          "code",
-          "code_verifier",
-          "redirect_uri"
-        ],
-        "title": "GoogleLoginRequest"
-      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -6713,6 +6682,37 @@
           "role"
         ],
         "title": "MeResponse"
+      },
+      "MicrosoftLoginRequest": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Code",
+            "description": "Код авторизації Microsoft"
+          },
+          "code_verifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9\\-._~]{43,128}$",
+            "title": "Code Verifier",
+            "description": "PKCE code_verifier (43-128 символів RFC 7636)"
+          },
+          "redirect_uri": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Redirect Uri",
+            "description": "redirect_uri, використаний на фронтенді"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "code_verifier",
+          "redirect_uri"
+        ],
+        "title": "MicrosoftLoginRequest"
       },
       "ModerationChangeType": {
         "type": "string",
