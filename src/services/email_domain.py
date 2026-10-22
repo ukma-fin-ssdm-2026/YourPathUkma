@@ -1,0 +1,8 @@
+"""Перевірка домену пошти НаУКМА.
+
+Використання ШІ: функцію розроблено за TDD, структуру циклів запропоновано Claude за описом та lab06.
+"""
+
+
+def is_ukma_email(email: str) -> bool:
+    return email.endswith("@ukma.edu.ua")
