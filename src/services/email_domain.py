@@ -5,4 +5,5 @@
 
 
 def is_ukma_email(email: str) -> bool:
-    return email.lower().endswith("@ukma.edu.ua")
+    local, _, domain = email.lower().rpartition("@")
+    return bool(local) and domain == "ukma.edu.ua"
