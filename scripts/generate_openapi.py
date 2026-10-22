@@ -22,7 +22,7 @@ def main() -> None:
         encoding="utf-8",
     )
     (OUT_DIR / "openapi-generated.json").write_text(
-        json.dumps(schema, indent=2, ensure_ascii=False),
+        json.dumps(schema, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
     print("OpenAPI spec generated from code -> docs/api/openapi-generated.{yaml,json}")

@@ -1,4 +1,4 @@
-"""Тести автентифікації: POST /api/v1/auth/google, /auth/refresh, /auth/logout (заглушка)."""
+"""Тести автентифікації: POST /api/v1/auth/microsoft, /auth/refresh, /auth/logout (заглушка)."""
 
 from fastapi.testclient import TestClient
 
@@ -13,7 +13,7 @@ def test_login_returns_token_and_sets_refresh_cookie():
         "code_verifier": "x" * 43,
         "redirect_uri": "http://localhost:5173/auth/callback",
     }
-    response = client.post("/api/v1/auth/google", json=payload)
+    response = client.post("/api/v1/auth/microsoft", json=payload)
     assert response.status_code == 200
     body = response.json()
     assert body["token_type"] == "Bearer"
@@ -29,7 +29,7 @@ def test_login_rejects_short_code_verifier():
         "code_verifier": "short",
         "redirect_uri": "http://localhost:5173/auth/callback",
     }
-    response = client.post("/api/v1/auth/google", json=payload)
+    response = client.post("/api/v1/auth/microsoft", json=payload)
     assert response.status_code == 422
     assert response.json()["code"] == "VALIDATION_ERROR"
 
@@ -50,3 +50,13 @@ def test_refresh_with_cookie_returns_new_token():
 def test_logout_returns_204():
     response = client.post("/api/v1/auth/logout")
     assert response.status_code == 204
+
+
+def test_legacy_google_login_endpoint_is_removed():
+    payload = {
+        "code": "abc",
+        "code_verifier": "x" * 43,
+        "redirect_uri": "http://localhost:5173/auth/callback",
+    }
+    response = client.post("/api/v1/auth/google", json=payload)
+    assert response.status_code == 404
