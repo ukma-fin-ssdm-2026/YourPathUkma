@@ -3,6 +3,8 @@
 
 Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: запуск pytest локально
 і в CI; кожне правило має позитивний і негативний тест.
+Додатково (Claude): кейс (25.0, 1.0) для check_free_elective_total, що вбиває мутанта mutmut
+(`used_in_other_years <= 0` → `<= 1`). Перевірка: mutmut run, pytest із застосованим мутантом падає.
 """
 
 from types import SimpleNamespace
@@ -148,6 +150,7 @@ def test_catalog_flags_collected_from_items_and_courses():
         (10.0, 18.0, ["FREE_ELECTIVE_TOTAL_EXCEEDED"]),  # 28 > 25 з урахуванням минулих років
         (10.0, 15.0, []),  # рівно 25: межа дозволена
         (30.0, 0.0, []),  # без історії ліміт за всі роки не застосовується
+        (25.0, 1.0, ["FREE_ELECTIVE_TOTAL_EXCEEDED"]),  # мінімальна історія теж рахується (вбиває мутанта <= 1)
     ],
 )
 def test_check_free_elective_total_with_previous_years(current_credits, used_in_other_years, expected_codes):
