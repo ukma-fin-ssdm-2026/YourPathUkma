@@ -1,0 +1,80 @@
+# Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: кроки mutmut і підрахунок оцінки
+# запущено локально на тих самих командах (57 мутантів, 36 вбито, оцінка 63%); перший прогін у GitHub Actions
+# вручну через workflow_dispatch після злиття.
+#
+# Мутаційне тестування дороге, тому не входить у обов'язкові перевірки PR (ci.yaml), а запускається вручну
+# перед релізом (docs/testing/testing-strategy.md, розділ 5). mutmut 2.x, бо 3.x не підтримує імпорти `src.…`.
+name: Mutation testing
+on:
+  workflow_dispatch:
+    inputs:
+      paths:
+        description: "Файли або теки для мутацій (через кому)"
+        default: "src/services/plan_rules.py"
+        required: true
+      min_score:
+        description: "Мінімальна оцінка мутації, % (нижче — job падає)"
+        default: "60"
+        required: true
+
+jobs:
+  mutmut:
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Run mutmut
+        # Код виходу mutmut 2 — бітова маска: 1 — фатальна помилка, 2/4/8 — є вцілілі, таймаути чи підозрілі.
+        # Вцілілі мутанти очікувані (їх оцінює наступний крок), тому падаємо лише на фатальній помилці.
+        run: |
+          set +e
+          mutmut run --paths-to-mutate "${{ inputs.paths }}" \
+            --runner "python -m pytest -x -q -p no:cacheprovider"
+          code=$?
+          set -e
+          if [ $((code & 1)) -ne 0 ]; then
+            echo "::error::mutmut завершився з фатальною помилкою (код $code)"
+            exit 1
+          fi
+      - name: Mutation score
+        env:
+          MIN_SCORE: ${{ inputs.min_score }}
+        run: |
+          python - <<'EOF'
+          import os
+          import sqlite3
+
+          rows = dict(sqlite3.connect(".mutmut-cache").execute("SELECT status, COUNT(*) FROM Mutant GROUP BY status"))
+          killed = rows.get("ok_killed", 0)
+          tested = killed + sum(rows.get(s, 0) for s in ("bad_survived", "bad_timeout", "ok_suspicious"))
+          score = 100 * killed / tested if tested else 0.0
+          min_score = float(os.environ["MIN_SCORE"])
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write("## Мутаційне тестування\n\n| Статус | Кількість |\n|---|---|\n")
+              summary.writelines(f"| `{status}` | {count} |\n" for status, count in sorted(rows.items()))
+              summary.write(f"\n**Оцінка мутації: {score:.1f}%** (поріг {min_score:g}%)\n")
+
+          print(f"Mutation score: {score:.1f}% ({killed}/{tested}), threshold {min_score:g}%")
+          if score < min_score:
+              raise SystemExit(f"Оцінка мутації {score:.1f}% нижча за поріг {min_score:g}%")
+          EOF
+      - name: Survived mutants
+        if: always()
+        run: |
+          mutmut results
+          mutmut html
+          mutmut junitxml > mutmut-junit.xml
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: |
+            html/
+            mutmut-junit.xml
