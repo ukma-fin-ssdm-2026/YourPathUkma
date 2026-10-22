@@ -11,3 +11,7 @@ def test_is_case_insensitive():
 
 def test_rejects_empty_local_part():
     assert is_ukma_email("@ukma.edu.ua") is False
+
+
+def test_rejects_multiple_at_signs():
+    assert is_ukma_email("a@b@ukma.edu.ua") is False
