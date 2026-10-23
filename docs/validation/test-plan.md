@@ -1,7 +1,8 @@
 # Тест-план — YourPathUkma
 
-Стан на 2026-10-23 (гілка `lab07/test-plan`, від `main`). Автор: команда SOLIDni.
-Пов'язані документи: [стратегія тестування](../testing/testing-strategy.md), [RTM](../requirements/rtm.md), [вимоги](../requirements/requirements.md), [модель загроз](../architecture/threat-model.md).
+- Стан на 2026-10-23 (гілка `lab07/test-plan`, від `main`)
+- Автор: команда SOLIDni
+- Пов'язані документи: [стратегія тестування](../testing/testing-strategy.md), [RTM](../requirements/rtm.md), [вимоги](../requirements/requirements.md), [модель загроз](../architecture/threat-model.md)
 
 **Обсяг.** Тестуємо реалізований код бекенду: правила плану (`src/services/plan_rules.py`), CRUD і валідацію планів (`src/api/routes/plans.py`), вхід (`src/api/routes/auth.py`) і каталог дисциплін (`src/api/routes/disciplines.py`). Свідомо НЕ тестуємо: генерацію плану мовною моделлю (FR-009, PERF-001, REL-001), парсер САЗ і SyncJob (FR-008, FR-011, PERF-002) — ці частини ще реалізовані як заглушки; справжній Microsoft 365 SSO (використовується мок); USE-001 (потрібні реальні користувачі).
 
