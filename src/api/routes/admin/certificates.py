@@ -15,6 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ....db import enums as db_enums
+from ....db.models.users import User
 from ....db.models.catalog import CertificateProgram, CertificateProgramCourse, Direction
 from ....db.session import get_db
 from ...common import ApiError, error_responses

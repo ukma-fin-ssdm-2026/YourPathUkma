@@ -9,9 +9,10 @@ POST /plan-generations, GET /plan-generations/{generation_id}.
 
 import time
 from datetime import datetime
-from typing import Literal
+from typing import List, Literal, Optional
 
 from fastapi import APIRouter, Depends, Path, Response, status
+from sqlalchemy import func
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -20,6 +21,7 @@ from ...db import enums as db_enums
 from ...db.models.ai import PlanGeneration
 from ...db.models.plans import IndividualPlan
 from ...db.session import get_db
+from ...db.models.users import StudentProfile
 from ..common import ApiError, error_responses, get_current_student_id
 from ..onboarding import get_onboarded_student
 from .preferences import PreferencesRequest
