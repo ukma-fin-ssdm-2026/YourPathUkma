@@ -105,7 +105,7 @@ _cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["X-Request-ID"],
