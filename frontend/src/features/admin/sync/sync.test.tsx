@@ -36,7 +36,11 @@ describe("syncStatusLabel", () => {
 describe("SyncPage", () => {
   it("показує журнал: джерело, статус, лічильники й повідомлення про помилку", async () => {
     db.admin.syncJobs = [
-      syncJobFixture({ id: 2, status: "failed", error_message: "Не вдалося знайти таблицю дисциплін" }),
+      syncJobFixture({
+        id: 2,
+        status: "failed",
+        error_message: "Не вдалося знайти таблицю дисциплін",
+      }),
       syncJobFixture({ id: 1, status: "succeeded", added_count: 12, updated_count: 3 }),
     ];
     renderSync();
@@ -83,8 +87,12 @@ describe("SyncPage", () => {
     renderSync();
     await screen.findByText("Запусків ще не було");
     await userEvent.click(screen.getByRole("button", { name: "Запустити парсинг" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Парсинг цього джерела вже виконується");
-    await waitFor(() => expect(screen.getByRole("button", { name: "Запустити парсинг" })).toBeEnabled());
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Парсинг цього джерела вже виконується",
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Запустити парсинг" })).toBeEnabled(),
+    );
   });
 
   it("сертифікатні програми доступні у виборі джерела лише за feature-флагом", async () => {
@@ -100,6 +108,8 @@ describe("SyncPage", () => {
     );
     db.admin.syncJobs = [];
     renderSync();
-    expect(await screen.findByRole("option", { name: "Сертифікатні програми" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("option", { name: "Сертифікатні програми" }),
+    ).toBeInTheDocument();
   });
 });

@@ -10,7 +10,13 @@ import { toast } from "sonner";
 const INPUT = "rounded-[10px] border border-rule bg-surface px-3 py-2 font-normal";
 
 /** Створює напрямок або (з `direction`) редагує його, надсилаючи лише змінені поля. */
-export function DirectionForm({ direction, onDone }: { direction?: Direction; onDone: () => void }) {
+export function DirectionForm({
+  direction,
+  onDone,
+}: {
+  direction?: Direction;
+  onDone: () => void;
+}) {
   const [name, setName] = useState(direction?.name ?? "");
   const [description, setDescription] = useState(direction?.description ?? "");
   const [clientError, setClientError] = useState<string | null>(null);
@@ -26,26 +32,34 @@ export function DirectionForm({ direction, onDone }: { direction?: Direction; on
     const input: Partial<DirectionInput> = {};
     if (!direction || trimmed !== direction.name) input.name = trimmed;
     const text = description.trim();
-    if (text !== (direction?.description ?? "")) input.description = text || (direction ? null : undefined);
+    if (text !== (direction?.description ?? ""))
+      input.description = text || (direction ? null : undefined);
     if (Object.keys(input).length === 0) {
       onDone();
       return;
     }
-    save.mutate({ id: direction?.id, input }, {
-      onSuccess: () => {
-        toast.success("Напрямок збережено");
-        onDone();
+    save.mutate(
+      { id: direction?.id, input },
+      {
+        onSuccess: () => {
+          toast.success("Напрямок збережено");
+          onDone();
+        },
       },
-    });
+    );
   };
 
   const error = save.error;
   const server = error ? fieldErrors(error.details) : null;
   const nameError =
     clientError ??
-    (error?.code === "DIRECTION_NAME_TAKEN" ? "Напрямок із такою назвою вже існує" : server?.fields.name);
+    (error?.code === "DIRECTION_NAME_TAKEN"
+      ? "Напрямок із такою назвою вже існує"
+      : server?.fields.name);
   const formError =
-    error && !nameError && !server?.fields.description ? [...(server?.form ?? []), error.message][0] : null;
+    error && !nameError && !server?.fields.description
+      ? [...(server?.form ?? []), error.message][0]
+      : null;
 
   return (
     <Card className="mt-4 flex flex-col gap-3">
@@ -77,7 +91,9 @@ export function DirectionForm({ direction, onDone }: { direction?: Direction; on
           onChange={(event) => setDescription(event.target.value)}
           className={INPUT}
         />
-        {server?.fields.description && <span className="text-sm text-bad">{server.fields.description}</span>}
+        {server?.fields.description && (
+          <span className="text-sm text-bad">{server.fields.description}</span>
+        )}
       </div>
       {formError && (
         <p role="alert" className="text-bad">

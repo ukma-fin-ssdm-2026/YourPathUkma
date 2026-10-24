@@ -49,7 +49,8 @@ export function ItemCard({
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={view.tone}>{view.label}</Badge>
           <span className="font-medium">
-            {title ?? (item.course_id !== null ? `Дисципліна #${item.course_id}` : "Нова дисципліна")}
+            {title ??
+              (item.course_id !== null ? `Дисципліна #${item.course_id}` : "Нова дисципліна")}
           </span>
         </div>
         <ul className="mt-2 space-y-0.5 text-ink-2">
@@ -72,7 +73,12 @@ export function ItemCard({
                 className="rounded-[10px] border border-rule bg-surface px-3 py-2 font-normal"
               />
             </label>
-            <Button variant="danger" size="sm" disabled={busy} onClick={() => onReject(reason.trim())}>
+            <Button
+              variant="danger"
+              size="sm"
+              disabled={busy}
+              onClick={() => onReject(reason.trim())}
+            >
               Підтвердити відхилення
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setRejecting(false)}>

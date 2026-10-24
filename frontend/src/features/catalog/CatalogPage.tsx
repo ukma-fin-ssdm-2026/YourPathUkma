@@ -59,7 +59,12 @@ export function CatalogPage() {
         {error instanceof ApiError && error.requestId && (
           <p className="mt-1 text-sm">Код помилки: {error.requestId}</p>
         )}
-        <Button variant="ghost" size="sm" className="mt-3" onClick={() => void disciplines.refetch()}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-3"
+          onClick={() => void disciplines.refetch()}
+        >
           Спробувати ще раз
         </Button>
       </div>

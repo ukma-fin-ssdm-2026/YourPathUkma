@@ -70,7 +70,10 @@ export function LoginPage({ onLogin = () => startLogin() }: { onLogin?: () => Pr
         Використайте робочий обліковий запис Microsoft 365 від НаУКМА.
       </p>
       {error && (
-        <div role="alert" className="mb-5 max-w-[420px] rounded-[10px] bg-bad-bg px-4 py-3.5 text-bad">
+        <div
+          role="alert"
+          className="mb-5 max-w-[420px] rounded-[10px] bg-bad-bg px-4 py-3.5 text-bad"
+        >
           {errorText(error)}
         </div>
       )}

@@ -23,7 +23,10 @@ function renderAt(path: string, routes: RouteObject[]) {
 
 function onboardedMe() {
   const me = emptyMe();
-  return { ...me, student: { ...me.student!, onboarding_required: false, course_year: 3 as const } };
+  return {
+    ...me,
+    student: { ...me.student!, onboarding_required: false, course_year: 3 as const },
+  };
 }
 
 beforeEach(() => {
@@ -49,7 +52,9 @@ describe("RequireOnboarded", () => {
 
   it("адміністратора без профілю студента пускає далі", async () => {
     server.use(
-      http.get("*/api/v1/me", () => HttpResponse.json({ ...emptyMe(), role: "admin", student: null })),
+      http.get("*/api/v1/me", () =>
+        HttpResponse.json({ ...emptyMe(), role: "admin", student: null }),
+      ),
     );
     renderAt("/", routes);
     expect(await screen.findByText("головна")).toBeInTheDocument();
@@ -65,7 +70,10 @@ describe("OnboardingPage", () => {
   it("показує вибір курсу 1-4 і поле «Спеціальність»", async () => {
     renderAt("/onboarding", routes);
     for (const course of ["1", "2", "3", "4"]) {
-      expect(await screen.findByRole("button", { name: course })).toHaveAttribute("aria-pressed", "false");
+      expect(await screen.findByRole("button", { name: course })).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
     }
     expect(screen.getByLabelText("Спеціальність")).toBeInTheDocument();
   });
@@ -79,7 +87,10 @@ describe("OnboardingPage", () => {
       }),
     );
     renderAt("/onboarding", routes);
-    await userEvent.type(await screen.findByLabelText("Спеціальність"), "Інженерія програмного забезпечення");
+    await userEvent.type(
+      await screen.findByLabelText("Спеціальність"),
+      "Інженерія програмного забезпечення",
+    );
     await userEvent.click(screen.getByRole("button", { name: "Продовжити" }));
     expect(await screen.findByText("Оберіть курс")).toBeInTheDocument();
     expect(calls).toBe(0);
@@ -96,7 +107,10 @@ describe("OnboardingPage", () => {
   it("успішне надсилання веде на головну", async () => {
     renderAt("/onboarding", routes);
     await userEvent.click(await screen.findByRole("button", { name: "3" }));
-    await userEvent.type(screen.getByLabelText("Спеціальність"), "Інженерія програмного забезпечення");
+    await userEvent.type(
+      screen.getByLabelText("Спеціальність"),
+      "Інженерія програмного забезпечення",
+    );
     await userEvent.click(screen.getByRole("button", { name: "Продовжити" }));
     expect(await screen.findByText("головна")).toBeInTheDocument();
   });
@@ -106,18 +120,26 @@ describe("OnboardingPage", () => {
     await userEvent.click(await screen.findByRole("button", { name: "3" }));
     await userEvent.type(screen.getByLabelText("Спеціальність"), "І");
     await userEvent.click(screen.getByRole("button", { name: "Продовжити" }));
-    expect(await screen.findByText("String should have from 2 to 150 characters")).toBeInTheDocument();
+    expect(
+      await screen.findByText("String should have from 2 to 150 characters"),
+    ).toBeInTheDocument();
   });
 
   it("409 ALREADY_ONBOARDED веде на головну", async () => {
     server.use(
       http.post("*/api/v1/me/onboarding", () =>
-        HttpResponse.json({ code: "ALREADY_ONBOARDED", message: "Уже", details: [] }, { status: 409 }),
+        HttpResponse.json(
+          { code: "ALREADY_ONBOARDED", message: "Уже", details: [] },
+          { status: 409 },
+        ),
       ),
     );
     renderAt("/onboarding", routes);
     await userEvent.click(await screen.findByRole("button", { name: "3" }));
-    await userEvent.type(screen.getByLabelText("Спеціальність"), "Інженерія програмного забезпечення");
+    await userEvent.type(
+      screen.getByLabelText("Спеціальність"),
+      "Інженерія програмного забезпечення",
+    );
     await userEvent.click(screen.getByRole("button", { name: "Продовжити" }));
     expect(await screen.findByText("головна")).toBeInTheDocument();
   });

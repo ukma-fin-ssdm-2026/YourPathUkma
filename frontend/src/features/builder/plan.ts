@@ -39,7 +39,8 @@ export function canAdd(
   discipline: Discipline,
 ): { ok: true } | { ok: false; reason: AddBlock } {
   if (discipline.discipline_type === "normative") return { ok: false, reason: "normative" };
-  if (plan.items.some((item) => item.course_id === discipline.id)) return { ok: false, reason: "duplicate" };
+  if (plan.items.some((item) => item.course_id === discipline.id))
+    return { ok: false, reason: "duplicate" };
   if (plan.items.length >= MAX_ITEMS) return { ok: false, reason: "limit" };
   return { ok: true };
 }
@@ -101,7 +102,10 @@ export function dropVerdict(
   column: Trimester,
 ): { ok: true } | { ok: false; message: string } {
   if (discipline.trimester === column) return { ok: true };
-  return { ok: false, message: `Ця дисципліна викладається ${WHEN[discipline.trimester as Trimester]}` };
+  return {
+    ok: false,
+    message: `Ця дисципліна викладається ${WHEN[discipline.trimester as Trimester]}`,
+  };
 }
 
 export function trimesterOf(item: PlanItem): Trimester {

@@ -22,8 +22,20 @@ import {
 import { BuilderPage } from "./BuilderPage";
 import { describeSaveError } from "./saveErrors";
 
-const MACHINE = disciplineFixture({ id: 5, title: "Машинне навчання", trimester: 2, credits: 6, directions: ["Data Science"] });
-const HASKELL = disciplineFixture({ id: 6, title: "Мова Haskell", trimester: 1, credits: 5, directions: ["Data Science"] });
+const MACHINE = disciplineFixture({
+  id: 5,
+  title: "Машинне навчання",
+  trimester: 2,
+  credits: 6,
+  directions: ["Data Science"],
+});
+const HASKELL = disciplineFixture({
+  id: 6,
+  title: "Мова Haskell",
+  trimester: 1,
+  credits: 5,
+  directions: ["Data Science"],
+});
 
 const items: PlanItem[] = [
   { course_id: 5, title: "Машинне навчання", trimester: 2, credits: 6, is_free_elective: false },
@@ -60,12 +72,17 @@ describe("describeSaveError", () => {
     const error = new ApiError(422, "VALIDATION_ERROR", "x", [
       { field: "items.0.course_id", message: "COURSE_NOT_FOUND: немає" },
     ]);
-    expect(describeSaveError(error, items).itemErrors).toEqual({ 5: "Дисципліни немає в каталозі" });
+    expect(describeSaveError(error, items).itemErrors).toEqual({
+      5: "Дисципліни немає в каталозі",
+    });
   });
 
   it("422 рівня тіла іде у form без префікса Value error", () => {
     const error = new ApiError(422, "VALIDATION_ERROR", "x", [
-      { field: "body", message: "Value error, Перевищено ліміт вільного вибору: 28.0 > 25 кредитів" },
+      {
+        field: "body",
+        message: "Value error, Перевищено ліміт вільного вибору: 28.0 > 25 кредитів",
+      },
     ]);
     expect(describeSaveError(error, items)).toEqual({
       itemErrors: {},
@@ -90,9 +107,9 @@ describe("describeSaveError", () => {
   });
 
   it("невідома помилка показує повідомлення сервера", () => {
-    expect(describeSaveError(new ApiError(500, "INTERNAL_ERROR", "Збій сервера"), items).form).toEqual([
-      "Збій сервера",
-    ]);
+    expect(
+      describeSaveError(new ApiError(500, "INTERNAL_ERROR", "Збій сервера"), items).form,
+    ).toEqual(["Збій сервера"]);
   });
 });
 
@@ -118,11 +135,18 @@ function asStudent3() {
   const student = db.me.student!;
   db.me = {
     ...db.me,
-    student: { ...student, course_year: 3, onboarding_required: false, can_create_plan: true, load_levels_mode: "manual" },
+    student: {
+      ...student,
+      course_year: 3,
+      onboarding_required: false,
+      can_create_plan: true,
+      load_levels_mode: "manual",
+    },
   };
 }
 
-const add = async (title: string) => userEvent.click(await screen.findByRole("button", { name: `Додати ${title}` }));
+const add = async (title: string) =>
+  userEvent.click(await screen.findByRole("button", { name: `Додати ${title}` }));
 const saveButton = () => screen.getByRole("button", { name: "Зберегти чернетку" });
 const submitButton = () => screen.getByRole("button", { name: "Подати на розгляд" });
 
@@ -175,7 +199,12 @@ describe("збереження чернетки", () => {
           {
             code: "VALIDATION_ERROR",
             message: "x",
-            details: [{ field: "items.0.course_id", message: "COURSE_DATA_MISMATCH: у каталозі інші кредити" }],
+            details: [
+              {
+                field: "items.0.course_id",
+                message: "COURSE_DATA_MISMATCH: у каталозі інші кредити",
+              },
+            ],
           },
           { status: 422 },
         ),
@@ -185,7 +214,9 @@ describe("збереження чернетки", () => {
     await add("Машинне навчання");
     await userEvent.click(saveButton());
     const card = await screen.findByTestId("item-5");
-    expect(await within(card).findByText("Кредити або триместр не збігаються з каталогом")).toBeInTheDocument();
+    expect(
+      await within(card).findByText("Кредити або триместр не збігаються з каталогом"),
+    ).toBeInTheDocument();
   });
 
   it("422 рівня тіла показується списком над планом", async () => {
@@ -195,7 +226,12 @@ describe("збереження чернетки", () => {
           {
             code: "VALIDATION_ERROR",
             message: "x",
-            details: [{ field: "body", message: "Value error, Перевищено ліміт вільного вибору: 28.0 > 25 кредитів" }],
+            details: [
+              {
+                field: "body",
+                message: "Value error, Перевищено ліміт вільного вибору: 28.0 > 25 кредитів",
+              },
+            ],
           },
           { status: 422 },
         ),
@@ -204,21 +240,28 @@ describe("збереження чернетки", () => {
     renderPage();
     await add("Машинне навчання");
     await userEvent.click(saveButton());
-    expect(await screen.findByText("Перевищено ліміт вільного вибору: 28.0 > 25 кредитів")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Перевищено ліміт вільного вибору: 28.0 > 25 кредитів"),
+    ).toBeInTheDocument();
   });
 
   it("409 PLAN_NOT_EDITABLE пояснюється", async () => {
     server.use(...plansCrudHandlers([planFixture({ id: 1, status: "draft", items })]).handlers);
     server.use(
       http.put("*/api/v1/plans/1", () =>
-        HttpResponse.json({ code: "PLAN_NOT_EDITABLE", message: "x", details: [] }, { status: 409 }),
+        HttpResponse.json(
+          { code: "PLAN_NOT_EDITABLE", message: "x", details: [] },
+          { status: 409 },
+        ),
       ),
     );
     renderPage("/path/create?year=2026&plan=1");
     await screen.findByRole("region", { name: "Осінь" });
     await userEvent.click(screen.getByRole("button", { name: "Прибрати Мова Haskell" }));
     await userEvent.click(saveButton());
-    expect(await screen.findByText("Цей план уже подано, редагувати його не можна")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Цей план уже подано, редагувати його не можна"),
+    ).toBeInTheDocument();
   });
 });
 
@@ -250,7 +293,9 @@ describe("подання", () => {
     renderPage();
     await add("Машинне навчання");
     await userEvent.click(submitButton());
-    await userEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Скасувати" }));
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "Скасувати" }),
+    );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(crud.calls.post).toBe(0);
   });
@@ -259,13 +304,18 @@ describe("подання", () => {
     server.use(
       ...plansCrudHandlers().handlers,
       http.post("*/api/v1/plans/:id/submit", () =>
-        HttpResponse.json({ code: "PLAN_NOT_SUBMITTABLE", message: "x", details: [] }, { status: 409 }),
+        HttpResponse.json(
+          { code: "PLAN_NOT_SUBMITTABLE", message: "x", details: [] },
+          { status: 409 },
+        ),
       ),
     );
     renderPage();
     await add("Машинне навчання");
     await userEvent.click(submitButton());
-    await userEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Подати" }));
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "Подати" }),
+    );
     expect(await screen.findByText("Подати можна лише чернетку")).toBeInTheDocument();
     expect(screen.queryByText("список планів")).not.toBeInTheDocument();
   });

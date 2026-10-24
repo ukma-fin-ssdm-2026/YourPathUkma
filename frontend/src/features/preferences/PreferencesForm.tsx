@@ -96,7 +96,9 @@ export function PreferencesForm({ year }: { year: number }) {
           directions={directions.data?.directions ?? []}
           value={value.direction_ids}
           error={fields.direction_ids}
-          onToggle={(id) => edit((c) => ({ ...c, direction_ids: toggleDirection(c.direction_ids, id) }))}
+          onToggle={(id) =>
+            edit((c) => ({ ...c, direction_ids: toggleDirection(c.direction_ids, id) }))
+          }
         />
       </Card>
       <Card>

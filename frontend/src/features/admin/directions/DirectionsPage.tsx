@@ -63,17 +63,25 @@ export function DirectionsPage() {
           Не вдалося завантажити напрямки
         </p>
       )}
-      {directions.isSuccess && list.length === 0 && <p className="mt-4 text-ink-2">Напрямків ще немає</p>}
+      {directions.isSuccess && list.length === 0 && (
+        <p className="mt-4 text-ink-2">Напрямків ще немає</p>
+      )}
       <ul className="mt-4 space-y-3">
         {list.map((direction) => (
           <li key={direction.id} aria-label={direction.name}>
             <Card className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="font-medium break-words">{direction.name}</div>
-                {direction.description && <div className="text-ink-2 break-words">{direction.description}</div>}
+                {direction.description && (
+                  <div className="text-ink-2 break-words">{direction.description}</div>
+                )}
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setForm({ mode: "edit", direction })}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setForm({ mode: "edit", direction })}
+                >
                   Редагувати
                 </Button>
                 <Button variant="danger" size="sm" onClick={() => setDeleting(direction)}>

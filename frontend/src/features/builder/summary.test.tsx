@@ -28,7 +28,9 @@ const planWith = (items: PlanItem[]): BuilderPlan => ({
   items,
 });
 
-function validation(overrides: Partial<PlanValidationResponse> & { total?: number; used?: number } = {}): PlanValidationResponse {
+function validation(
+  overrides: Partial<PlanValidationResponse> & { total?: number; used?: number } = {},
+): PlanValidationResponse {
   const { total = 0, used = 0, ...rest } = overrides;
   return {
     valid: true,
@@ -46,7 +48,11 @@ function validation(overrides: Partial<PlanValidationResponse> & { total?: numbe
   };
 }
 
-const issue = (code: string, message = "повідомлення сервера"): RuleIssue => ({ code, message, field: null });
+const issue = (code: string, message = "повідомлення сервера"): RuleIssue => ({
+  code,
+  message,
+  field: null,
+});
 const bar = (name: string) => screen.getByRole("progressbar", { name });
 /** Число й підпис «з N» лежать у різних елементах, тож перевіряємо текст їхнього спільного контейнера. */
 const metric = (suffix: string, full: string) =>
@@ -54,7 +60,14 @@ const metric = (suffix: string, full: string) =>
 
 describe("SummaryStrip: числа", () => {
   it("порожній план без перевірки показує нулі", () => {
-    render(<SummaryStrip plan={planWith([])} validation={undefined} credits={credits} normativeCredits={0} />);
+    render(
+      <SummaryStrip
+        plan={planWith([])}
+        validation={undefined}
+        credits={credits}
+        normativeCredits={0}
+      />,
+    );
     metric("із 57–60", "0 із 57–60");
     expect(bar("Кредитів за рік")).toHaveAttribute("aria-valuenow", "0");
     expect(screen.getByText("Усе гаразд")).toBeInTheDocument();
@@ -121,7 +134,9 @@ describe("SummaryStrip: помилки й попередження", () => {
         normativeCredits={27}
       />,
     );
-    expect(screen.getByRole("alert")).toHaveTextContent("Перевищено ліміт вільного вибору (25 кредитів)");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Перевищено ліміт вільного вибору (25 кредитів)",
+    );
   });
 
   it("невідомий код показує повідомлення сервера", () => {
@@ -146,7 +161,9 @@ describe("SummaryStrip: помилки й попередження", () => {
       />,
     );
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    expect(screen.getAllByText("Низьке навантаження: наступні роки зростуть").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Низьке навантаження: наступні роки зростуть").length,
+    ).toBeGreaterThan(0);
   });
 
   it("лічильник плашки дорівнює сумі помилок і попереджень", () => {
@@ -168,11 +185,21 @@ describe("SummaryStrip: помилки й попередження", () => {
   it("серверне YEAR_CREDITS_BELOW_MIN ігнорується, бо сервер не бачить нормативних; рахуємо самі", () => {
     const serverWarn = validation({ total: 31, warnings: [issue("YEAR_CREDITS_BELOW_MIN")] });
     const { rerender } = render(
-      <SummaryStrip plan={planWith([item(1, 31)])} validation={serverWarn} credits={credits} normativeCredits={27} />,
+      <SummaryStrip
+        plan={planWith([item(1, 31)])}
+        validation={serverWarn}
+        credits={credits}
+        normativeCredits={27}
+      />,
     );
     expect(screen.queryAllByText("За рік менше 57 кредитів")).toHaveLength(0);
     rerender(
-      <SummaryStrip plan={planWith([item(1, 31)])} validation={serverWarn} credits={credits} normativeCredits={10} />,
+      <SummaryStrip
+        plan={planWith([item(1, 31)])}
+        validation={serverWarn}
+        credits={credits}
+        normativeCredits={10}
+      />,
     );
     expect(screen.getAllByText("За рік менше 57 кредитів").length).toBeGreaterThan(0);
   });

@@ -28,7 +28,8 @@ export function usePreferences(year: number) {
 export function useSavePreferences(year: number) {
   const queryClient = useQueryClient();
   return useMutation<Preferences, ApiError, PreferencesInput>({
-    mutationFn: (input) => request<Preferences>(`/preferences/${year}`, { method: "PUT", body: input }),
+    mutationFn: (input) =>
+      request<Preferences>(`/preferences/${year}`, { method: "PUT", body: input }),
     onSuccess: (saved) => queryClient.setQueryData(["preferences", year], saved),
   });
 }

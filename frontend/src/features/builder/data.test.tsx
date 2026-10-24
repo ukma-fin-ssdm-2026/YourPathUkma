@@ -8,7 +8,13 @@ import { setAccessToken } from "../../api/token";
 import { server } from "../../mocks/server";
 import { planFixture, plansCrudHandlers, validateHandler } from "../../test/handlers";
 import type { BuilderPlan } from "./plan";
-import { planPayload, usePlan, useSavePlan, useSubmitPlan, useValidatePlan } from "./useBuilderData";
+import {
+  planPayload,
+  usePlan,
+  useSavePlan,
+  useSubmitPlan,
+  useValidatePlan,
+} from "./useBuilderData";
 
 function wrapper({ children }: { children: ReactNode }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -47,7 +53,9 @@ describe("useValidatePlan", () => {
   it("порожній план не робить запиту", () => {
     let calls = 0;
     server.use(validateHandler(() => (calls += 1)));
-    const { result } = renderHook(() => useValidatePlan(planWith([]), { debounceMs: 5 }), { wrapper });
+    const { result } = renderHook(() => useValidatePlan(planWith([]), { debounceMs: 5 }), {
+      wrapper,
+    });
     expect(result.current.fetchStatus).toBe("idle");
     expect(calls).toBe(0);
   });
@@ -55,12 +63,23 @@ describe("useValidatePlan", () => {
   it("план з елементами повертає summary й шле лише поля PlanPayload", async () => {
     const bodies: unknown[] = [];
     server.use(validateHandler((body) => bodies.push(body)));
-    const { result } = renderHook(() => useValidatePlan(planWith([item(1, 5), item(2, 3, true)]), { debounceMs: 5 }), {
-      wrapper,
-    });
+    const { result } = renderHook(
+      () => useValidatePlan(planWith([item(1, 5), item(2, 3, true)]), { debounceMs: 5 }),
+      {
+        wrapper,
+      },
+    );
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.summary).toMatchObject({ total_credits: 8, free_elective_credits: 3 });
-    expect(Object.keys(bodies[0] as object).sort()).toEqual(["academic_year", "course", "items", "load_levels"]);
+    expect(result.current.data?.summary).toMatchObject({
+      total_credits: 8,
+      free_elective_credits: 3,
+    });
+    expect(Object.keys(bodies[0] as object).sort()).toEqual([
+      "academic_year",
+      "course",
+      "items",
+      "load_levels",
+    ]);
   });
 
   it("перевищення вільного вибору дає помилку FREE_ELECTIVE_LIMIT_EXCEEDED", async () => {
@@ -71,16 +90,21 @@ describe("useValidatePlan", () => {
     );
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.valid).toBe(false);
-    expect(result.current.data?.errors.map((e) => e.code)).toContain("FREE_ELECTIVE_LIMIT_EXCEEDED");
+    expect(result.current.data?.errors.map((e) => e.code)).toContain(
+      "FREE_ELECTIVE_LIMIT_EXCEEDED",
+    );
   });
 
   it("застаріла повільна відповідь не перезаписує свіжу", async () => {
     // Перший запит (1 елемент) відповідає за 250 мс, другий (2 елементи) майже одразу.
     server.use(validateHandler(undefined, (body) => (body.items.length === 1 ? 250 : 5)));
-    const { result, rerender } = renderHook(({ plan }) => useValidatePlan(plan, { debounceMs: 5 }), {
-      wrapper,
-      initialProps: { plan: planWith([item(1, 5)]) },
-    });
+    const { result, rerender } = renderHook(
+      ({ plan }) => useValidatePlan(plan, { debounceMs: 5 }),
+      {
+        wrapper,
+        initialProps: { plan: planWith([item(1, 5)]) },
+      },
+    );
     await new Promise((resolve) => setTimeout(resolve, 40));
     rerender({ plan: planWith([item(1, 5), item(2, 6)]) });
     await waitFor(() => expect(result.current.data?.summary.total_credits).toBe(11));
@@ -96,7 +120,9 @@ describe("usePlan / useSavePlan / useSubmitPlan", () => {
     const found = renderHook(() => usePlan(1), { wrapper });
     await waitFor(() => expect(found.result.current.data?.id).toBe(1));
     const missing = renderHook(() => usePlan(99), { wrapper });
-    await waitFor(() => expect(missing.result.current.error).toMatchObject({ status: 404, code: "PLAN_NOT_FOUND" }));
+    await waitFor(() =>
+      expect(missing.result.current.error).toMatchObject({ status: 404, code: "PLAN_NOT_FOUND" }),
+    );
   });
 
   it("перше збереження це POST, наступне з тим самим id це PUT", async () => {
@@ -119,7 +145,9 @@ describe("usePlan / useSavePlan / useSubmitPlan", () => {
     server.use(...crud.handlers);
     const { result } = renderHook(() => useSavePlan(), { wrapper });
     await act(async () => {
-      await expect(result.current.mutateAsync({ id: 3, plan: planWith([item(1)]) })).rejects.toMatchObject({
+      await expect(
+        result.current.mutateAsync({ id: 3, plan: planWith([item(1)]) }),
+      ).rejects.toMatchObject({
         status: 409,
         code: "PLAN_NOT_EDITABLE",
       });
@@ -137,12 +165,17 @@ describe("usePlan / useSavePlan / useSubmitPlan", () => {
   it("помилка 409 PLAN_NOT_SUBMITTABLE пробрасується", async () => {
     server.use(
       http.post("*/api/v1/plans/:id/submit", () =>
-        HttpResponse.json({ code: "PLAN_NOT_SUBMITTABLE", message: "x", details: [] }, { status: 409 }),
+        HttpResponse.json(
+          { code: "PLAN_NOT_SUBMITTABLE", message: "x", details: [] },
+          { status: 409 },
+        ),
       ),
     );
     const { result } = renderHook(() => useSubmitPlan(), { wrapper });
     await act(async () => {
-      await expect(result.current.mutateAsync(5)).rejects.toMatchObject({ code: "PLAN_NOT_SUBMITTABLE" });
+      await expect(result.current.mutateAsync(5)).rejects.toMatchObject({
+        code: "PLAN_NOT_SUBMITTABLE",
+      });
     });
   });
 });

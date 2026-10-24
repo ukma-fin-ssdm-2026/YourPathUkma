@@ -49,9 +49,14 @@ describe("Segmented", () => {
 
   it("позначає активну кнопку й викликає onChange з новим значенням", async () => {
     const onChange = vi.fn();
-    render(<Segmented value="low" options={options} onChange={onChange} ariaLabel="Навантаження" />);
+    render(
+      <Segmented value="low" options={options} onChange={onChange} ariaLabel="Навантаження" />,
+    );
     expect(screen.getByRole("button", { name: "Низьке" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: "Середнє" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "Середнє" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
     await userEvent.click(screen.getByRole("button", { name: "Середнє" }));
     expect(onChange).toHaveBeenCalledWith("medium");
   });
@@ -59,7 +64,13 @@ describe("Segmented", () => {
   it("не реагує, коли disabled", async () => {
     const onChange = vi.fn();
     render(
-      <Segmented value="low" options={options} onChange={onChange} ariaLabel="Навантаження" disabled />,
+      <Segmented
+        value="low"
+        options={options}
+        onChange={onChange}
+        ariaLabel="Навантаження"
+        disabled
+      />,
     );
     await userEvent.click(screen.getByRole("button", { name: "Середнє" }));
     expect(onChange).not.toHaveBeenCalled();
@@ -69,7 +80,13 @@ describe("Segmented", () => {
 describe("анімація діалогів", () => {
   it("ConfirmDialog має класи входу на підкладці й панелі", () => {
     render(
-      <ConfirmDialog open title="Видалити?" confirmLabel="Видалити" onConfirm={() => {}} onCancel={() => {}} />,
+      <ConfirmDialog
+        open
+        title="Видалити?"
+        confirmLabel="Видалити"
+        onConfirm={() => {}}
+        onCancel={() => {}}
+      />,
     );
     const panel = screen.getByRole("dialog");
     expect(panel).toHaveClass("dialog-panel");
@@ -80,11 +97,14 @@ describe("анімація діалогів", () => {
     const block = /@keyframes dialog-in[\s\S]*?\n\}/.exec(css)?.[0] ?? "";
     expect(block).not.toBe("");
     expect(block).not.toMatch(/scale\(0\)/);
-    expect(css).toMatch(/\.dialog-panel\s*{[^}]*animation:[^;]*(1[0-9]{2}|2[0-9]{2})ms var\(--ease-out\)/);
+    expect(css).toMatch(
+      /\.dialog-panel\s*{[^}]*animation:[^;]*(1[0-9]{2}|2[0-9]{2})ms var\(--ease-out\)/,
+    );
   });
 
   it("для prefers-reduced-motion анімація діалогів вимкнена", () => {
-    const reduced = /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\r?\n\}\r?\n/.exec(css)?.[0] ?? "";
+    const reduced =
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\r?\n\}\r?\n/.exec(css)?.[0] ?? "";
     expect(reduced).toMatch(/\.dialog-backdrop[\s\S]*animation:\s*none/);
   });
 });

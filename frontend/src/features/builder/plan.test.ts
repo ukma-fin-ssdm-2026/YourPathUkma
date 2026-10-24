@@ -36,10 +36,14 @@ describe("isFreeElective", () => {
     expect(isFreeElective(disciplineFixture({ directions: [] }), ["Data Science"])).toBe(true);
   });
   it("збіг напрямку студента (без урахування регістру) дає профорієнтовну", () => {
-    expect(isFreeElective(disciplineFixture({ directions: ["Data Science"] }), ["data science"])).toBe(false);
+    expect(
+      isFreeElective(disciplineFixture({ directions: ["Data Science"] }), ["data science"]),
+    ).toBe(false);
   });
   it("без збігу напрямків це вільний вибір", () => {
-    expect(isFreeElective(disciplineFixture({ directions: ["Data Science"] }), ["Cybersecurity"])).toBe(true);
+    expect(
+      isFreeElective(disciplineFixture({ directions: ["Data Science"] }), ["Cybersecurity"]),
+    ).toBe(true);
   });
   it("якщо студент не обрав напрямків, дисципліна з напрямками вважається вільним вибором", () => {
     expect(isFreeElective(disciplineFixture({ directions: ["Data Science"] }), [])).toBe(true);
@@ -48,7 +52,13 @@ describe("isFreeElective", () => {
 
 describe("toPlanItem", () => {
   it("копіює дані дисципліни й ставить прапорець вільного вибору", () => {
-    const d = disciplineFixture({ id: 205, title: "Управління продуктом", trimester: 2, credits: 3, directions: [] });
+    const d = disciplineFixture({
+      id: 205,
+      title: "Управління продуктом",
+      trimester: 2,
+      credits: 3,
+      directions: [],
+    });
     expect(toPlanItem(d, [])).toEqual({
       course_id: 205,
       title: "Управління продуктом",
@@ -69,7 +79,10 @@ describe("canAdd / addDiscipline", () => {
   });
 
   it("не додає 31-шу дисципліну", () => {
-    const plan = { ...emptyPlan(), items: Array.from({ length: MAX_ITEMS }, (_, i) => item(i + 1, 1, 1)) };
+    const plan = {
+      ...emptyPlan(),
+      items: Array.from({ length: MAX_ITEMS }, (_, i) => item(i + 1, 1, 1)),
+    };
     expect(canAdd(plan, disciplineFixture({ id: 999 }))).toEqual({ ok: false, reason: "limit" });
   });
 
@@ -120,7 +133,10 @@ describe("dropVerdict", () => {
     expect(dropVerdict(spring, 2)).toEqual({ ok: true });
   });
   it("у чужу колонку не можна й пояснюється, коли дисципліна викладається", () => {
-    expect(dropVerdict(spring, 1)).toEqual({ ok: false, message: "Ця дисципліна викладається навесні" });
+    expect(dropVerdict(spring, 1)).toEqual({
+      ok: false,
+      message: "Ця дисципліна викладається навесні",
+    });
     expect(dropVerdict(disciplineFixture({ trimester: 1 }), 3)).toEqual({
       ok: false,
       message: "Ця дисципліна викладається восени",

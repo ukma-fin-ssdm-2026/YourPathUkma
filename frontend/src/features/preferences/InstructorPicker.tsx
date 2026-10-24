@@ -25,7 +25,9 @@ export function InstructorPicker({
   const term = useDebouncedValue(text, 300);
   const found = useInstructors(term).data?.instructors ?? [];
   // Викладач не може бути і в цьому списку, і в протилежному, тож таких не пропонуємо.
-  const options = found.filter((item) => !selectedIds.includes(item.id) && !otherIds.includes(item.id));
+  const options = found.filter(
+    (item) => !selectedIds.includes(item.id) && !otherIds.includes(item.id),
+  );
 
   return (
     <section aria-label={title} className="grid content-start gap-2">
@@ -59,7 +61,10 @@ export function InstructorPicker({
         {selectedIds.map((id) => {
           const name = names.get(id) ?? `Викладач #${id}`;
           return (
-            <span key={id} className="inline-flex items-center gap-1.5 rounded-full bg-paper px-2.5 py-1 text-[13px]">
+            <span
+              key={id}
+              className="inline-flex items-center gap-1.5 rounded-full bg-paper px-2.5 py-1 text-[13px]"
+            >
               {name}
               <button
                 type="button"

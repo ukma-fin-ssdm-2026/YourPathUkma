@@ -16,12 +16,19 @@ export function Segmented<T extends string | number>({
 }: SegmentedProps<T>) {
   const activeIndex = options.findIndex((option) => option.value === value);
   return (
-    <div role="group" aria-label={ariaLabel} className="relative flex rounded-[10px] bg-paper p-[3px]">
+    <div
+      role="group"
+      aria-label={ariaLabel}
+      className="relative flex rounded-[10px] bg-paper p-[3px]"
+    >
       {activeIndex >= 0 && (
         <span
           aria-hidden="true"
           className="absolute inset-y-[3px] left-[3px] rounded-lg bg-surface shadow-sm transition-transform duration-300 ease-[var(--ease-out)]"
-          style={{ width: `calc((100% - 6px) / ${options.length})`, transform: `translateX(${activeIndex * 100}%)` }}
+          style={{
+            width: `calc((100% - 6px) / ${options.length})`,
+            transform: `translateX(${activeIndex * 100}%)`,
+          }}
         />
       )}
       {options.map((option) => {

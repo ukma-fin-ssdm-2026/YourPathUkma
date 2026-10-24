@@ -9,7 +9,11 @@ export function PreferencesPage() {
   const limits = useConfig().data?.limits;
   const year =
     Number(params.get("year")) ||
-    defaultPlanYear(new Date(), limits?.academic_year_min ?? 2024, limits?.academic_year_max ?? 2030);
+    defaultPlanYear(
+      new Date(),
+      limits?.academic_year_min ?? 2024,
+      limits?.academic_year_max ?? 2030,
+    );
   return (
     <div className="grid gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">

@@ -22,14 +22,18 @@ const SEASONS = [
 ] as const;
 
 function LoadDots({ levels }: { levels: PlanResponse["load_levels"] }) {
-  const summary = SEASONS.map((s) => `${s.label} ${LEVEL_LABEL[levels[s.key] ?? "medium"]}`).join(", ");
+  const summary = SEASONS.map((s) => `${s.label} ${LEVEL_LABEL[levels[s.key] ?? "medium"]}`).join(
+    ", ",
+  );
   return (
     <span role="img" aria-label={`Навантаження: ${summary}`} className="inline-flex gap-1">
       {SEASONS.map((s, index) => (
         <i
           key={s.key}
           className={`cell-in block size-2.5 rounded-full ${s.color}`}
-          style={{ opacity: LEVEL_OPACITY[levels[s.key] ?? "medium"], "--i": index * 8 } as CSSProperties}
+          style={
+            { opacity: LEVEL_OPACITY[levels[s.key] ?? "medium"], "--i": index * 8 } as CSSProperties
+          }
         />
       ))}
     </span>
@@ -65,13 +69,21 @@ export function PlansPage({ mode }: { mode: "all" | "saved" }) {
 
   let content;
   if (plans.isPending) {
-    content = <div aria-busy="true" aria-label="Завантажуємо плани" className="h-40 shimmer rounded-2xl bg-rule" />;
+    content = (
+      <div
+        aria-busy="true"
+        aria-label="Завантажуємо плани"
+        className="h-40 shimmer rounded-2xl bg-rule"
+      />
+    );
   } else if (plans.isError) {
     const error = plans.error;
     content = (
       <div role="alert" className="rounded-2xl bg-bad-bg p-5 text-bad">
         <p>{error instanceof ApiError ? error.message : "Не вдалося завантажити плани"}</p>
-        {error instanceof ApiError && error.requestId && <p className="mt-1 text-sm">Код помилки: {error.requestId}</p>}
+        {error instanceof ApiError && error.requestId && (
+          <p className="mt-1 text-sm">Код помилки: {error.requestId}</p>
+        )}
       </div>
     );
   } else if (groups.length === 0) {
@@ -101,7 +113,11 @@ export function PlansPage({ mode }: { mode: "all" | "saved" }) {
           <tbody>
             {groups.flatMap((group) => [
               <tr key={`h-${group.academic_year}`}>
-                <th colSpan={6} scope="colgroup" className="bg-paper px-3.5 py-2 text-[13px] font-semibold text-ink-2">
+                <th
+                  colSpan={6}
+                  scope="colgroup"
+                  className="bg-paper px-3.5 py-2 text-[13px] font-semibold text-ink-2"
+                >
                   {courseHeading(group)}
                 </th>
               </tr>,
@@ -126,8 +142,12 @@ export function PlansPage({ mode }: { mode: "all" | "saved" }) {
                   <td className="px-3.5 py-3">
                     <StatusBadge status={plan.status} />
                   </td>
-                  <td className="px-3.5 py-3 text-right tabular-nums">{formatCredits(plan.total_credits)}</td>
-                  <td className="px-3.5 py-3 text-right tabular-nums">{formatCredits(plan.free_elective_credits)}</td>
+                  <td className="px-3.5 py-3 text-right tabular-nums">
+                    {formatCredits(plan.total_credits)}
+                  </td>
+                  <td className="px-3.5 py-3 text-right tabular-nums">
+                    {formatCredits(plan.free_elective_credits)}
+                  </td>
                   <td className="px-3.5 py-3">
                     <div className="flex justify-end gap-2">
                       {plan.status === "draft" ? (
@@ -165,7 +185,9 @@ export function PlansPage({ mode }: { mode: "all" | "saved" }) {
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-[22px]">{mode === "saved" ? "Збережені плани" : "Індивідуальний план"}</h1>
+        <h1 className="font-display text-[22px]">
+          {mode === "saved" ? "Збережені плани" : "Індивідуальний план"}
+        </h1>
         <div className="flex gap-2.5">
           {mode === "all" && (
             <Button variant="ghost" disabled title="Синхронізація з САЗ поки недоступна">
@@ -186,7 +208,11 @@ export function PlansPage({ mode }: { mode: "all" | "saved" }) {
       <ConfirmDialog
         open={target !== null}
         title="Видалити план?"
-        description={target ? `План ${target.academic_year}/${target.academic_year + 1} буде видалено без можливості відновлення.` : undefined}
+        description={
+          target
+            ? `План ${target.academic_year}/${target.academic_year + 1} буде видалено без можливості відновлення.`
+            : undefined
+        }
         confirmLabel="Видалити"
         busy={remove.isPending}
         onConfirm={confirmDelete}

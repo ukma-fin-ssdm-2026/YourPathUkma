@@ -8,7 +8,9 @@ import { saveBlob } from "../../lib/download";
 export function useExportPlan() {
   return useMutation<string, ApiError, { id: number; academicYear: number }>({
     mutationFn: async ({ id, academicYear }) => {
-      const { blob, filename } = await requestBlob(`/plans/${id}/export`, { query: { format: "pdf" } });
+      const { blob, filename } = await requestBlob(`/plans/${id}/export`, {
+        query: { format: "pdf" },
+      });
       const name = filename ?? `plan-${academicYear}.pdf`;
       saveBlob(blob, name);
       return name;

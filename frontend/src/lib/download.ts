@@ -10,7 +10,8 @@ export function parseDispositionFilename(header: string | null): string | null {
       // некоректне кодування: пробуємо звичайне filename нижче
     }
   }
-  const plain = /filename\s*=\s*"([^"]+)"/i.exec(header)?.[1] ?? /filename\s*=\s*([^;\s]+)/i.exec(header)?.[1];
+  const plain =
+    /filename\s*=\s*"([^"]+)"/i.exec(header)?.[1] ?? /filename\s*=\s*([^;\s]+)/i.exec(header)?.[1];
   return plain?.trim() || null;
 }
 

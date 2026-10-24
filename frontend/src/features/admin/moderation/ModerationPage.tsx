@@ -44,7 +44,9 @@ function summarize(result: BulkReviewResult): { text: string; skipped: string[] 
   const text = parts.join(", ");
   return {
     text: text.charAt(0).toUpperCase() + text.slice(1),
-    skipped: result.skipped.map((s) => `Запис #${s.id} пропущено: ${SKIP_REASON[s.code] ?? s.code}`),
+    skipped: result.skipped.map(
+      (s) => `Запис #${s.id} пропущено: ${SKIP_REASON[s.code] ?? s.code}`,
+    ),
   };
 }
 
@@ -60,7 +62,10 @@ export function ModerationPage() {
   const review = useReviewItem();
   const bulk = useBulkReview();
   const list = items.data?.moderation_items ?? [];
-  const lastPage = Math.max(1, Math.ceil((items.data?.pagination.total ?? 0) / MODERATION_PAGE_SIZE));
+  const lastPage = Math.max(
+    1,
+    Math.ceil((items.data?.pagination.total ?? 0) / MODERATION_PAGE_SIZE),
+  );
   const busy = review.isPending || bulk.isPending;
   const selectable = status === "pending";
 
@@ -85,7 +90,9 @@ export function ModerationPage() {
           toast.success(decision === "approve" ? "Запис схвалено" : "Запис відхилено");
         },
         onError: (e: ApiError) =>
-          setError(e.code === "MODERATION_ITEM_ALREADY_REVIEWED" ? "Запис уже розглянуто" : e.message),
+          setError(
+            e.code === "MODERATION_ITEM_ALREADY_REVIEWED" ? "Запис уже розглянуто" : e.message,
+          ),
       },
     );
   };
@@ -170,7 +177,12 @@ export function ModerationPage() {
               <Button size="sm" disabled={busy} onClick={() => decideSelected("approve")}>
                 Схвалити вибрані ({selected.size})
               </Button>
-              <Button variant="ghost" size="sm" disabled={busy} onClick={() => decideSelected("reject")}>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={busy}
+                onClick={() => decideSelected("reject")}
+              >
                 Відхилити вибрані ({selected.size})
               </Button>
             </>

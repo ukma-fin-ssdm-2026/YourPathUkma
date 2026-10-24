@@ -19,7 +19,8 @@ function Limit({
     <div className="p-1">
       <div className="text-sm text-ink-2">{label}</div>
       <div className="font-display text-2xl">
-        <CountUp value={used} /> <small className="font-sans text-sm text-ink-2">з {formatCredits(limit)}</small>
+        <CountUp value={used} />{" "}
+        <small className="font-sans text-sm text-ink-2">з {formatCredits(limit)}</small>
       </div>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-rule">
         <div
@@ -39,7 +40,12 @@ function Limit({
 export function LimitsStrip({ credits }: { credits: Credits }) {
   return (
     <div className="grid gap-6 sm:grid-cols-3">
-      <Limit label="Усього" used={credits.total_used} limit={credits.total_limit} barClass="bg-ink" />
+      <Limit
+        label="Усього"
+        used={credits.total_used}
+        limit={credits.total_limit}
+        barClass="bg-ink"
+      />
       <Limit
         label="Профорієнтовні"
         used={credits.professional_used}

@@ -150,7 +150,10 @@ export async function requestBlob(
   path: string,
   options: RequestOptions = {},
 ): Promise<{ blob: Blob; filename: string | null }> {
-  const response = await execute(path, { accept: "application/pdf, application/json;q=0.5", ...options });
+  const response = await execute(path, {
+    accept: "application/pdf, application/json;q=0.5",
+    ...options,
+  });
   return {
     blob: await response.blob(),
     filename: parseDispositionFilename(response.headers.get("Content-Disposition")),

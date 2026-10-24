@@ -23,7 +23,9 @@ const ALL = [
 function instructorsDirectory() {
   return http.get("*/api/v1/instructors", ({ request }) => {
     const q = new URL(request.url).searchParams.get("q");
-    const items = q ? ALL.filter((i) => i.full_name.toLowerCase().includes(q.toLowerCase())) : ALL.slice(0, 2);
+    const items = q
+      ? ALL.filter((i) => i.full_name.toLowerCase().includes(q.toLowerCase()))
+      : ALL.slice(0, 2);
     return HttpResponse.json({
       instructors: items,
       pagination: { limit: 10, offset: 0, total: items.length, has_more: false },
@@ -75,7 +77,11 @@ describe("пошук і вибір викладачів", () => {
     await userEvent.type(await search("бажані"), "Пет");
     await userEvent.click(await screen.findByRole("button", { name: "Додати Петренко І. М." }));
     await userEvent.type(await search("небажані"), "Пет");
-    await waitFor(() => expect(screen.queryByRole("button", { name: "Додати Петренко І. М." })).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: "Додати Петренко І. М." }),
+      ).not.toBeInTheDocument(),
+    );
   });
 
   it("після видалення з «Бажаних» викладача можна додати до «Небажаних»", async () => {
@@ -83,13 +89,21 @@ describe("пошук і вибір викладачів", () => {
     await userEvent.type(await search("бажані"), "Пет");
     await userEvent.click(await screen.findByRole("button", { name: "Додати Петренко І. М." }));
     await userEvent.click(screen.getByRole("button", { name: "Прибрати Петренко І. М." }));
-    expect(screen.queryByRole("button", { name: "Прибрати Петренко І. М." })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Прибрати Петренко І. М." }),
+    ).not.toBeInTheDocument();
     await userEvent.type(await search("небажані"), "Пет");
     // «Бажані» теж ще показують пошукову підказку, тож шукаємо кнопку лише в «Небажаних».
     const unwanted = screen.getByRole("region", { name: "Небажані викладачі" });
-    await userEvent.click(await within(unwanted).findByRole("button", { name: "Додати Петренко І. М." }));
+    await userEvent.click(
+      await within(unwanted).findByRole("button", { name: "Додати Петренко І. М." }),
+    );
     expect(within(unwanted).getByText("Петренко І. М.")).toBeInTheDocument();
-    expect(within(section("Бажані викладачі")).queryByRole("button", { name: "Прибрати Петренко І. М." })).not.toBeInTheDocument();
+    expect(
+      within(section("Бажані викладачі")).queryByRole("button", {
+        name: "Прибрати Петренко І. М.",
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it("невідомий id показується як «Викладач #id»", async () => {
@@ -118,7 +132,10 @@ describe("пошук і вибір викладачів", () => {
     server.use(
       http.get("*/api/v1/instructors", ({ request }) => {
         if (new URL(request.url).searchParams.has("q")) calls += 1;
-        return HttpResponse.json({ instructors: [], pagination: { limit: 10, offset: 0, total: 0, has_more: false } });
+        return HttpResponse.json({
+          instructors: [],
+          pagination: { limit: 10, offset: 0, total: 0, has_more: false },
+        });
       }),
     );
     renderForm();
@@ -143,7 +160,9 @@ describe("вільний вибір і сертифікат", () => {
 
   it("сертифікат вимкнено з позначкою «незабаром»", async () => {
     renderForm();
-    expect(await screen.findByRole("switch", { name: "Підібрати сертифікатну програму" })).toBeDisabled();
+    expect(
+      await screen.findByRole("switch", { name: "Підібрати сертифікатну програму" }),
+    ).toBeDisabled();
     expect(screen.getByText("незабаром")).toBeInTheDocument();
   });
 

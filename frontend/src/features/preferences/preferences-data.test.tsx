@@ -12,7 +12,12 @@ import {
   moveInstructor,
   toggleDirection,
 } from "./preferences";
-import { useInstructorNames, useInstructors, usePreferences, useSavePreferences } from "./usePreferences";
+import {
+  useInstructorNames,
+  useInstructors,
+  usePreferences,
+  useSavePreferences,
+} from "./usePreferences";
 
 function wrapper({ children }: { children: ReactNode }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });

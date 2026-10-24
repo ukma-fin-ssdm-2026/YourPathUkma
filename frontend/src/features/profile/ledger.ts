@@ -9,7 +9,11 @@ export interface LedgerRow {
 }
 
 export function sumByCategory(records: AcademicRecord[]): Record<AcademicCategory, number> {
-  const totals: Record<AcademicCategory, number> = { normative: 0, professional: 0, free_choice: 0 };
+  const totals: Record<AcademicCategory, number> = {
+    normative: 0,
+    professional: 0,
+    free_choice: 0,
+  };
   for (const record of records) totals[record.category] += record.credits;
   return totals;
 }

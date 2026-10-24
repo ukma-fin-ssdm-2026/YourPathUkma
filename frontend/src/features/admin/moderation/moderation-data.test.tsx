@@ -31,7 +31,11 @@ describe("describeDiff", () => {
       payload: { title: "Нова", credits: 4 },
     });
     expect(describeDiff(add)).toEqual(["title: Нова", "credits: 4"]);
-    const remove = moderationItemFixture({ change_type: "remove", diff: null, payload: { title: "Стара" } });
+    const remove = moderationItemFixture({
+      change_type: "remove",
+      diff: null,
+      payload: { title: "Стара" },
+    });
     expect(describeDiff(remove)).toEqual(["title: Стара"]);
   });
 
@@ -96,10 +100,12 @@ describe("useReviewItem", () => {
   it("повторне рішення дає 409 MODERATION_ITEM_ALREADY_REVIEWED", async () => {
     const { result } = renderHook(() => useReviewItem(), { wrapper });
     await result.current.mutateAsync({ id: 501, decision: "approve" });
-    await expect(result.current.mutateAsync({ id: 501, decision: "reject" })).rejects.toMatchObject({
-      status: 409,
-      code: "MODERATION_ITEM_ALREADY_REVIEWED",
-    });
+    await expect(result.current.mutateAsync({ id: 501, decision: "reject" })).rejects.toMatchObject(
+      {
+        status: 409,
+        code: "MODERATION_ITEM_ALREADY_REVIEWED",
+      },
+    );
     expect(db.admin.moderationItems.find((i) => i.id === 501)?.status).toBe("approved");
   });
 });
@@ -119,11 +125,16 @@ describe("useBulkReview", () => {
 
   it("мок відхиляє порожній список і понад 100 записів", async () => {
     const { result } = renderHook(() => useBulkReview(), { wrapper });
-    await expect(result.current.mutateAsync({ item_ids: [], decision: "approve" })).rejects.toMatchObject({
+    await expect(
+      result.current.mutateAsync({ item_ids: [], decision: "approve" }),
+    ).rejects.toMatchObject({
       status: 422,
     });
     await expect(
-      result.current.mutateAsync({ item_ids: Array.from({ length: 101 }, (_, i) => i + 1), decision: "approve" }),
+      result.current.mutateAsync({
+        item_ids: Array.from({ length: 101 }, (_, i) => i + 1),
+        decision: "approve",
+      }),
     ).rejects.toMatchObject({ status: 422 });
   });
 });
