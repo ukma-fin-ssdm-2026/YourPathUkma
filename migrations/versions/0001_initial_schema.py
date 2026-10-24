@@ -15,8 +15,8 @@ Create Date: 2026-10-14
 
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision: str = "0001"
@@ -715,13 +715,15 @@ def upgrade() -> None:
 
     if op.get_bind().dialect.name == "postgresql":
         # SEC-001: журнал аудиту лише доповнюється
-        op.execute("""
+        op.execute(
+            """
             CREATE FUNCTION audit_log_append_only() RETURNS trigger AS $$
             BEGIN
                 RAISE EXCEPTION 'audit_log is append-only';
             END;
             $$ LANGUAGE plpgsql
-            """)
+            """
+        )
         op.execute(
             "CREATE TRIGGER audit_log_append_only BEFORE UPDATE OR DELETE ON audit_log "
             "FOR EACH ROW EXECUTE FUNCTION audit_log_append_only()"
