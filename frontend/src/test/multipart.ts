@@ -28,7 +28,9 @@ export async function encodeMultipart(
   for (const [name, value] of form.entries()) {
     if (typeof value === "string") {
       parts.push(
-        encoder.encode(`--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`),
+        encoder.encode(
+          `--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`,
+        ),
       );
     } else {
       parts.push(

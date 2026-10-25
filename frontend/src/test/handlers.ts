@@ -25,7 +25,12 @@ export function configFixture(): ConfigResponse {
       medium: { min_hours_per_week: 20, max_hours_per_week: 23 },
       high: { min_hours_per_week: 23, max_hours_per_week: 25 },
     },
-    features: { ai_generation: false, certificate_programs: false, saz_sync: false, plan_export: true },
+    features: {
+      ai_generation: false,
+      certificate_programs: false,
+      saz_sync: false,
+      plan_export: true,
+    },
   };
 }
 
@@ -68,7 +73,11 @@ export function disciplinesHandler(
 }
 
 export function directionsHandler(names: string[]) {
-  const directions: Direction[] = names.map((name, index) => ({ id: index + 1, name, description: null }));
+  const directions: Direction[] = names.map((name, index) => ({
+    id: index + 1,
+    name,
+    description: null,
+  }));
   return http.get("*/api/v1/directions", () => HttpResponse.json({ directions }));
 }
 
@@ -142,13 +151,25 @@ export function validateHandler(
     const errors: { code: string; message: string; field: string | null }[] = [];
     const ids = items.map((i) => i.course_id);
     if (new Set(ids).size !== ids.length) {
-      errors.push({ code: "DUPLICATE_COURSE", message: "Дисципліни в плані не повинні повторюватись", field: null });
+      errors.push({
+        code: "DUPLICATE_COURSE",
+        message: "Дисципліни в плані не повинні повторюватись",
+        field: null,
+      });
     }
     if (items.length > 0 && items.every((i) => i.is_free_elective)) {
-      errors.push({ code: "ONLY_FREE_ELECTIVES", message: "Не можна обрати лише вільний вибір", field: null });
+      errors.push({
+        code: "ONLY_FREE_ELECTIVES",
+        message: "Не можна обрати лише вільний вибір",
+        field: null,
+      });
     }
     if (free > 25) {
-      errors.push({ code: "FREE_ELECTIVE_LIMIT_EXCEEDED", message: `Перевищено ліміт: ${free} > 25`, field: null });
+      errors.push({
+        code: "FREE_ELECTIVE_LIMIT_EXCEEDED",
+        message: `Перевищено ліміт: ${free} > 25`,
+        field: null,
+      });
     }
     const warnings = Object.values(body.load_levels).includes("low")
       ? [{ code: "LOW_LOAD_FUTURE_INCREASE", message: "Низьке навантаження", field: null }]
@@ -190,10 +211,15 @@ export function plansCrudHandlers(initial: PlanResponse[] = []): {
       items: body.items,
       status,
       total_credits: body.items.reduce((s, i) => s + i.credits, 0),
-      free_elective_credits: body.items.filter((i) => i.is_free_elective).reduce((s, i) => s + i.credits, 0),
+      free_elective_credits: body.items
+        .filter((i) => i.is_free_elective)
+        .reduce((s, i) => s + i.credits, 0),
     });
   const notFound = () =>
-    HttpResponse.json({ code: "PLAN_NOT_FOUND", message: "План не знайдено", details: [] }, { status: 404 });
+    HttpResponse.json(
+      { code: "PLAN_NOT_FOUND", message: "План не знайдено", details: [] },
+      { status: 404 },
+    );
   const handlers = [
     http.post("*/api/v1/plans", async ({ request }) => {
       calls.post += 1;

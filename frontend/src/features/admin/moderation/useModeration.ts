@@ -40,18 +40,16 @@ export function useModerationItems({
 
 export function useReviewItem() {
   const queryClient = useQueryClient();
-  return useMutation<
-    ModerationItem,
-    ApiError,
-    { id: number; decision: Decision; reason?: string }
-  >({
-    mutationFn: ({ id, decision, reason }) =>
-      request<ModerationItem>(`/admin/moderation-items/${id}/${decision}`, {
-        method: "POST",
-        body: decision === "reject" && reason ? { reason } : undefined,
-      }),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["admin", "moderation"] }),
-  });
+  return useMutation<ModerationItem, ApiError, { id: number; decision: Decision; reason?: string }>(
+    {
+      mutationFn: ({ id, decision, reason }) =>
+        request<ModerationItem>(`/admin/moderation-items/${id}/${decision}`, {
+          method: "POST",
+          body: decision === "reject" && reason ? { reason } : undefined,
+        }),
+      onSettled: () => queryClient.invalidateQueries({ queryKey: ["admin", "moderation"] }),
+    },
+  );
 }
 
 export function useBulkReview() {
@@ -63,12 +61,15 @@ export function useBulkReview() {
   });
 }
 
-const show = (value: unknown): string => (typeof value === "object" ? JSON.stringify(value) : String(value));
+const show = (value: unknown): string =>
+  typeof value === "object" ? JSON.stringify(value) : String(value);
 
 /** Рядки зміни для відображення текстом: для update «поле: старе → нове», інакше поля payload. */
 export function describeDiff(item: ModerationItem): string[] {
   if (item.diff) {
-    return Object.entries(item.diff).map(([field, { old, new: next }]) => `${field}: ${show(old)} → ${show(next)}`);
+    return Object.entries(item.diff).map(
+      ([field, { old, new: next }]) => `${field}: ${show(old)} → ${show(next)}`,
+    );
   }
   return Object.entries(item.payload).map(([field, value]) => `${field}: ${show(value)}`);
 }

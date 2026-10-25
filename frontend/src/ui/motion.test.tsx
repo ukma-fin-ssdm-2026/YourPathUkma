@@ -20,7 +20,13 @@ afterEach(() => {
 });
 
 const dialog = (open: boolean) => (
-  <ConfirmDialog open={open} title="Видалити?" confirmLabel="Видалити" onConfirm={() => {}} onCancel={() => {}} />
+  <ConfirmDialog
+    open={open}
+    title="Видалити?"
+    confirmLabel="Видалити"
+    onConfirm={() => {}}
+    onCancel={() => {}}
+  />
 );
 
 describe("анімація виходу діалогу", () => {
@@ -44,7 +50,13 @@ describe("анімація виходу діалогу", () => {
   });
 });
 
-const item: PlanItem = { course_id: 7, title: "Етика ШІ", trimester: 3, credits: 3, is_free_elective: false };
+const item: PlanItem = {
+  course_id: 7,
+  title: "Етика ШІ",
+  trimester: 3,
+  credits: 3,
+  is_free_elective: false,
+};
 
 describe("анімація видалення з плану", () => {
   it("картка відлітає, а дисципліна прибирається через 180 мс", () => {

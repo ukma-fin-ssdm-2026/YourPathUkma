@@ -23,11 +23,28 @@ import { TrimesterColumn } from "./TrimesterColumn";
 const spring = disciplineFixture({ id: 5, title: "Машинне навчання", trimester: 2 });
 
 describe("pointerFirst", () => {
-  const rect = (left: number, width: number) => ({ left, top: 0, width, height: 100, right: left + width, bottom: 100 });
-  const container = (id: string) => ({ id, data: { current: undefined }, disabled: false, node: { current: null }, rect: { current: null } });
+  const rect = (left: number, width: number) => ({
+    left,
+    top: 0,
+    width,
+    height: 100,
+    right: left + width,
+    bottom: 100,
+  });
+  const container = (id: string) => ({
+    id,
+    data: { current: undefined },
+    disabled: false,
+    node: { current: null },
+    rect: { current: null },
+  });
   const args = (pointer: { x: number; y: number } | null) =>
     ({
-      active: { id: "card", data: { current: undefined }, rect: { current: { initial: null, translated: null } } },
+      active: {
+        id: "card",
+        data: { current: undefined },
+        rect: { current: { initial: null, translated: null } },
+      },
       collisionRect: rect(90, 100),
       droppableRects: new Map([
         ["A", rect(0, 100)],
@@ -51,7 +68,10 @@ describe("decideDrop", () => {
     expect(decideDrop(spring, 2)).toEqual({ kind: "add", discipline: spring, trimester: 2 });
   });
   it("у чужу колонку: відмова з поясненням", () => {
-    expect(decideDrop(spring, 1)).toEqual({ kind: "reject", message: "Ця дисципліна викладається навесні" });
+    expect(decideDrop(spring, 1)).toEqual({
+      kind: "reject",
+      message: "Ця дисципліна викладається навесні",
+    });
   });
   it("поза колонками або без активної дисципліни: ігнорувати", () => {
     expect(decideDrop(spring, null)).toEqual({ kind: "ignore" });
@@ -67,7 +87,10 @@ describe("columnState", () => {
     expect(columnState(spring, 2, true)).toEqual({ over: true, hint: null });
   });
   it("над чужою колонкою пояснює, чому не можна", () => {
-    expect(columnState(spring, 1, true)).toEqual({ over: false, hint: "Ця дисципліна викладається навесні" });
+    expect(columnState(spring, 1, true)).toEqual({
+      over: false,
+      hint: "Ця дисципліна викладається навесні",
+    });
   });
   it("якщо курсор не над колонкою, підказки немає", () => {
     expect(columnState(spring, 1, false)).toEqual({ over: false, hint: null });
@@ -75,7 +98,8 @@ describe("columnState", () => {
 });
 
 describe("makeDragHandlers", () => {
-  const start = (discipline = spring) => ({ active: { data: { current: { discipline } } } }) as unknown as DragStartEvent;
+  const start = (discipline = spring) =>
+    ({ active: { data: { current: { discipline } } } }) as unknown as DragStartEvent;
   const end = (trimester: number | null, discipline = spring) =>
     ({
       active: { data: { current: { discipline } } },
@@ -145,7 +169,9 @@ describe("розмітка перетягування", () => {
         </DraggableRow>
       </BuilderDnd>,
     );
-    expect(screen.getByRole("button", { name: "Перетягнути Машинне навчання" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Перетягнути Машинне навчання" }),
+    ).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Додати Машинне навчання" }));
     expect(onAdd).toHaveBeenCalledWith(spring);
   });
@@ -169,24 +195,39 @@ describe("розмітка перетягування", () => {
         </DroppableColumn>
       </BuilderDnd>,
     );
-    expect(screen.getByRole("region", { name: "Весна" }).parentElement).toHaveAttribute("data-over", "false");
+    expect(screen.getByRole("region", { name: "Весна" }).parentElement).toHaveAttribute(
+      "data-over",
+      "false",
+    );
     expect(screen.getByText("Перетягніть дисципліну сюди")).toBeInTheDocument();
   });
 
   it("CatalogPanel з draggable малює ручки, а вимкнені рядки мають вимкнену ручку", async () => {
     server.use(
       directionsHandler([]),
-      disciplinesHandler([spring, disciplineFixture({ id: 6, title: "Мова Haskell", trimester: 1 })]),
+      disciplinesHandler([
+        spring,
+        disciplineFixture({ id: 6, title: "Мова Haskell", trimester: 1 }),
+      ]),
     );
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
       <QueryClientProvider client={client}>
         <BuilderDnd onDropDiscipline={() => {}}>
-          <CatalogPanel plan={plan} studentDirections={[]} normativeIds={[6]} takenIds={[]} onAdd={() => {}} draggable />
+          <CatalogPanel
+            plan={plan}
+            studentDirections={[]}
+            normativeIds={[6]}
+            takenIds={[]}
+            onAdd={() => {}}
+            draggable
+          />
         </BuilderDnd>
       </QueryClientProvider>,
     );
-    expect(await screen.findByRole("button", { name: "Перетягнути Машинне навчання" })).toBeEnabled();
+    expect(
+      await screen.findByRole("button", { name: "Перетягнути Машинне навчання" }),
+    ).toBeEnabled();
     expect(screen.getByRole("button", { name: "Перетягнути Мова Haskell" })).toBeDisabled();
   });
 });

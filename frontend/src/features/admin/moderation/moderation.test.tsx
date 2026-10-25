@@ -33,7 +33,9 @@ describe("ModerationPage", () => {
   });
 
   it("HTML у значенні лишається текстом і переноситься", async () => {
-    db.admin.moderationItems[0]!.diff = { title: { old: "а", new: "<img src=x onerror=alert(1)>" } };
+    db.admin.moderationItems[0]!.diff = {
+      title: { old: "а", new: "<img src=x onerror=alert(1)>" },
+    };
     renderPage();
     const line = await screen.findByText("title: а → <img src=x onerror=alert(1)>");
     expect(line).toHaveClass("break-words");
@@ -44,7 +46,9 @@ describe("ModerationPage", () => {
     renderPage();
     await screen.findByRole("group", { name: "Запис 501" });
     await userEvent.click(within(card(501)).getByRole("button", { name: "Схвалити" }));
-    await waitFor(() => expect(screen.queryByRole("group", { name: "Запис 501" })).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByRole("group", { name: "Запис 501" })).not.toBeInTheDocument(),
+    );
     expect(db.admin.moderationItems.find((i) => i.id === 501)?.status).toBe("approved");
   });
 
@@ -60,10 +64,17 @@ describe("ModerationPage", () => {
     renderPage();
     await screen.findByRole("group", { name: "Запис 501" });
     await userEvent.click(within(card(501)).getByRole("button", { name: "Відхилити" }));
-    await userEvent.type(within(card(501)).getByLabelText("Причина (необов'язково)"), "Хибний парсинг");
-    await userEvent.click(within(card(501)).getByRole("button", { name: "Підтвердити відхилення" }));
+    await userEvent.type(
+      within(card(501)).getByLabelText("Причина (необов'язково)"),
+      "Хибний парсинг",
+    );
+    await userEvent.click(
+      within(card(501)).getByRole("button", { name: "Підтвердити відхилення" }),
+    );
     await waitFor(() => expect(bodies).toEqual(['{"reason":"Хибний парсинг"}']));
-    await waitFor(() => expect(screen.queryByRole("group", { name: "Запис 501" })).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByRole("group", { name: "Запис 501" })).not.toBeInTheDocument(),
+    );
   });
 
   it("вибір карток вмикає масові дії; «Вибрати всі» відмічає сторінку", async () => {
@@ -113,7 +124,9 @@ describe("ModerationPage", () => {
     await screen.findByRole("group", { name: "Запис 501" });
     await userEvent.click(within(card(501)).getByRole("button", { name: "Схвалити" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Запис уже розглянуто");
-    await waitFor(() => expect(screen.queryByRole("group", { name: "Запис 501" })).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByRole("group", { name: "Запис 501" })).not.toBeInTheDocument(),
+    );
   });
 
   it("порожня черга: «Черга порожня»", async () => {

@@ -47,7 +47,12 @@ export function describeSaveError(error: ApiError, items: PlanItem[]): SaveError
       if (item && text) itemErrors[item.course_id] = text;
       else rest.push(detail);
     }
-    return { itemErrors, form: fieldErrors(rest).form.concat(rest.filter((d) => d.field && d.field !== "body").map((d) => planMessage(d.message))) };
+    return {
+      itemErrors,
+      form: fieldErrors(rest).form.concat(
+        rest.filter((d) => d.field && d.field !== "body").map((d) => planMessage(d.message)),
+      ),
+    };
   }
   return { itemErrors: {}, form: [error.message] };
 }

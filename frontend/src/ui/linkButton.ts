@@ -8,4 +8,7 @@ export const linkGhostClass =
   "inline-block rounded-lg px-3 py-1.5 text-[13px] font-semibold text-ink ring-1 ring-inset ring-rule transition-[transform,background-color] duration-150 ease-out hover:bg-paper active:scale-[.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt";
 
 /** Основна кнопка-посилання зменшеного розміру (для рядків таблиць). */
-export const linkButtonSmClass = linkButtonClass.replace("rounded-[10px] px-4 py-2.5", "rounded-lg px-3 py-1.5 text-[13px]");
+export const linkButtonSmClass = linkButtonClass.replace(
+  "rounded-[10px] px-4 py-2.5",
+  "rounded-lg px-3 py-1.5 text-[13px]",
+);

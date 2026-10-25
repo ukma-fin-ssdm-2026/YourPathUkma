@@ -8,7 +8,9 @@ export function useDisciplines(filters: DisciplineFilters, page: number) {
   return useQuery({
     queryKey: ["disciplines", filters, page],
     queryFn: () =>
-      request<PaginatedDisciplinesResponse>("/disciplines", { query: disciplinesQuery(filters, page) }),
+      request<PaginatedDisciplinesResponse>("/disciplines", {
+        query: disciplinesQuery(filters, page),
+      }),
     placeholderData: keepPreviousData,
   });
 }

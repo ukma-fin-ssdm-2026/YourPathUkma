@@ -108,7 +108,9 @@ describe("DirectionsPage", () => {
     const dialog = screen.getByRole("dialog");
     expect(dialog).toHaveTextContent("Веброзробка");
     await userEvent.click(within(dialog).getByRole("button", { name: "Видалити" }));
-    await waitFor(() => expect(screen.queryByRole("listitem", { name: "Веброзробка" })).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByRole("listitem", { name: "Веброзробка" })).not.toBeInTheDocument(),
+    );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
@@ -116,7 +118,9 @@ describe("DirectionsPage", () => {
     renderPage();
     await screen.findByText("Веброзробка");
     await userEvent.click(within(item("Веброзробка")).getByRole("button", { name: "Видалити" }));
-    await userEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Скасувати" }));
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "Скасувати" }),
+    );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(item("Веброзробка")).toBeInTheDocument();
   });
@@ -125,8 +129,12 @@ describe("DirectionsPage", () => {
     renderPage();
     await screen.findByText("Кібербезпека");
     await userEvent.click(within(item("Кібербезпека")).getByRole("button", { name: "Видалити" }));
-    await userEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Видалити" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Напрямок використовується; спершу відв'яжіть його");
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "Видалити" }),
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Напрямок використовується; спершу відв'яжіть його",
+    );
     expect(item("Кібербезпека")).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });

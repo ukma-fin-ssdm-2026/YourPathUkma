@@ -55,7 +55,8 @@ export function PlanViewPage() {
   if (planId === null) return <NotFound />;
   if (query.isError) {
     const error = query.error;
-    if (error instanceof ApiError && (error.status === 404 || error.status === 403)) return <NotFound />;
+    if (error instanceof ApiError && (error.status === 404 || error.status === 403))
+      return <NotFound />;
     return (
       <p role="alert" className="text-bad">
         {error instanceof ApiError ? error.message : "Не вдалося завантажити план"}
@@ -101,7 +102,12 @@ export function PlanViewPage() {
             </Button>
           )}
           {config.data?.reviews_url && (
-            <a href={config.data.reviews_url} target="_blank" rel="noopener noreferrer" className={linkGhostClass}>
+            <a
+              href={config.data.reviews_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={linkGhostClass}
+            >
               Почитати відгуки ↗
             </a>
           )}
@@ -114,7 +120,9 @@ export function PlanViewPage() {
       {exportError && (
         <p role="alert" className="rounded-[10px] bg-bad-bg px-4 py-3 text-bad">
           Не вдалося підготувати PDF: {exportError.message}
-          {exportError.requestId && <span className="block text-sm">Код помилки: {exportError.requestId}</span>}
+          {exportError.requestId && (
+            <span className="block text-sm">Код помилки: {exportError.requestId}</span>
+          )}
         </p>
       )}
 
@@ -157,7 +165,9 @@ export function PlanViewPage() {
                     >
                       <div className="min-w-0">
                         <span className="break-words font-medium">{item.title}</span>
-                        {item.is_free_elective && <small className="block text-xs text-violet-text">вільний вибір</small>}
+                        {item.is_free_elective && (
+                          <small className="block text-xs text-violet-text">вільний вибір</small>
+                        )}
                       </div>
                       <b className="font-display text-sm">{formatCredits(item.credits)}</b>
                     </li>

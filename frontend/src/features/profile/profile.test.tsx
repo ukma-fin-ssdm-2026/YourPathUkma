@@ -14,7 +14,11 @@ import { ProfilePage, defaultPlanYear } from "./ProfilePage";
 import { buildLedgerRow } from "./ledger";
 
 let nextId = 1;
-function rec(category: AcademicRecord["category"], credits: number, courseYear = 1): AcademicRecord {
+function rec(
+  category: AcademicRecord["category"],
+  credits: number,
+  courseYear = 1,
+): AcademicRecord {
   return {
     id: nextId++,
     academic_year: 2022 + courseYear,
@@ -31,7 +35,11 @@ function rec(category: AcademicRecord["category"], credits: number, courseYear =
 const many = (category: AcademicRecord["category"], credits: number[], courseYear = 1) =>
   credits.map((value) => rec(category, value, courseYear));
 
-const year1 = [...many("normative", [6, 6, 6, 6, 6, 6, 6]), ...many("professional", [6, 6]), ...many("free_choice", [3, 3])];
+const year1 = [
+  ...many("normative", [6, 6, 6, 6, 6, 6, 6]),
+  ...many("professional", [6, 6]),
+  ...many("free_choice", [3, 3]),
+];
 const year2 = [
   ...many("normative", [6, 6, 6, 6, 6, 6, 4.5], 2),
   ...many("professional", [5, 5, 5], 2),
@@ -44,13 +52,28 @@ const years: AcademicYear[] = [
 
 describe("buildLedgerRow", () => {
   it("рік 1: 42 / 12 / 6, без порожніх", () => {
-    expect(buildLedgerRow(year1)).toEqual({ normative: 42, professional: 12, free_choice: 6, empty: 0 });
+    expect(buildLedgerRow(year1)).toEqual({
+      normative: 42,
+      professional: 12,
+      free_choice: 6,
+      empty: 0,
+    });
   });
   it("рік 2 з дробовими кредитами округлює накопичувально", () => {
-    expect(buildLedgerRow(year2)).toEqual({ normative: 41, professional: 15, free_choice: 3, empty: 1 });
+    expect(buildLedgerRow(year2)).toEqual({
+      normative: 41,
+      professional: 15,
+      free_choice: 3,
+      empty: 1,
+    });
   });
   it("порожній список дає 60 порожніх клітинок", () => {
-    expect(buildLedgerRow([])).toEqual({ normative: 0, professional: 0, free_choice: 0, empty: 60 });
+    expect(buildLedgerRow([])).toEqual({
+      normative: 0,
+      professional: 0,
+      free_choice: 0,
+      empty: 60,
+    });
   });
 });
 
@@ -95,14 +118,20 @@ describe("LimitsStrip", () => {
     );
     expect(screen.getByText("з 54").parentElement).toHaveTextContent("27 з 54");
     expect(screen.getByText("з 25").parentElement).toHaveTextContent("9 з 25");
-    expect(screen.getByRole("progressbar", { name: "Профорієнтовні" })).toHaveStyle({ width: "50%" });
-    expect(screen.getByRole("progressbar", { name: "Вільний вибір" })).toHaveStyle({ width: "36%" });
+    expect(screen.getByRole("progressbar", { name: "Профорієнтовні" })).toHaveStyle({
+      width: "50%",
+    });
+    expect(screen.getByRole("progressbar", { name: "Вільний вибір" })).toHaveStyle({
+      width: "36%",
+    });
   });
 });
 
 function renderProfile() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  const router = createMemoryRouter([{ path: "/", element: <ProfilePage /> }], { initialEntries: ["/"] });
+  const router = createMemoryRouter([{ path: "/", element: <ProfilePage /> }], {
+    initialEntries: ["/"],
+  });
   render(
     <QueryClientProvider client={client}>
       <RouterProvider router={router} />
@@ -141,8 +170,12 @@ describe("ProfilePage", () => {
   it("показує курс, спеціальність, журнал і посилання на створення плану", async () => {
     server.use(http.get("*/api/v1/me", () => HttpResponse.json(meWith(3, true))));
     renderProfile();
-    expect(await screen.findByText("3 курс · Інженерія програмного забезпечення")).toBeInTheDocument();
-    const link = await screen.findByRole("link", { name: `Створити план на ${new Date().getFullYear()}` });
+    expect(
+      await screen.findByText("3 курс · Інженерія програмного забезпечення"),
+    ).toBeInTheDocument();
+    const link = await screen.findByRole("link", {
+      name: `Створити план на ${new Date().getFullYear()}`,
+    });
     expect(link).toHaveAttribute("href", "/path/create");
     expect(await screen.findByRole("img", { name: /Набрано 118,5 кредита/ })).toBeInTheDocument();
   });

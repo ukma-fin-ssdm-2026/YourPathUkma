@@ -6,7 +6,12 @@ import { http, HttpResponse } from "msw";
 import { RouterProvider, createMemoryRouter } from "react-router";
 import { creditsWord } from "../../lib/credits";
 import { server } from "../../mocks/server";
-import { configHandler, directionsHandler, disciplineFixture, disciplinesHandler } from "../../test/handlers";
+import {
+  configHandler,
+  directionsHandler,
+  disciplineFixture,
+  disciplinesHandler,
+} from "../../test/handlers";
 import { CatalogPage } from "./CatalogPage";
 import { DisciplineCard } from "./DisciplineCard";
 
@@ -26,7 +31,9 @@ describe("DisciplineCard", () => {
 
   it("показує назву, викладача, курс, триместр і кредити", () => {
     render(<DisciplineCard discipline={disciplineFixture()} reviewsUrl={reviews} />);
-    expect(screen.getByRole("heading", { name: "Функціональне програмування" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Функціональне програмування" }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Петренко І\. М\./)).toBeInTheDocument();
     expect(screen.getByText(/2 курс · Осінь/)).toBeInTheDocument();
     expect(screen.getByText("5")).toBeInTheDocument();
@@ -34,9 +41,15 @@ describe("DisciplineCard", () => {
   });
 
   it("позначає вільний вибір, коли напрямків немає, інакше показує напрямки", () => {
-    const { rerender } = render(<DisciplineCard discipline={disciplineFixture({ directions: [] })} />);
+    const { rerender } = render(
+      <DisciplineCard discipline={disciplineFixture({ directions: [] })} />,
+    );
     expect(screen.getByText("вільний вибір")).toBeInTheDocument();
-    rerender(<DisciplineCard discipline={disciplineFixture({ directions: ["Data Science", "Cybersecurity"] })} />);
+    rerender(
+      <DisciplineCard
+        discipline={disciplineFixture({ directions: ["Data Science", "Cybersecurity"] })}
+      />,
+    );
     expect(screen.getByText("Data Science")).toBeInTheDocument();
     expect(screen.getByText("Cybersecurity")).toBeInTheDocument();
     expect(screen.queryByText("вільний вибір")).not.toBeInTheDocument();
@@ -52,7 +65,9 @@ describe("DisciplineCard", () => {
 
   it("опис із HTML показується як текст, а не розмітка", () => {
     const { container } = render(
-      <DisciplineCard discipline={disciplineFixture({ description: "<script>alert(1)</script>" })} />,
+      <DisciplineCard
+        discipline={disciplineFixture({ description: "<script>alert(1)</script>" })}
+      />,
     );
     expect(screen.getByText("<script>alert(1)</script>")).toBeInTheDocument();
     expect(container.querySelector("script")).toBeNull();
@@ -61,7 +76,13 @@ describe("DisciplineCard", () => {
   it("довга назва без пробілів переноситься, порожній опис не ламає картку", () => {
     const longTitle = "Д".repeat(300);
     render(
-      <DisciplineCard discipline={disciplineFixture({ title: longTitle, instructor: "П".repeat(120), description: "" })} />,
+      <DisciplineCard
+        discipline={disciplineFixture({
+          title: longTitle,
+          instructor: "П".repeat(120),
+          description: "",
+        })}
+      />,
     );
     expect(screen.getByRole("heading", { name: longTitle })).toHaveClass("break-words");
   });
@@ -92,7 +113,12 @@ describe("CatalogPage", () => {
   });
 
   it("показує картки й кількість дисциплін", async () => {
-    server.use(disciplinesHandler([disciplineFixture(), disciplineFixture({ id: 102, title: "Мова Haskell" })], { total: 57 }));
+    server.use(
+      disciplinesHandler(
+        [disciplineFixture(), disciplineFixture({ id: 102, title: "Мова Haskell" })],
+        { total: 57 },
+      ),
+    );
     renderCatalog();
     expect(await screen.findByRole("heading", { name: "Мова Haskell" })).toBeInTheDocument();
     expect(screen.getByText("57 дисциплін")).toBeInTheDocument();
@@ -123,7 +149,9 @@ describe("CatalogPage", () => {
 
   it("клік по «Осінь» додає trimester=1 в адресу й у запит і скидає сторінку", async () => {
     const urls: URL[] = [];
-    server.use(disciplinesHandler([disciplineFixture()], { total: 40, onRequest: (u) => urls.push(u) }));
+    server.use(
+      disciplinesHandler([disciplineFixture()], { total: 40, onRequest: (u) => urls.push(u) }),
+    );
     const router = renderCatalog("/catalog?page=2");
     await screen.findByRole("heading", { name: "Функціональне програмування" });
     await userEvent.click(screen.getByRole("button", { name: "Осінь" }));
@@ -152,7 +180,9 @@ describe("CatalogPage", () => {
     renderCatalog();
     await screen.findByRole("heading", { name: "Функціональне програмування" });
     await userEvent.type(screen.getByLabelText("Викладач"), "Пет");
-    await waitFor(() => expect(urls.at(-1)!.searchParams.get("instructor")).toBe("Пет"), { timeout: 3000 });
+    await waitFor(() => expect(urls.at(-1)!.searchParams.get("instructor")).toBe("Пет"), {
+      timeout: 3000,
+    });
     expect(urls.filter((u) => u.searchParams.has("instructor"))).toHaveLength(1);
   });
 });

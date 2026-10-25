@@ -76,7 +76,10 @@ export function UsersPage() {
             </thead>
             <tbody>
               {list.map((user) => (
-                <tr key={user.id} className="border-b border-rule transition-colors duration-150 ease-out hover:bg-paper">
+                <tr
+                  key={user.id}
+                  className="border-b border-rule transition-colors duration-150 ease-out hover:bg-paper"
+                >
                   <td className={`${CELL} break-words`}>
                     <div className="font-medium">{user.full_name}</div>
                     <div className="text-ink-2">{user.email}</div>
@@ -84,7 +87,9 @@ export function UsersPage() {
                   <td className={CELL}>{user.role === "admin" ? "Адмін" : "Студент"}</td>
                   <td className={CELL}>{user.student?.course_year ?? "—"}</td>
                   <td className={`${CELL} break-words`}>{user.student?.specialty ?? "—"}</td>
-                  <td className={CELL}>{courseYearSourceLabel(user.student?.course_year_source ?? null)}</td>
+                  <td className={CELL}>
+                    {courseYearSourceLabel(user.student?.course_year_source ?? null)}
+                  </td>
                   <td className={CELL}>{formatDateTime(user.last_login_at)}</td>
                   <td className={CELL}>
                     <Button variant="ghost" size="sm" onClick={() => setEditing(user)}>
@@ -98,7 +103,12 @@ export function UsersPage() {
         )}
       </div>
       {users.data && (
-        <Pagination page={page} pageSize={USERS_PAGE_SIZE} total={users.data.pagination.total} onPage={setPage} />
+        <Pagination
+          page={page}
+          pageSize={USERS_PAGE_SIZE}
+          total={users.data.pagination.total}
+          onPage={setPage}
+        />
       )}
       {editing && <UserEditor key={editing.id} user={editing} onClose={() => setEditing(null)} />}
     </section>

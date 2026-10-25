@@ -10,7 +10,8 @@ function json(body: unknown, status = 200, headers: Record<string, string> = {})
   });
 }
 
-const unauthorized = () => json({ code: "UNAUTHORIZED", message: "Немає токена", details: [] }, 401);
+const unauthorized = () =>
+  json({ code: "UNAUTHORIZED", message: "Немає токена", details: [] }, 401);
 
 function authorizationOf(call: unknown[]): string | null {
   const init = call[1] as RequestInit | undefined;
@@ -36,13 +37,11 @@ describe("request", () => {
   it("розбирає помилку у ApiError з code, details і X-Request-ID", async () => {
     const details = [{ field: "academic_year", message: "Input should be >= 2024" }];
     setFetch(
-      vi
-        .fn()
-        .mockResolvedValue(
-          json({ code: "VALIDATION_ERROR", message: "Невалідні вхідні дані", details }, 422, {
-            "X-Request-ID": "rid-1",
-          }),
-        ),
+      vi.fn().mockResolvedValue(
+        json({ code: "VALIDATION_ERROR", message: "Невалідні вхідні дані", details }, 422, {
+          "X-Request-ID": "rid-1",
+        }),
+      ),
     );
     const error = await request("/plans", { method: "POST", body: {} }).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(ApiError);
@@ -142,16 +141,22 @@ describe("request: refresh на 401", () => {
     const refresh = vi.fn().mockResolvedValue("x");
     setFetch(vi.fn().mockImplementation(async () => unauthorized()));
     configureAuth({ refresh, onAuthLost: () => {} });
-    await expect(request("/auth/microsoft", { method: "POST", auth: false })).rejects.toMatchObject({
-      status: 401,
-    });
+    await expect(request("/auth/microsoft", { method: "POST", auth: false })).rejects.toMatchObject(
+      {
+        status: 401,
+      },
+    );
     expect(refresh).not.toHaveBeenCalled();
   });
 
   it("паралельні 401 викликають refresh один раз", async () => {
-    const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: RequestInit) =>
-      new Headers(init?.headers).get("Authorization") === "Bearer old" ? unauthorized() : json({ ok: true }),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(async (_url: string, init?: RequestInit) =>
+        new Headers(init?.headers).get("Authorization") === "Bearer old"
+          ? unauthorized()
+          : json({ ok: true }),
+      );
     const refresh = vi.fn().mockImplementation(async () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
       return "new";

@@ -14,7 +14,11 @@ describe("моки автентифікації", () => {
     const login = await request<AuthResponse>("/auth/microsoft", {
       method: "POST",
       auth: false,
-      body: { code: "c", code_verifier: "v".repeat(43), redirect_uri: "http://localhost:5173/auth/callback" },
+      body: {
+        code: "c",
+        code_verifier: "v".repeat(43),
+        redirect_uri: "http://localhost:5173/auth/callback",
+      },
     });
     expect(login.user).toMatchObject({ id: 42, role: "student" });
     await expect(
@@ -57,7 +61,9 @@ describe("моки онбордингу", () => {
       body: { ...validBody, course_year: 5 },
     }).catch((e: unknown) => e);
     expect(error).toMatchObject({ status: 422, code: "VALIDATION_ERROR" });
-    expect((error as { details: { field: string }[] }).details.map((d) => d.field)).toContain("course_year");
+    expect((error as { details: { field: string }[] }).details.map((d) => d.field)).toContain(
+      "course_year",
+    );
   });
 
   it("надто коротка спеціальність дає 422 з полем specialty", async () => {
@@ -65,7 +71,9 @@ describe("моки онбордингу", () => {
       method: "POST",
       body: { course_year: 3, specialty: "І" },
     }).catch((e: unknown) => e);
-    expect((error as { details: { field: string }[] }).details.map((d) => d.field)).toContain("specialty");
+    expect((error as { details: { field: string }[] }).details.map((d) => d.field)).toContain(
+      "specialty",
+    );
   });
 
   it("4 курс: навантаження auto, план створювати можна", async () => {
@@ -92,7 +100,9 @@ describe("моки онбордингу", () => {
 
   it("повторний онбординг дає 409 ALREADY_ONBOARDED", async () => {
     await request("/me/onboarding", { method: "POST", body: validBody });
-    await expect(request("/me/onboarding", { method: "POST", body: validBody })).rejects.toMatchObject({
+    await expect(
+      request("/me/onboarding", { method: "POST", body: validBody }),
+    ).rejects.toMatchObject({
       status: 409,
       code: "ALREADY_ONBOARDED",
     });

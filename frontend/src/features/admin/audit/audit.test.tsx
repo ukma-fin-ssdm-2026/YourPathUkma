@@ -65,7 +65,9 @@ describe("AuditPage", () => {
     renderPage();
     await screen.findByRole("row", { name: /user\.update/ });
     await userEvent.click(screen.getByRole("button", { name: "Відмовлено" }));
-    await waitFor(() => expect(screen.queryByRole("row", { name: /user\.update/ })).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByRole("row", { name: /user\.update/ })).not.toBeInTheDocument(),
+    );
     expect(screen.getByRole("row", { name: /plan\.read/ })).toBeInTheDocument();
   });
 
@@ -112,7 +114,10 @@ describe("AuditPage", () => {
   it("помилка завантаження деталей показує повідомлення", async () => {
     server.use(
       http.get("*/api/v1/admin/audit-log/:id", () =>
-        HttpResponse.json({ code: "AUDIT_ENTRY_NOT_FOUND", message: "x", details: [] }, { status: 404 }),
+        HttpResponse.json(
+          { code: "AUDIT_ENTRY_NOT_FOUND", message: "x", details: [] },
+          { status: 404 },
+        ),
       ),
     );
     renderPage();

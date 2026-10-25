@@ -49,7 +49,12 @@ export function emptyMe(): Me {
 }
 
 export function authResponse(): AuthResponse {
-  return { access_token: "mock-access-token", token_type: "Bearer", expires_in: 900, user: mockUser };
+  return {
+    access_token: "mock-access-token",
+    token_type: "Bearer",
+    expires_in: 900,
+    user: mockUser,
+  };
 }
 
 function history(
@@ -79,8 +84,16 @@ function history(
 /** Історія двох пройдених курсів: 60 + 58,5 кредитів. */
 export function academicHistory(): AcademicYear[] {
   return [
-    history(2023, 1, { normative: [6, 6, 6, 6, 6, 6, 6], professional: [6, 6], free_choice: [3, 3] }),
-    history(2024, 2, { normative: [6, 6, 6, 6, 6, 6, 4.5], professional: [5, 5, 5], free_choice: [3] }),
+    history(2023, 1, {
+      normative: [6, 6, 6, 6, 6, 6, 6],
+      professional: [6, 6],
+      free_choice: [3, 3],
+    }),
+    history(2024, 2, {
+      normative: [6, 6, 6, 6, 6, 6, 4.5],
+      professional: [5, 5, 5],
+      free_choice: [3],
+    }),
   ];
 }
 
@@ -88,7 +101,9 @@ export function academicHistory(): AcademicYear[] {
 export function historyCredits(): Credits {
   const records = academicHistory().flatMap((year) => year.records);
   const sum = (category: AcademicCategory) =>
-    records.filter((record) => record.category === category).reduce((total, record) => total + record.credits, 0);
+    records
+      .filter((record) => record.category === category)
+      .reduce((total, record) => total + record.credits, 0);
   return {
     total_used: sum("normative") + sum("professional") + sum("free_choice"),
     total_limit: 240,

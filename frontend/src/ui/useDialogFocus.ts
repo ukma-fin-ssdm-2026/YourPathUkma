@@ -1,7 +1,8 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: ui.test.tsx.
 import { type RefObject, useEffect } from "react";
 
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
  * Модальний діалог: фокусує перший елемент панелі, тримає Tab/Shift+Tab у її межах,
@@ -15,7 +16,8 @@ export function useDialogFocus(
   useEffect(() => {
     if (!active) return;
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const items = () => Array.from(panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []);
+    const items = () =>
+      Array.from(panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []);
     items()[0]?.focus();
 
     const onKey = (event: KeyboardEvent) => {

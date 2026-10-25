@@ -58,7 +58,9 @@ describe("RequireAuth / RequireAdmin", () => {
       { path: "/", element: <p>головна</p> },
     ];
     useSession.setState({ status: "authenticated", user: mockUser });
-    const { unmount } = render(<RouterProvider router={createMemoryRouter(routes, { initialEntries: ["/admin"] })} />);
+    const { unmount } = render(
+      <RouterProvider router={createMemoryRouter(routes, { initialEntries: ["/admin"] })} />,
+    );
     expect(await screen.findByText("головна")).toBeInTheDocument();
     unmount();
 
@@ -97,7 +99,9 @@ describe("LoginPage", () => {
   it("показує помилку запуску входу, якщо онлайн-вхід не налаштовано", async () => {
     useSession.setState({ status: "anonymous", user: null });
     const failing = vi.fn().mockRejectedValue(
-      Object.assign(new Error("Вхід не налаштовано: немає VITE_MS_CLIENT_ID"), { code: "OAUTH_NOT_CONFIGURED" }),
+      Object.assign(new Error("Вхід не налаштовано: немає VITE_MS_CLIENT_ID"), {
+        code: "OAUTH_NOT_CONFIGURED",
+      }),
     );
     renderRoutes(loginRoutes(failing), "/login");
     await userEvent.click(screen.getByRole("button", { name: /Увійти через Microsoft/ }));

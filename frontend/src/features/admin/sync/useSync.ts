@@ -39,7 +39,8 @@ export function useSyncJobs(page: number, pollMs = SYNC_POLL_MS) {
 export function useRunSync() {
   const queryClient = useQueryClient();
   return useMutation<SyncJob, ApiError, SyncSource>({
-    mutationFn: (source) => request<SyncJob>("/admin/sync-jobs", { method: "POST", body: { source } }),
+    mutationFn: (source) =>
+      request<SyncJob>("/admin/sync-jobs", { method: "POST", body: { source } }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin", "sync-jobs"] }),
   });
 }

@@ -408,8 +408,7 @@ def list_sync_jobs(
     response_model=SyncJobResponse,
     summary="Деталі синхронізації",
     description=(
-        "Сирий HTML-знімок (`raw_snapshot`) в API не повертається. "
-        "Фронтенд опитує, доки статус `queued`/`running`."
+        "Сирий HTML-знімок (`raw_snapshot`) в API не повертається. " "Фронтенд опитує, доки статус `queued`/`running`."
     ),
     responses={
         200: {"description": "Задачу знайдено"},
@@ -531,7 +530,7 @@ def approve_item(
     "/moderation-items/{item_id}/reject",
     response_model=ModerationItemResponse,
     summary="Відхилити зміну",
-    description="Тіло необов'язкове: `{ \"reason\": \"...\" }`. Каталог не змінюється.",
+    description='Тіло необов\'язкове: `{ "reason": "..." }`. Каталог не змінюється.',
     responses={
         200: {"description": "Зміну відхилено"},
         **error_responses(

@@ -27,7 +27,10 @@ function text(raw: string | null): string | undefined {
 }
 
 /** Фільтри й номер сторінки живуть в адресі, тож посилання на каталог можна надіслати. */
-export function filtersFromParams(params: URLSearchParams): { filters: DisciplineFilters; page: number } {
+export function filtersFromParams(params: URLSearchParams): {
+  filters: DisciplineFilters;
+  page: number;
+} {
   const filters: DisciplineFilters = {};
   const direction = text(params.get("direction"));
   const instructor = text(params.get("instructor"));

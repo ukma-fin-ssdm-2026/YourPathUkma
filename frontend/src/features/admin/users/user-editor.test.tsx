@@ -30,8 +30,13 @@ describe("UserEditor", () => {
     renderPage();
     const dialog = await openEditor(/Владислав/);
     expect(within(dialog).getByLabelText("Курс")).toHaveValue("3");
-    expect(within(dialog).getByLabelText("Спеціальність")).toHaveValue("Інженерія програмного забезпечення");
-    expect(within(dialog).getByRole("button", { name: "Студент" })).toHaveAttribute("aria-pressed", "true");
+    expect(within(dialog).getByLabelText("Спеціальність")).toHaveValue(
+      "Інженерія програмного забезпечення",
+    );
+    expect(within(dialog).getByRole("button", { name: "Студент" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     expect(within(dialog).getByRole("button", { name: "Зберегти" })).toBeDisabled();
   });
 
@@ -69,8 +74,13 @@ describe("UserEditor", () => {
     const dialog = await openEditor(/Адміністратор/);
     await userEvent.click(within(dialog).getByRole("button", { name: "Студент" }));
     await userEvent.click(within(dialog).getByRole("button", { name: "Зберегти" }));
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent("Не можна змінити власну роль");
-    expect(within(dialog).getByRole("button", { name: "Студент" })).toHaveAttribute("aria-pressed", "true");
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "Не можна змінити власну роль",
+    );
+    expect(within(dialog).getByRole("button", { name: "Студент" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   });
 
   it("422 показує помилку біля поля спеціальності", async () => {

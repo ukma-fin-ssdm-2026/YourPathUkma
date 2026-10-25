@@ -146,9 +146,13 @@ const userHandlers = [
     }
     const specialty = patch.student?.specialty;
     if (specialty !== undefined && (specialty.length < 2 || specialty.length > 150)) {
-      details.push({ field: "student.specialty", message: "String should have from 2 to 150 characters" });
+      details.push({
+        field: "student.specialty",
+        message: "String should have from 2 to 150 characters",
+      });
     }
-    if (details.length > 0) return apiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details);
+    if (details.length > 0)
+      return apiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details);
     if (patch.role) user.role = patch.role;
     if (patch.student && user.student) {
       Object.assign(user.student, patch.student, { course_year_source: "admin" });
@@ -163,12 +167,16 @@ function validateDirection(body: { name?: string; description?: string | null },
     if (body.name.length < 2 || body.name.length > 50) {
       details.push({ field: "name", message: "String should have from 2 to 50 characters" });
     } else if (
-      db.admin.directions.some((d) => d.id !== id && d.name.toLowerCase() === body.name!.toLowerCase())
+      db.admin.directions.some(
+        (d) => d.id !== id && d.name.toLowerCase() === body.name!.toLowerCase(),
+      )
     ) {
       return apiError(409, "DIRECTION_NAME_TAKEN", "Напрямок із такою назвою вже існує");
     }
   }
-  return details.length > 0 ? apiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details) : null;
+  return details.length > 0
+    ? apiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details)
+    : null;
 }
 
 const directionHandlers = [

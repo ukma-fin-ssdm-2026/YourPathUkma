@@ -38,7 +38,10 @@ export function AuthShell({
           {lead}
         </p>
         {showLedger && (
-          <div aria-hidden="true" className="mt-10 grid max-w-[520px] grid-cols-[repeat(24,1fr)] gap-1">
+          <div
+            aria-hidden="true"
+            className="mt-10 grid max-w-[520px] grid-cols-[repeat(24,1fr)] gap-1"
+          >
             {CELLS.map((tone, index) => (
               <i
                 key={index}
@@ -49,7 +52,10 @@ export function AuthShell({
           </div>
         )}
       </section>
-      <section className="rise flex flex-col justify-center p-8 md:p-14" style={{ "--i": 2 } as CSSProperties}>
+      <section
+        className="rise flex flex-col justify-center p-8 md:p-14"
+        style={{ "--i": 2 } as CSSProperties}
+      >
         {children}
       </section>
     </div>

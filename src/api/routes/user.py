@@ -34,6 +34,7 @@ router = APIRouter(prefix="/api/v1", tags=["User"])
 HISTORY_YEAR_MIN = 2015
 HISTORY_YEAR_MAX = 2030
 
+
 class CreditsInfo(BaseModel):
     total_used: float = Field(..., description="Усього пройдено кредитів", examples=[118.5])
     total_limit: int = Field(..., description="Ліміт за програму", examples=[240])
@@ -64,6 +65,7 @@ class OnboardingRequest(BaseModel):
 
     course_year: int = Field(..., ge=1, le=4, description="Курс навчання", examples=[3])
     specialty: str = Field(..., min_length=2, max_length=150, examples=["Інженерія програмного забезпечення"])
+
 
 class AcademicRecordResponse(BaseModel):
     id: int = Field(..., examples=[310])
@@ -106,6 +108,7 @@ class AddRecordsRequest(BaseModel):
 
 class AddRecordsResponse(BaseModel):
     records: List[AcademicRecordResponse]
+
 
 def _get_user(db: Session, user_id: int) -> User:
     user = db.get(User, user_id)
@@ -188,6 +191,7 @@ def _group_by_year(records: List[AcademicRecord]) -> AcademicHistoryResponse:
         )
     return AcademicHistoryResponse(years=years)
 
+
 @router.get(
     "/me",
     response_model=MeResponse,
@@ -233,6 +237,7 @@ def onboard(
     profile.course_year_source = db_enums.CourseYearSource.SELF_DECLARED
     db.commit()
     return _build_me(db, user)
+
 
 @router.get(
     "/me/academic-history",
@@ -303,8 +308,7 @@ def add_academic_history(
                 ErrorDetail(
                     field=f"{prefix}.course_year",
                     message=(
-                        f"COURSE_YEAR_TOO_HIGH: запис за {rec.course_year} курс, "
-                        f"а студент на {profile.course_year}"
+                        f"COURSE_YEAR_TOO_HIGH: запис за {rec.course_year} курс, " f"а студент на {profile.course_year}"
                     ),
                 )
             )

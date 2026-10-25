@@ -110,7 +110,9 @@ describe("PlansPage", () => {
   it("підтверджене видалення прибирає рядок", async () => {
     statefulPlans([draft, approved]);
     renderPlans("all");
-    await userEvent.click(within(await screen.findByTestId("plan-1")).getByRole("button", { name: "Видалити" }));
+    await userEvent.click(
+      within(await screen.findByTestId("plan-1")).getByRole("button", { name: "Видалити" }),
+    );
     const dialog = screen.getByRole("dialog");
     await userEvent.click(within(dialog).getByRole("button", { name: "Видалити" }));
     await waitFor(() => expect(screen.queryByTestId("plan-1")).not.toBeInTheDocument());
@@ -125,9 +127,13 @@ describe("PlansPage", () => {
     });
     renderPlans("all");
     const open = async () =>
-      userEvent.click(within(await screen.findByTestId("plan-1")).getByRole("button", { name: "Видалити" }));
+      userEvent.click(
+        within(await screen.findByTestId("plan-1")).getByRole("button", { name: "Видалити" }),
+      );
     await open();
-    await userEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Скасувати" }));
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "Скасувати" }),
+    );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     await open();
     await userEvent.keyboard("{Escape}");
@@ -141,8 +147,12 @@ describe("PlansPage", () => {
       HttpResponse.json({ code: "PLAN_NOT_DELETABLE", message: "x", details: [] }, { status: 409 }),
     );
     renderPlans("all");
-    await userEvent.click(within(await screen.findByTestId("plan-1")).getByRole("button", { name: "Видалити" }));
-    await userEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Видалити" }));
+    await userEvent.click(
+      within(await screen.findByTestId("plan-1")).getByRole("button", { name: "Видалити" }),
+    );
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "Видалити" }),
+    );
     expect(await screen.findByRole("alert")).toHaveTextContent("Видаляти можна лише чернетки");
     expect(screen.getByTestId("plan-1")).toBeInTheDocument();
   });
@@ -152,8 +162,12 @@ describe("PlansPage", () => {
       HttpResponse.json({ code: "PLAN_NOT_FOUND", message: "x", details: [] }, { status: 404 }),
     );
     renderPlans("all");
-    await userEvent.click(within(await screen.findByTestId("plan-1")).getByRole("button", { name: "Видалити" }));
-    await userEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Видалити" }));
+    await userEvent.click(
+      within(await screen.findByTestId("plan-1")).getByRole("button", { name: "Видалити" }),
+    );
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "Видалити" }),
+    );
     expect(await screen.findByRole("alert")).toHaveTextContent("План не знайдено");
   });
 
@@ -191,8 +205,13 @@ describe("PathLayout", () => {
   it("показує три підвкладки й позначає поточну", async () => {
     server.use(configHandler(), plansHandler([]));
     renderPlans("all");
-    expect(await screen.findByRole("link", { name: "Індивідуальний план" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: "Збережені плани" })).not.toHaveAttribute("aria-current");
+    expect(await screen.findByRole("link", { name: "Індивідуальний план" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(screen.getByRole("link", { name: "Збережені плани" })).not.toHaveAttribute(
+      "aria-current",
+    );
     const tabs = within(screen.getByRole("navigation", { name: "Науковий шлях" }));
     expect(tabs.getByRole("link", { name: "Створити план" })).toBeInTheDocument();
   });

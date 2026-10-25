@@ -67,7 +67,12 @@ describe("стани документа", () => {
     expect(await screen.findByText("Розпізнано", {}, { timeout: 3000 })).toBeInTheDocument();
     const panel = screen.getByRole("region", { name: "Розпізнані нормативні" });
     // Список оновлюється одразу після картки, тож панель наповнюється з невеликою затримкою.
-    for (const title of ["Архітектура ПЗ", "Проєктний практикум", "Виробнича практика", "Фізичне виховання"]) {
+    for (const title of [
+      "Архітектура ПЗ",
+      "Проєктний практикум",
+      "Виробнича практика",
+      "Фізичне виховання",
+    ]) {
       expect(await within(panel).findByText(title)).toBeInTheDocument();
     }
     expect(within(panel).getByText("Разом").parentElement).toHaveTextContent("29");

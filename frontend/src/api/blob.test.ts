@@ -3,10 +3,14 @@ import { configureAuth, requestBlob, setFetch } from "./client";
 import { setAccessToken } from "./token";
 
 function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
-const unauthorized = () => json({ code: "UNAUTHORIZED", message: "Немає токена", details: [] }, 401);
+const unauthorized = () =>
+  json({ code: "UNAUTHORIZED", message: "Немає токена", details: [] }, 401);
 
 const pdf = (disposition?: string) =>
   new Response("%PDF-1.4", {
@@ -51,9 +55,16 @@ describe("requestBlob", () => {
 
   it("JSON-помилка стає ApiError", async () => {
     setFetch(
-      vi.fn().mockResolvedValue(json({ code: "PLAN_NOT_FOUND", message: "Плану немає", details: [] }, 404)),
+      vi
+        .fn()
+        .mockResolvedValue(
+          json({ code: "PLAN_NOT_FOUND", message: "Плану немає", details: [] }, 404),
+        ),
     );
-    await expect(requestBlob("/plans/9/export")).rejects.toMatchObject({ status: 404, code: "PLAN_NOT_FOUND" });
+    await expect(requestBlob("/plans/9/export")).rejects.toMatchObject({
+      status: 404,
+      code: "PLAN_NOT_FOUND",
+    });
   });
 
   it("не JSON помилка 502 дає HTTP_502", async () => {
@@ -63,6 +74,9 @@ describe("requestBlob", () => {
 
   it("мережева помилка дає NETWORK_ERROR", async () => {
     setFetch(vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
-    await expect(requestBlob("/plans/1/export")).rejects.toMatchObject({ status: 0, code: "NETWORK_ERROR" });
+    await expect(requestBlob("/plans/1/export")).rejects.toMatchObject({
+      status: 0,
+      code: "NETWORK_ERROR",
+    });
   });
 });

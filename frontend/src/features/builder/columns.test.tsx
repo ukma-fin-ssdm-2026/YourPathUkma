@@ -12,7 +12,12 @@ const item = (id: number, credits: number, free = false, title = `Дисципл
   credits,
   is_free_elective: free,
 });
-const normative: NormativeCourse = { course_id: 301, raw_title: "Архітектура ПЗ", trimester: 1, credits: 6 };
+const normative: NormativeCourse = {
+  course_id: 301,
+  raw_title: "Архітектура ПЗ",
+  trimester: 1,
+  credits: 6,
+};
 
 function column(props: Partial<React.ComponentProps<typeof TrimesterColumn>> = {}) {
   const handlers = { onLoadChange: vi.fn(), onRemove: vi.fn() };
@@ -87,20 +92,26 @@ describe("TrimesterColumn", () => {
   it("нормативні лише для читання", () => {
     column();
     expect(screen.getByText("від деканату")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Прибрати Архітектура ПЗ" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Прибрати Архітектура ПЗ" }),
+    ).not.toBeInTheDocument();
   });
 
   it("зміна навантаження віддає рівень, а при loadLocked перемикач недоступний", async () => {
     const { onLoadChange } = column();
     await userEvent.click(
-      within(screen.getByRole("group", { name: "Навантаження: осінь" })).getByRole("button", { name: "Високе" }),
+      within(screen.getByRole("group", { name: "Навантаження: осінь" })).getByRole("button", {
+        name: "Високе",
+      }),
     );
     expect(onLoadChange).toHaveBeenCalledWith("high");
   });
 
   it("при loadLocked перемикач навантаження недоступний", () => {
     column({ loadLocked: true });
-    for (const button of within(screen.getByRole("group", { name: "Навантаження: осінь" })).getAllByRole("button")) {
+    for (const button of within(
+      screen.getByRole("group", { name: "Навантаження: осінь" }),
+    ).getAllByRole("button")) {
       expect(button).toBeDisabled();
     }
   });

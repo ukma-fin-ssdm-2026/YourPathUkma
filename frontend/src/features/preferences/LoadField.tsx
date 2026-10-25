@@ -55,8 +55,8 @@ export function LoadField({
       </div>
       {SEASONS.filter((season) => value[season.key] === "low").map((season) => (
         <p key={season.key} className="rounded-[10px] bg-warn-bg px-4 py-2.5 text-sm text-warn">
-          {season.locative} обрано низьке навантаження: щоб набрати 57–60 кредитів за рік, навантаження
-          наступних років зросте.
+          {season.locative} обрано низьке навантаження: щоб набрати 57–60 кредитів за рік,
+          навантаження наступних років зросте.
         </p>
       ))}
     </section>

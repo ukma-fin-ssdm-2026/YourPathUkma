@@ -16,7 +16,9 @@ function wrapper({ children }: { children: ReactNode }) {
 describe("filtersFromParams", () => {
   it("розбирає допустимі значення й сторінку", () => {
     const { filters, page } = filtersFromParams(
-      new URLSearchParams("trimester=2&min_credits=3&recommended_year=3&direction=Data%20Science&page=3"),
+      new URLSearchParams(
+        "trimester=2&min_credits=3&recommended_year=3&direction=Data%20Science&page=3",
+      ),
     );
     expect(filters).toEqual({
       trimester: 2,
@@ -91,7 +93,10 @@ describe("useDisciplines / useDirections", () => {
     server.use(directionsHandler(["Data Science", "Cybersecurity"]));
     const { result } = renderHook(() => useDirections(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.directions.map((d) => d.name)).toEqual(["Data Science", "Cybersecurity"]);
+    expect(result.current.data?.directions.map((d) => d.name)).toEqual([
+      "Data Science",
+      "Cybersecurity",
+    ]);
   });
 });
 

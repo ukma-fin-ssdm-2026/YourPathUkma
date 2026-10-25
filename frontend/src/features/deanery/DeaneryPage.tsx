@@ -38,7 +38,11 @@ export function DeaneryPage({ pollMs }: { pollMs?: number }) {
   const limits = useConfig().data?.limits;
   const year =
     Number(params.get("year")) ||
-    defaultPlanYear(new Date(), limits?.academic_year_min ?? 2024, limits?.academic_year_max ?? 2030);
+    defaultPlanYear(
+      new Date(),
+      limits?.academic_year_min ?? 2024,
+      limits?.academic_year_max ?? 2030,
+    );
 
   const upload = useUploadDocument();
   const remove = useDeleteDocument();
@@ -51,7 +55,9 @@ export function DeaneryPage({ pollMs }: { pollMs?: number }) {
 
   // За замовчуванням у панелі найновіший розпізнаний документ.
   const latestParsed = [...documents].reverse().find((doc) => doc.parse_status === "parsed");
-  const activeId = documents.some((doc) => doc.id === selectedId) ? selectedId : (latestParsed?.id ?? null);
+  const activeId = documents.some((doc) => doc.id === selectedId)
+    ? selectedId
+    : (latestParsed?.id ?? null);
   const active = useDeaneryDocument(activeId, { pollMs });
   const courses = active.data?.parse_status === "parsed" ? active.data.normative_courses : null;
 
@@ -104,8 +110,8 @@ export function DeaneryPage({ pollMs }: { pollMs?: number }) {
           <Card>
             <h2 className="font-display text-base">Завантажте документ</h2>
             <p className="mt-1 mb-4 text-ink-2">
-              Додайте файл від деканату з нормативними дисциплінами на цей рік. Так ви не оберете те,
-              на що вас уже записали. PDF або DOCX, до 10 МБ.
+              Додайте файл від деканату з нормативними дисциплінами на цей рік. Так ви не оберете
+              те, на що вас уже записали. PDF або DOCX, до 10 МБ.
             </p>
             <Dropzone
               maxBytes={limits?.max_upload_bytes ?? DEFAULT_MAX_BYTES}

@@ -40,7 +40,9 @@ function Row({ course, data }: { course: number; data: AcademicYear | undefined 
       <div className="grid grid-cols-[repeat(60,1fr)] gap-0.5" aria-hidden="true">
         {cells}
       </div>
-      <div className="text-right font-semibold">{data ? formatCredits(data.total_credits) : "—"}</div>
+      <div className="text-right font-semibold">
+        {data ? formatCredits(data.total_credits) : "—"}
+      </div>
     </div>
   );
 }
@@ -60,7 +62,11 @@ export function CreditsLedger({ years }: { years: AcademicYear[] }) {
     <div>
       <div role="img" aria-label={summary} className="grid gap-3">
         {COURSES.map((course) => (
-          <Row key={course} course={course} data={years.find((year) => year.course_year === course)} />
+          <Row
+            key={course}
+            course={course}
+            data={years.find((year) => year.course_year === course)}
+          />
         ))}
       </div>
       <ul className="mt-6 flex flex-wrap gap-7 border-t border-rule pt-5">
