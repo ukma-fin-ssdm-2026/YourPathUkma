@@ -2,11 +2,11 @@
 
 Діаграма (ER, PlantUML): [`uml/data-model.plantuml`](uml/data-model.plantuml) · зображення: [`uml/svg/data-model.svg`](uml/svg/data-model.svg)
 
-Фізична реалізація (SQLAlchemy, Alembic) і відхилення від цієї моделі: [`database.md`](database.md).
+Фізична реалізація (SQLAlchemy, Alembic): моделі в [`src/db/models`](../../src/db/models), міграції в [`migrations`](../../migrations). Відхилення від цієї моделі описано в docstring [`src/db/enums.py`](../../src/db/enums.py) та в `docs/api/contract.md`.
 
 ![Data model](uml/svg/data-model.svg)
 
-Джерела: `Project-Description.md` (ключові функції), `requirements.md` (глосарій, FR-001…FR-012, PERF/REL/SEC), `traceability-matrix.md` (компоненти), `component-diagram.plantuml`, `deployment.puml` (усі дані, включно з файлами документів, зберігаються в одній БД PostgreSQL), `sequence-generate-plan.puml` (потік AI-генерації). Сутності `AuditLog` і `AIGenerationRequest` додано за результатами [`threat-model.md`](threat-model.md).
+Джерела: `Project-Description.md` (ключові функції), `requirements.md` (глосарій, FR-001…FR-013, PERF/REL/SEC/USE), `traceability-matrix.md` (компоненти), `component-diagram.plantuml`, `deployment.puml` (усі дані, включно з файлами документів, зберігаються в одній БД PostgreSQL), `sequence-generate-plan.puml` (потік AI-генерації). Сутності `AuditLog` і `AIGenerationRequest` додано за результатами [`threat-model.md`](threat-model.md).
 
 ## Нотація
 
@@ -29,7 +29,7 @@
 | 1 | Особистий кабінет: лічильники кредитів, історія планів, «Оновити» з САЗ | `User`, `StudentProfile` (`credits_used_*`, `saz_synced_at`), `IndividualPlan` (`status`, `origin = saz_sync`) | FR-004, FR-012, SEC-001 |
 | 2 | Конструктор плану: дисципліни по триместрах, рівні навантаження, конфлікти з нормативними | `PlanPreferences`, `TrimesterLoad`, `PreferenceDirection`, `IndividualPlan`, `PlanItem`, `DeaneryPlanDocument`, `NormativeCourseEntry` | FR-001, FR-003, FR-004, FR-007 |
 | 3 | AI-генерація плану з 2–3 альтернативами та поясненнями (`sequence-generate-plan.puml`) | `PlanPreferences` (вхід), `InstructorPreference` (фільтр каталогу до LLM), `Course` (затверджений каталог), `AIGenerationRequest` (спроби ≤ 3), `IndividualPlan` (зберігається як `draft`), `PlanItem.ai_explanation`, `PlanAlternative` | FR-005, FR-006, FR-009, FR-010, PERF-001, REL-001 |
-| 4 | Каталог дисциплін із фільтрацією | `Course`, `Instructor`, `CourseInstructor`, `Direction`, `CourseDirection` | FR-005, FR-007, НФВ-1 |
+| 4 | Каталог дисциплін із фільтрацією | `Course`, `Instructor`, `CourseInstructor`, `Direction`, `CourseDirection` | FR-005, FR-007, FR-013, PERF-002 |
 | 5 | Сертифікатні програми: case-insensitive звірка з каталогом | `CertificateProgram`, `CertificateProgramCourse` (`raw_title` → `course_id`), `Course.title_normalized`, `PlanPreferences.certificate_program_id` | Опис проєкту, п. 5 |
 | 6 | Контроль кредитного нормативу: 240 / 25 / 54, 57–60 на рік | `StudentProfile.credits_used_*` (похідні), `PlanItem.category`, `Course.credits`, `Course.kind`, `IndividualPlan.total_credits` | FR-002, FR-003, FR-010 |
 | 7 | Адміністрування парсингу САЗ і черга модерації | `SyncJob`, `ModerationItem`, `User.role`, `AuditLog` | FR-008, FR-011, PERF-002 |
@@ -40,7 +40,7 @@
 
 | Сутність | Первинний ключ | Унікальні поля (`<<unique>>`) | Призначення | Дані |
 |---|---|---|---|---|
-| `User` | `id` | `google_sub`, `email` | Обліковий запис (студент або адмін) після Microsoft SSO | **PII** |
+| `User` | `id` | `google_sub`, `email` | Обліковий запис (студент або адмін) після Microsoft SSO. Спочатку вхід було реалізовано через Google, але згодом його переробили на Microsoft SSO (стандарт для сайтів НаУКМА); назву поля `google_sub` при цьому не змінили, зараз воно зберігає унікальний ідентифікатор користувача від Microsoft SSO | **PII** |
 | `StudentProfile` | `user_id` (PK = FK, 1:1 з `User`) | — | Курс, спеціальність, лічильники кредитів | **PII** |
 | `PlanPreferences` | `id` | — | Побажання студента на навчальний рік | **PII** |
 | `PreferenceDirection` | (`preferences_id`, `direction_id`) | — | 1–3 обрані напрямки (FR-007) | — |
@@ -48,7 +48,7 @@
 | `InstructorPreference` | (`preferences_id`, `instructor_id`) | — | Бажані / небажані викладачі (FR-005) | **PII, sensitive** |
 | `DeaneryPlanDocument` | `id` | — | Завантажений документ деканату: файл (`content`, у PostgreSQL) і метадані | **PII** |
 | `NormativeCourseEntry` | `id` | — | Нормативна дисципліна, розпізнана з документа | — |
-| `IndividualPlan` | `id` | — | План студента на рік (draft / submitted / approved_in_saz) | **PII** (через `student_id`) |
+| `IndividualPlan` | `id` | — | План студента на рік (draft / submitted / awaiting_deanery / approved) | **PII** (через `student_id`) |
 | `PlanItem` | `id` | — | Дисципліна плану в триместрі | — |
 | `PlanAlternative` | `id` | — | Альтернатива 1..3 для слота (FR-009) | — |
 | `AIGenerationRequest` | `id` | — | Запит генерації: статус, спроби, токени, хеш prompt | Службові (`student_id`) |
@@ -99,7 +99,8 @@
 
 - **«Оновити» з САЗ (R14).** Як отримати затверджений план студента, не зберігаючи його облікові дані САЗ. Модель поки передбачає лише `IndividualPlan.origin = saz_sync` і `StudentProfile.saz_synced_at`.
 
-- ## Використання ШІ
+## Використання ШІ
 
 - **Що створено/змінено:** модель даних (`uml/data-model.plantuml`) і цей документ складено за допомогою Claude (Claude Code) на основі `Project-Description.md`, `requirements.md`, `AGENTS.md`, `traceability-matrix.md`, `component-diagram.plantuml`, `uml/deployment.puml`, `sequence-generate-plan.puml`. Сутності `AuditLog`, `AIGenerationRequest` і поля `course_year_source`, `sha256`, `raw_snapshot*` додано за результатами STRIDE-аналізу (`threat-model.md`). Тип ключів змінено з `UUID` на `bigint` на прохання команди.
 - **Як перевірено:** діаграму відрендерено PlantUML без помилок; вручну звірено, що кожна з 7 ключових функцій має сутності, кожна сутність має PK, а позначки `{PII}` відповідають таблиці розділу 3; посилання на FR / NFR / Test звірено з `requirements.md` і `rtm.md`.
+- **Редагування (виправлення документації):** за допомогою Claude (Claude Code) замінено неіснуюче посилання `database.md` на посилання до коду (`src/db`, `migrations`), оновлено діапазон FR-001…FR-013, прибрано неіснуючу вимогу «НФВ-1» (замість неї FR-013 і PERF-002 для каталогу), статуси плану узгоджено з `src/db/enums.py`, додано примітку про історичну назву поля `google_sub`, виправлено заголовок цього розділу. Перевірено звіркою з `requirements.md`, `traceability-matrix.md`, `src/db/models/users.py` і `src/db/enums.py`; PlantUML-діаграму не змінювано і не перерендерювано.
