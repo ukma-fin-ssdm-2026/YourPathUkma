@@ -10,7 +10,13 @@ import { server } from "../../mocks/server";
 import { configFixture, configHandler, planFixture, plansCrudHandlers } from "../../test/handlers";
 import { PlanViewPage } from "./PlanViewPage";
 
-const item = (id: number, trimester: 1 | 2 | 3, credits: number, free = false, title = `Дисципліна ${id}`): PlanItem => ({
+const item = (
+  id: number,
+  trimester: 1 | 2 | 3,
+  credits: number,
+  free = false,
+  title = `Дисципліна ${id}`,
+): PlanItem => ({
   course_id: id,
   title,
   trimester,
@@ -24,7 +30,10 @@ const plan = (overrides = {}) =>
     academic_year: 2026,
     course: 3,
     status: "draft",
-    items: [item(1, 1, 5, false, "Функціональне програмування"), item(2, 2, 3, true, "Управління продуктом")],
+    items: [
+      item(1, 1, 5, false, "Функціональне програмування"),
+      item(2, 2, 3, true, "Управління продуктом"),
+    ],
     total_credits: 8,
     free_elective_credits: 3,
     load_levels: { autumn: "medium", spring: "high", summer: "low" },
@@ -56,11 +65,11 @@ beforeEach(() => {
   setAccessToken("t");
   saved.length = 0;
   Object.assign(URL, { createObjectURL: vi.fn(() => "blob:test"), revokeObjectURL: vi.fn() });
-  click = vi
-    .spyOn(HTMLAnchorElement.prototype, "click")
-    .mockImplementation(function (this: HTMLAnchorElement) {
-      saved.push(this.download);
-    });
+  click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+    this: HTMLAnchorElement,
+  ) {
+    saved.push(this.download);
+  });
   server.use(configHandler(), ...plansCrudHandlers([plan()]).handlers);
 });
 afterEach(() => click.mockRestore());
@@ -71,12 +80,18 @@ describe("PlanViewPage: вміст", () => {
     expect(await screen.findByRole("heading", { name: /План на 2026\/2027/ })).toBeInTheDocument();
     expect(screen.getByText("Чернетка")).toBeInTheDocument();
     expect(screen.getByText("Чернетка: ще можна редагувати")).toBeInTheDocument();
-    expect(within(screen.getByRole("region", { name: "Осінь" })).getByText("Функціональне програмування")).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("region", { name: "Осінь" })).getByText(
+        "Функціональне програмування",
+      ),
+    ).toBeInTheDocument();
     const spring = screen.getByRole("region", { name: "Весна" });
     expect(within(spring).getByText("Управління продуктом")).toBeInTheDocument();
     expect(within(spring).getByText("вільний вибір")).toBeInTheDocument();
     expect(within(spring).getByText("Навантаження: високе")).toBeInTheDocument();
-    expect(within(screen.getByRole("region", { name: "Осінь" })).getByText("Навантаження: середнє")).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("region", { name: "Осінь" })).getByText("Навантаження: середнє"),
+    ).toBeInTheDocument();
   });
 
   it("порожній триместр каже, що дисциплін немає", async () => {
@@ -95,7 +110,10 @@ describe("PlanViewPage: вміст", () => {
 
   it("лише чернетку можна редагувати", async () => {
     renderPage();
-    expect(await screen.findByRole("link", { name: "Редагувати" })).toHaveAttribute("href", "/path/create?plan=1");
+    expect(await screen.findByRole("link", { name: "Редагувати" })).toHaveAttribute(
+      "href",
+      "/path/create?plan=1",
+    );
   });
 
   it("затверджений план без кнопки «Редагувати» і з відповідним підписом", async () => {
@@ -123,7 +141,10 @@ describe("PlanViewPage: недоступний план", () => {
   ])("%s показує «План не знайдено» з посиланням на список", async (_name, path) => {
     renderPage(path);
     expect(await screen.findByText("План не знайдено")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Індивідуальний план" })).toHaveAttribute("href", "/path/plan");
+    expect(screen.getByRole("link", { name: "Індивідуальний план" })).toHaveAttribute(
+      "href",
+      "/path/plan",
+    );
   });
 
   it("чужий план (403) показується так само", async () => {
@@ -143,7 +164,10 @@ describe("PlanViewPage: експорт PDF", () => {
       http.get("*/api/v1/plans/:id/export", async () => {
         await delay(100);
         return new HttpResponse("%PDF-1.4", {
-          headers: { "Content-Type": "application/pdf", "Content-Disposition": 'attachment; filename="plan-2026.pdf"' },
+          headers: {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": 'attachment; filename="plan-2026.pdf"',
+          },
         });
       }),
     );

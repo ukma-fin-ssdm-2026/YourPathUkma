@@ -18,7 +18,11 @@ export function Switch({
     <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
       <div>
         <b className="font-semibold">{label}</b>
-        {badge && <span className="ml-2 rounded-full bg-paper px-2 py-px text-[11px] text-ink-2">{badge}</span>}
+        {badge && (
+          <span className="ml-2 rounded-full bg-paper px-2 py-px text-[11px] text-ink-2">
+            {badge}
+          </span>
+        )}
         {description && <small className="block text-ink-2">{description}</small>}
       </div>
       <button

@@ -84,8 +84,7 @@ def check_free_elective_flags(flags: Iterable[CatalogFlag]) -> List[Violation]:
                 Violation(
                     code="FREE_ELECTIVE_FLAG_MISMATCH",
                     message=(
-                        "Дисципліна не профорієнтовна для жодного напрямку: "
-                        "це вільний вибір (is_free_elective=true)"
+                        "Дисципліна не профорієнтовна для жодного напрямку: " "це вільний вибір (is_free_elective=true)"
                     ),
                     field=f"items.{flag.index}.is_free_elective",
                 )
@@ -146,14 +145,16 @@ def check_load_levels(course_year: int, load_levels_sent: bool) -> List[Violatio
         ]
     return []
 
+
 def free_elective_remaining(used: float) -> float:
     """
-        Функція що дозволяє порахувати к-ть кредитів вільного вибору, що може обрати студент
-        на основі того, скільки у нього вже обрано кредитів вільного вибору.
+    Функція що дозволяє порахувати к-ть кредитів вільного вибору, що може обрати студент
+    на основі того, скільки у нього вже обрано кредитів вільного вибору.
     """
     if used < 0:
         raise ValueError
     return round(max(0, FREE_ELECTIVE_LIMIT - used), 1)
+
 
 def check_annual_minimum(year_credits: float) -> List[Violation]:
     """Мінімум 57 кредитів за навчальний рік, навіть за низького навантаження (AGENTS.md §4)."""
@@ -165,6 +166,6 @@ def check_annual_minimum(year_credits: float) -> List[Violation]:
     return [
         Violation(
             code="ANNUAL_MINIMUM_NOT_MET",
-            message=f"Замало кредитів за рік: {year_credits:g} < {ANNUAL_MIN_CREDITS:g}, бракує {missing:g}"
+            message=f"Замало кредитів за рік: {year_credits:g} < {ANNUAL_MIN_CREDITS:g}, бракує {missing:g}",
         )
     ]

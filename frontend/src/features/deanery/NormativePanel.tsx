@@ -51,7 +51,9 @@ export function NormativePanel({
                 ))}
                 <tr>
                   <td className="py-2 font-semibold">Разом</td>
-                  <td className="py-2 text-right font-semibold tabular-nums">{formatCredits(total)}</td>
+                  <td className="py-2 text-right font-semibold tabular-nums">
+                    {formatCredits(total)}
+                  </td>
                 </tr>
               </tbody>
             </table>

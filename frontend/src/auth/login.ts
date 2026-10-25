@@ -70,7 +70,11 @@ export async function completeLogin(search: string): Promise<AuthResponse> {
     const auth = await request<AuthResponse>("/auth/microsoft", {
       method: "POST",
       auth: false,
-      body: { code, code_verifier: verifier, redirect_uri: `${window.location.origin}/auth/callback` },
+      body: {
+        code,
+        code_verifier: verifier,
+        redirect_uri: `${window.location.origin}/auth/callback`,
+      },
     });
     setAccessToken(auth.access_token);
     return auth;

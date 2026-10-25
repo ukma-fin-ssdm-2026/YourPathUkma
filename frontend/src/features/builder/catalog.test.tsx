@@ -16,8 +16,19 @@ const emptyPlan = (items: BuilderPlan["items"] = []): BuilderPlan => ({
   items,
 });
 
-const pro = disciplineFixture({ id: 101, title: "Машинне навчання", directions: ["Data Science"], credits: 6 });
-const free = disciplineFixture({ id: 102, title: "Основи UX", directions: [], credits: 3, instructor: "Лисенко А. Р." });
+const pro = disciplineFixture({
+  id: 101,
+  title: "Машинне навчання",
+  directions: ["Data Science"],
+  credits: 6,
+});
+const free = disciplineFixture({
+  id: 102,
+  title: "Основи UX",
+  directions: [],
+  credits: 3,
+  instructor: "Лисенко А. Р.",
+});
 
 function renderPanel(props: Partial<React.ComponentProps<typeof CatalogPanel>> = {}) {
   const onAdd = vi.fn();
@@ -67,7 +78,15 @@ describe("CatalogPanel: рядки", () => {
 
 describe("CatalogPanel: недоступні дисципліни", () => {
   const cases: [string, Partial<React.ComponentProps<typeof CatalogPanel>>, string][] = [
-    ["вже в плані", { plan: emptyPlan([{ course_id: 101, title: "x", trimester: 1, credits: 6, is_free_elective: false }]) }, "Вже в плані"],
+    [
+      "вже в плані",
+      {
+        plan: emptyPlan([
+          { course_id: 101, title: "x", trimester: 1, credits: 6, is_free_elective: false },
+        ]),
+      },
+      "Вже в плані",
+    ],
     ["нормативна від деканату", { normativeIds: [101] }, "Додав деканат"],
     ["вже пройдена", { takenIds: [101] }, "Вже пройдено"],
   ];
@@ -125,7 +144,10 @@ describe("CatalogPanel: стани", () => {
   it("помилка сервера показує повідомлення", async () => {
     server.use(
       http.get("*/api/v1/disciplines", () =>
-        HttpResponse.json({ code: "INTERNAL_ERROR", message: "Внутрішня помилка сервера", details: [] }, { status: 500 }),
+        HttpResponse.json(
+          { code: "INTERNAL_ERROR", message: "Внутрішня помилка сервера", details: [] },
+          { status: 500 },
+        ),
       ),
     );
     renderPanel();

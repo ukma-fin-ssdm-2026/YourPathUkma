@@ -1,6 +1,22 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: handlers.test.ts.
-import type { AdminUser, AuditLogEntry, DeaneryDocument, Direction, Me, ModerationItem, Preferences, SyncJob } from "../api/types";
-import { emptyMe, seedAdminUsers, seedAuditLog, seedDirections, seedModerationItems, seedSyncJobs } from "./fixtures";
+import type {
+  AdminUser,
+  AuditLogEntry,
+  DeaneryDocument,
+  Direction,
+  Me,
+  ModerationItem,
+  Preferences,
+  SyncJob,
+} from "../api/types";
+import {
+  emptyMe,
+  seedAdminUsers,
+  seedAuditLog,
+  seedDirections,
+  seedModerationItems,
+  seedSyncJobs,
+} from "./fixtures";
 
 const initialAdminState = () => ({
   syncJobs: seedSyncJobs(),

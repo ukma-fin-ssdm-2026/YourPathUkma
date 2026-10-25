@@ -52,7 +52,10 @@ describe("AdminLayout", () => {
   it("пункт «Огляд» активний лише на /admin, а не на вкладених маршрутах", () => {
     renderAdmin("/admin");
     const menu = screen.getByRole("navigation", { name: "Розділи адмінки" });
-    expect(within(menu).getByRole("link", { name: "Огляд" })).toHaveAttribute("aria-current", "page");
+    expect(within(menu).getByRole("link", { name: "Огляд" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
   });
 
   it("перехід по пункту меню показує відповідний екран", async () => {
@@ -66,7 +69,8 @@ describe("OverviewPage", () => {
   it("картки огляду ведуть у розділи", () => {
     renderAdmin("/admin");
     const overview = screen.getByRole("region", { name: "Огляд адмінки" });
-    const href = (name: RegExp) => within(overview).getByRole("link", { name }).getAttribute("href");
+    const href = (name: RegExp) =>
+      within(overview).getByRole("link", { name }).getAttribute("href");
     expect(href(/^Модерація/)).toBe("/admin/moderation");
     expect(href(/^Синхронізація/)).toBe("/admin/sync");
     expect(href(/^Користувачі/)).toBe("/admin/users");

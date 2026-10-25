@@ -116,9 +116,7 @@ def enforce_plan_rules(
     exclude_plan_id: Optional[int] = None,
 ) -> None:
     """Викликати після _check_catalog. Збирає всі порушення й кидає один 422 VALIDATION_ERROR."""
-    violations = _collect_violations(
-        db, student_id, payload.academic_year, payload.items, courses, exclude_plan_id
-    )
+    violations = _collect_violations(db, student_id, payload.academic_year, payload.items, courses, exclude_plan_id)
     violations += plan_rules.check_load_levels(payload.course, "load_levels" in payload.model_fields_set)
 
     if violations:

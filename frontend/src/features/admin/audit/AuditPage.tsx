@@ -6,7 +6,13 @@ import { Button } from "../../../ui/Button";
 import { Segmented } from "../../../ui/Segmented";
 import { Pagination } from "../../catalog/Pagination";
 import { useDebouncedValue } from "../../catalog/useDebouncedValue";
-import { AUDIT_PAGE_SIZE, type AuditOutcome, outcomeLabel, useAuditEntry, useAuditLog } from "./useAudit";
+import {
+  AUDIT_PAGE_SIZE,
+  type AuditOutcome,
+  outcomeLabel,
+  useAuditEntry,
+  useAuditLog,
+} from "./useAudit";
 
 const OUTCOME_OPTIONS: { value: AuditOutcome | "all"; label: string }[] = [
   { value: "all", label: "Усі" },
@@ -28,11 +34,15 @@ function EntryDetails({ id }: { id: number }) {
         <>
           <div className="min-w-0">
             <h3 className="font-medium">Було</h3>
-            <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-words text-sm">{text(entry.data.old_value)}</pre>
+            <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-words text-sm">
+              {text(entry.data.old_value)}
+            </pre>
           </div>
           <div className="min-w-0">
             <h3 className="font-medium">Стало</h3>
-            <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-words text-sm">{text(entry.data.new_value)}</pre>
+            <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-words text-sm">
+              {text(entry.data.new_value)}
+            </pre>
           </div>
         </>
       )}
@@ -46,7 +56,11 @@ export function AuditPage() {
   const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState<number | null>(null);
   const debouncedAction = useDebouncedValue(action.trim(), 250);
-  const log = useAuditLog({ action: debouncedAction, outcome: outcome === "all" ? undefined : outcome, page });
+  const log = useAuditLog({
+    action: debouncedAction,
+    outcome: outcome === "all" ? undefined : outcome,
+    page,
+  });
   const list = log.data?.audit_log ?? [];
 
   return (
@@ -103,11 +117,15 @@ export function AuditPage() {
                 <Fragment key={entry.id}>
                   <tr className="border-b border-rule transition-colors duration-150 ease-out hover:bg-paper">
                     <td className={CELL}>{formatDateTime(entry.created_at)}</td>
-                    <td className={`${CELL} break-words`}>{entry.actor?.full_name ?? "Анонімно"}</td>
+                    <td className={`${CELL} break-words`}>
+                      {entry.actor?.full_name ?? "Анонімно"}
+                    </td>
                     <td className={`${CELL} break-words`}>{entry.action}</td>
                     <td className={CELL}>{`${entry.object_type} #${entry.object_id}`}</td>
                     <td className={CELL}>
-                      <Badge tone={entry.outcome === "allowed" ? "ok" : "bad"}>{outcomeLabel(entry.outcome)}</Badge>
+                      <Badge tone={entry.outcome === "allowed" ? "ok" : "bad"}>
+                        {outcomeLabel(entry.outcome)}
+                      </Badge>
                     </td>
                     <td className={CELL}>{entry.ip}</td>
                     <td className={CELL}>
@@ -135,7 +153,12 @@ export function AuditPage() {
         )}
       </div>
       {log.data && (
-        <Pagination page={page} pageSize={AUDIT_PAGE_SIZE} total={log.data.pagination.total} onPage={setPage} />
+        <Pagination
+          page={page}
+          pageSize={AUDIT_PAGE_SIZE}
+          total={log.data.pagination.total}
+          onPage={setPage}
+        />
       )}
     </section>
   );

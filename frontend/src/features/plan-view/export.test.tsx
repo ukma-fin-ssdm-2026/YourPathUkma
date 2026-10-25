@@ -19,11 +19,11 @@ beforeEach(() => {
   setAccessToken("t");
   saved.length = 0;
   Object.assign(URL, { createObjectURL: vi.fn(() => "blob:test"), revokeObjectURL: vi.fn() });
-  click = vi
-    .spyOn(HTMLAnchorElement.prototype, "click")
-    .mockImplementation(function (this: HTMLAnchorElement) {
-      saved.push(this.download);
-    });
+  click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+    this: HTMLAnchorElement,
+  ) {
+    saved.push(this.download);
+  });
 });
 afterEach(() => click.mockRestore());
 
@@ -81,10 +81,12 @@ describe("useExportPlan", () => {
     );
     const { result } = renderHook(() => useExportPlan(), { wrapper });
     await act(async () => {
-      await expect(result.current.mutateAsync({ id: 9, academicYear: 2026 })).rejects.toMatchObject({
-        status: 404,
-        code: "PLAN_NOT_FOUND",
-      });
+      await expect(result.current.mutateAsync({ id: 9, academicYear: 2026 })).rejects.toMatchObject(
+        {
+          status: 404,
+          code: "PLAN_NOT_FOUND",
+        },
+      );
     });
     expect(saved).toEqual([]);
   });

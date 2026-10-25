@@ -29,7 +29,11 @@ export function useValidatePlan(plan: BuilderPlan, options: { debounceMs?: numbe
   return useQuery({
     queryKey: ["validate", JSON.stringify(planPayload(settled))],
     queryFn: ({ signal }) =>
-      request<PlanValidationResponse>("/plans/validate", { method: "POST", body: planPayload(settled), signal }),
+      request<PlanValidationResponse>("/plans/validate", {
+        method: "POST",
+        body: planPayload(settled),
+        signal,
+      }),
     enabled: settled.items.length > 0,
     placeholderData: keepPreviousData,
   });

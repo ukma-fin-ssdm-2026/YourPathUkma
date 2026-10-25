@@ -38,7 +38,8 @@ function asStudent(course: 1 | 2 | 3 | 4) {
 }
 
 const chip = (name: string) => screen.findByRole("button", { name });
-const loadGroup = (season: string) => screen.getByRole("group", { name: `Навантаження: ${season}` });
+const loadGroup = (season: string) =>
+  screen.getByRole("group", { name: `Навантаження: ${season}` });
 
 beforeEach(() => {
   useSession.getState().setAuthenticated(authResponse());
@@ -114,10 +115,16 @@ describe("зміна року", () => {
   it("чернетка попереднього року не переходить на інший рік", async () => {
     const { switchYear } = renderForm(2026);
     await userEvent.click(await chip("Data Science"));
-    expect(screen.getByRole("button", { name: "Data Science" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Data Science" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     switchYear(2025);
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Data Science" })).toHaveAttribute("aria-pressed", "false"),
+      expect(screen.getByRole("button", { name: "Data Science" })).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      ),
     );
     await userEvent.click(screen.getByRole("button", { name: "Зберегти побажання" }));
     await screen.findByText("Побажання збережено");

@@ -78,14 +78,21 @@ export function SummaryStrip({
   const selected = validation?.summary.total_credits ?? local.total;
   const yearTotal = selected + normativeCredits;
   const freeUsed =
-    validation?.summary.free_elective_used_all_years ?? (credits?.free_choice_used ?? 0) + local.free;
+    validation?.summary.free_elective_used_all_years ??
+    (credits?.free_choice_used ?? 0) + local.free;
   const professional = (credits?.professional_used ?? 0) + (local.total - local.free);
 
   // Сервер не бачить нормативних з документа деканату, тож це попередження рахуємо самі.
-  const serverWarnings = (validation?.warnings ?? []).filter((w) => w.code !== "YEAR_CREDITS_BELOW_MIN");
+  const serverWarnings = (validation?.warnings ?? []).filter(
+    (w) => w.code !== "YEAR_CREDITS_BELOW_MIN",
+  );
   const warnings: RuleIssue[] = [...serverWarnings];
   if (plan.items.length > 0 && yearTotal < MIN_YEAR_CREDITS) {
-    warnings.push({ code: "YEAR_CREDITS_BELOW_MIN", message: "За рік менше 57 кредитів", field: null });
+    warnings.push({
+      code: "YEAR_CREDITS_BELOW_MIN",
+      message: "За рік менше 57 кредитів",
+      field: null,
+    });
   }
   const errors = validation?.errors ?? [];
   const issues = errors.length + warnings.length;

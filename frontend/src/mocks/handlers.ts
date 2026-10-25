@@ -13,7 +13,11 @@ import { academicHistory, authResponse, historyCredits, normativeCourses } from 
 function validateOnboarding(body: unknown): ErrorDetail[] {
   const { course_year, specialty } = (body ?? {}) as { course_year?: unknown; specialty?: unknown };
   const details: ErrorDetail[] = [];
-  if (!Number.isInteger(course_year) || (course_year as number) < 1 || (course_year as number) > 4) {
+  if (
+    !Number.isInteger(course_year) ||
+    (course_year as number) < 1 ||
+    (course_year as number) > 4
+  ) {
     details.push({ field: "course_year", message: "Input should be between 1 and 4" });
   }
   const length = typeof specialty === "string" ? specialty.trim().length : 0;
@@ -117,7 +121,8 @@ const preferencesHandlers = [
         message: "Викладач не може бути і бажаним, і небажаним",
       });
     }
-    if (details.length > 0) return apiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details);
+    if (details.length > 0)
+      return apiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details);
     const saved: Preferences = {
       ...body,
       academic_year: Number(params.year),
@@ -181,7 +186,6 @@ export const handlers = [
     db.signedIn = false;
     return new HttpResponse(null, { status: 204 });
   }),
-
 ];
 
 const meHandlers = [
@@ -200,7 +204,11 @@ const meHandlers = [
     const student = db.me.student;
     if (!student) return apiError(404, "USER_NOT_FOUND", "Профіль студента не знайдено");
     if (!student.onboarding_required) {
-      return apiError(409, "ALREADY_ONBOARDED", "Онбординг уже пройдено, змінити може лише адміністратор");
+      return apiError(
+        409,
+        "ALREADY_ONBOARDED",
+        "Онбординг уже пройдено, змінити може лише адміністратор",
+      );
     }
     const body: unknown = await request.json().catch(() => null);
     const details = validateOnboarding(body);

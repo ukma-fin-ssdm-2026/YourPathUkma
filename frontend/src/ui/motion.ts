@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 
 /** Чи можна програвати рух: у jsdom немає matchMedia, а при prefers-reduced-motion рух вимкнено. */
 export function canAnimate(): boolean {
-  return typeof window.matchMedia === "function" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return (
+    typeof window.matchMedia === "function" &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
 }
 
 /**

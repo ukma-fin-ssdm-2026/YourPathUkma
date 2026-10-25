@@ -10,7 +10,15 @@ export type AuditOutcome = AuditLogEntry["outcome"];
 export const outcomeLabel = (outcome: AuditOutcome) =>
   outcome === "allowed" ? "Дозволено" : "Відмовлено";
 
-export function useAuditLog({ action, outcome, page }: { action: string; outcome?: AuditOutcome; page: number }) {
+export function useAuditLog({
+  action,
+  outcome,
+  page,
+}: {
+  action: string;
+  outcome?: AuditOutcome;
+  page: number;
+}) {
   return useQuery({
     queryKey: ["admin", "audit", action, outcome ?? "all", page],
     placeholderData: keepPreviousData,

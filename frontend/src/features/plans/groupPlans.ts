@@ -13,7 +13,12 @@ export function groupPlansByCourse(plans: PlanResponse[]): PlanGroup[] {
   for (const plan of plans) {
     const group = byYear.get(plan.academic_year);
     if (group) group.plans.push(plan);
-    else byYear.set(plan.academic_year, { course: plan.course, academic_year: plan.academic_year, plans: [plan] });
+    else
+      byYear.set(plan.academic_year, {
+        course: plan.course,
+        academic_year: plan.academic_year,
+        plans: [plan],
+      });
   }
   return [...byYear.values()]
     .sort((a, b) => b.academic_year - a.academic_year)

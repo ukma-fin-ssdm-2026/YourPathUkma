@@ -35,11 +35,19 @@ export function ProfilePage() {
     );
   }
   if (!student) {
-    return <p className="text-ink-2">Для облікового запису адміністратора профіль студента не потрібен.</p>;
+    return (
+      <p className="text-ink-2">
+        Для облікового запису адміністратора профіль студента не потрібен.
+      </p>
+    );
   }
 
   const limits = config.data?.limits;
-  const year = defaultPlanYear(new Date(), limits?.academic_year_min ?? 2024, limits?.academic_year_max ?? 2030);
+  const year = defaultPlanYear(
+    new Date(),
+    limits?.academic_year_min ?? 2024,
+    limits?.academic_year_max ?? 2030,
+  );
 
   return (
     <div className="grid gap-5">
@@ -75,7 +83,11 @@ export function ProfilePage() {
         <LimitsStrip credits={student.credits} />
         <div className="mt-7">
           {history.isPending ? (
-            <div role="status" aria-label="Завантажуємо журнал кредитів" className="h-40 shimmer rounded-xl bg-rule" />
+            <div
+              role="status"
+              aria-label="Завантажуємо журнал кредитів"
+              className="h-40 shimmer rounded-xl bg-rule"
+            />
           ) : history.isError ? (
             <p role="alert" className="text-bad">
               Не вдалося завантажити історію навчання.

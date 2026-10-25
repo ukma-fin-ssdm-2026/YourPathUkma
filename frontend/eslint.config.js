@@ -20,8 +20,8 @@ export default defineConfig([
     ],
     languageOptions: { globals: globals.browser },
     // `role` на наших компонентах (AppLayout) це роль користувача, а не ARIA-роль.
-    rules: { 
-      "jsx-a11y/aria-role": ["error", { ignoreNonDOM: true }], 
+    rules: {
+      "jsx-a11y/aria-role": ["error", { ignoreNonDOM: true }],
       "security/detect-object-injection": "off",
     },
   },

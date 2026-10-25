@@ -90,3 +90,6 @@ docs/superpowers/
 frontend/node_modules/
 frontend/dist/
 frontend/src/api/generated/
+
+.aider*
+.aider.chat.history.md

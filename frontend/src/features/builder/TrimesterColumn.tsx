@@ -75,13 +75,21 @@ export function TrimesterColumn({
         onChange={onLoadChange}
       />
       {items.map((item) => (
-        <PlanItemCard key={item.course_id} item={item} error={itemErrors[item.course_id]} onRemove={onRemove} />
+        <PlanItemCard
+          key={item.course_id}
+          item={item}
+          error={itemErrors[item.course_id]}
+          onRemove={onRemove}
+        />
       ))}
       {normative.map((course) => (
         <NormativeCard key={`${course.raw_title}-${course.trimester}`} course={course} />
       ))}
       {dropHint ? (
-        <p role="status" className="rounded-[10px] border-[1.5px] border-dashed border-bad px-3 py-3.5 text-center text-[13px] text-bad">
+        <p
+          role="status"
+          className="rounded-[10px] border-[1.5px] border-dashed border-bad px-3 py-3.5 text-center text-[13px] text-bad"
+        >
           {dropHint}
         </p>
       ) : (

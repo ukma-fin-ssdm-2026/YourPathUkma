@@ -86,7 +86,9 @@ export function CatalogFilters({
             placeholder="від"
             aria-label="Кредити від"
             value={filters.min_credits ?? ""}
-            onChange={(event) => onChange({ ...filters, min_credits: toNumber(event.target.value) })}
+            onChange={(event) =>
+              onChange({ ...filters, min_credits: toNumber(event.target.value) })
+            }
           />
           <input
             type="number"
@@ -96,7 +98,9 @@ export function CatalogFilters({
             placeholder="до"
             aria-label="Кредити до"
             value={filters.max_credits ?? ""}
-            onChange={(event) => onChange({ ...filters, max_credits: toNumber(event.target.value) })}
+            onChange={(event) =>
+              onChange({ ...filters, max_credits: toNumber(event.target.value) })
+            }
           />
         </div>
         {filters.min_credits !== undefined &&
@@ -115,7 +119,10 @@ export function CatalogFilters({
           options={YEARS}
           ariaLabel="Рекомендований курс"
           onChange={(value) =>
-            onChange({ ...filters, recommended_year: value === 0 ? undefined : (value as 2 | 3 | 4) })
+            onChange({
+              ...filters,
+              recommended_year: value === 0 ? undefined : (value as 2 | 3 | 4),
+            })
           }
         />
       </div>

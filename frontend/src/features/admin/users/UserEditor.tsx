@@ -38,17 +38,23 @@ export function UserEditor({ user, onClose }: { user: AdminUser; onClose: () => 
   const changed = Object.keys(patch).length > 0;
 
   const save = () => {
-    if (patch.student?.specialty !== undefined && (patch.student.specialty.length < 2 || patch.student.specialty.length > 150)) {
+    if (
+      patch.student?.specialty !== undefined &&
+      (patch.student.specialty.length < 2 || patch.student.specialty.length > 150)
+    ) {
       setClientError("Від 2 до 150 символів");
       return;
     }
     setClientError(null);
-    patchUser.mutate({ id: user.id, patch }, {
-      onSuccess: () => {
-        toast.success("Зміни збережено");
-        onClose();
+    patchUser.mutate(
+      { id: user.id, patch },
+      {
+        onSuccess: () => {
+          toast.success("Зміни збережено");
+          onClose();
+        },
       },
-    });
+    );
   };
 
   const error = patchUser.error;
@@ -57,7 +63,10 @@ export function UserEditor({ user, onClose }: { user: AdminUser; onClose: () => 
   const formError = error
     ? error.code === "CANNOT_CHANGE_OWN_ROLE"
       ? "Не можна змінити власну роль"
-      : [...(server?.form ?? []), ...(specialtyError || server?.form.length ? [] : [error.message])].join(" ")
+      : [
+          ...(server?.form ?? []),
+          ...(specialtyError || server?.form.length ? [] : [error.message]),
+        ].join(" ")
     : null;
 
   return (
@@ -77,7 +86,11 @@ export function UserEditor({ user, onClose }: { user: AdminUser; onClose: () => 
             <>
               <label className="flex flex-col gap-1 font-medium">
                 Курс
-                <select value={courseYear} onChange={(e) => setCourseYear(e.target.value)} className={INPUT}>
+                <select
+                  value={courseYear}
+                  onChange={(e) => setCourseYear(e.target.value)}
+                  className={INPUT}
+                >
                   {!courseYear && <option value="">Не вказано</option>}
                   {[1, 2, 3, 4].map((year) => (
                     <option key={year} value={String(year)}>
@@ -88,8 +101,14 @@ export function UserEditor({ user, onClose }: { user: AdminUser; onClose: () => 
               </label>
               <label className="flex flex-col gap-1 font-medium">
                 Спеціальність
-                <input value={specialty} onChange={(e) => setSpecialty(e.target.value)} className={INPUT} />
-                {specialtyError && <span className="text-sm font-normal text-bad">{specialtyError}</span>}
+                <input
+                  value={specialty}
+                  onChange={(e) => setSpecialty(e.target.value)}
+                  className={INPUT}
+                />
+                {specialtyError && (
+                  <span className="text-sm font-normal text-bad">{specialtyError}</span>
+                )}
               </label>
             </>
           )}

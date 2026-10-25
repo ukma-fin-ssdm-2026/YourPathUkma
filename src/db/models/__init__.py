@@ -13,6 +13,7 @@ from .history import AcademicRecord
 from .plans import IndividualPlan, PlanItem
 from .preferences import InstructorPreference, PlanPreferences, PreferenceDirection, TrimesterLoad
 from .users import RefreshToken, StudentProfile, User
+from . import ai  # noqa: F401
 
 __all__ = [
     "AcademicRecord",

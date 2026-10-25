@@ -1,5 +1,6 @@
 """
-Каталог: courses, instructors, course_instructors, directions, course_directions.
+Каталог: courses, instructors, course_instructors, directions, course_directions,
+certificate_programs, certificate_program_courses.
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code) за data-model.md («Courses & Catalogs»)
 і contract.md §3.3, §3.5. Перевірка: pytest, `alembic check`.
@@ -8,11 +9,11 @@
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import CheckConstraint, ForeignKey, Identity, SmallInteger, String, Text
+from sqlalchemy import ARRAY, JSON, Boolean, CheckConstraint, ForeignKey, Identity, Integer, SmallInteger, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..base import Base, BigIntId, Credits, UTCDateTime, db_enum, utcnow
-from ..enums import CourseKind, InstructorRole, PublicationStatus, Trimester
+from ..enums import CertificateAvailability, CourseKind, InstructorRole, PublicationStatus, Trimester
 
 
 class Direction(Base):
@@ -92,3 +93,47 @@ class Course(Base):
         cascade="all, delete-orphan", order_by=CourseInstructor.instructor_id
     )
     directions: Mapped[List[Direction]] = relationship(secondary="course_directions", order_by=Direction.id)
+
+
+class CertificateProgram(Base):
+    """Сертифікатна програма (contract.md §3.9)."""
+
+    __tablename__ = "certificate_programs"
+
+    id: Mapped[int] = mapped_column(BigIntId, Identity(), primary_key=True)
+    title: Mapped[str] = mapped_column(String(200))
+    source_url: Mapped[str] = mapped_column(String(500), default="")
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    direction_ids: Mapped[List[int]] = mapped_column(
+        ARRAY(Integer).with_variant(JSON(), "sqlite"),
+        default=list,
+    )
+    hidden: Mapped[bool] = mapped_column(Boolean, default=False)
+    availability: Mapped[CertificateAvailability] = mapped_column(
+        db_enum(CertificateAvailability, "certificate_availability"),
+        default=CertificateAvailability.AVAILABLE,
+    )
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)
+
+    courses: Mapped[List["CertificateProgramCourse"]] = relationship(
+        back_populates="program", cascade="all, delete-orphan", order_by="CertificateProgramCourse.id"
+    )
+
+
+class CertificateProgramCourse(Base):
+    """Запис дисципліни в сертифікатній програмі та її звірка з каталогом."""
+
+    __tablename__ = "certificate_program_courses"
+
+    id: Mapped[int] = mapped_column(BigIntId, Identity(), primary_key=True)
+    program_id: Mapped[int] = mapped_column(
+        BigIntId, ForeignKey("certificate_programs.id", ondelete="CASCADE"), index=True
+    )
+    course_id: Mapped[Optional[int]] = mapped_column(
+        BigIntId, ForeignKey("courses.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    raw_title: Mapped[str] = mapped_column(String(300))
+
+    program: Mapped[CertificateProgram] = relationship(back_populates="courses")
+    course: Mapped[Optional[Course]] = relationship()

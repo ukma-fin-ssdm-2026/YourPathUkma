@@ -40,9 +40,16 @@ describe("завантаження й список", () => {
 
     let created: DeaneryDocument | undefined;
     await act(async () => {
-      created = await result.current.upload.mutateAsync({ file: pdf("plan_2026.pdf"), academicYear: 2026 });
+      created = await result.current.upload.mutateAsync({
+        file: pdf("plan_2026.pdf"),
+        academicYear: 2026,
+      });
     });
-    expect(created).toMatchObject({ original_filename: "plan_2026.pdf", academic_year: 2026, parse_status: "pending" });
+    expect(created).toMatchObject({
+      original_filename: "plan_2026.pdf",
+      academic_year: 2026,
+      parse_status: "pending",
+    });
     await waitFor(() => expect(result.current.list.data?.deanery_documents).toHaveLength(1));
   });
 
@@ -69,7 +76,9 @@ describe("розпізнавання", () => {
   it("опитування доводить документ від pending до parsed з нормативними", async () => {
     const doc = await uploadViaApi("plan_2026.pdf");
     const { result } = renderHook(() => useDeaneryDocument(doc.id, { pollMs: 20 }), { wrapper });
-    await waitFor(() => expect(result.current.data?.parse_status).toBe("parsed"), { timeout: 3000 });
+    await waitFor(() => expect(result.current.data?.parse_status).toBe("parsed"), {
+      timeout: 3000,
+    });
     const courses = result.current.data!.normative_courses;
     expect(courses).toHaveLength(4);
     expect(courses.filter((c) => c.course_id === null)).toHaveLength(1);
@@ -78,7 +87,9 @@ describe("розпізнавання", () => {
   it("scan.pdf завершується failed із причиною, і опитування зупиняється", async () => {
     const doc = await uploadViaApi("scan.pdf");
     const { result } = renderHook(() => useDeaneryDocument(doc.id, { pollMs: 20 }), { wrapper });
-    await waitFor(() => expect(result.current.data?.parse_status).toBe("failed"), { timeout: 3000 });
+    await waitFor(() => expect(result.current.data?.parse_status).toBe("failed"), {
+      timeout: 3000,
+    });
     expect(result.current.data?.parse_error).toBe("Не вдалося прочитати таблицю дисциплін");
     const pollsAfterFailure = db.docPolls[doc.id];
     await new Promise((resolve) => setTimeout(resolve, 150));

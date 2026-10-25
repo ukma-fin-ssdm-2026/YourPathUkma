@@ -9,7 +9,9 @@ describe("parseDispositionFilename / filenameFromDisposition", () => {
     expect(parseDispositionFilename("attachment; filename=plan-2026.pdf")).toBe("plan-2026.pdf");
   });
   it("читає закодоване filename*", () => {
-    expect(parseDispositionFilename("attachment; filename*=UTF-8''%D0%BF%D0%BB%D0%B0%D0%BD.pdf")).toBe("план.pdf");
+    expect(
+      parseDispositionFilename("attachment; filename*=UTF-8''%D0%BF%D0%BB%D0%B0%D0%BD.pdf"),
+    ).toBe("план.pdf");
   });
   it("без заголовка або без імені дає null, а filenameFromDisposition запасне ім'я", () => {
     expect(parseDispositionFilename(null)).toBeNull();
@@ -25,11 +27,15 @@ describe("saveBlob", () => {
     const revoked = vi.fn();
     Object.assign(URL, { createObjectURL: created, revokeObjectURL: revoked });
     const clicks: { download: string; href: string; inDom: boolean }[] = [];
-    const click = vi
-      .spyOn(HTMLAnchorElement.prototype, "click")
-      .mockImplementation(function (this: HTMLAnchorElement) {
-        clicks.push({ download: this.download, href: this.href, inDom: document.body.contains(this) });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      clicks.push({
+        download: this.download,
+        href: this.href,
+        inDom: document.body.contains(this),
       });
+    });
     saveBlob(new Blob(["x"]), "plan-2026.pdf");
     expect(created).toHaveBeenCalledTimes(1);
     expect(clicks).toEqual([{ download: "plan-2026.pdf", href: "blob:test", inDom: true }]);

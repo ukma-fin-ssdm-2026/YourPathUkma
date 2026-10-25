@@ -147,3 +147,14 @@ class ModerationStatus(str, Enum):
 class AuditOutcome(str, Enum):
     ALLOWED = "allowed"
     DENIED = "denied"
+
+
+class GenerationStatus(str, Enum):
+    PENDING = "pending"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+
+
+class CertificateAvailability(str, Enum):
+    AVAILABLE = "AVAILABLE"
+    UNAVAILABLE = "UNAVAILABLE"

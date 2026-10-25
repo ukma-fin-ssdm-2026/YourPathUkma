@@ -43,7 +43,10 @@ describe("DeaneryPage: завантаження", () => {
     await user().upload(fileInput(), pdf());
     expect(await screen.findByText("Завантажено, розпізнаємо…")).toBeInTheDocument();
     expect(db.documents).toHaveLength(1);
-    expect(db.documents[0]).toMatchObject({ original_filename: "plan_2026.pdf", academic_year: 2026 });
+    expect(db.documents[0]).toMatchObject({
+      original_filename: "plan_2026.pdf",
+      academic_year: 2026,
+    });
   });
 
   it("повідомлення про розпізнавання зникає, коли документ розпізнано", async () => {
@@ -51,7 +54,9 @@ describe("DeaneryPage: завантаження", () => {
     await user().upload(fileInput(), pdf());
     expect(await screen.findByText("Завантажено, розпізнаємо…")).toBeInTheDocument();
     expect(await screen.findByText("Розпізнано")).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByText("Завантажено, розпізнаємо…")).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByText("Завантажено, розпізнаємо…")).not.toBeInTheDocument(),
+    );
   });
 
   it("невідомий тип показує причину й не надсилає запит", async () => {
@@ -143,7 +148,9 @@ describe("DeaneryPage: помилки сервера", () => {
 describe("DeaneryPage: рік і навігація", () => {
   it("рік береться з ?year=", () => {
     renderPage("/path/create/document?year=2025");
-    expect(screen.getByRole("heading", { name: "Документ деканату на 2025/2026" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Документ деканату на 2025/2026" }),
+    ).toBeInTheDocument();
   });
 
   it("без ?year= бере поточний рік, обмежений межами /config", async () => {

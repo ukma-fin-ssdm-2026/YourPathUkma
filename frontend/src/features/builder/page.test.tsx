@@ -20,8 +20,19 @@ import {
 import { defaultPreferences } from "../preferences/preferences";
 import { BuilderPage } from "./BuilderPage";
 
-const MACHINE = disciplineFixture({ id: 5, title: "Машинне навчання", trimester: 2, credits: 6, directions: ["Data Science"] });
-const FP = disciplineFixture({ id: 101, title: "Функціональне програмування", trimester: 1, credits: 5 });
+const MACHINE = disciplineFixture({
+  id: 5,
+  title: "Машинне навчання",
+  trimester: 2,
+  credits: 6,
+  directions: ["Data Science"],
+});
+const FP = disciplineFixture({
+  id: 101,
+  title: "Функціональне програмування",
+  trimester: 1,
+  credits: 5,
+});
 
 function renderPage(entry = "/path/create?year=2026") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -101,11 +112,18 @@ describe("BuilderPage: початковий стан", () => {
 
   it("?plan=1 підвантажує елементи у відповідні колонки", async () => {
     const crud = plansCrudHandlers([
-      planFixture({ id: 1, items: [item(1, 1, "Функціональне програмування"), item(2, 2, "Мова Haskell")] }),
+      planFixture({
+        id: 1,
+        items: [item(1, 1, "Функціональне програмування"), item(2, 2, "Мова Haskell")],
+      }),
     ]);
     server.use(...crud.handlers);
     renderPage("/path/create?year=2026&plan=1");
-    expect(await within(await screen.findByRole("region", { name: "Осінь" })).findByText("Функціональне програмування")).toBeInTheDocument();
+    expect(
+      await within(await screen.findByRole("region", { name: "Осінь" })).findByText(
+        "Функціональне програмування",
+      ),
+    ).toBeInTheDocument();
     expect(within(column("Весна")).getByText("Мова Haskell")).toBeInTheDocument();
   });
 
@@ -116,7 +134,12 @@ describe("BuilderPage: початковий стан", () => {
     };
     renderPage();
     const summer = await screen.findByRole("group", { name: "Навантаження: літо" });
-    await waitFor(() => expect(within(summer).getByRole("button", { name: "Низьке" })).toHaveAttribute("aria-pressed", "true"));
+    await waitFor(() =>
+      expect(within(summer).getByRole("button", { name: "Низьке" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      ),
+    );
   });
 
   it("для 4 курсу навантаження заблоковано", async () => {
@@ -175,7 +198,11 @@ describe("BuilderPage: документ деканату", () => {
   it("нормативні показуються в колонках і входять у кредити за рік", async () => {
     db.documents.push(parsedDoc());
     renderPage();
-    expect(await within(await screen.findByRole("region", { name: "Осінь" })).findByText("Архітектура ПЗ")).toBeInTheDocument();
+    expect(
+      await within(await screen.findByRole("region", { name: "Осінь" })).findByText(
+        "Архітектура ПЗ",
+      ),
+    ).toBeInTheDocument();
     expect(within(column("Осінь")).getByText("від деканату")).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getByText("із 57–60").parentElement).toHaveTextContent("29 із 57–60"),
@@ -184,7 +211,9 @@ describe("BuilderPage: документ деканату", () => {
 
   it("дисципліна, яку вже додав деканат, у каталозі недоступна", async () => {
     db.documents.push(parsedDoc());
-    server.use(disciplinesHandler([disciplineFixture({ id: 301, title: "Архітектура ПЗ", trimester: 1 })]));
+    server.use(
+      disciplinesHandler([disciplineFixture({ id: 301, title: "Архітектура ПЗ", trimester: 1 })]),
+    );
     renderPage();
     const button = await screen.findByRole("button", { name: "Додати Архітектура ПЗ" });
     await waitFor(() => expect(button).toBeDisabled());
@@ -202,8 +231,13 @@ describe("BuilderPage: недоступний план", () => {
   it("поданий план не можна редагувати", async () => {
     server.use(...plansCrudHandlers([planFixture({ id: 3, status: "submitted" })]).handlers);
     renderPage("/path/create?year=2026&plan=3");
-    expect(await screen.findByText("Цей план уже подано, редагувати його не можна")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Збережені плани" })).toHaveAttribute("href", "/path/saved");
+    expect(
+      await screen.findByText("Цей план уже подано, редагувати його не можна"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Збережені плани" })).toHaveAttribute(
+      "href",
+      "/path/saved",
+    );
     expect(screen.queryByRole("region", { name: "Осінь" })).not.toBeInTheDocument();
   });
 });

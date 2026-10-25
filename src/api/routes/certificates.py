@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ...db import enums as db_enums
-from ...db.models.catalog import CertificateProgram, CertificateProgramCourse
+from ...db.models.catalog import CertificateProgram
 from ...db.session import get_db
 from ..common import ApiError, error_responses, get_current_student_id
 
@@ -54,10 +54,11 @@ def list_certificate_programs(
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
-    query = select(CertificateProgram).where(CertificateProgram.hidden == False)
-    if direction_id:
-        query = query.where(CertificateProgram.direction_ids.any(direction_id))
+    query = select(CertificateProgram).where(CertificateProgram.hidden.is_(False))
     programs = db.scalars(query.order_by(CertificateProgram.title)).all()
+    if direction_id:
+        # Фільтр у Python: .any() для ARRAY працює лише в PostgreSQL, а тести йдуть на SQLite (JSON)
+        programs = [p for p in programs if direction_id in (p.direction_ids or [])]
     return [
         CertificateProgramResponse(
             id=p.id,
@@ -78,7 +79,9 @@ def list_certificate_programs(
     description="Програма зі списком дисциплін і статусом їх звірки з каталогом.",
     responses={
         200: {"description": "Програму знайдено"},
-        **error_responses(401, 404, 422, overrides={404: ("CERTIFICATE_PROGRAM_NOT_FOUND", "Програми з ID 3 не знайдено")}),
+        **error_responses(
+            401, 404, 422, overrides={404: ("CERTIFICATE_PROGRAM_NOT_FOUND", "Програми з ID 3 не знайдено")}
+        ),
     },
 )
 def get_certificate_program(

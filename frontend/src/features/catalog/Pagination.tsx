@@ -17,7 +17,10 @@ export function Pagination({
   const from = Math.min(total, (page - 1) * pageSize + 1);
   const to = Math.min(total, page * pageSize);
   return (
-    <nav aria-label="Сторінки" className="flex items-center justify-between gap-3 pt-4 text-sm text-ink-2">
+    <nav
+      aria-label="Сторінки"
+      className="flex items-center justify-between gap-3 pt-4 text-sm text-ink-2"
+    >
       <span>
         {from}–{to} з {total}
       </span>

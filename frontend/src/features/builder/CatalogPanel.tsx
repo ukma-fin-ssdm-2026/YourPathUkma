@@ -43,7 +43,12 @@ export function CatalogRow({
 }) {
   const disabled = state !== "available";
   return (
-    <div className={"grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 rounded-[10px] bg-paper px-3 py-2.5 transition-[translate,opacity] duration-200 ease-out " + (disabled ? "opacity-60" : "hover:-translate-y-0.5")}>
+    <div
+      className={
+        "grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 rounded-[10px] bg-paper px-3 py-2.5 transition-[translate,opacity] duration-200 ease-out " +
+        (disabled ? "opacity-60" : "hover:-translate-y-0.5")
+      }
+    >
       <div className="min-w-0">
         <b className="break-words font-semibold">{discipline.title}</b>
         <small className="block break-words text-ink-2">
@@ -52,9 +57,13 @@ export function CatalogRow({
         </small>
         <div className="mt-1 flex flex-wrap gap-1.5 text-[11px]">
           {free ? (
-            <span className="rounded-full px-2 py-px text-violet-text ring-1 ring-inset ring-violet">вільний вибір</span>
+            <span className="rounded-full px-2 py-px text-violet-text ring-1 ring-inset ring-violet">
+              вільний вибір
+            </span>
           ) : (
-            <span className="rounded-full px-2 py-px text-cobalt ring-1 ring-inset ring-cobalt">профорієнтовна</span>
+            <span className="rounded-full px-2 py-px text-cobalt ring-1 ring-inset ring-cobalt">
+              профорієнтовна
+            </span>
           )}
           {disabled && <span className="text-ink-2">{REASON[state]}</span>}
         </div>
@@ -144,7 +153,11 @@ export function CatalogPanel({
             />
           );
           return draggable ? (
-            <DraggableRow key={discipline.id} discipline={discipline} disabled={state !== "available"}>
+            <DraggableRow
+              key={discipline.id}
+              discipline={discipline}
+              disabled={state !== "available"}
+            >
               {row}
             </DraggableRow>
           ) : (
@@ -158,7 +171,10 @@ export function CatalogPanel({
   }
 
   return (
-    <aside aria-label="Каталог вибіркових" className="grid content-start gap-3 rounded-2xl border border-rule bg-surface p-4">
+    <aside
+      aria-label="Каталог вибіркових"
+      className="grid content-start gap-3 rounded-2xl border border-rule bg-surface p-4"
+    >
       <h2 className="font-display text-[15px]">Каталог вибіркових</h2>
       <Segmented
         value={trimester}
@@ -206,7 +222,12 @@ export function CatalogPanel({
         />
       </div>
       <div className="max-h-[520px] overflow-auto">{list}</div>
-      <Pagination page={page} pageSize={PAGE_SIZE} total={query.data?.pagination.total ?? 0} onPage={setPage} />
+      <Pagination
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={query.data?.pagination.total ?? 0}
+        onPage={setPage}
+      />
     </aside>
   );
 }
