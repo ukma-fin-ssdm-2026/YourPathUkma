@@ -3217,6 +3217,421 @@ paths:
                 request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/plan-generations:
+    post:
+      tags:
+      - AI generation
+      summary: Запустити AI-генерацію плану
+      description: Створює задачу зі статусом `pending`. Фронтенд опитує GET /plan-generations/{id}.
+      operationId: start_generation_api_v1_plan_generations_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferencesRequest'
+        required: true
+      responses:
+        '202':
+          description: Генерацію запущено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanGenerationResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: GENERATION_IN_PROGRESS
+                message: Вже виконується генерація плану
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+        '429':
+          description: Забагато запитів
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: RATE_LIMITED
+                message: Досягнуто ліміт генерацій (20 за добу)
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+      security:
+      - HTTPBearer: []
+  /api/v1/plan-generations/{generation_id}:
+    get:
+      tags:
+      - AI generation
+      summary: Статус AI-генерації
+      description: Фронтенд опитує, доки статус `pending`. При `succeeded` є `plan_id`
+        нового плану.
+      operationId: get_generation_status_api_v1_plan_generations__generation_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: generation_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 77
+          title: Generation Id
+      responses:
+        '200':
+          description: Статус отримано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanGenerationResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: GENERATION_NOT_FOUND
+                message: Генерації з ID 77 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/certificate-programs:
+    get:
+      tags:
+      - Certificate programs
+      summary: Сертифікатні програми
+      description: Програми, які адмін не приховав (hidden=false). Фільтр за direction_id.
+      operationId: list_certificate_programs_api_v1_certificate_programs_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: direction_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0
+          - type: 'null'
+          description: Фільтр за ID напрямку
+          title: Direction Id
+        description: Фільтр за ID напрямку
+      responses:
+        '200':
+          description: Список отримано
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CertificateProgramResponse'
+                title: Response List Certificate Programs Api V1 Certificate Programs
+                  Get
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/certificate-programs/{program_id}:
+    get:
+      tags:
+      - Certificate programs
+      summary: Деталі сертифікатної програми
+      description: Програма зі списком дисциплін і статусом їх звірки з каталогом.
+      operationId: get_certificate_program_api_v1_certificate_programs__program_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: program_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 3
+          title: Program Id
+      responses:
+        '200':
+          description: Програму знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateProgramDetail'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: CERTIFICATE_PROGRAM_NOT_FOUND
+                message: Програми з ID 3 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/certificate-programs/{program_id}:
+    patch:
+      tags:
+      - Admin
+      summary: Змінити сертифікатну програму
+      description: Прив'язка до напрямків і прапорець hidden. Усі поля необов'язкові.
+      operationId: patch_certificate_program_api_v1_admin_certificate_programs__program_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: program_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 3
+          title: Program Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateProgramPatch'
+      responses:
+        '200':
+          description: Програму оновлено
+          content:
+            application/json:
+              schema: {}
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code: CERTIFICATE_PROGRAM_NOT_FOUND
+                message: Сертифікатної програми з ID 3 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/certificate-programs/{program_id}/courses/{entry_id}:
+    put:
+      tags:
+      - Admin
+      summary: Вручну звірити запис програми з каталогом
+      description: Якщо автоматична звірка не знайшла дисципліну, адмін може вказати
+        її вручну.
+      operationId: update_certificate_entry_api_v1_admin_certificate_programs__program_id__courses__entry_id__put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: program_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 3
+          title: Program Id
+      - name: entry_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          exclusiveMinimum: 0
+          examples:
+          - 501
+          title: Entry Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateEntryUpdate'
+      responses:
+        '200':
+          description: Звірку оновлено
+          content:
+            application/json:
+              schema: {}
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ресурс не знайдено
+          content:
+            application/json:
+              example:
+                code:
+                - CERTIFICATE_PROGRAM_NOT_FOUND
+                - Сертифікатної програми з ID 3 не знайдено
+                message:
+                - CERTIFICATE_ENTRY_NOT_FOUND
+                - Запису програми з ID 501 не знайдено
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /health:
     get:
       tags:
@@ -3792,6 +4207,132 @@ components:
       - rejected
       - skipped
       title: BulkReviewResponse
+    CertificateAvailability:
+      type: string
+      enum:
+      - AVAILABLE
+      - UNAVAILABLE
+      title: CertificateAvailability
+    CertificateEntryUpdate:
+      properties:
+        course_id:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Course Id
+          description: ID дисципліни з каталогу; null скасовує звірку
+      type: object
+      title: CertificateEntryUpdate
+    CertificateProgramDetail:
+      properties:
+        id:
+          type: integer
+          title: Id
+          examples:
+          - 3
+        title:
+          type: string
+          title: Title
+          examples:
+          - Data Engineering
+        source_url:
+          type: string
+          title: Source Url
+          description: Посилання на сторінку програми
+        availability:
+          $ref: '#/components/schemas/CertificateAvailability'
+          description: Доступність програми в цьому році
+        direction_ids:
+          items:
+            type: integer
+          type: array
+          title: Direction Ids
+          description: ID напрямків, до яких прив'язано програму
+        course_count:
+          type: integer
+          title: Course Count
+          description: Кількість дисциплін у програмі
+        courses:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Courses
+          description: Дисципліни програми зі статусом звірки з каталогом
+          examples:
+          - course_id: 120
+            match_status: matched
+            raw_title: Бази даних
+          - match_status: not_found
+            raw_title: Хмарні обчислення
+      type: object
+      required:
+      - id
+      - title
+      - source_url
+      - availability
+      - direction_ids
+      - course_count
+      - courses
+      title: CertificateProgramDetail
+    CertificateProgramPatch:
+      properties:
+        direction_ids:
+          anyOf:
+          - items:
+              type: integer
+            type: array
+            minItems: 1
+          - type: 'null'
+          title: Direction Ids
+          description: Повна заміна переліку напрямків
+        hidden:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Hidden
+          description: Приховати програму від студентів
+      type: object
+      title: CertificateProgramPatch
+    CertificateProgramResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+          examples:
+          - 3
+        title:
+          type: string
+          title: Title
+          examples:
+          - Data Engineering
+        source_url:
+          type: string
+          title: Source Url
+          description: Посилання на сторінку програми
+        availability:
+          $ref: '#/components/schemas/CertificateAvailability'
+          description: Доступність програми в цьому році
+        direction_ids:
+          items:
+            type: integer
+          type: array
+          title: Direction Ids
+          description: ID напрямків, до яких прив'язано програму
+        course_count:
+          type: integer
+          title: Course Count
+          description: Кількість дисциплін у програмі
+      type: object
+      required:
+      - id
+      - title
+      - source_url
+      - availability
+      - direction_ids
+      - course_count
+      title: CertificateProgramResponse
     ConfigResponse:
       properties:
         api_version:
@@ -4252,6 +4793,37 @@ components:
           default: true
       type: object
       title: Features
+    GenerationNotice:
+      properties:
+        code:
+          type: string
+          title: Code
+          examples:
+          - UNWANTED_INSTRUCTOR_UNAVOIDABLE
+        message:
+          type: string
+          title: Message
+          examples:
+          - Дисципліну X викладає лише обраний вами небажаний викладач
+        course_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Course Id
+          examples:
+          - 140
+      type: object
+      required:
+      - code
+      - message
+      title: GenerationNotice
+    GenerationStatus:
+      type: string
+      enum:
+      - pending
+      - succeeded
+      - failed
+      title: GenerationStatus
     HTTPValidationError:
       properties:
         detail:
@@ -4680,6 +5252,55 @@ components:
         limit: 20
         offset: 0
         total: 2
+    PlanGenerationResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+          examples:
+          - 77
+        status:
+          $ref: '#/components/schemas/GenerationStatus'
+          examples:
+          - pending
+        plan_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Plan Id
+          examples:
+          - 9
+        notices:
+          items:
+            $ref: '#/components/schemas/GenerationNotice'
+          type: array
+          title: Notices
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+          description: Помилка, якщо status=failed
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+          examples:
+          - '2026-10-08T10:00:00Z'
+        finished_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Finished At
+          examples:
+          - '2026-10-08T10:01:12Z'
+      type: object
+      required:
+      - id
+      - status
+      - created_at
+      title: PlanGenerationResponse
     PlanItem:
       properties:
         course_id:
@@ -5340,3 +5961,7 @@ tags:
   description: 'Адміністрування: користувачі, довідники, синхронізація, аудит'
 - name: User
   description: Профіль студента, онбординг, академічна історія
+- name: AI generation
+  description: Асинхронна AI-генерація плану за побажаннями
+- name: Certificates
+  description: Сертифікатні програми факультету
