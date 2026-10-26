@@ -31,12 +31,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from ..db.migrate import init_database
 from .common import RequestIdMiddleware, assert_safe_environment, register_error_handlers
+from .routes import ai, auth, certificates, deanery, disciplines, plans, preferences, reference, system, user
 from .routes.admin import audit as admin_audit
 from .routes.admin import catalog as admin_catalog
 from .routes.admin import certificates as admin_certificates
 from .routes.admin import sync as admin_sync
 from .routes.admin import users as admin_users
-from .routes import ai, auth, certificates, deanery, disciplines, plans, preferences, reference, system, user
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("yourpath.api")

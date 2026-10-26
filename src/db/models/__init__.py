@@ -6,6 +6,7 @@
 Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: `alembic check`, pytest.
 """
 
+from . import ai  # noqa: F401
 from .admin import AuditLog, ModerationItem, SyncJob
 from .catalog import Course, CourseDirection, CourseInstructor, Direction, Instructor
 from .deanery import DeaneryPlanDocument, NormativeCourseEntry
@@ -13,7 +14,6 @@ from .history import AcademicRecord
 from .plans import IndividualPlan, PlanItem
 from .preferences import InstructorPreference, PlanPreferences, PreferenceDirection, TrimesterLoad
 from .users import RefreshToken, StudentProfile, User
-from . import ai  # noqa: F401
 
 __all__ = [
     "AcademicRecord",

@@ -1,7 +1,7 @@
 """
 Адмінка: сертифікатні програми (contract.md §3.9).
 
-PATCH /admin/certificate-programs/{program_id}, 
+PATCH /admin/certificate-programs/{program_id},
 PUT /admin/certificate-programs/{program_id}/courses/{entry_id}.
 
 Інші кінцеві точки для сертифікатних програм — у certificates.py.
@@ -10,13 +10,12 @@ PUT /admin/certificate-programs/{program_id}/courses/{entry_id}.
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Path, Request
-from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import select
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from ....db import enums as db_enums
+from ....db.models.catalog import CertificateProgram, CertificateProgramCourse
 from ....db.models.users import User
-from ....db.models.catalog import CertificateProgram, CertificateProgramCourse, Direction
 from ....db.session import get_db
 from ...common import ApiError, error_responses
 from .common import client_ip, require_admin, write_audit
