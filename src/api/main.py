@@ -31,9 +31,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from ..db.migrate import init_database
 from .common import RequestIdMiddleware, assert_safe_environment, register_error_handlers
-from .routes import auth, deanery, disciplines, plans, preferences, reference, system, user
+from .routes import ai, auth, certificates, deanery, disciplines, plans, preferences, reference, system, user
 from .routes.admin import audit as admin_audit
 from .routes.admin import catalog as admin_catalog
+from .routes.admin import certificates as admin_certificates
 from .routes.admin import sync as admin_sync
 from .routes.admin import users as admin_users
 
@@ -96,6 +97,8 @@ app = FastAPI(
         {"name": "Deanery documents", "description": "Документи деканату"},
         {"name": "Admin", "description": "Адміністрування: користувачі, довідники, синхронізація, аудит"},
         {"name": "User", "description": "Профіль студента, онбординг, академічна історія"},
+        {"name": "AI generation", "description": "Асинхронна AI-генерація плану за побажаннями"},
+        {"name": "Certificates", "description": "Сертифікатні програми факультету"},
     ],
     lifespan=lifespan,
 )
@@ -125,6 +128,9 @@ app.include_router(admin_users.router)
 app.include_router(admin_catalog.router)
 app.include_router(admin_sync.router)
 app.include_router(admin_audit.router)
+app.include_router(ai.router)
+app.include_router(certificates.router)
+app.include_router(admin_certificates.router)
 
 
 @app.get("/health", tags=["System"], summary="Перевірка стану системи (Healthcheck)")
