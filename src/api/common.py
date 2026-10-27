@@ -23,6 +23,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
+from .tokens import decode_access_token, validate_auth_settings
 
 logger = logging.getLogger("yourpath.api")
 
@@ -233,34 +234,30 @@ class PaginationInfo(BaseModel):
     )
 
 
-MOCK_STUDENT_ID = 42
-
 bearer_scheme = HTTPBearer(
     auto_error=False,
-    description="JWT після входу через Microsoft 365 SSO. У заглушці приймається будь-який непорожній токен.",
+    description="Access-токен, отриманий у POST /api/v1/auth/microsoft або /api/v1/auth/refresh.",
 )
 
 
-def dev_bypass_enabled() -> bool:
-    """Обхід автентифікації для MCP дозволено лише поза продакшном (APP_ENV != production)."""
-    return os.getenv("MCP_DEV_MODE") == "1" and os.getenv("APP_ENV", "development") != "production"
+def cors_origins() -> List[str]:
+    raw = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
 def assert_safe_environment() -> None:
-    """Відмовляє у запуску, якщо обхід автентифікації ввімкнено в продакшні."""
-    if os.getenv("MCP_DEV_MODE") == "1" and os.getenv("APP_ENV") == "production":
-        raise RuntimeError("MCP_DEV_MODE=1 заборонено при APP_ENV=production")
+    production = os.getenv("APP_ENV", "development") == "production"
+    validate_auth_settings(production)
+    if "*" in cors_origins():
+        raise RuntimeError("CORS_ORIGINS=* несумісний з cookie-автентифікацією, вкажіть явні адреси")
 
 
 async def get_current_student_id(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
 ) -> int:
-    """Заглушка автентифікації: повертає тестового студента для будь-якого непорожнього Bearer-токена."""
-    if credentials is None:
-        if dev_bypass_enabled():
-            logger.warning("MCP_DEV_MODE: запит без токена пропущено як студента %s", MOCK_STUDENT_ID)
-            return MOCK_STUDENT_ID
+    if credentials is None or not credentials.credentials.strip():
         raise ApiError(401, "UNAUTHORIZED", _UNAUTHORIZED_MESSAGE)
-    if not credentials.credentials.strip():
+    user_id = decode_access_token(credentials.credentials.strip())
+    if user_id is None:
         raise ApiError(401, "UNAUTHORIZED", _UNAUTHORIZED_MESSAGE)
-    return MOCK_STUDENT_ID
+    return user_id
