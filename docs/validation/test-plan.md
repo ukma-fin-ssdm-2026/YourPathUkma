@@ -36,7 +36,7 @@
 | TP-14 | `POST /api/v1/plans/validate` (`validate_plan`) | інтеграційний | негативний | Невалідна схема (триместр 5) → 422 | Оксана | FR-010 |
 | TP-15 | `GET /api/v1/disciplines` (`list_disciplines`) | інтеграційний | позитивний | З токеном → 200 з `disciplines` і `pagination` (limit, offset, total, has_more) | Оксана | FR-013 |
 | TP-16 | `GET /api/v1/disciplines` (`list_disciplines`) | інтеграційний | негативний | Без токена → 401 | Оксана | FR-013 |
-| TP-17 | `GET /api/v1/disciplines/{id}` (`get_discipline`) | інтеграційний | негативний | Неіснуючий ID → 404 `DISCIPLINE_NOT_FOUND` у форматі `ErrorResponse` | Оксана (**окремий тест ще не реалізовано**) | FR-013 |
+| TP-17 | `GET /api/v1/disciplines/{id}` (`get_discipline`) | інтеграційний | негативний | Неіснуючий ID → 404 `DISCIPLINE_NOT_FOUND` у форматі `ErrorResponse` | Дар'я (**окремий тест ще не реалізовано**) | FR-013 |
 | TP-18 | `disciplines.to_discipline` | модульний | позитивний | Без HTTP і БД: поля курсу відображаються на модель API; кілька викладачів об'єднуються через кому; вільний вибір має порожні `directions` | Данило (**ще не реалізовано**) | FR-013 |
 
 Нефункціональна вимога SEC-001 покрита рядком TP-11 з вимірюваним порогом: 100 % спроб доступу до чужого плану завершуються кодом 403. Другу частину вимоги («кожна спроба журналюється») ще не реалізовано, тому її в плані немає.
@@ -60,7 +60,7 @@
 | TP-14 | `tests/test_plan_validation.py::test_validate_schema_violation_is_422` |
 | TP-15 | `tests/test_db_plans.py::test_disciplines_pagination`, `tests/test_api_smoke.py::test_disciplines_list_ok` |
 | TP-16 | `tests/test_api_smoke.py::test_disciplines_requires_auth` |
-| TP-17 | 404 `DISCIPLINE_NOT_FOUND` частково перевіряє `tests/test_db_plans.py::test_discipline_by_id`; окремий тест зі статусом 404 **не реалізовано** (власник: Оксана) |
+| TP-17 | 404 `DISCIPLINE_NOT_FOUND` частково перевіряє `tests/test_db_plans.py::test_discipline_by_id`; окремий тест зі статусом 404 **не реалізовано** (власник: Дар'я) |
 | TP-18 | **не реалізовано** (власник: Данило) |
 
 Зелений прогін у GitHub Actions для цього PR додамо після пушу.
