@@ -27,7 +27,7 @@
 | TP-05 | `POST /api/v1/plans`: правило `check_load_levels` через API | інтеграційний | негативний | 4 курс з `load_levels` → 422, у `details` є `LOAD_LEVELS_NOT_ALLOWED` | Владислав | FR-003 |
 | TP-06 | `POST /api/v1/plans` (`create_plan`) | інтеграційний | позитивний | Валідний план → 201, статус `draft`, план у `GET /api/v1/plans` | Дар'я | FR-004 |
 | TP-07 | `POST /api/v1/plans` (`create_plan`) | інтеграційний | негативний | Вільні вибіркові понад ліміт → 422 `FREE_ELECTIVE_LIMIT_EXCEEDED`, план не збережено | Дар'я | FR-010 |
-| TP-08 | `plans.collect_rule_errors` | модульний | негативний | Без HTTP і БД: дублікат → `DUPLICATE_COURSE`; лише вільні → `ONLY_FREE_ELECTIVES`; вільні понад 25 → `FREE_ELECTIVE_LIMIT_EXCEEDED`; валідний набір → порожній список | Дар'я (**ще не реалізовано**) | FR-010 |
+| TP-08 | `plans.collect_rule_errors` | модульний | негативний | Без HTTP і БД: дублікат → `DUPLICATE_COURSE`; лише вільні → `ONLY_FREE_ELECTIVES`; вільні понад 25 → `FREE_ELECTIVE_LIMIT_EXCEEDED`; валідний набір → порожній список | Дар'я | FR-010 |
 | TP-09 | `PUT /api/v1/plans/{id}` (`update_plan`) | інтеграційний | негативний | План не в статусі `draft` → 409 `PLAN_NOT_EDITABLE` | Дар'я | FR-004 |
 | TP-10 | `DELETE /api/v1/plans/{id}` (`delete_plan`) | інтеграційний | негативний | План не в статусі `draft` → 409 `PLAN_NOT_DELETABLE` | Данило | FR-004 |
 | TP-11 | `GET /api/v1/plans/{id}` (`get_plan`, `_find_plan`), запит від іншого студента | інтеграційний | негативний | NFR: чужий план → 403 `PLAN_FORBIDDEN` у 100 % спроб | Данило | SEC-001 |
@@ -36,7 +36,7 @@
 | TP-14 | `POST /api/v1/plans/validate` (`validate_plan`) | інтеграційний | негативний | Невалідна схема (триместр 5) → 422 | Оксана | FR-010 |
 | TP-15 | `GET /api/v1/disciplines` (`list_disciplines`) | інтеграційний | позитивний | З токеном → 200 з `disciplines` і `pagination` (limit, offset, total, has_more) | Оксана | FR-013 |
 | TP-16 | `GET /api/v1/disciplines` (`list_disciplines`) | інтеграційний | негативний | Без токена → 401 | Оксана | FR-013 |
-| TP-17 | `GET /api/v1/disciplines/{id}` (`get_discipline`) | інтеграційний | негативний | Неіснуючий ID → 404 `DISCIPLINE_NOT_FOUND` у форматі `ErrorResponse` | Дар'я (**окремий тест ще не реалізовано**) | FR-013 |
+| TP-17 | `GET /api/v1/disciplines/{id}` (`get_discipline`) | інтеграційний | негативний | Неіснуючий ID → 404 `DISCIPLINE_NOT_FOUND` у форматі `ErrorResponse` | Дар'я | FR-013 |
 | TP-18 | `disciplines.to_discipline` | модульний | позитивний | Без HTTP і БД: поля курсу відображаються на модель API; кілька викладачів об'єднуються через кому; вільний вибір має порожні `directions` | Данило (**ще не реалізовано**) | FR-013 |
 
 Нефункціональна вимога SEC-001 покрита рядком TP-11 з вимірюваним порогом: 100 % спроб доступу до чужого плану завершуються кодом 403. Другу частину вимоги («кожна спроба журналюється») ще не реалізовано, тому її в плані немає.
