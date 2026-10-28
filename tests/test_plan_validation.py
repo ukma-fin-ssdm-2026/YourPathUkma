@@ -1,8 +1,10 @@
 """Тести POST /api/v1/plans/validate і регресія POST /api/v1/plans після винесення правил."""
 
+import pytest
 from fastapi.testclient import TestClient
 
 from src.api.main import app
+from src.api.routes.plans import PlanItem, collect_rule_errors
 
 client = TestClient(app)
 AUTH = {"Authorization": "Bearer test"}
@@ -74,3 +76,23 @@ def test_create_plan_still_rejects_business_rule_violation(monkeypatch):
     assert response.status_code == 422
     messages = [detail["message"] for detail in response.json()["details"]]
     assert any(m.startswith("FREE_ELECTIVE_LIMIT_EXCEEDED") and "3 > 2" in m for m in messages)
+
+
+def _plan_item(course_id, credits, free=False):
+    return PlanItem(**_item(course_id, credits, free=free))
+
+
+@pytest.mark.parametrize(
+    "items, expected_codes",
+    [
+        ([_plan_item(101, 5.0), _plan_item(205, 3.0, free=True)], []),
+        ([_plan_item(101, 5.0), _plan_item(101, 5.0)], ["DUPLICATE_COURSE"]),
+        ([_plan_item(205, 3.0, free=True)], ["ONLY_FREE_ELECTIVES"]),
+        ([_plan_item(101, 5.0), _plan_item(205, 26.0, free=True)], ["FREE_ELECTIVE_LIMIT_EXCEEDED"]),
+        ([_plan_item(101, 5.0), _plan_item(205, 25.0, free=True)], []),
+    ],
+    ids=["valid", "duplicate", "only_free_electives", "free_limit_exceeded", "free_limit_boundary"],
+)
+def test_collect_rule_errors(items, expected_codes):
+    """TP-08: модульний тест правил без HTTP і БД."""
+    assert [e.code for e in collect_rule_errors(items)] == expected_codes
