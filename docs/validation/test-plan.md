@@ -50,3 +50,35 @@
 
 - **Що створено/змінено:** чернетку цього тест-плану (структуру, формулювання кейсів, розподіл за власниками) підготовлено за допомогою Claude Code.
 - **Як перевірено:** ID вимог звірено з `docs/requirements/requirements.md` і `rtm.md`; назви функцій, коди помилок і наявні автотести звірено з вихідним кодом у `src/` та `tests/`. Тести повторно не запускалися. Розподіл власників — пропозиція, команда має її підтвердити.
+
+## Бонуси
+
+### Тести з техніки тест-дизайну: таблиця переходів між станами плану
+
+**Ділянка логіки.** Життєвий цикл статусу індивідуального плану (`PlanStatus`: `draft`, `submitted`, `awaiting_deanery`, `approved`) і три події API: редагування `PUT /plans/{id}`, видалення `DELETE /plans/{id}` та подання `POST /plans/{id}/submit`. Правило з FR-004 та AGENTS.md: редагувати, видаляти й подавати можна лише план у статусі `draft`, в інших статусах сервер відповідає 409. Подання валідного `draft` переводить його в `submitted`.
+
+**Чому ця техніка.** Поведінка залежить від поточного стану й події, тому таблиця «стан × подія» гарантує, що жодне з 12 сполучень не пропущено. Звичайні приклади в тестах 5–9 перевіряли лише частину з них (`draft` + create, `submitted` + PUT/DELETE).
+
+| ID | Стан до | Подія | Результат | Стан після |
+|---|---|---|---|---|
+| ST-01 | draft | PUT | 200 | draft |
+| ST-02 | draft | DELETE | 204 | план видалено |
+| ST-03 | draft | submit (валідний план) | 200 | submitted |
+| ST-04 | submitted | PUT | 409 `PLAN_NOT_EDITABLE` | submitted |
+| ST-05 | submitted | DELETE | 409 `PLAN_NOT_DELETABLE` | submitted |
+| ST-06 | submitted | submit | 409 `PLAN_NOT_SUBMITTABLE` | submitted |
+| ST-07 | awaiting_deanery | PUT | 409 `PLAN_NOT_EDITABLE` | awaiting_deanery |
+| ST-08 | awaiting_deanery | DELETE | 409 `PLAN_NOT_DELETABLE` | awaiting_deanery |
+| ST-09 | awaiting_deanery | submit | 409 `PLAN_NOT_SUBMITTABLE` | awaiting_deanery |
+| ST-10 | approved | PUT | 409 `PLAN_NOT_EDITABLE` | approved |
+| ST-11 | approved | DELETE | 409 `PLAN_NOT_DELETABLE` | approved |
+| ST-12 | approved | submit | 409 `PLAN_NOT_SUBMITTABLE` | approved |
+| ST-13 | draft | submit (план порушує правила) | 422 `PLAN_VALIDATION_FAILED` | draft |
+
+**Відповідність тестів рядкам таблиці.** Файл `tests/test_plan_status_transitions.py`. ST-01…ST-12 — це один параметризований тест `test_plan_status_transition`, де ID параметра збігається з ID рядка (`test_plan_status_transition[ST-04]` тощо). ST-13 — `test_submit_with_rule_violation_keeps_draft`. Один рядок таблиці дає один випадок.
+
+**Примітка.** Стани `awaiting_deanery` та `approved` API не встановлює (їх виставлятиме деканат), тому в тесті вони задаються напряму в БД. Переходи `submitted` → `awaiting_deanery` → `approved` ще не реалізовані й у таблицю не входять.
+
+**Запуск.** `pytest tests/test_plan_status_transitions.py -v` (13 випадків). Повний набір: `pytest -q --cov=src --cov-branch`, 297 passed, покриття 86 %. Перевірка чутливості: після тимчасового вимкнення перевірки статусу в `update_plan` падають ST-04, ST-07, ST-10.
+
+**Використання ШІ.** Таблицю й тести створено за допомогою Claude Code; перевірено запуском pytest і ручним «вбиванням» перевірки статусу в обробнику (див. вище). Код має прочитати й зрозуміти учасник, який пояснюватиме бонус у відео.
