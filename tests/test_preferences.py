@@ -1,4 +1,4 @@
-"""Тести довідників: GET /api/v1/directions і GET /api/v1/instructors."""
+"""Тести збереження побажань (Preferences)."""
 
 from fastapi.testclient import TestClient
 
@@ -8,26 +8,29 @@ client = TestClient(app)
 AUTH = {"Authorization": "Bearer test"}
 
 
-def test_directions_require_token():
-    app.dependency_overrides.clear()
-    assert client.get("/api/v1/directions").status_code == 401
+def test_get_preferences_not_found():
+    response = client.get("/api/v1/preferences/2030", headers=AUTH)
+    assert response.status_code == 404
+    assert response.json()["code"] == "PREFERENCES_NOT_FOUND"
 
 
-def test_directions_list():
-    response = client.get("/api/v1/directions", headers=AUTH)
+def test_put_preferences_creates_or_updates():
+    payload = {
+        "academic_year": 2027,
+        "load_levels": {"autumn": "low", "spring": "medium", "summer": "high"},
+        "direction_ids": [],
+        "include_free_electives": True,
+        "preferred_instructor_ids": [],
+        "unwanted_instructor_ids": [],
+        "wants_certificate": False,
+        "certificate_program_id": None,
+    }
+    response = client.put("/api/v1/preferences/2027", json=payload, headers=AUTH)
     assert response.status_code == 200
-    names = [d["name"] for d in response.json()["directions"]]
-    assert "Data Science" in names
+    data = response.json()
+    assert data["academic_year"] == 2027
+    assert data["load_levels"]["autumn"] == "low"
 
-
-def test_instructors_search_by_q():
-    response = client.get("/api/v1/instructors", params={"q": "петр"}, headers=AUTH)
-    assert response.status_code == 200
-    body = response.json()
-    assert [i["full_name"] for i in body["instructors"]] == ["Петренко І. М."]
-    assert body["pagination"]["total"] == 1
-
-
-def test_instructors_q_too_short_is_422():
-    response = client.get("/api/v1/instructors", params={"q": "п"}, headers=AUTH)
-    assert response.status_code == 422
+    # Перевіряємо, що GET тепер повертає ці побажання
+    get_response = client.get("/api/v1/preferences/2027", headers=AUTH)
+    assert get_response.status_code == 200
