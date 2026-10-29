@@ -73,3 +73,12 @@ def test_create_plan_still_rejects_business_rule_violation(monkeypatch):
     assert response.status_code == 422
     messages = [detail["message"] for detail in response.json()["details"]]
     assert any(m.startswith("FREE_ELECTIVE_LIMIT_EXCEEDED") and "3 > 2" in m for m in messages)
+
+
+def test_create_plan_fourth_course_with_load_levels_is_rejected():
+    """Інтеграційний рівень правила FR-003: 4 курс не може надсилати рівні навантаження."""
+    body = {**_plan([_item(101, 5.0)]), "course": 4, "load_levels": {"autumn": "low"}}
+    response = client.post("/api/v1/plans", json=body, headers=AUTH)
+    assert response.status_code == 422
+    messages = [detail["message"] for detail in response.json()["details"]]
+    assert any(m.startswith("LOAD_LEVELS_NOT_ALLOWED") for m in messages)
