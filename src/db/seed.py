@@ -103,7 +103,14 @@ def seed_demo_data(db: Session) -> bool:
             db.add(CourseDirection(course_id=course_id, direction_id=direction_id))
 
     for user_id, email, full_name, role, course_year in _USERS:
-        user = User(id=user_id, google_sub=f"seed-{user_id}", email=email, full_name=full_name, role=role)
+        user = User(
+            id=user_id,
+            ms_oid=f"seed-oid-{user_id}",
+            ms_tid="seed-tenant-id",
+            email=email,
+            full_name=full_name,
+            role=role,
+        )
         if role == UserRole.STUDENT:
             user.student_profile = StudentProfile(
                 specialty="Інженерія програмного забезпечення",

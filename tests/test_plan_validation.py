@@ -23,6 +23,7 @@ def _item(course_id, credits, trimester=1, free=False):
 
 
 def test_validate_requires_token():
+    app.dependency_overrides.clear()
     response = client.post("/api/v1/plans/validate", json=_plan([_item(101, 5.0)]))
     assert response.status_code == 401
 
