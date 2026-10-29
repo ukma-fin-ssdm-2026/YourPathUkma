@@ -26,7 +26,7 @@ function countExchanges() {
 
 describe("buildAuthorizeUrl", () => {
   it("містить усі параметри OAuth2 + PKCE", () => {
-    const url = new URL(buildAuthorizeUrl(env, { state: "st", challenge: "ch" }));
+    const url = new URL(buildAuthorizeUrl(env, { state: "st", challenge: "ch", nonce: "nc" }));
     expect(`${url.origin}${url.pathname}`).toBe(
       "https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize",
     );
@@ -37,6 +37,7 @@ describe("buildAuthorizeUrl", () => {
     expect(url.searchParams.get("code_challenge")).toBe("ch");
     expect(url.searchParams.get("code_challenge_method")).toBe("S256");
     expect(url.searchParams.get("state")).toBe("st");
+    expect(url.searchParams.get("nonce")).toBe("nc");
     expect(url.searchParams.get("response_mode")).toBe("query");
   });
 });
@@ -47,10 +48,13 @@ describe("startLogin", () => {
     await startLogin(navigate);
     const verifier = sessionStorage.getItem("pkce_verifier");
     const state = sessionStorage.getItem("oauth_state");
+    const nonce = sessionStorage.getItem("oauth_nonce");
     expect(verifier).toHaveLength(43);
+    expect(nonce).toBeTruthy();
     expect(state).toBeTruthy();
     const url = new URL(navigate.mock.calls[0]![0] as string);
     expect(url.searchParams.get("state")).toBe(state);
+    expect(url.searchParams.get("nonce")).toBe(nonce);
     expect(url.searchParams.get("code_challenge")).toBeTruthy();
     expect(url.searchParams.get("code_challenge")).not.toBe(verifier);
   });
@@ -67,6 +71,7 @@ describe("completeLogin", () => {
   beforeEach(() => {
     sessionStorage.setItem("pkce_verifier", "v".repeat(43));
     sessionStorage.setItem("oauth_state", "state-1");
+    sessionStorage.setItem("oauth_nonce", "n".repeat(22));
   });
 
   it("чужий state: OAUTH_STATE_MISMATCH без запиту до API", async () => {
@@ -99,6 +104,29 @@ describe("completeLogin", () => {
     expect(getAccessToken()).toBe("mock-access-token");
     expect(sessionStorage.getItem("pkce_verifier")).toBeNull();
     expect(sessionStorage.getItem("oauth_state")).toBeNull();
+    expect(sessionStorage.getItem("oauth_nonce")).toBeNull();
+  });
+
+  it("надсилає на бекенд code, code_verifier, nonce і redirect_uri", async () => {
+    let body: Record<string, string> = {};
+    server.use(
+      http.post("*/api/v1/auth/microsoft", async ({ request }) => {
+        body = (await request.json()) as Record<string, string>;
+        return HttpResponse.json({
+          access_token: "t",
+          token_type: "Bearer",
+          expires_in: 900,
+          user: { id: 1, email: "a@ukma.edu.ua", full_name: "A", role: "student" },
+        });
+      }),
+    );
+    await completeLogin("?code=c&state=state-1");
+    expect(body).toEqual({
+      code: "c",
+      code_verifier: "v".repeat(43),
+      nonce: "n".repeat(22),
+      redirect_uri: "http://localhost:3000/auth/callback",
+    });
   });
 
   it("помилка сервера (домен) пробрасується й теж чистить сховище", async () => {
