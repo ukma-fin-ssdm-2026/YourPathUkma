@@ -1240,7 +1240,7 @@
           "Auth"
         ],
         "summary": "Вхід: обмін коду Microsoft на токени",
-        "description": "Заглушка: приймає будь-який код і повертає тестового студента.",
+        "description": "Обмінює код авторизації Microsoft (PKCE) на id_token, перевіряє його підпис, tenant, nonce і домен пошти. При першому вході створює студента автоматично. Refresh-токен видається в HttpOnly cookie.",
         "operationId": "login_with_microsoft_api_v1_auth_microsoft_post",
         "requestBody": {
           "content": {
@@ -1271,8 +1271,24 @@
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "code": "UNAUTHORIZED",
-                  "message": "Відсутній або некоректний токен авторизації",
+                  "code": "INVALID_AUTH_CODE",
+                  "message": "Не вдалося підтвердити вхід через Microsoft",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Доступ заборонено: ресурс належить іншому студенту",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "EMAIL_DOMAIN_NOT_ALLOWED",
+                  "message": "Вхід дозволено лише з корпоративною поштою НаУКМА",
                   "details": [],
                   "request_id": "req_3f9a1c7e2b4d4a6e"
                 }
@@ -1309,7 +1325,7 @@
           "Auth"
         ],
         "summary": "Новий access-токен за refresh-cookie",
-        "description": "Без тіла. Потрібна cookie refresh_token (credentials: include).",
+        "description": "Без тіла. Потрібна cookie refresh_token (credentials: include). Refresh-токен ротується.",
         "operationId": "refresh_session_api_v1_auth_refresh_post",
         "parameters": [
           {
@@ -1375,11 +1391,39 @@
           "Auth"
         ],
         "summary": "Вихід",
-        "description": "Очищає refresh-cookie. Заглушка: токени в БД ще не відкликаються.",
+        "description": "Відкликає refresh-токен і очищає cookie.",
         "operationId": "logout_api_v1_auth_logout_post",
+        "parameters": [
+          {
+            "name": "refresh_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Refresh Token"
+            }
+          }
+        ],
         "responses": {
           "204": {
             "description": "Вихід виконано"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         }
       }
@@ -7569,6 +7613,13 @@
             "title": "Code Verifier",
             "description": "PKCE code_verifier (43-128 символів RFC 7636)"
           },
+          "nonce": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 16,
+            "title": "Nonce",
+            "description": "nonce, переданий фронтендом у запиті авторизації"
+          },
           "redirect_uri": {
             "type": "string",
             "maxLength": 512,
@@ -7581,6 +7632,7 @@
         "required": [
           "code",
           "code_verifier",
+          "nonce",
           "redirect_uri"
         ],
         "title": "MicrosoftLoginRequest"
@@ -8918,7 +8970,7 @@
     "securitySchemes": {
       "HTTPBearer": {
         "type": "http",
-        "description": "JWT після входу через Microsoft 365 SSO. У заглушці приймається будь-який непорожній токен.",
+        "description": "Access-токен, отриманий у POST /api/v1/auth/microsoft або /api/v1/auth/refresh.",
         "scheme": "bearer"
       }
     }
