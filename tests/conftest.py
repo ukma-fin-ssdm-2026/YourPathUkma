@@ -15,6 +15,8 @@ from unittest.mock import MagicMock
 
 _TEST_DB_URL = os.getenv("TEST_DATABASE_URL") or f"sqlite:///{Path(tempfile.mkdtemp()) / 'test.sqlite'}"
 os.environ["DATABASE_URL"] = _TEST_DB_URL
+# Локальний .env розробника (MS_*, ALLOWED_REDIRECT_URIS…) не має потрапляти в тести
+os.environ["SKIP_DOTENV"] = "1"
 
 os.environ.setdefault("JWT_SECRET", "test-secret-test-secret-test-secret-123456")
 import pytest  # noqa: E402

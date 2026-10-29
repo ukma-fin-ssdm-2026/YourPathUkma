@@ -41,7 +41,8 @@ from .routes.admin import users as admin_users
 
 # Змінні з .env (MS_*, JWT_SECRET, DATABASE_URL…). Задані в оболонці й у CI змінні не перезаписуються.
 # Модулі читають оточення під час виклику, а не під час імпорту, тож завантаження тут достатнє.
-load_dotenv()
+if os.getenv("SKIP_DOTENV") != "1":  # тести задають SKIP_DOTENV=1, щоб локальний .env не впливав на них
+    load_dotenv()
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("yourpath.api")
