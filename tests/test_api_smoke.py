@@ -14,16 +14,19 @@ AUTH = {"Authorization": "Bearer test"}
 
 
 def test_disciplines_requires_auth():
+    app.dependency_overrides.clear()
     r = client.get("/api/v1/disciplines")
     assert r.status_code == 401
     assert r.json()["code"] == "UNAUTHORIZED"
 
 
 def test_plans_requires_auth():
+    app.dependency_overrides.clear()
     assert client.get("/api/v1/plans").status_code == 401
 
 
 def test_blank_token_rejected():
+    app.dependency_overrides.clear()
     r = client.get("/api/v1/plans", headers={"Authorization": "Bearer  "})
     assert r.status_code == 401
 
