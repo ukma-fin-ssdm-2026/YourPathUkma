@@ -22,7 +22,12 @@ VERIFIER = "a" * 43
 
 
 def _auth_request(**overrides) -> MicrosoftLoginRequest:
-    data = {"code": "abc", "code_verifier": VERIFIER, "redirect_uri": "http://localhost:5173/callback"}
+    data = {
+        "code": "abc",
+        "code_verifier": VERIFIER,
+        "redirect_uri": "http://localhost:5173/callback",
+        "nonce": "test-nonce-12345",
+    }
     data.update(overrides)
     return MicrosoftLoginRequest(**data)
 
@@ -252,13 +257,9 @@ def test_auth_rejects_bad_code_verifier(verifier):
 
 @pytest.mark.parametrize("uri", ["javascript:alert(1)", "ftp://example.com/cb", "http://x.com/cb#frag", "/relative"])
 def test_auth_rejects_bad_redirect_uri(uri):
-    # Arrange: allowlist налаштовано фікстурою configured_allowlist
-
-    # Act
-    request = _auth_request(redirect_uri=ALLOWED_URI)
-
-    # Assert
-    assert request.redirect_uri == ALLOWED_URI
+    # Arrange + Act + Assert
+    with pytest.raises(ValidationError):
+        _auth_request(redirect_uri=uri)
 
 
 def test_auth_enforces_allowlist_when_configured(monkeypatch):

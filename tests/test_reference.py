@@ -9,6 +9,7 @@ AUTH = {"Authorization": "Bearer test"}
 
 
 def test_directions_require_token():
+    app.dependency_overrides.clear()
     assert client.get("/api/v1/directions").status_code == 401
 
 

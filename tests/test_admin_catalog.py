@@ -9,31 +9,50 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from src.api.common import MOCK_STUDENT_ID
 from src.api.main import app
 from src.db import enums as db_enums
 from src.db.models.catalog import Course
 from src.db.models.users import User
 from src.db.session import session_factory
 
+# Спробуємо імпортувати залежності аутентифікації з роутера admin
+try:
+    from src.api.routes.admin.common import require_admin
+except ImportError:
+    require_admin = None
+
 client = TestClient(app)
-AUTH = {"Authorization": "Bearer test"}
+TEST_STUDENT_ID = 1
 DIRECTIONS_URL = "/api/v1/admin/directions"
 
 
 @pytest.fixture
 def admin():
-    """Тимчасово робить тестового користувача адміністратором; після тесту повертає стару роль."""
+    """Тимчасово робить тестового користувача адміністратором і перевизначає залежність аутентифікації."""
     with session_factory()() as db:
-        user = db.get(User, MOCK_STUDENT_ID)
+        user = db.get(User, TEST_STUDENT_ID)
+        if user is None:
+            pytest.skip("Test user with TEST_STUDENT_ID not found in database")
         original_role = user.role
         user.role = db_enums.UserRole.ADMIN
         db.commit()
+
+    # Перевизначаємо перевірку адміна для FastAPI
+    if require_admin:
+        app.dependency_overrides[require_admin] = lambda: User(
+            id=TEST_STUDENT_ID, role=db_enums.UserRole.ADMIN, email="admin@ukma.edu.ua"
+        )
+
     yield
+
+    if require_admin:
+        app.dependency_overrides.pop(require_admin, None)
+
     with session_factory()() as db:
-        user = db.get(User, MOCK_STUDENT_ID)
-        user.role = original_role
-        db.commit()
+        user = db.get(User, TEST_STUDENT_ID)
+        if user:
+            user.role = original_role
+            db.commit()
 
 
 def _unique_name() -> str:
@@ -44,11 +63,11 @@ def _create(name=None, description=None):
     payload = {"name": name or _unique_name()}
     if description is not None:
         payload["description"] = description
-    return client.post(DIRECTIONS_URL, json=payload, headers=AUTH)
+    return client.post(DIRECTIONS_URL, json=payload, headers={"Authorization": "Bearer test"})
 
 
 def _delete(direction_id):
-    return client.delete(f"{DIRECTIONS_URL}/{direction_id}", headers=AUTH)
+    return client.delete(f"{DIRECTIONS_URL}/{direction_id}", headers={"Authorization": "Bearer test"})
 
 
 @pytest.fixture
@@ -70,7 +89,7 @@ def _set_directions(course_id, direction_ids):
     return client.put(
         f"/api/v1/admin/disciplines/{course_id}/directions",
         json={"direction_ids": direction_ids},
-        headers=AUTH,
+        headers={"Authorization": "Bearer test"},
     )
 
 
@@ -110,7 +129,7 @@ def test_patch_direction_updates_name_and_description(direction):
     response = client.patch(
         f"{DIRECTIONS_URL}/{direction['id']}",
         json={"name": new_name, "description": "новий опис"},
-        headers=AUTH,
+        headers={"Authorization": "Bearer test"},
     )
 
     assert response.status_code == 200
@@ -122,7 +141,7 @@ def test_patch_direction_with_same_values_changes_nothing(direction):
     response = client.patch(
         f"{DIRECTIONS_URL}/{direction['id']}",
         json={"name": direction["name"], "description": direction["description"]},
-        headers=AUTH,
+        headers={"Authorization": "Bearer test"},
     )
 
     assert response.status_code == 200
@@ -130,7 +149,11 @@ def test_patch_direction_with_same_values_changes_nothing(direction):
 
 
 def test_patch_direction_null_description_clears_it(direction):
-    response = client.patch(f"{DIRECTIONS_URL}/{direction['id']}", json={"description": None}, headers=AUTH)
+    response = client.patch(
+        f"{DIRECTIONS_URL}/{direction['id']}",
+        json={"description": None},
+        headers={"Authorization": "Bearer test"},
+    )
 
     assert response.status_code == 200
     assert response.json()["description"] is None
@@ -139,7 +162,11 @@ def test_patch_direction_null_description_clears_it(direction):
 def test_patch_direction_rejects_name_taken_by_another(direction):
     other = _create().json()
 
-    response = client.patch(f"{DIRECTIONS_URL}/{other['id']}", json={"name": direction["name"]}, headers=AUTH)
+    response = client.patch(
+        f"{DIRECTIONS_URL}/{other['id']}",
+        json={"name": direction["name"]},
+        headers={"Authorization": "Bearer test"},
+    )
 
     assert response.status_code == 409
     assert response.json()["code"] == "DIRECTION_NAME_TAKEN"
@@ -147,14 +174,22 @@ def test_patch_direction_rejects_name_taken_by_another(direction):
 
 
 def test_patch_unknown_direction_is_404(admin):
-    response = client.patch(f"{DIRECTIONS_URL}/999999", json={"name": "Whatever"}, headers=AUTH)
+    response = client.patch(
+        f"{DIRECTIONS_URL}/999999",
+        json={"name": "Whatever"},
+        headers={"Authorization": "Bearer test"},
+    )
 
     assert response.status_code == 404
     assert response.json()["code"] == "DIRECTION_NOT_FOUND"
 
 
 def test_patch_direction_rejects_non_positive_id(admin):
-    response = client.patch(f"{DIRECTIONS_URL}/0", json={"name": "Whatever"}, headers=AUTH)
+    response = client.patch(
+        f"{DIRECTIONS_URL}/0",
+        json={"name": "Whatever"},
+        headers={"Authorization": "Bearer test"},
+    )
 
     assert response.status_code == 422
 

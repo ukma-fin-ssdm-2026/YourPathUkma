@@ -114,4 +114,12 @@ def test_discipline_by_id():
     body = client.get("/api/v1/disciplines/301", headers=AUTH).json()
     assert body["discipline_type"] == "normative"
     assert body["trimester"] == 1
-    assert client.get("/api/v1/disciplines/999", headers=AUTH).json()["code"] == "DISCIPLINE_NOT_FOUND"
+
+
+def test_unknown_discipline_returns_404():
+    """TP-17: неіснуюча дисципліна -> 404 у форматі ErrorResponse."""
+    response = client.get("/api/v1/disciplines/999", headers=AUTH)
+    assert response.status_code == 404
+    body = response.json()
+    assert body["code"] == "DISCIPLINE_NOT_FOUND"
+    assert {"code", "message"} <= set(body)
