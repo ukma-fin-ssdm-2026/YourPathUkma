@@ -85,3 +85,23 @@ def test_create_plan_fourth_course_with_load_levels_is_rejected():
     assert response.status_code == 422
     messages = [detail["message"] for detail in response.json()["details"]]
     assert any(m.startswith("LOAD_LEVELS_NOT_ALLOWED") for m in messages)
+
+
+def _plan_item(course_id, credits, free=False):
+    return PlanItem(**_item(course_id, credits, free=free))
+
+
+@pytest.mark.parametrize(
+    "items, expected_codes",
+    [
+        ([_plan_item(101, 5.0), _plan_item(205, 3.0, free=True)], []),
+        ([_plan_item(101, 5.0), _plan_item(101, 5.0)], ["DUPLICATE_COURSE"]),
+        ([_plan_item(205, 3.0, free=True)], ["ONLY_FREE_ELECTIVES"]),
+        ([_plan_item(101, 5.0), _plan_item(205, 26.0, free=True)], ["FREE_ELECTIVE_LIMIT_EXCEEDED"]),
+        ([_plan_item(101, 5.0), _plan_item(205, 25.0, free=True)], []),
+    ],
+    ids=["valid", "duplicate", "only_free_electives", "free_limit_exceeded", "free_limit_boundary"],
+)
+def test_collect_rule_errors(items, expected_codes):
+    """TP-08: модульний тест правил без HTTP і БД."""
+    assert [e.code for e in collect_rule_errors(items)] == expected_codes
