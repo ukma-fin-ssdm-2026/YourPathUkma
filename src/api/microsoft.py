@@ -2,6 +2,7 @@ import hmac
 import logging
 from dataclasses import dataclass
 from functools import lru_cache
+
 import httpx
 import jwt
 from jwt import PyJWKClient

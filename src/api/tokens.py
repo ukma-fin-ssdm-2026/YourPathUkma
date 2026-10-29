@@ -4,6 +4,7 @@ import uuid
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Optional
+
 import jwt
 
 ACCESS_TOKEN_TTL_SECONDS = 900
