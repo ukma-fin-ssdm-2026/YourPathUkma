@@ -21,7 +21,8 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(BigIntId, Identity(), primary_key=True)
-    google_sub: Mapped[str] = mapped_column(String(255), unique=True)
+    ms_oid: Mapped[str] = mapped_column(String(255), unique=True)
+    ms_tid: Mapped[Optional[str]] = mapped_column(String(36))
     email: Mapped[str] = mapped_column(String(320), unique=True)  # зберігається в нижньому регістрі
     full_name: Mapped[str] = mapped_column(String(200))
     role: Mapped[UserRole] = mapped_column(db_enum(UserRole, "user_role"), default=UserRole.STUDENT)
@@ -65,6 +66,7 @@ class RefreshToken(Base):
     id: Mapped[int] = mapped_column(BigIntId, Identity(), primary_key=True)
     user_id: Mapped[int] = mapped_column(BigIntId, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     token_sha256: Mapped[str] = mapped_column(String(64), unique=True)
+    family_id: Mapped[str] = mapped_column(String(32), index=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     expires_at: Mapped[datetime] = mapped_column(UTCDateTime())
     revoked_at: Mapped[Optional[datetime]] = mapped_column(UTCDateTime())
