@@ -1,8 +1,8 @@
 # Тест-план — YourPathUkma
 
-- Стан на 2026-10-23 (гілка `lab07/test-plan`, від `main`)
+- Стан на 2026-10-29 (оновлено після взаємного огляду команди Rehab)
 - Автор: команда SOLIDni
-- Пов'язані документи: [стратегія тестування](../testing/testing-strategy.md), [RTM](../requirements/rtm.md), [вимоги](../requirements/requirements.md), [модель загроз](../architecture/threat-model.md)
+- Пов'язані документи: [стратегія тестування](../testing/testing-strategy.md), [RTM](../requirements/rtm.md), [вимоги](../requirements/requirements.md), [модель загроз](../architecture/threat-model.md), [журнал оглядів](review-log.md)
 
 **Обсяг.** Тестуємо реалізований код бекенду: правила плану (`src/services/plan_rules.py`), CRUD і валідацію планів (`src/api/routes/plans.py`), каталог дисциплін (`src/api/routes/disciplines.py`). Свідомо НЕ тестуємо: генерацію плану мовною моделлю (FR-009, PERF-001, REL-001), парсер САЗ і SyncJob (FR-008, FR-011, PERF-002) — ці частини ще реалізовані як заглушки; автентифікацію (Microsoft 365 SSO, FR-012) — у коді лише заглушка, що приймає будь-який токен; USE-001 (потрібні реальні користувачі).
 
@@ -43,7 +43,7 @@
 
 ## Поточний стан кейсів
 
-Автоматизовано 15 із 18 кейсів. Кейси TP-08, TP-17, TP-18 позначено «ще не реалізовано»: їх мають написати власники, указані в таблиці. Прогін 2026-10-29 на гілці після злиття `main`: `pytest --cov=src --cov-branch` → усі тести пройшли, покриття `src/` 85 %.
+Автоматизовано 17 із 18 кейсів. Кейс TP-18 позначено «ще не реалізовано»: його має написати власник (Данило). Тести TP-08 і TP-17 дописала Дар'я після взаємного огляду. Прогін 2026-10-29 на гілці після злиття `main`: `pytest --cov=src --cov-branch` → усі тести пройшли, покриття `src/` 85 % (цей прогін був до додавання TP-08 і TP-17).
 
 | Кейс | Тест |
 |---|---|
@@ -52,7 +52,7 @@
 | TP-05 | `tests/test_plan_validation.py::test_create_plan_fourth_course_with_load_levels_is_rejected` |
 | TP-06 | `tests/test_db_plans.py::test_create_plan_is_persisted` |
 | TP-07 | `tests/test_plan_validation.py::test_create_plan_still_rejects_business_rule_violation` |
-| TP-08 | **не реалізовано** (власник: Дар'я) |
+| TP-08 | `tests/test_plan_validation.py::test_collect_rule_errors` (параметризований: valid, duplicate, only_free_electives, free_limit_exceeded, free_limit_boundary) |
 | TP-09, TP-10 | `tests/test_db_plans.py::test_submitted_plan_is_read_only` |
 | TP-11 | `tests/test_db_plans.py::test_foreign_plan_is_forbidden` |
 | TP-12 | `tests/test_plan_validation.py::test_validate_returns_200_with_errors_for_business_rule_violation` |
@@ -60,10 +60,17 @@
 | TP-14 | `tests/test_plan_validation.py::test_validate_schema_violation_is_422` |
 | TP-15 | `tests/test_db_plans.py::test_disciplines_pagination`, `tests/test_api_smoke.py::test_disciplines_list_ok` |
 | TP-16 | `tests/test_api_smoke.py::test_disciplines_requires_auth` |
-| TP-17 | 404 `DISCIPLINE_NOT_FOUND` частково перевіряє `tests/test_db_plans.py::test_discipline_by_id`; окремий тест зі статусом 404 **не реалізовано** (власник: Дар'я) |
+| TP-17 | `tests/test_db_plans.py::test_unknown_discipline_returns_404` (статус 404, `code == "DISCIPLINE_NOT_FOUND"`, формат `ErrorResponse`) |
 | TP-18 | **не реалізовано** (власник: Данило) |
 
-Зелений прогін у GitHub Actions для цього PR додамо після пушу.
+Зелений прогін у GitHub Actions для змін після огляду додамо після мерджу.
+
+## Зміни після взаємного огляду
+
+Команда Rehab залишила два зауваження з міткою Blocking; повний відгук і таблиця змін — у [журналі оглядів](review-log.md).
+
+- **Структура кейсів і рівні тестування — враховано.** Для кожного з трьох модулів є кейси двох рівнів (`plan_rules`: TP-01…TP-04 і TP-05; плани: TP-06, TP-07, TP-09…TP-14 і TP-08; дисципліни: TP-15…TP-17 і TP-18). Комбіновані сценарії розділено: один рядок — один кейс.
+- **Кейси, готові до виконання в CI — майже виконано.** Окремий тест для TP-17 (404 `DISCIPLINE_NOT_FOUND`) і модульний тест TP-08 дописано. Лишається підтвердити зелений прогін у GitHub Actions і написати TP-18; після цього оновимо цей розділ і додамо посилання на запуск.
 
 ## Поза обсягом цього плану
 
@@ -74,8 +81,8 @@
 
 ## Використання ШІ
 
-- **Що створено/змінено:** чернетку цього тест-плану (структуру, формулювання кейсів, розподіл за власниками) підготовлено за допомогою Claude Code.
-- **Як перевірено:** ID вимог звірено з `docs/requirements/requirements.md` і `rtm.md`; назви функцій, коди помилок і наявні автотести звірено з вихідним кодом у `src/` та `tests/`. Тести повторно не запускалися. Розподіл власників — пропозиція, команда має її підтвердити.
+- **Що створено/змінено:** чернетку цього тест-плану (структуру, формулювання кейсів, розподіл за власниками) підготовлено за допомогою Claude Code. Розділ «Зміни після взаємного огляду» і оновлення статусу кейсів TP-08 та TP-17 додано за допомогою Claude (Anthropic) за відгуком команди Rehab.
+- **Як перевірено:** ID вимог звірено з `docs/requirements/requirements.md` і `rtm.md`; назви функцій, коди помилок і наявні автотести звірено з вихідним кодом у `src/` та `tests/`. Тести повторно не запускалися. Розподіл власників — пропозиція, команда має її підтвердити. Склад змін після огляду звірено з git-історією (`ba9499b`, `b58f2b6`, `3c15f37`) та диффом PR Дар'ї.
 
 ## Бонуси
 
