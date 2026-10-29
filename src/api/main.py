@@ -7,7 +7,7 @@ OpenAPI-специфікація генерується з коду при ст�
 у docs/api/openapi-generated.yaml та docs/api/openapi-generated.json. Вручну її не редагувати.
 
 Використання ШІ: файл створено за допомогою Claude (Anthropic) на основі шаблону викладача (ЛР4).
-Перевірка: запуск сервера, перевірка появи/оновлення openapi-generated.yaml після зміни коду,
+Перевірка: запуск сервера, перевірка появі/оновлення openapi-generated.yaml після зміни коду,
 перегляд Swagger UI (/api-docs) і ReDoc (/redoc).
 
 Правки за зовнішнім рев'ю (review/received/review-report.md) внесено за допомогою Claude (Claude Code):
@@ -30,7 +30,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..db.migrate import init_database
-from .common import RequestIdMiddleware, assert_safe_environment, register_error_handlers
+from .common import RequestIdMiddleware, assert_safe_environment, cors_origins, register_error_handlers
 from .routes import ai, auth, certificates, deanery, disciplines, plans, preferences, reference, system, user
 from .routes.admin import audit as admin_audit
 from .routes.admin import catalog as admin_catalog
@@ -103,11 +103,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-_cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
+    allow_origins=cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

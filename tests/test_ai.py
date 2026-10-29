@@ -155,6 +155,7 @@ def test_start_generation_invalid_body_returns_422(client):
 
 
 def test_start_generation_requires_auth():
+    app.dependency_overrides.clear()
     assert TestClient(app).post(URL, json=PAYLOAD).status_code == 401
 
 
