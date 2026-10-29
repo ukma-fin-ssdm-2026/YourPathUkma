@@ -23,6 +23,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
 from .tokens import decode_access_token, validate_auth_settings
 
 logger = logging.getLogger("yourpath.api")
