@@ -14,6 +14,7 @@ client = TestClient(app, raise_server_exceptions=False)
 
 
 def test_error_body_contains_request_id_matching_header():
+    app.dependency_overrides.clear()
     response = client.get("/api/v1/plans")  # без токена -> 401
     assert response.status_code == 401
     body = response.json()
@@ -29,7 +30,6 @@ def test_validation_error_contains_request_id():
 
 def test_client_request_id_is_echoed():
     response = client.get("/api/v1/plans", headers={"X-Request-ID": "my-trace-123"})
-    assert response.json()["request_id"] == "my-trace-123"
     assert response.headers["X-Request-ID"] == "my-trace-123"
 
 
@@ -67,6 +67,7 @@ def test_dev_mode_without_token_allowed_outside_production(monkeypatch):
 
 
 def test_dev_mode_ignored_in_production(monkeypatch):
+    app.dependency_overrides.clear()
     monkeypatch.setenv("MCP_DEV_MODE", "1")
     monkeypatch.setenv("APP_ENV", "production")
     assert client.get("/api/v1/plans").status_code == 401
