@@ -207,7 +207,7 @@ flake8 за кодами (до): W292 — 23, E302 — 19, E501 — 12, **F811 �
 
 - **CI, job `build`** (`.github/workflows/ci.yaml`): новий крок `Security scan (bandit)`. Ненульовий код при знахідці валить PR.
 - **CI, job `frontend`**: новий крок `npm audit --audit-level=high`. eslint-plugin-security запускається в наявному кроці `npm run lint`.
-- **pre-commit**: хук `bandit` з конфігом із `pyproject.toml`.
+- **pre-commit** (`.pre-commit-config.yaml`): форматер `black`, лінтер `flake8`, сканер секретів `gitleaks`, хук `bandit` з конфігом із `pyproject.toml`. Прогін gitleaks — у розділі 10.
 - Усі винятки (B101 у тестах, `detect-object-injection`) описані в конфігах з обґрунтуванням. У коді немає жодного `# nosec` чи `eslint-disable`.
 
 Помічені побічно проблеми (не предмет цієї роботи, передано команді):
@@ -224,6 +224,105 @@ flake8 за кодами (до): W292 — 23, E302 — 19, E501 — 12, **F811 �
 5. Стильовий шар теж знайшов змістовну проблему: F811 вказав на артефакт merge у точці входу API.
 6. Статичний аналіз не замінює рев'ю за моделлю загроз: розбіжність 403/404 у R3 жоден інструмент не помітив.
 
+## 10. Pre-commit і пошук секретів (gitleaks)
+
+**Дата прогону:** 2026-10-29
+
+`.pre-commit-config.yaml` у корені репозиторію запускає перед кожним комітом:
+
+| Хук | Роль | Версія (`rev`) |
+|---|---|---|
+| `trailing-whitespace`, `end-of-file-fixer`, `check-yaml`, `check-added-large-files` | базові перевірки файлів | pre-commit-hooks v6.0.0 |
+| `black` | **форматер** | 24.3.0 |
+| `flake8` | **лінтер** | 7.0.0 |
+| `gitleaks` | **сканер секретів** | v8.18.2 (`verbose: true`) |
+| `bandit` | SAST | 1.9.4 |
+
+Хук `gitleaks` виконує `gitleaks protect --verbose --redact --staged`: перевіряє **лише проіндексовані зміни** (те, що потрапить у коміт), а знайдений секрет у виводі замінює на `REDACTED`. Якщо gitleaks знаходить секрет, він повертає код 1, і pre-commit зупиняє коміт.
+
+Встановлення і запуск:
+
+```bash
+pip install pre-commit
+pre-commit install                 # хуки спрацьовують на кожен git commit
+pre-commit run gitleaks            # ручний запуск на проіндексованих файлах
+```
+
+### 10.1. Що хук зупинив: тестовий секрет у коміті
+
+Перевірка зроблена в одноразовому клоні репозиторію. У файл `scripts/leak_demo.py` записано **випадково згенерований фейковий** токен у форматі GitHub PAT (`ghp_` + 36 символів), файл додано в індекс (`git add`), після чого запущено хук:
+
+```python
+# demo: випадково згенерований фейковий токен
+GITHUB_TOKEN = "ghp_…"   # 36 випадкових символів, не справжній токен
+```
+
+```
+$ pre-commit run gitleaks
+Detect hardcoded secrets.................................................Failed
+- hook id: gitleaks
+- duration: 0.05s
+- exit code: 1
+
+○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+Finding:     GITHUB_TOKEN = "REDACTED
+Secret:      REDACTED
+RuleID:      github-pat
+Entropy:     4.953056
+File:        scripts/leak_demo.py
+Line:        2
+Fingerprint: scripts/leak_demo.py:github-pat:2
+
+12:24AM INF 1 commits scanned.
+12:24AM INF scan completed in 23.2ms
+12:24AM WRN leaks found: 1
+```
+
+Код завершення pre-commit — **1**, тобто `git commit` з цим файлом не відбувся б. gitleaks визначив тип секрету (правило `github-pat`), файл і рядок, а сам токен у виводі приховано (`--redact`), тож він не потрапляє в логи CI чи термінал колег.
+
+Після виправлення (токен читається зі змінної середовища, як і решта секретів у `.env.example`) хук проходить:
+
+```python
+import os
+
+GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
+```
+
+```
+$ pre-commit run gitleaks
+Detect hardcoded secrets.................................................Passed
+- hook id: gitleaks
+- duration: 0.05s
+
+12:24AM INF 1 commits scanned.
+12:24AM INF scan completed in 22.3ms
+12:24AM INF no leaks found
+```
+
+Тестовий клон після перевірки видалено. У робочий репозиторій фейковий токен не потрапляв.
+
+### 10.2. Що хук перевірив: поточний стан репозиторію
+
+Хук бачить лише проіндексовані зміни, тож секрет, закомічений **до** встановлення хука, він не помітить. Тому тим самим бінарником gitleaks (зібраним pre-commit з `rev: v8.18.2`) окремо проскановано **всю історію git**:
+
+```
+$ gitleaks detect --source . --redact -v
+INF 349 commits scanned.
+INF scan completed in 575ms
+INF no leaks found
+```
+
+Для порівняння, `pre-commit run gitleaks --all-files` без проіндексованих змін дає `Passed` і `0 commits scanned`: прапорець `--all-files` на цей хук не впливає, бо gitleaks сам читає індекс git, а не список файлів від pre-commit. Повну перевірку дає саме `gitleaks detect`.
+
+**Результат:** у 349 комітах (усі локальні гілки на 2026-10-29, без merge-комітів: `git rev-list --all --no-merges --count` = 349) секретів не знайдено. `.env` є в `.gitignore`, у репозиторії лише `.env.example` і `frontend/.env.example` із заглушками.
+
+**Обмеження:** локальний хук можна обійти (`git commit --no-verify` або просто не виконати `pre-commit install`). Тому для R10 з [`threat-model.md`](../architecture/threat-model.md) (витік API-ключа LLM) рекомендовано дублювати gitleaks у GitHub Actions — так само, як це вже зроблено для bandit.
+
 ## Використання ШІ
 
 - **Що зроблено за допомогою ШІ (Claude, Claude Code):**
@@ -233,13 +332,15 @@ flake8 за кодами (до): W292 — 23, E302 — 19, E501 — 12, **F811 �
   - тест `saveErrors.test.ts`;
   - конфігурація bandit (`pyproject.toml`) і eslint-plugin-security (`frontend/eslint.config.js`, `package.json`);
   - кроки в `.github/workflows/ci.yaml` і хук у `.pre-commit-config.yaml`;
-  - цей звіт.
+  - цей звіт;
+  - розділ 10 (2026-10-29): прогін хука gitleaks через pre-commit 4.7.0 (тестовий фейковий секрет в одноразовому клоні + сканування всієї історії git) і опис результатів.
 - **Як перевірено:**
   - bandit і eslint повторно прогнано після виправлень: 0 знахідок;
   - flake8: 79 → 60;
   - новий тест падав до виправлення і проходить після; усі 430 тестів фронтенду проходять; `tsc --noEmit` — 0 помилок;
   - скомпільований для PostgreSQL SQL переглянуто вручну;
-  - `pytest` до і після змін дає однаковий результат (92 passed, ті самі 3 падіння, не пов'язані зі змінами).
+  - `pytest` до і після змін дає однаковий результат (92 passed, ті самі 3 падіння, не пов'язані зі змінами);
+  - вивід gitleaks у розділі 10 скопійовано з реального запуску (прибрано лише ANSI-кольори); код завершення pre-commit із секретом перевірено окремо (1); після виправлення хук має статус `Passed`.
 - Звіт потребує рев'ю командою перед здачею.
 
 ## Статус на 2026-10-24

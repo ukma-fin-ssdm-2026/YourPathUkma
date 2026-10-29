@@ -9,12 +9,16 @@ depends_on = None
 
 def upgrade() -> None:
     op.execute("DELETE FROM refresh_tokens")
+    # Окремі batch-блоки: на SQLite перейменування колонки й зміна обмежень в одному блоці
+    # губить UNIQUE на ms_oid (таблиця перестворюється з урахуванням лише частини операцій)
+    with op.batch_alter_table("users") as batch_op:
+        batch_op.drop_constraint(batch_op.f("uq_users_google_sub"), type_="unique")
     with op.batch_alter_table("users") as batch_op:
         batch_op.alter_column(
             "google_sub", new_column_name="ms_oid", existing_type=sa.String(255), existing_nullable=False
         )
         batch_op.add_column(sa.Column("ms_tid", sa.String(36), nullable=True))
-        batch_op.drop_constraint(batch_op.f("uq_users_google_sub"), type_="unique")
+    with op.batch_alter_table("users") as batch_op:
         batch_op.create_unique_constraint(batch_op.f("uq_users_ms_oid"), ["ms_oid"])
 
     with op.batch_alter_table("refresh_tokens") as batch_op:
