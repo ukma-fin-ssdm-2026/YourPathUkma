@@ -25,7 +25,7 @@
 |---|---|---|---|
 | Security | 14 | TODO | Усі проблеми в CI/CD workflow; 1 Blocker (script injection) |
 | Reliability | TODO | TODO | TODO |
-| Maintainability | TODO | TODO | TODO |
+| Maintainability | 7 | TODO | 4 Blocker; 3 з них у згенерованому JS-звіті покриття |
 | Duplications | TODO % | — | TODO |
 
 Додатково: Security Hotspots — TODO, Coverage — TODO %, Technical Debt — TODO.
@@ -69,15 +69,21 @@ TODO
 
 ## 5. Maintainability
 
-**Показники:** Code Smells — TODO; Technical Debt — TODO; Debt Ratio — TODO %; рейтинг — TODO.
+**Показники:** проблем Maintainability — 7 (Blocker 4, High 2, Medium 1); Code Smells — TODO; Technical Debt — TODO; Debt Ratio — TODO %; рейтинг — TODO.
 
 **Результати аналізу:**
 
-TODO
+Знайдено 7 проблем Maintainability: Blocker — 4, High — 2, Medium — 1. Чотири з них (CORS у `main.py`, значення за замовчуванням у `deanery.py` і `preferences.py`, `pytest.raises`) одночасно належать до Reliability. Ще три Blocker — неоголошені змінні в згенерованому `coverage_html_cb_*.js` (звіт покриття в `docs/testing/coverage/`); цей файл генерується інструментом покриття, тож його краще виключити з аналізу Sonar, а не правити вручну. Усі проблеми мають оцінку трудомісткості 2–5 хв.
 
 | # | Файл | Правило | Severity | Опис | Рішення | Статус |
 |---|---|---|---|---|---|---|
-| 1 | TODO | TODO | TODO | TODO | TODO | TODO |
+| 1 | `src/api/main.py` L113 | cors, configuration | Blocker | `CORSMiddleware` додано не останнім у ланцюжку middleware (також Reliability, Blocker) | Додавати `CORSMiddleware` останнім | Open |
+| 2 | `src/api/routes/deanery.py` L49 | pydantic, type-hint | High | Необов'язкове поле без явного значення за замовчуванням (також Reliability, High) | Додати явне значення за замовчуванням (`= None`) | Open |
+| 3 | `src/api/routes/preferences.py` L59 | pydantic, type-hint | High | Необов'язкове поле без явного значення за замовчуванням (також Reliability, High) | Додати явне значення за замовчуванням (`= None`) | Open |
+| 4 | `tests/test_free_elective_remaining.py` L19 | pytest, tests | Medium | Виняток перевіряється не через контекстний менеджер (також Reliability, Medium) | Обгорнути код, що кидає виняток, у `with pytest.raises(...)` | Open |
+| 5 | `docs/testing/coverage/coverage_html_cb_c6c441fc.js` L166 | pitfall | Blocker | Змінна `cell` оголошена без `let`/`const`/`var` | Додати `let` / `const` / `var` | Open |
+| 6 | `docs/testing/coverage/coverage_html_cb_c6c441fc.js` L358 | pitfall | Blocker | Змінна `cls` оголошена без `let`/`const`/`var` | Додати `let` / `const` / `var` | Open |
+| 7 | `docs/testing/coverage/coverage_html_cb_c6c441fc.js` (рядок не вказано) | pitfall | Blocker | Змінна `key` оголошена без `let`/`const`/`var` | Додати `let` / `const` / `var` | Open |
 
 ## 6. Duplications
 
