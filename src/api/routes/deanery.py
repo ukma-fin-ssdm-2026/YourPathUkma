@@ -46,7 +46,7 @@ class DeaneryDocumentResponse(BaseModel):
     mime_type: str
     size_bytes: int
     parse_status: str
-    parse_error: Optional[str]
+    parse_error: Optional[str] = None
     uploaded_at: datetime
     normative_courses: Optional[List[NormativeCourseResponse]] = None
 
