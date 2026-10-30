@@ -1,7 +1,13 @@
-# Звіт SonarCloud
+# Звіт про аналіз якості коду в SonarCloud (YourPathUkma)
 
-> Шаблон звіту. Значення позначені `TODO` потрібно заповнити за даними з SonarCloud
-> (проєкт `ukma-fin-ssdm-2026_YourPathUkma`), у цьому файлі їх не вигадано.
+**Проєкт:** YourPathUkma (REST API + вебфронтенд)
+**Відповідальні ролі:** Quality Lead
+**Інструмент:** SonarCloud (проєкт `ukma-fin-ssdm-2026_YourPathUkma`)
+**Станом на:** TODO
+**Версія / коміт аналізу:** TODO
+
+> Шаблон звіту. Значення `TODO` потрібно заповнити за даними з SonarCloud;
+> у цьому файлі їх не вигадано.
 
 ## 1. Загальна інформація
 
@@ -11,30 +17,72 @@
 | Гілка / PR аналізу | TODO |
 | Дата аналізу | TODO |
 | Quality Gate | TODO (Passed / Failed) |
+| Кількість рядків коду (LoC) | TODO |
 
-## 2. Метрики
+## 2. Підсумок за категоріями
 
-| Метрика | Значення | Рейтинг |
-|---|---|---|
-| Bugs | TODO | TODO |
-| Vulnerabilities | TODO | TODO |
-| Security Hotspots | TODO | TODO |
-| Code Smells | TODO | TODO |
-| Coverage | TODO % | — |
-| Duplications | TODO % | — |
-| Technical Debt | TODO | TODO |
+| Категорія | Кількість проблем | Рейтинг (A–E) | Висновок |
+|---|---|---|---|
+| Security | TODO | TODO | TODO |
+| Reliability | TODO | TODO | TODO |
+| Maintainability | TODO | TODO | TODO |
+| Duplications | TODO % | — | TODO |
 
-## 3. Знайдені проблеми та рішення для рефакторингу
+Додатково: Security Hotspots — TODO, Coverage — TODO %, Technical Debt — TODO.
+
+## 3. Security
+
+**Показники:** Vulnerabilities — TODO; Security Hotspots (переглянуто / усього) — TODO; рейтинг — TODO.
+
+**Результати аналізу:**
+
+TODO
 
 | # | Файл | Правило | Severity | Опис | Рішення | Статус |
 |---|---|---|---|---|---|---|
 | 1 | TODO | TODO | TODO | TODO | TODO | TODO |
 
-## 4. Висновки
+## 4. Reliability
+
+**Показники:** Bugs — TODO; рейтинг — TODO.
+
+**Результати аналізу:**
+
+TODO
+
+| # | Файл | Правило | Severity | Опис | Рішення | Статус |
+|---|---|---|---|---|---|---|
+| 1 | TODO | TODO | TODO | TODO | TODO | TODO |
+
+## 5. Maintainability
+
+**Показники:** Code Smells — TODO; Technical Debt — TODO; Debt Ratio — TODO %; рейтинг — TODO.
+
+**Результати аналізу:**
+
+TODO
+
+| # | Файл | Правило | Severity | Опис | Рішення | Статус |
+|---|---|---|---|---|---|---|
+| 1 | TODO | TODO | TODO | TODO | TODO | TODO |
+
+## 6. Duplications
+
+**Показники:** Duplicated Lines Density — TODO %; Duplicated Blocks — TODO; Duplicated Files — TODO.
+
+**Результати аналізу:**
+
+TODO
+
+| # | Файли з дублюванням | Кількість рядків | Опис | План усунення | Статус |
+|---|---|---|---|---|---|
+| 1 | TODO | TODO | TODO | TODO | TODO |
+
+## 7. Висновки та план рефакторингу
 
 TODO
 
 ## Використання ШІ
 
-Файл-шаблон створено за допомогою Claude Code (структура розділів). Фактичних даних
-SonarCloud він не містить; перевірка — лише перегляд структури.
+Структуру шаблону (шапка, розділи за категоріями) створено за допомогою Claude Code.
+Фактичних даних SonarCloud файл не містить; перевірка — лише перегляд структури.
