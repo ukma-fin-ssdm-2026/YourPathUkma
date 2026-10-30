@@ -17,6 +17,10 @@ OpenAPI-специфікація генерується з коду при ст�
 Додатково (Claude, Anthropic): додано відсутні імпорти роутерів preferences, user, deanery (без них застосунок
 не стартував з NameError) і виклик init_database() при старті (міграції та демо-дані).
 Перевірка: ручний огляд; запуск сервера, pytest і ruff check src/api виконати перед комітом.
+
+Правка за зауваженням №1 рев'ю (Claude, Anthropic): CORSMiddleware тепер додається останнім (найзовнішній
+middleware), щоб CORS-заголовки були й на відповідях з помилками. Перевірка: pytest, ruff check src/api та
+ручний запит з заголовком Origin до маршруту, що повертає помилку, виконати перед комітом.
 """
 
 import json
@@ -110,6 +114,9 @@ app = FastAPI(
 )
 
 
+# Порядок важливий: у Starlette останній доданий middleware виконується першим (найзовнішній).
+# CORSMiddleware має бути доданий останнім, щоб CORS-заголовки були і на відповідях з помилками.
+app.add_middleware(RequestIdMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins(),
@@ -118,7 +125,6 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["X-Request-ID"],
 )
-app.add_middleware(RequestIdMiddleware)
 
 register_error_handlers(app)
 app.include_router(plans.router)

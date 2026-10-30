@@ -3,6 +3,9 @@
 
 GET /preferences/{academic_year}, PUT /preferences/{academic_year} (створює або повністю замінює).
 Список небажаних викладачів чутливий (R1): запити завжди фільтруються за власником, у LLM він не йде.
+
+Використання ШІ: явне значення за замовчуванням для certificate_program_id у PreferencesResponse додано за допомогою
+Claude (Claude Code) за звітом SonarCloud. Перевірено: pytest (tests/test_preferences.py, tests/test_ai.py), ruff, tsc.
 """
 
 from datetime import datetime
@@ -56,7 +59,7 @@ class PreferencesResponse(BaseModel):
     preferred_instructor_ids: List[int]
     unwanted_instructor_ids: List[int]
     wants_certificate: bool
-    certificate_program_id: Optional[int]
+    certificate_program_id: Optional[int] = None
     updated_at: datetime
 
 
