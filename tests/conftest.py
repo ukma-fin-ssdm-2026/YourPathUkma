@@ -14,19 +14,46 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 _TEST_DB_URL = os.getenv("TEST_DATABASE_URL") or f"sqlite:///{Path(tempfile.mkdtemp()) / 'test.sqlite'}"
-# Має бути виставлено до першого імпорту src.db.session (engine читає DATABASE_URL один раз)
 os.environ["DATABASE_URL"] = _TEST_DB_URL
 
+os.environ.setdefault("JWT_SECRET", "test-secret-test-secret-test-secret-123456")
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 from src.api.common import get_current_student_id  # noqa: E402
 from src.api.main import app  # noqa: E402
+from src.api.tokens import issue_access_token  # noqa: E402
 from src.db import enums as db_enums  # noqa: E402
 from src.db.migrate import downgrade_base, upgrade_head  # noqa: E402
 from src.db.seed import seed_demo_data  # noqa: E402
 from src.db.session import session_factory  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def override_auth_dependency(request):
+    """Автоматично авторизує тестового студента (ID 42 з seed.py) для всіх тестів,
+    окрім тих, що явно тестують відсутність/невалідність токена.
+    """
+    if (
+        "requires_auth" in request.node.name
+        or "blank_token" in request.node.name
+        or "dev_mode_ignored" in request.node.name
+    ):
+        yield
+        return
+
+    app.dependency_overrides[get_current_student_id] = lambda: 42
+    yield
+    app.dependency_overrides.pop(get_current_student_id, None)
+
+
+@pytest.fixture
+def auth_headers():
+    def factory(user_id: int = 42, role: str = "student"):
+        return {"Authorization": f"Bearer {issue_access_token(user_id, role)}"}
+
+    return factory
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -70,4 +97,4 @@ def admin_client():
     try:
         yield TestClient(app)
     finally:
-        app.dependency_overrides.pop(get_current_student_id, None)
+        app.dependency_overrides[get_current_student_id] = lambda: 42
