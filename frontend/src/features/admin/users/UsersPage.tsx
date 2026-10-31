@@ -22,7 +22,7 @@ export function UsersPage() {
   const [role, setRole] = useState<UserRole | "all">("all");
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<AdminUser | null>(null);
-  const q = useDebouncedValue(search.trim(), 250);
+  const q = useDebouncedValue(search.trim(), 500);
   const users = useAdminUsers({ q, role: role === "all" ? undefined : role, page });
   const list = users.data?.users ?? [];
 

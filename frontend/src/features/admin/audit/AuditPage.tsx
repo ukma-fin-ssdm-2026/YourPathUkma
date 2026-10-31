@@ -55,7 +55,7 @@ export function AuditPage() {
   const [outcome, setOutcome] = useState<AuditOutcome | "all">("all");
   const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState<number | null>(null);
-  const debouncedAction = useDebouncedValue(action.trim(), 250);
+  const debouncedAction = useDebouncedValue(action.trim(), 500);
   const log = useAuditLog({
     action: debouncedAction,
     outcome: outcome === "all" ? undefined : outcome,
