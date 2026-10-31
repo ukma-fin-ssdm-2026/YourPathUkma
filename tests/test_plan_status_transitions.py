@@ -20,7 +20,6 @@ from src.db.models import IndividualPlan, PlanItem
 from src.db.session import session_factory
 
 client = TestClient(app)
-AUTH = {"Authorization": "Bearer test"}
 
 FP = {"course_id": 101, "title": "Функціональне програмування", "trimester": 1, "credits": 5.0}
 SECURITY = {"course_id": 102, "title": "Основи кібербезпеки", "trimester": 2, "credits": 4.0}
@@ -35,12 +34,16 @@ UNCHANGED = None  # стан плану після події не змінює�
 
 
 @pytest.fixture
-def make_plan():
+def make_plan(auth_headers):
     """Створює план студента 42 через API й виставляє потрібний статус у БД. Створені плани прибираються після тесту."""
     created = []
 
     def factory(status):
-        plan_id = client.post("/api/v1/plans", json={**BODY, "items": [FP]}, headers=AUTH).json()["id"]
+        response = client.post("/api/v1/plans", json={**BODY, "items": [FP]}, headers=auth_headers())
+        assert (
+            response.status_code == 201
+        ), f"не вдалося створити план для тесту: {response.status_code} {response.text}"
+        plan_id = response.json()["id"]
         created.append(plan_id)
         with session_factory()() as db:
             db.get(IndividualPlan, plan_id).status = status
@@ -60,12 +63,12 @@ def _stored_status(plan_id):
         return db.scalar(select(IndividualPlan.status).where(IndividualPlan.id == plan_id))
 
 
-def _request(event, plan_id):
+def _request(event, plan_id, headers):
     if event == "PUT":
-        return client.put(f"/api/v1/plans/{plan_id}", json=BODY, headers=AUTH)
+        return client.put(f"/api/v1/plans/{plan_id}", json=BODY, headers=headers)
     if event == "DELETE":
-        return client.delete(f"/api/v1/plans/{plan_id}", headers=AUTH)
-    return client.post(f"/api/v1/plans/{plan_id}/submit", headers=AUTH)
+        return client.delete(f"/api/v1/plans/{plan_id}", headers=headers)
+    return client.post(f"/api/v1/plans/{plan_id}/submit", headers=headers)
 
 
 NOT_ALLOWED = {"PUT": "PLAN_NOT_EDITABLE", "DELETE": "PLAN_NOT_DELETABLE", "SUBMIT": "PLAN_NOT_SUBMITTABLE"}
@@ -93,12 +96,12 @@ TRANSITIONS = [
 
 
 @pytest.mark.parametrize("before, event, http_status, error_code, after", TRANSITIONS)
-def test_plan_status_transition(make_plan, before, event, http_status, error_code, after):
+def test_plan_status_transition(make_plan, auth_headers, before, event, http_status, error_code, after):
     # Arrange
     plan_id = make_plan(before)
 
     # Act
-    response = _request(event, plan_id)
+    response = _request(event, plan_id, auth_headers())
 
     # Assert
     assert response.status_code == http_status
@@ -110,9 +113,10 @@ def test_plan_status_transition(make_plan, before, event, http_status, error_cod
         assert _stored_status(plan_id) == after
 
 
-def test_submit_with_rule_violation_keeps_draft(make_plan):
+def test_submit_with_rule_violation_keeps_draft(make_plan, auth_headers):
     """ST-13: подання draft-плану, що порушує правила, → 422 PLAN_VALIDATION_FAILED, статус лишається draft."""
-    # Arrange: у каталозі 101 не вільний вибір, тож позначка вільного вибору в БД порушує правила
+    # Arrange: єдиний елемент плану позначаємо вільним вибором: «план лише з вільних» порушує правила
+    # незалежно від того, чи дисципліна 101 у seed-даних має напрямки
     plan_id = make_plan(DRAFT)
     with session_factory()() as db:
         item = db.scalar(select(PlanItem).where(PlanItem.plan_id == plan_id))
@@ -120,9 +124,10 @@ def test_submit_with_rule_violation_keeps_draft(make_plan):
         db.commit()
 
     # Act
-    response = client.post(f"/api/v1/plans/{plan_id}/submit", headers=AUTH)
+    response = client.post(f"/api/v1/plans/{plan_id}/submit", headers=auth_headers())
 
     # Assert
     assert response.status_code == 422
     assert response.json()["code"] == "PLAN_VALIDATION_FAILED"
+    assert "ONLY_FREE_ELECTIVES" in response.text
     assert _stored_status(plan_id) == DRAFT

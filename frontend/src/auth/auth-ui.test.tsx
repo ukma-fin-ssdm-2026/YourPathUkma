@@ -125,6 +125,7 @@ describe("CallbackPage", () => {
   beforeEach(() => {
     sessionStorage.setItem("pkce_verifier", "v".repeat(43));
     sessionStorage.setItem("oauth_state", "s1");
+    sessionStorage.setItem("oauth_nonce", "n".repeat(22));
   });
 
   it("успіх: сесія автентифікована, перехід на головну", async () => {

@@ -45,13 +45,13 @@ CI (`.github/workflows/ci.yaml`, job `frontend`) запускає: `npm ci`, `ge
 
 ## Змінні оточення (`.env.local`)
 
-| Змінна              | Значення за замовчуванням | Для чого                                                                                                          |
-| ------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `VITE_USE_MOCKS`    | `true`                    | `true`: MSW-моки лише для того, чого бекенд ще не має (вхід, `/admin/*`). `full`: моки всього, бекенд не потрібен |
-| `VITE_MOCK_ROLE`    | (порожньо)                | `admin`: мок-користувач стає адміністратором, відкриваються екрани `/admin`                                       |
-| `VITE_API_BASE`     | `/api/v1`                 | Префікс API                                                                                                       |
-| `VITE_MS_CLIENT_ID` | порожньо                  | Application (client) ID застосунку Microsoft Entra; без нього вхід показує «Вхід не налаштовано»                  |
-| `VITE_MS_TENANT`    | `organizations`           | Tenant для авторизації Microsoft                                                                                  |
+| Змінна              | Значення за замовчуванням | Для чого                                                                                                                                                                                    |
+| ------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_USE_MOCKS`    | `false`                   | `false`: усе йде на реальний бекенд (потрібен справжній вхід через Microsoft). `true`: моки входу, `/me`, онбордингу й `/admin/*`, решта з бекенду. `full`: моки всього, бекенд не потрібен |
+| `VITE_MOCK_ROLE`    | (порожньо)                | `admin`: мок-користувач стає адміністратором, відкриваються екрани `/admin`                                                                                                                 |
+| `VITE_API_BASE`     | `/api/v1`                 | Префікс API                                                                                                                                                                                 |
+| `VITE_MS_CLIENT_ID` | порожньо                  | Application (client) ID застосунку Microsoft Entra; без нього вхід показує «Вхід не налаштовано»                                                                                            |
+| `VITE_MS_TENANT`    | порожньо                  | GUID tenant тієї ж app registration, що й `MS_TENANT_ID` у бекенді (бекенд звіряє `tid` та `iss`)                                                                                           |
 
 ## Бекенд і моки
 
@@ -59,24 +59,27 @@ Dev-сервер проксює `/api` на `http://localhost:3000` (`vite.confi
 
 Контракт: [`docs/api/contract.md`](../docs/api/contract.md). Позначки: ✅ є в бекенді, 🟡 лише запропоновано.
 
-З `VITE_USE_MOCKS=true` моки (`src/mocks/`) закривають лише те, чого бекенд ще не має:
+З `VITE_USE_MOCKS=true` моки (`src/mocks/`) підміняють вхід і профіль, щоб UI можна було показати без Microsoft: `/auth/microsoft`, `/auth/refresh`, `/auth/logout`, `/me*` (разом з онбордингом й історією оцінок) і `/admin/*`.
 
-- вхід і сесію: `/auth/microsoft`, `/auth/refresh`, `/auth/logout` (бекенд має лише заглушку `/auth/google`, яка видає будь-якому токену студента №42);
-- усе `/admin/*` (ендпоінти в бекенді є, але без справжнього входу кожен запит дає 403, бо токен завжди студентський).
-
-Усе інше йде на реальний бекенд: `/config`, `/me*`, `/preferences/*`, `/disciplines`, `/directions`, `/instructors`, `/plans*` (разом із `submit` і `export`), `/deanery-documents*`. Бекенд-заглушки, які це торкається: експорт повертає фальшивий PDF, а розпізнавання документа деканату ще не реалізоване, тож будь-яке завантаження закінчується статусом «Не розпізнано».
+Усе інше йде на реальний бекенд: `/config`, `/preferences/*`, `/disciplines`, `/directions`, `/instructors`, `/plans*` (разом із `submit` і `export`), `/deanery-documents*`. Бекенд-заглушки, які це торкається: експорт повертає фальшивий PDF, а розпізнавання документа деканату ще не реалізоване, тож будь-яке завантаження закінчується статусом «Не розпізнано».
 
 З `VITE_USE_MOCKS=full` додатково вмикаються моки всіх цих ендпоінтів (`coreHandlers` у `core.ts` і `backendHandlers` у `handlers.ts`), тож застосунок працює без запущеного бекенду.
 
-Запуск проти реального бекенду: `uvicorn src.api.main:app --port 3000` (корінь репозиторію), у фронтенді `VITE_USE_MOCKS=true npm run dev`, вхід через мок. Змінні оболонки мають пріоритет над `.env.local`.
+Запуск проти реального бекенду з справжнім входом через Microsoft:
+
+1. У Microsoft Entra створіть app registration (tenant НаУКМА) з redirect URI `http://localhost:5173/auth/callback`. Бекенд сам обмінює код на токен, тому тип застосунку має бути **Web** з client secret (для типу SPA Microsoft відхиляє обмін коду з сервера).
+2. У корені: `cp .env.example .env`, заповніть `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `JWT_SECRET` (`python -c "import secrets; print(secrets.token_urlsafe(48))"`), `COOKIE_SECURE=0` за потреби, `ADMIN_EMAILS` для адміністратора. Запустіть `uvicorn src.api.main:app --port 3000`.
+3. У `frontend/`: `cp .env.example .env.local`, заповніть `VITE_MS_CLIENT_ID` і `VITE_MS_TENANT` (ті самі значення), `npm run dev`. Перший вхід автоматично створює студента, далі відкривається онбординг.
+
+Без Microsoft-застосунку UI можна запустити з `VITE_USE_MOCKS=true` (вхід через мок). Змінні оболонки мають пріоритет над `.env.local`.
 
 У тестах (`src/test/setup.ts`) вмикаються і `handlers`, і `backendHandlers`; окремі тести перекривають їх через `server.use(...)` (`src/test/handlers.ts`).
 
 ### Що потрібно від бекенду
 
-- Вхід через Microsoft 365. Назва `POST /auth/microsoft` і форма запиту — **припущення фронтенду**; у контракті зараз `POST /auth/google`.
-- Справжній вхід, який видає токени різних користувачів (зокрема адміна), щоб замінити мок і відкрити `/admin/*`.
-- CORS: для refresh-cookie потрібні явні origins і `allow_credentials` (зараз `*`).
+- Вхід через Microsoft 365: `POST /auth/microsoft` з тілом `{code, code_verifier, nonce, redirect_uri}` реалізовано (гілка `feat/microsoft-auth`). Фронтенд передає той самий `nonce`, що й у запиті авторизації.
+- Токени різних користувачів (зокрема адміна: `ADMIN_EMAILS`) видає справжній вхід, тому `/admin/*` доступний без моків.
+- CORS: для refresh-cookie потрібні явні origins і `allow_credentials` (`CORS_ORIGINS=http://localhost:5173`).
 - Заголовок `X-Request-ID` має бути в `Access-Control-Expose-Headers`, щоб фронтенд показував «Код помилки».
 
 ## Структура `src/`

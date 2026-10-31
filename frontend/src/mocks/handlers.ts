@@ -1,7 +1,8 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: handlers.test.ts.
-// `handlers` — лише те, чого бекенд ще не має (вхід, адмінка); завжди увімкнено при VITE_USE_MOCKS.
+// `handlers` — вхід, /me, онбординг, історія оцінок, адмінка; увімкнено при VITE_USE_MOCKS=true або full.
 // `backendHandlers` — копії вже реалізованих ендпоінтів для тестів і режиму `full`.
-// Ендпоінт входу названо POST /auth/microsoft як припущення (у бекенді поки лише /auth/google).
+// Вхід, /me, онбординг, історія оцінок і адмінка вже є в бекенді; обробники `handlers` потрібні для UI без Microsoft-входу
+// (VITE_USE_MOCKS=true) і для тестів. Для роботи з реальним бекендом і входом VITE_USE_MOCKS=false.
 import { http, HttpResponse } from "msw";
 import type { ErrorDetail } from "../api/errors";
 import type { DeaneryDocument, Preferences } from "../api/types";
