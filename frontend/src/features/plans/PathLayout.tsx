@@ -27,7 +27,7 @@ export function PathLayout() {
           </NavLink>
         ))}
       </nav>
-      <div key={pathname} className="rise">
+      <div key={pathname} className="fade-in">
         <Outlet />
       </div>
     </div>

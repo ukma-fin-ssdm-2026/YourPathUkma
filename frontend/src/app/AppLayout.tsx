@@ -53,7 +53,12 @@ export function AppLayout({
             ))}
           </nav>
           <div className="ml-auto flex h-[52px] min-w-0 items-center gap-2.5 font-medium sm:h-auto">
-            <span className="min-w-0 max-w-[180px] truncate">{userName}</span>
+            <span
+              title={userName}
+              className="min-w-0 max-w-[140px] truncate sm:max-w-none sm:whitespace-nowrap"
+            >
+              {userName}
+            </span>
             <span
               aria-hidden="true"
               className="grid size-8 shrink-0 place-items-center rounded-full bg-ink text-xs text-surface"
@@ -73,7 +78,7 @@ export function AppLayout({
         tabIndex={-1}
         className="outline-none mx-auto max-w-[1160px] px-4 py-6 sm:px-6"
       >
-        <div key={pathname.split("/")[1]} className="rise">
+        <div key={pathname.split("/")[1]} className="fade-in">
           <Outlet />
         </div>
       </main>
