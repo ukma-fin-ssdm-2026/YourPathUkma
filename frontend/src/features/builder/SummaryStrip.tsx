@@ -68,11 +68,14 @@ export function SummaryStrip({
   validation,
   credits,
   normativeCredits,
+  showIssues = true,
 }: {
   plan: BuilderPlan;
   validation: PlanValidationResponse | undefined;
   credits: Credits | undefined;
   normativeCredits: number;
+  /** false: попередження й помилки не показуються. Конструктор вмикає їх, коли студент зберігає чи подає план. */
+  showIssues?: boolean;
 }) {
   const local = summarize(plan.items);
   const selected = validation?.summary.total_credits ?? local.total;
@@ -94,7 +97,8 @@ export function SummaryStrip({
       field: null,
     });
   }
-  const errors = validation?.errors ?? [];
+  const errors = showIssues ? (validation?.errors ?? []) : [];
+  if (!showIssues) warnings.length = 0;
   const issues = errors.length + warnings.length;
 
   return (
@@ -140,7 +144,9 @@ export function SummaryStrip({
           </div>
           <div className="mt-1 text-sm font-semibold">
             {issues === 0
-              ? "Усе гаразд"
+              ? showIssues
+                ? "Усе гаразд"
+                : "Виконаються під час збереження"
               : (WARNING_TEXT[(errors[0] ?? warnings[0])!.code] ??
                 ERROR_TEXT[(errors[0] ?? warnings[0])!.code] ??
                 (errors[0] ?? warnings[0])!.message)}
