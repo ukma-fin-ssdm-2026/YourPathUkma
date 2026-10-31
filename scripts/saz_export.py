@@ -1,17 +1,21 @@
 """
 Вивантаження каталогу САЗ у CSV для перегляду: що саме побачив парсер. БД не використовується, САЗ лише читається.
 
-Потрібна збережена сесія (scripts/saz_login.py). Запуск: python scripts/saz_export.py [файл.csv]
-За замовчуванням пише saz_raw/saz_export.csv (папка в .gitignore) і saz_raw/saz_export_skipped.csv.
+Потрібна збережена сесія (scripts/saz_login.py). Запуск: python scripts/saz_export.py [ім'я.csv]
+Файли пишуться лише в saz_raw/ (папка в .gitignore); з аргументу береться тільки ім'я файлу, без каталогів.
+За замовчуванням: saz_raw/saz_export.csv і saz_raw/saz_export_skipped.csv.
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: запуск на живому каталозі.
 """
 
 import csv
+import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+ROOT = Path(__file__).resolve().parent.parent
+OUT_DIR = ROOT / "saz_raw"
+sys.path.insert(0, str(ROOT))
 
 from src.parser.config import load_settings  # noqa: E402
 from src.parser.fetcher import PlaywrightFetcher  # noqa: E402
@@ -82,4 +86,8 @@ def main(out: Path) -> None:
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]) if len(sys.argv) > 1 else Path("saz_raw/saz_export.csv"))
+    # `os.path.basename` відсікає каталоги: куди завгодно за межі saz_raw записати неможливо.
+    file_name = os.path.basename(sys.argv[1]) if len(sys.argv) > 1 else "saz_export.csv"
+    if not file_name.endswith(".csv"):
+        sys.exit("Ім'я файлу має закінчуватись на .csv")
+    main(OUT_DIR / file_name)

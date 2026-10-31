@@ -31,13 +31,17 @@ class CardParseError(ValueError):
 
 def internal_id_of(panel: Tag) -> Optional[str]:
     body = panel.select_one("div.panel-collapse")
-    match = _INTERNAL_ID.match(str(body.get("id", ""))) if body else None
+    if body is None:
+        return None
+    match = _INTERNAL_ID.match(str(body.get("id", "")))
     return match.group(1) if match else None
 
 
 def card_title_of(panel: Tag) -> Optional[str]:
     link = panel.select_one(".panel-heading .panel-title")
-    return clean_text(link.get_text(" ")) or None if link else None
+    if link is None:
+        return None
+    return clean_text(link.get_text(" ")) or None
 
 
 def _rows(body: Tag) -> Dict[str, Tag]:
