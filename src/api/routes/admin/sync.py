@@ -7,15 +7,16 @@ GET /admin/moderation-items, POST /admin/moderation-items/{id}/approve|reject, P
 Зміна каталогу від парсера потрапляє в `courses` лише після схвалення. Формат `payload` елемента
 модерації описано в `CoursePayload` нижче: перевірте, що парсер формує його саме так.
 
-TODO(команда): POST /admin/sync-jobs створює задачу зі статусом `queued`, але сам парсер сюди не підключено.
-Поки воркер не підхопить задачу й не переведе її в `running`/`succeeded`/`failed`, нова задача для того
+Для джерела `saz_catalog` задачу після відповіді підхоплює `src.parser.sync.run_sync_job` (BackgroundTasks) і
+веде її `queued` -> `running` -> `succeeded`/`failed`. Вимкнути автозапуск: SAZ_AUTORUN=0.
+TODO(команда): для `faculty_certificates` парсера ще немає, така задача лишається в `queued`, а нова для того
 самого джерела дасть 409 SYNC_JOB_ALREADY_RUNNING (часткова унікальність у БД).
 """
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
-from fastapi import APIRouter, Depends, Path, Query, Request, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, Request, Response, status
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
@@ -27,6 +28,8 @@ from ....db.models.admin import ModerationItem, SyncJob
 from ....db.models.catalog import Course
 from ....db.models.users import User
 from ....db.session import get_db
+from ....parser.config import autorun_enabled
+from ....parser.sync import fail_stale_jobs, run_sync_job
 from ...common import ApiError, ErrorDetail, PaginationInfo, error_responses
 from .common import client_ip, require_admin, write_audit
 
@@ -330,9 +333,11 @@ def start_sync_job(
     payload: SyncJobCreate,
     request: Request,
     response: Response,
+    background_tasks: BackgroundTasks,
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
+    fail_stale_jobs(db)
     conflict = ApiError(409, "SYNC_JOB_ALREADY_RUNNING", "Для цього джерела вже виконується синхронізація")
     active = db.scalar(
         select(SyncJob.id).where(
@@ -366,6 +371,8 @@ def start_sync_job(
         db.rollback()
         raise conflict
     response.headers["Location"] = f"/api/v1/admin/sync-jobs/{job.id}"
+    if payload.source == db_enums.SyncSource.SAZ_CATALOG and autorun_enabled():
+        background_tasks.add_task(run_sync_job, job.id)
     return _job_response(job, {admin.id: admin})
 
 

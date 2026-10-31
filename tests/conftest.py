@@ -17,6 +17,7 @@ _TEST_DB_URL = os.getenv("TEST_DATABASE_URL") or f"sqlite:///{Path(tempfile.mkdt
 os.environ["DATABASE_URL"] = _TEST_DB_URL
 
 os.environ.setdefault("JWT_SECRET", "test-secret-test-secret-test-secret-123456")
+os.environ["SAZ_AUTORUN"] = "0"  # тести не запускають живий парсер САЗ у фоні
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
