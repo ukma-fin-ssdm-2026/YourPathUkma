@@ -8,6 +8,7 @@ Playwright імпортується лише всередині `PlaywrightFetch
 (на підставних відповідях, без мережі).
 """
 
+import contextlib
 import os
 import time
 from typing import Callable, Optional, Protocol, Tuple
@@ -69,6 +70,33 @@ def fetch_with_retry(
     raise FetchError(f"Не вдалося завантажити сторінку: {last_error}")
 
 
+def start_with_retry(
+    start: Callable[[], None],
+    *,
+    retries: int = 2,
+    delay_s: float = 2.0,
+    sleep: Callable[[float], None] = time.sleep,
+    cleanup: Callable[[], None] = lambda: None,
+) -> None:
+    """
+    Запуск драйвера Playwright і браузера іноді падає («Connection closed while reading from the driver»),
+    найчастіше коли системі не вистачає пам'яті. Повторюємо з паузою, а після невдачі даємо зрозуміле повідомлення.
+    """
+    last = "невідома помилка"
+    for attempt in range(retries + 1):
+        try:
+            return start()
+        except Exception as exc:  # Playwright кидає різні типи винятків
+            last = f"{type(exc).__name__}: {exc}"
+            cleanup()
+            if attempt < retries:
+                sleep(delay_s * (attempt + 1))
+    raise FetchError(
+        f"Не вдалося запустити браузер Playwright ({last}). Перевірте вільну пам'ять і виконайте "
+        "`playwright install chromium`, потім повторіть запуск."
+    )
+
+
 class PlaywrightFetcher:
     def __init__(self, settings: SazSettings):
         self._settings = settings
@@ -80,12 +108,26 @@ class PlaywrightFetcher:
     def __enter__(self) -> "PlaywrightFetcher":
         if not self._settings.state_path.exists():
             raise SessionExpired("SAZ_SESSION_EXPIRED: файл сесії не знайдено, виконайте scripts/saz_login.py")
+        start_with_retry(self._start, delay_s=self._settings.delay_s * 2, cleanup=self._stop)
+        return self
+
+    def _start(self) -> None:
         from playwright.sync_api import sync_playwright
 
         self._playwright = sync_playwright().start()
         self._browser = self._playwright.chromium.launch(headless=True)
         self._context = self._browser.new_context(storage_state=str(self._settings.state_path))
-        return self
+
+    def _stop(self) -> None:
+        """Закриває те, що встигло запуститись; помилки закриття ігноруємо."""
+        for resource in (self._context, self._browser):
+            if resource is not None:
+                with contextlib.suppress(Exception):
+                    resource.close()
+        if self._playwright is not None:
+            with contextlib.suppress(Exception):
+                self._playwright.stop()
+        self._context = self._browser = self._playwright = None
 
     def _refresh_session(self) -> None:
         """Зберігає оновлені cookies після успішного обходу: сесія САЗ продовжується, адмінам не треба входити знову."""
