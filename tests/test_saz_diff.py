@@ -92,3 +92,20 @@ def test_pending_duplicate_is_skipped():
     result = build_changes({"7": payload}, [], complete=True, pending_keys=pending)
     assert result.changes == []
     assert result.skipped_duplicates == 1
+
+
+def test_changed_instructors_become_update():
+    existing = _existing("1", instructors=("Іваненко І.І.",))
+    result = build_changes(
+        {"1": _payload("1", instructors=["Іваненко І.І.", "Петренко П.П."])}, [existing], complete=True
+    )
+    (change,) = result.changes
+    assert change.change_type == T.UPDATE
+    assert change.diff == {"instructors": {"old": ["Іваненко І.І."], "new": ["Іваненко І.І.", "Петренко П.П."]}}
+    assert change.payload["instructors"] == ["Іваненко І.І.", "Петренко П.П."]
+
+
+def test_same_instructors_in_other_case_and_order_are_equal():
+    existing = _existing("1", instructors=("Іваненко І.І.", "Петренко П.П."))
+    payload = _payload("1", instructors=["ПЕТРЕНКО П.П.", "іваненко і.і."])
+    assert build_changes({"1": payload}, [existing], complete=True).changes == []

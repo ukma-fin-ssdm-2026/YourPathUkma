@@ -22,7 +22,7 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 from ..db import enums as db_enums
 
 REMOVE_THRESHOLD = 0.2
-_COMPARED = ("title", "description", "credits", "trimester", "recommended_year", "kind")
+_COMPARED = ("title", "description", "credits", "trimester", "recommended_year", "kind", "instructors")
 
 
 @dataclass(frozen=True)
@@ -37,6 +37,7 @@ class ExistingCourse:
     kind: str
     published: bool = True
     synced: bool = True  # курс створений синхронізацією (`last_sync_job_id` не порожній)
+    instructors: Tuple[str, ...] = ()
 
 
 @dataclass
@@ -69,7 +70,13 @@ def item_key(
 def _same(field_name: str, old: Any, new: Any) -> bool:
     if field_name == "credits":
         return round(float(old), 2) == round(float(new), 2)
+    if field_name == "instructors":
+        return sorted(n.casefold() for n in old) == sorted(n.casefold() for n in new)
     return old == new
+
+
+def _plain(value: Any) -> Any:
+    return list(value) if isinstance(value, tuple) else value
 
 
 def build_changes(
@@ -96,9 +103,9 @@ def build_changes(
             push(Change(db_enums.ModerationChangeType.ADD, code, None, payload))
             continue
         diff = {
-            name: {"old": getattr(course, name), "new": payload[name]}
+            name: {"old": _plain(getattr(course, name)), "new": payload[name]}
             for name in _COMPARED
-            if not _same(name, getattr(course, name), payload[name])
+            if name in payload and not _same(name, getattr(course, name), payload[name])
         }
         if diff:
             update = {name: change["new"] for name, change in diff.items()}

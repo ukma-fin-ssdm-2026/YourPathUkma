@@ -114,6 +114,7 @@ def _existing_courses(db: Session) -> List[ExistingCourse]:
             kind=c.kind.value,
             published=c.publication_status == db_enums.PublicationStatus.PUBLISHED,
             synced=c.last_sync_job_id is not None,
+            instructors=tuple(ci.instructor.full_name for ci in c.course_instructors),
         )
         for c in db.scalars(select(Course))
     ]
