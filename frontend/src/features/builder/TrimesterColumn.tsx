@@ -72,6 +72,7 @@ export function TrimesterColumn({
         options={LOAD_OPTIONS}
         ariaLabel={`Навантаження: ${label.toLowerCase()}`}
         disabled={loadLocked}
+        compact
         onChange={onLoadChange}
       />
       {items.map((item) => (
