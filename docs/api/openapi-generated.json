@@ -8537,7 +8537,6 @@
           "preferred_instructor_ids",
           "unwanted_instructor_ids",
           "wants_certificate",
-          "certificate_program_id",
           "updated_at"
         ],
         "title": "PreferencesResponse"
