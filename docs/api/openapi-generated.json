@@ -6934,7 +6934,6 @@
           "mime_type",
           "size_bytes",
           "parse_status",
-          "parse_error",
           "uploaded_at"
         ],
         "title": "DeaneryDocumentResponse"
