@@ -45,7 +45,7 @@ end note
 
 SPA --> App : **TB1** HTTPS, REST API (JSON),\nBearer JWT\n(PII; Multipart PDF/Docx документа деканату)
 App --> DB : **TB2** TCP/IP (SQL, asyncpg)\n(усі сутності, PII)
-App --> Google : **TB3** HTTPS / OAuth2 (OIDC)\n(email, google_sub)
+App --> Google : **TB3** HTTPS / OAuth2 (OIDC)\n(email, ms_oid)
 App --> LLM : **TB4** HTTPS POST\n(анонімізований prompt, без PII — ADR-003)
 App --> Parser : **TB6** запуск парсингу\n(лише роль admin)
 Parser --> CA3 : **TB5** HTTP(S) scrape
