@@ -6,8 +6,9 @@ info:
     навантаження.
 
 
-    **Автентифікація:** JWT Bearer (Microsoft 365 SSO). У поточній заглушці приймається
-    будь-який непорожній токен: натисніть Authorize і введіть, наприклад, `test`.'
+    **Автентифікація:** JWT Bearer (Microsoft 365 SSO). Access-токен видає `POST /auth/microsoft`;
+    у Swagger UI натисніть Authorize і вставте токен (для розробки: `python -m scripts.issue_token
+    <email>`).'
   version: 1.0.0
 servers:
 - url: http://localhost:3000
@@ -5985,7 +5986,7 @@ tags:
 - name: Disciplines
   description: Каталог дисциплін (читання, фільтри)
 - name: Auth
-  description: Вхід через Microsoft, оновлення і відкликання токена (заглушка)
+  description: Вхід через Microsoft, оновлення і відкликання токена
 - name: Reference
   description: 'Довідники: напрямки розвитку і викладачі'
 - name: Preferences
