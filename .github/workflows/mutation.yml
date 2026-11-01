@@ -29,11 +29,13 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - name: Run mutmut
+        env:
+          MUTATE_PATHS: ${{ inputs.paths }}
         # Код виходу mutmut 2 — бітова маска: 1 — фатальна помилка, 2/4/8 — є вцілілі, таймаути чи підозрілі.
         # Вцілілі мутанти очікувані (їх оцінює наступний крок), тому падаємо лише на фатальній помилці.
         run: |
           set +e
-          mutmut run --paths-to-mutate "${{ inputs.paths }}" \
+          mutmut run --paths-to-mutate "$MUTATE_PATHS" \
             --runner "python -m pytest -x -q -p no:cacheprovider"
           code=$?
           set -e
