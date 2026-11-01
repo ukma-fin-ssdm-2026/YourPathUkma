@@ -45,6 +45,7 @@ Students sign in via their corporate NaUKMA email.
 | 4 | API | [API](#api) | [`docs/api/`](docs/api/) |
 | 5 | Якість коду | [Якість коду](#якість-коду) | [`docs/code-quality/`](docs/code-quality/) |
 | 6 | Тестування | [Тестування](#тестування) | [`docs/testing/`](docs/testing/) |
+| 7 | Валідація й рефакторинг | [Валідація](#валідація), [Рефакторинг](#рефакторинг) | [`docs/validation/`](docs/validation/), [`docs/refactoring/`](docs/refactoring/) |
 
 Також: [Project-Description.md](Project-Description.md) (повний опис проєкту), [AGENTS.md](AGENTS.md) (контекст для AI-агентів), [frontend/README.md](frontend/README.md) (frontend).
 
@@ -94,6 +95,17 @@ Students sign in via their corporate NaUKMA email.
 - [Журнал налагодження](docs/testing/debugging-log.md)
 - [Нотатки про якість тестів](docs/testing/test-quality-notes.md)
 - [Звіт про покриття (HTML)](docs/testing/coverage/README.md)
+
+## Валідація
+Документація: [`/docs/validation/`](docs/validation/)
+
+- [Тест-план](docs/validation/test-plan.md): тест-кейси TP-01…TP-18 для правил плану, API планів і каталогу дисциплін, ризики й критерії виходу; бонуси: таблиця переходів між станами плану (ST-01…ST-13) і виконуваний нефункціональний тест SEC-001
+- [Журнал оглядів](docs/validation/review-log.md): огляд нашого тест-плану командою Rehab і внесені зміни; огляд PR із тестами, згенерованими ШІ
+
+## Рефакторинг
+Документація: [`/docs/refactoring/`](docs/refactoring/)
+
+- [Звіт про аналіз якості коду в SonarCloud](docs/refactoring/sonarcloud-report.md): проблеми за категоріями (Security, Reliability, Maintainability, Duplications) і статуси їх виправлення
 
 ## Запуск API
 
@@ -220,3 +232,5 @@ npm run typecheck
 **Нотатка щодо використання ШІ (міні-ТЗ):** посилання на міні-ТЗ у розділі «Артефакти вимог» додано за допомогою Claude (Claude Code); перевірено, що файл існує.
 
 **Нотатка щодо використання ШІ (карта документації):** розділи «Карта документації», «Командний процес», «API», «Якість коду», «Тестування» та оновлені списки в «Артефакти вимог» й «Архітектура» створено за допомогою Claude (Claude Code). Перевірено скриптом, що відносні посилання в `.md` файлах репозиторію ведуть на наявні файли; опис CI звірено з файлами в `.github/workflows/`.
+
+**Нотатка щодо використання ШІ (валідація й рефакторинг):** рядок «7» у «Карті документації» та розділи «Валідація» і «Рефакторинг» додано за допомогою Claude. Опис складено за початками `docs/validation/test-plan.md`, `docs/validation/review-log.md` і `docs/refactoring/sonarcloud-report.md`; існування файлів за вказаними шляхах звірено зі структурою репозиторію. Посилання-якорі `#валідація` і `#рефакторинг` скриптом не перевірялись.
