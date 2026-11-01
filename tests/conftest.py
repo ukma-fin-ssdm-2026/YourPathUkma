@@ -17,6 +17,8 @@ _TEST_DB_URL = os.getenv("TEST_DATABASE_URL") or f"sqlite:///{Path(tempfile.mkdt
 os.environ["DATABASE_URL"] = _TEST_DB_URL
 # Локальний .env розробника (MS_*, ALLOWED_REDIRECT_URIS…) не має потрапляти в тести
 os.environ["SKIP_DOTENV"] = "1"
+# Локальна збірка frontend/dist не має підміняти 404 API сторінкою SPA в тестах
+os.environ["FRONTEND_DIST"] = str(Path(tempfile.gettempdir()) / "no-frontend-dist")
 
 os.environ.setdefault("JWT_SECRET", "test-secret-test-secret-test-secret-123456")
 os.environ["SAZ_AUTORUN"] = "0"  # тести не запускають живий парсер САЗ у фоні

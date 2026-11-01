@@ -165,6 +165,16 @@ python -m scripts.issue_token student@ukma.edu.ua   # студент 2 курс�
 
 Скрипт друкує access-токен (живе 15 хв, потрібен `JWT_SECRET` у `.env`). Вставте його в Authorize у Swagger UI (`/api-docs`) або передайте заголовком `Authorization: Bearer <токен>`. Демо-користувачі створюються разом із демо-даними при першому старті API.
 
+## Docker і розгортання
+
+Фронтенд і API збираються в один образ (`Dockerfile`): API сам роздає зібраний фронтенд, тож на Azure достатньо одного контейнера й бази PostgreSQL. Перевірити образ локально разом із базою:
+
+```bash
+JWT_SECRET=<мінімум 32 символи> docker compose --profile app up --build   # http://localhost:8000
+```
+
+Публікація на Docker Hub (workflow [`docker-publish.yml`](.github/workflows/docker-publish.yml)) і розгортання на Azure Container Apps: [docs/deployment/azure.md](docs/deployment/azure.md). Розгорнутої системи за публічною адресою поки немає.
+
 ## Тести
 
 ```bash
@@ -212,6 +222,8 @@ npm run typecheck
 
 ---
 **Нотатка щодо використання ШІ (посилання на API-контракт):** рядок із посиланням на `docs/api/contract.md` у розділі «Архітектура» додано за допомогою Claude (Claude Code); перевірено, що файл існує за цим шляхом.
+
+**Нотатка щодо використання ШІ (Docker і розгортання):** розділ «Docker і розгортання», `Dockerfile`, `.dockerignore`, `docs/deployment/azure.md`, `src/api/frontend_site.py` і workflow `docker-publish.yml` створено за допомогою Claude (Claude Code). Перевірка: збірка образу, запуск контейнера, pytest; команди Azure не запускались у реальній підписці.
 
 **Нотатка щодо використання ШІ (запуск, змінні середовища, вхід):** розділи «Запуск API» (кроки з `.env` і `JWT_SECRET`, таблиця змінних) і «Вхід у застосунок» створено за допомогою Claude (Claude Code) за зауваженнями репетиції проміжного оцінювання. Перевірка: порожній `.env` без `JWT_SECRET` зупиняє старт, а після кроків з README API стартує; `scripts/issue_token.py` видає токен, який приймає API.
 
