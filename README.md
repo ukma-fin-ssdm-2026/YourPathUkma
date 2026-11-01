@@ -5,6 +5,8 @@
 > A web platform for NaUKMA Faculty of Informatics students to build
 > personalized academic plans with AI-powered course recommendations.
 
+**Онлайн-версія:** [https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io](https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io) · [Розгорнута система](docs/deployment/deployed-system.md)
+
 ## Team
 
 | Member | GitHub | Email |
@@ -30,6 +32,14 @@ The platform allows students to:
 > builder for load visibility.
 
 Students sign in via their corporate NaUKMA email.
+
+## Розгорнута система
+
+Застосунок розгорнуто публічно в Microsoft Azure (Azure Container Apps і Azure Database for PostgreSQL, один Docker-образ):
+
+- **Сайт:** [https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io](https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io) (вхід лише з поштою `@ukma.edu.ua` через Microsoft)
+- **Swagger UI розгорнутого API:** [https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io/api-docs](https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io/api-docs)
+- Опис, схема, обмеження й перевірка: [docs/deployment/deployed-system.md](docs/deployment/deployed-system.md)
 
 ---
 
@@ -212,6 +222,8 @@ npm run typecheck
 
 ---
 **Нотатка щодо використання ШІ (посилання на API-контракт):** рядок із посиланням на `docs/api/contract.md` у розділі «Архітектура» додано за допомогою Claude (Claude Code); перевірено, що файл існує за цим шляхом.
+
+**Нотатка щодо використання ШІ (розгорнута система):** рядок про онлайн-версію, розділ «Розгорнута система» і сторінку `docs/deployment/deployed-system.md` створено за допомогою Claude (Claude Code) за станом реального розгортання в Azure. Перевірка: `GET /health` = 200, сайт і Swagger відкриваються.
 
 **Нотатка щодо використання ШІ (запуск, змінні середовища, вхід):** розділи «Запуск API» (кроки з `.env` і `JWT_SECRET`, таблиця змінних) і «Вхід у застосунок» створено за допомогою Claude (Claude Code) за зауваженнями репетиції проміжного оцінювання. Перевірка: порожній `.env` без `JWT_SECRET` зупиняє старт, а після кроків з README API стартує; `scripts/issue_token.py` видає токен, який приймає API.
 
