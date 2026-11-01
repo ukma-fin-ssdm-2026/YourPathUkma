@@ -132,6 +132,15 @@ curl https://<fqdn>/health          # {"status":"ok",...}
 az containerapp update --name yourpath --resource-group yourpath-rg --image docker.io/<user>/yourpath:<новий-тег>
 ```
 
+## Оновлення залежностей Python в образі
+
+Образ ставить Python-залежності з `requirements.lock` (усі версії зафіксовано з хешами, `pip install --require-hashes --only-binary :all:`). Після зміни `requirements.txt` перегенеруйте файл:
+
+```bash
+pip install uv
+uv pip compile requirements.txt --universal --python-version 3.12 --generate-hashes --no-header -o requirements.lock
+```
+
 ## Обмеження й безпека
 
 - **Парсер САЗ у контейнері не працює**: Playwright і Chromium не входять в образ, а вхід у САЗ потребує видимого вікна браузера (`scripts/saz_login.py`). Для демо залишайте `SAZ_AUTORUN=0`. Запуск парсера в хмарі потребує окремого рішення.

@@ -12,7 +12,8 @@ FROM node:22-slim AS frontend
 WORKDIR /build
 
 COPY frontend/package.json frontend/package-lock.json frontend/
-RUN cd frontend && npm ci
+# --ignore-scripts: скрипти встановлення пакетів не виконуються (бінарні залежності Vite йдуть як optionalDependencies)
+RUN cd frontend && npm ci --ignore-scripts
 
 COPY frontend frontend
 # Типи API генеруються зі специфікації, яка лежить у репозиторії
@@ -34,8 +35,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+# requirements.lock: усі версії зафіксовано з хешами (оновлення: див. docs/deployment/azure.md);
+# --only-binary: лише готові колеса, без запуску setup-скриптів із вихідних архівів
+COPY requirements.lock .
+RUN pip install --require-hashes --only-binary :all: -r requirements.lock
 
 COPY alembic.ini .
 COPY migrations migrations
