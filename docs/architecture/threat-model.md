@@ -13,7 +13,7 @@
 
 | Група / сутність | Чутливі поля | Класифікація | Через які межі проходить |
 |---|---|---|---|
-| `User` | `email`, `full_name`, `google_sub` | **PII, висока** | TB1, TB2, TB3 |
+| `User` | `email`, `full_name`, `ms_oid` | **PII, висока** | TB1, TB2, TB3 |
 | `StudentProfile` | `specialty`, `course_year`, лічильники кредитів | **PII, висока цілісність**: `course_year` визначає права (FR-001, FR-003) | TB1, TB2, TB7 |
 | `PlanPreferences` (+ `PreferenceDirection`, `TrimesterLoad`, `InstructorPreference`) | напрямки, рівні навантаження, **небажані викладачі** | PII студента; список небажаних викладачів — репутаційно чутливий | TB1, TB2. У LLM (TB4) список небажаних викладачів **не передається**: Catalog Service відфільтровує їхні курси до виклику LLM (`sequence-generate-plan.puml`) |
 | `Instructor` | `full_name` | PII викладача (публічна службова інформація) | TB2, TB4, TB5 |
@@ -43,7 +43,7 @@
 | **TB4** | TZ-2 → TZ-4 (AI Recommendation Adapter → External LLM API) | Напрямки, навантаження, агрегована власна історія планів (коди курсів), відфільтрований каталог. Без id і email студента (ADR-003) та без списку небажаних викладачів | 3 |
 | **TB6** | Всередині TZ-2: роль student → адмін-функції (Ingestion & Moderation, запуск Parser Task; логічна межа привілеїв) | `SyncJob`, `ModerationItem`, `Direction`, `CertificateProgram` | 4 |
 | **TB2** | TZ-2 → TZ-3 (Application Server / Parser Task → PostgreSQL; TCP/IP, asyncpg) | Усі сутності, файли документів | 5 |
-| **TB3** | TZ-2 ↔ TZ-4 (Auth Service ↔ Microsoft SSO) | Ідентичність (`User.email`, `google_sub`) | 6 |
+| **TB3** | TZ-2 ↔ TZ-4 (Auth Service ↔ Microsoft SSO) | Ідентичність (`User.email`, `ms_oid`) | 6 |
 | **TB5** | TZ-4 → TZ-2 (САЗ / сайт факультету → Parser) | `Course`, `CertificateProgram` (цілісність) | 7 |
 
 Пріоритет визначено за чутливістю даних, що перетинають межу («Do: починайте з меж, які перетинають чутливі дані»).

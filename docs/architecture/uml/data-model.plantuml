@@ -29,7 +29,7 @@ package "Users & Profiles" {
   entity User <<PII>> {
     * id : bigint <<PK>>
     --
-    * google_sub : varchar <<unique>>  {PII}
+    * ms_oid : varchar <<unique>>  {PII}
     * email : varchar <<unique>>  {PII}  (@ukma.edu.ua, FR-012)
     * full_name : varchar  {PII}
     * role : enum {student, admin}  {sensitive}

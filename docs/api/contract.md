@@ -13,7 +13,9 @@
 | 🔵 **Етап 2, запропоновано** | AI, альтернативи, сертифікатні програми (`AGENTS.md` §8). |
 | ⛔ **Заблоковано** | Немає рішення по архітектурі або безпеці; не реалізовувати. |
 
-**Джерело правди:** для ✅-кінцевих точок — згенерована специфікація [`openapi-generated.yaml`](openapi-generated.yaml) (Swagger UI: `/api-docs`). Якщо цей документ і специфікація розходяться, правильна специфікація, а документ треба виправити. Для 🟡/🔵 джерело правди — цей документ, доки кінцева точка не з'явиться в коді.
+**Статус на 01.11.2026.** Для всіх кінцевих точок із зведеної таблиці (§3), крім ⛔ `POST /plans/sync-saz`, у `src/api/routes/` є обробники, тому біля них стоїть ✅. Позначки 🔵 біля кінцевих точок етапу 2 (AI, сертифікатні програми) не змінено: їхню форму ще не звірено зі специфікацією. Позначка 🟡 біля окремих правил, полів, кодів помилок і перелічень (не біля кінцевих точок) означає поведінку, яку ще не звірено з кодом.
+
+**Джерело правди:** для ✅-кінцевих точок — згенерована специфікація [`openapi-generated.yaml`](openapi-generated.yaml) (Swagger UI: `/api-docs`). Якщо цей документ і специфікація розходяться, правильна специфікація, а документ треба виправити. Для 🔵/⛔ і для правил з позначкою 🟡 джерело правди — цей документ, доки поведінка не звірена з кодом.
 
 ---
 
@@ -33,7 +35,7 @@
 
 | Заголовок | Напрямок | Обов'язковий | Опис |
 |---|---|---|---|
-| `Authorization: Bearer <access_token>` | запит | так, для всіх кінцевих точок, крім `/health` і `/auth/*` | Access-токен після входу через Microsoft SSO (§3.1). **Зараз (заглушка):** приймається будь-який непорожній рядок, напр. `Bearer test`. |
+| `Authorization: Bearer <access_token>` | запит | так, для всіх кінцевих точок, крім `/health` і `/auth/*` | Access-токен (JWT) після входу через Microsoft SSO (§3.1). Для локальної розробки без Microsoft токен можна випустити скриптом `scripts/issue_token.py` (див. `README.md`). |
 | `Content-Type: application/json` | запит | для POST/PUT з тілом | |
 | `Accept-Language` | запит | ні | Не використовується: усі повідомлення `message` зараз українською. |
 | `X-Request-ID` | запит (необов'язково) і відповідь | ✅ реалізовано | Унікальний id запиту для логів (`quality-attributes.md`: `request_id` / `correlation_id`). Фронтенд показує його в повідомленні про помилку 5xx («Код помилки: …»). Якщо клієнт сам надіслав `X-Request-ID`, сервер повертає той самий. |
@@ -258,59 +260,59 @@ Query-параметри:
 | Метод | Шлях | Призначення | Статус | Екран |
 |---|---|---|---|---|
 | GET | `/health` | Стан сервера | ✅ | — |
-| GET | `/config` | Публічна конфігурація для фронтенду (ліміти, `client_id`, прапорці) | 🟡 | старт застосунку |
-| POST | `/auth/google` | Вхід: обмін коду Microsoft на токени | 🟡 | Вхід |
-| POST | `/auth/refresh` | Новий access-токен | 🟡 | усі |
-| POST | `/auth/logout` | Вихід | 🟡 | усі |
-| GET | `/me` | Профіль і лічильники кредитів | 🟡 | Профіль |
-| POST | `/me/onboarding` | Першочергове заповнення курсу і спеціальності | 🟡 | Онбординг |
-| GET | `/me/academic-history` | Пройдені дисципліни за попередні роки | 🟡 | Профіль, Індивідуальний план |
-| POST | `/me/academic-history` | Додати пройдені дисципліни | 🟡 | Онбординг, Профіль |
-| DELETE | `/me/academic-history/{record_id}` | Видалити власний запис історії | 🟡 | Профіль |
-| GET | `/preferences/{academic_year}` | Збережені побажання на рік | 🟡 | Створити план |
-| PUT | `/preferences/{academic_year}` | Зберегти побажання на рік | 🟡 | Створити план |
+| GET | `/config` | Публічна конфігурація для фронтенду (ліміти, `client_id`, прапорці) | ✅ | старт застосунку |
+| POST | `/auth/microsoft` | Вхід: обмін коду Microsoft на токени | ✅ | Вхід |
+| POST | `/auth/refresh` | Новий access-токен | ✅ | усі |
+| POST | `/auth/logout` | Вихід | ✅ | усі |
+| GET | `/me` | Профіль і лічильники кредитів | ✅ | Профіль |
+| POST | `/me/onboarding` | Першочергове заповнення курсу і спеціальності | ✅ | Онбординг |
+| GET | `/me/academic-history` | Пройдені дисципліни за попередні роки | ✅ | Профіль, Індивідуальний план |
+| POST | `/me/academic-history` | Додати пройдені дисципліни | ✅ | Онбординг, Профіль |
+| DELETE | `/me/academic-history/{record_id}` | Видалити власний запис історії | ✅ | Профіль |
+| GET | `/preferences/{academic_year}` | Збережені побажання на рік | ✅ | Створити план |
+| PUT | `/preferences/{academic_year}` | Зберегти побажання на рік | ✅ | Створити план |
 | GET | `/plans` | Список планів студента | ✅ | Індивідуальний план, Збережені плани |
 | POST | `/plans` | Створити чернетку | ✅ | Створити план |
 | GET | `/plans/{plan_id}` | План за id | ✅ | Перегляд плану |
 | PUT | `/plans/{plan_id}` | Оновити чернетку (повна заміна) | ✅ | Створити план |
 | DELETE | `/plans/{plan_id}` | Видалити чернетку | ✅ | Збережені плани |
-| POST | `/plans/validate` | Перевірити план без збереження | 🟡 | Створити план |
-| POST | `/plans/{plan_id}/submit` | `draft` → `submitted` | 🟡 | Перегляд плану |
-| GET | `/plans/{plan_id}/export` | Експорт плану в PDF | 🟡 | Перегляд плану |
+| POST | `/plans/validate` | Перевірити план без збереження | ✅ | Створити план |
+| POST | `/plans/{plan_id}/submit` | `draft` → `submitted` | ✅ | Перегляд плану |
+| GET | `/plans/{plan_id}/export` | Експорт плану в PDF | ✅ | Перегляд плану |
 | POST | `/plans/sync-saz` | «Оновити» з САЗ | ⛔ | Індивідуальний план |
 | GET | `/disciplines` | Каталог з фільтрами | ✅ | Каталог, Створити план |
 | GET | `/disciplines/{discipline_id}` | Дисципліна за id | ✅ | Каталог |
-| GET | `/directions` | Довідник напрямків | 🟡 | Побажання, фільтр каталогу |
-| GET | `/instructors` | Довідник викладачів | 🟡 | Побажання, фільтр каталогу |
-| POST | `/deanery-documents` | Завантажити документ деканату | 🟡 | Створити план |
-| GET | `/deanery-documents` | Документи студента | 🟡 | Створити план |
-| GET | `/deanery-documents/{document_id}` | Документ + розпізнані нормативні | 🟡 | Створити план |
-| GET | `/deanery-documents/{document_id}/file` | Завантажити власний файл | 🟡 | Створити план |
-| DELETE | `/deanery-documents/{document_id}` | Видалити документ | 🟡 | Створити план |
+| GET | `/directions` | Довідник напрямків | ✅ | Побажання, фільтр каталогу |
+| GET | `/instructors` | Довідник викладачів | ✅ | Побажання, фільтр каталогу |
+| POST | `/deanery-documents` | Завантажити документ деканату | ✅ | Створити план |
+| GET | `/deanery-documents` | Документи студента | ✅ | Створити план |
+| GET | `/deanery-documents/{document_id}` | Документ + розпізнані нормативні | ✅ | Створити план |
+| GET | `/deanery-documents/{document_id}/file` | Завантажити власний файл | ✅ | Створити план |
+| DELETE | `/deanery-documents/{document_id}` | Видалити документ | ✅ | Створити план |
 | POST | `/plan-generations` | Запустити AI-генерацію | 🔵 | Створити план |
 | GET | `/plan-generations/{generation_id}` | Статус AI-генерації | 🔵 | Створити план |
 | GET | `/certificate-programs` | Сертифікатні програми | 🔵 | Каталог, Побажання |
 | GET | `/certificate-programs/{program_id}` | Програма + звірка дисциплін | 🔵 | Каталог |
-| POST | `/admin/sync-jobs` | Запустити парсинг | 🟡 | Адмінка |
-| GET | `/admin/sync-jobs` | Журнал `SyncJob` | 🟡 | Адмінка |
-| GET | `/admin/sync-jobs/{job_id}` | Деталі `SyncJob` | 🟡 | Адмінка |
-| GET | `/admin/moderation-items` | Черга модерації | 🟡 | Адмінка |
-| POST | `/admin/moderation-items/{item_id}/approve` | Схвалити зміну | 🟡 | Адмінка |
-| POST | `/admin/moderation-items/{item_id}/reject` | Відхилити зміну | 🟡 | Адмінка |
-| POST | `/admin/moderation-items/bulk-review` | Масово схвалити/відхилити | 🟡 | Адмінка |
-| GET | `/admin/users` | Користувачі (студенти й адміни) | 🟡 | Адмінка |
-| GET | `/admin/users/{user_id}` | Користувач + профіль студента | 🟡 | Адмінка |
-| PATCH | `/admin/users/{user_id}` | Змінити роль, курс, спеціальність | 🟡 | Адмінка |
-| GET | `/admin/users/{user_id}/academic-history` | Історія студента | 🟡 | Адмінка |
-| POST | `/admin/users/{user_id}/academic-history/verify` | Підтвердити записи історії | 🟡 | Адмінка |
-| POST | `/admin/directions` | Створити напрямок | 🟡 | Адмінка |
-| PATCH | `/admin/directions/{direction_id}` | Змінити напрямок | 🟡 | Адмінка |
-| DELETE | `/admin/directions/{direction_id}` | Видалити напрямок | 🟡 | Адмінка |
-| PUT | `/admin/disciplines/{discipline_id}/directions` | Прив'язати дисципліну до напрямків (профорієнтовність) | 🟡 | Адмінка |
+| POST | `/admin/sync-jobs` | Запустити парсинг | ✅ | Адмінка |
+| GET | `/admin/sync-jobs` | Журнал `SyncJob` | ✅ | Адмінка |
+| GET | `/admin/sync-jobs/{job_id}` | Деталі `SyncJob` | ✅ | Адмінка |
+| GET | `/admin/moderation-items` | Черга модерації | ✅ | Адмінка |
+| POST | `/admin/moderation-items/{item_id}/approve` | Схвалити зміну | ✅ | Адмінка |
+| POST | `/admin/moderation-items/{item_id}/reject` | Відхилити зміну | ✅ | Адмінка |
+| POST | `/admin/moderation-items/bulk-review` | Масово схвалити/відхилити | ✅ | Адмінка |
+| GET | `/admin/users` | Користувачі (студенти й адміни) | ✅ | Адмінка |
+| GET | `/admin/users/{user_id}` | Користувач + профіль студента | ✅ | Адмінка |
+| PATCH | `/admin/users/{user_id}` | Змінити роль, курс, спеціальність | ✅ | Адмінка |
+| GET | `/admin/users/{user_id}/academic-history` | Історія студента | ✅ | Адмінка |
+| POST | `/admin/users/{user_id}/academic-history/verify` | Підтвердити записи історії | ✅ | Адмінка |
+| POST | `/admin/directions` | Створити напрямок | ✅ | Адмінка |
+| PATCH | `/admin/directions/{direction_id}` | Змінити напрямок | ✅ | Адмінка |
+| DELETE | `/admin/directions/{direction_id}` | Видалити напрямок | ✅ | Адмінка |
+| PUT | `/admin/disciplines/{discipline_id}/directions` | Прив'язати дисципліну до напрямків (профорієнтовність) | ✅ | Адмінка |
 | PATCH | `/admin/certificate-programs/{program_id}` | Прив'язати програму до напрямків, приховати | 🔵 | Адмінка |
 | PUT | `/admin/certificate-programs/{program_id}/courses/{entry_id}` | Вручну звірити дисципліну програми з каталогом | 🔵 | Адмінка |
-| GET | `/admin/audit-log` | Журнал доступу і змін | 🟡 | Адмінка |
-| GET | `/admin/audit-log/{entry_id}` | Запис журналу з `old_value`/`new_value` | 🟡 | Адмінка |
+| GET | `/admin/audit-log` | Журнал доступу і змін | ✅ | Адмінка |
+| GET | `/admin/audit-log/{entry_id}` | Запис журналу з `old_value`/`new_value` | ✅ | Адмінка |
 
 ---
 
@@ -324,7 +326,7 @@ Query-параметри:
 { "status": "ok", "version": "1.0.0", "message": "All systems operational" }
 ```
 
-#### `GET /config` 🟡
+#### `GET /config` ✅
 
 Без автентифікації. Фронтенд викликає один раз при старті і бере звідси ліміти й налаштування, а не дублює їх у своєму коді. Значення в §2.2 — ті самі, що повертає ця кінцева точка.
 
@@ -366,19 +368,19 @@ Query-параметри:
 
 ---
 
-### 3.1. Автентифікація 🟡
+### 3.1. Автентифікація ✅
 
 Потік: SPA перенаправляє на Microsoft (OAuth2 Authorization Code + PKCE, scopes `openid email profile`, tenant НаУКМА в адресі авторизації). Microsoft повертає `code` на сторінку SPA. SPA надсилає `code` на бекенд. Бекенд перевіряє ID-токен (`iss`, `aud`, `exp`, `email_verified`, `tid` дорівнює tenant НаУКМА, точний збіг домену пошти `ukma.edu.ua`), створює або знаходить користувача і повертає access-токен (R6, R7).
 
 Конфігурація, яку бекенд і фронтенд мають узгодити: Microsoft OAuth `client_id` (публічний, потрібен фронтенду), дозволений `redirect_uri`, дозволений origin фронтенду для CORS.
 
-#### `POST /auth/google`
+#### `POST /auth/microsoft`
 
 Запит:
 
 ```json
 {
-  "code": "4/0AX4XfWh...",
+  "code": "0.AXQA...",
   "code_verifier": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
   "redirect_uri": "http://localhost:5173/auth/callback"
 }
@@ -401,7 +403,7 @@ Access-токен: живе 15 хв, фронтенд тримає його **л
 
 #### `POST /auth/refresh`
 
-Без тіла, з cookie (`credentials: "include"`). Відповідь `200`: та сама форма, що й `/auth/google`, з новим access-токеном (refresh-токен ротується). Помилка: `401 UNAUTHORIZED` → перейти на сторінку входу. Фронтенд викликає його при старті застосунку (щоб відновити сесію після перезавантаження сторінки) і після 401.
+Без тіла, з cookie (`credentials: "include"`). Відповідь `200`: та сама форма, що й `/auth/microsoft`, з новим access-токеном (refresh-токен ротується). Помилка: `401 UNAUTHORIZED` → перейти на сторінку входу. Фронтенд викликає його при старті застосунку (щоб відновити сесію після перезавантаження сторінки) і після 401.
 
 #### `POST /auth/logout`
 
@@ -409,7 +411,7 @@ Access-токен: живе 15 хв, фронтенд тримає його **л
 
 ---
 
-### 3.2. Профіль студента 🟡
+### 3.2. Профіль студента ✅
 
 #### `GET /me`
 
@@ -602,7 +604,7 @@ Access-токен: живе 15 хв, фронтенд тримає його **л
 | `credits` | number > 0 | |
 | `directions` | string[] | Напрямки, для яких дисципліна профорієнтовна. **Порожній масив = дисципліна вільного вибору** для всіх |
 
-**Як фронтенд визначає `is_free_elective` при додаванні в план:** з поля `category_for_me` (нижче). Поки його немає (✅-заглушка), дисципліна вважається вільним вибором, якщо жоден із напрямків студента не входить у `directions` (порівняння без урахування регістру). Остаточно це перевіряє сервер.
+**Як фронтенд визначає `is_free_elective` при додаванні в план:** з поля `category_for_me` (нижче). Якщо поля немає у відповіді, дисципліна вважається вільним вибором, якщо жоден із напрямків студента не входить у `directions` (порівняння без урахування регістру). Остаточно це перевіряє сервер.
 
 Сумісні розширення 🟡 (додаються без нової версії; поле `instructor` залишається):
 
@@ -681,7 +683,7 @@ Query-параметри (усі необов'язкові, комбінують
 | `credits` | number | так | > 0 і ≤ 30 |
 | `is_free_elective` | boolean | ні, `false` | |
 
-Зараз (✅) фронтенд надсилає `title`, `credits`, `is_free_elective`, копіюючи їх з `Discipline`. 🟡 Коли з'явиться БД, сервер перевіряє їх за каталогом (розбіжність → 422) і сам визначає `is_free_elective`. Поля залишаються в запиті для сумісності.
+Фронтенд надсилає `title`, `credits`, `is_free_elective`, копіюючи їх з `Discipline`. Сервер звіряє `credits` і `trimester` з каталогом (розбіжність → 422, §2.4). Поля залишаються в запиті для сумісності.
 
 Сумісні розширення у **відповіді** 🔵 (лише для AI-планів):
 
@@ -801,7 +803,7 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 }
 ```
 
-Повертаються лише плани поточного студента. Порядок 🟡: `created_at` за спаданням (зараз — порядок заглушки). Помилки: `401`, `422`.
+Повертаються лише плани поточного студента. Порядок 🟡: `created_at` за спаданням. Помилки: `401`, `422`.
 
 #### `GET /plans/{plan_id}` ✅
 
@@ -817,7 +819,7 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 
 Лише для `draft`. Відповідь `204` без тіла. Помилки: `401`, `403`, `404`, `409 PLAN_NOT_DELETABLE`, `422`.
 
-#### `POST /plans/validate` 🟡
+#### `POST /plans/validate` ✅
 
 Перевіряє план **без збереження**: для живих попереджень у конструкторі (індикатор кредитів, попередження про низьке навантаження) без створення чернетки на кожну дію. Тіло: `CreatePlanRequest`.
 
@@ -845,15 +847,15 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 
 Коди `errors`: `DUPLICATE_COURSE`, `ONLY_FREE_ELECTIVES`, `FREE_ELECTIVE_LIMIT_EXCEEDED`, `NORMATIVE_CONFLICT`, `NORMATIVE_NOT_ALLOWED`, `COURSE_NOT_FOUND`, `COURSE_DATA_MISMATCH`, `YEAR_CREDITS_BELOW_MIN`. Помилки HTTP: `401`, `422` (лише якщо тіло не відповідає схемі, напр. `trimester: 5`).
 
-#### `POST /plans/{plan_id}/submit` 🟡
+#### `POST /plans/{plan_id}/submit` ✅
 
-Перехід `draft` → `submitted` (запланований у `api-design.md`). Без тіла. Перевіряє всі правила з колонки «Подання» §2.4.
+Перехід `draft` → `submitted` (описаний у `api-design.md`). Без тіла. Перевіряє всі правила з колонки «Подання» §2.4.
 
 Відповідь `200`: `PlanResponse` зі `status: "submitted"`. Помилки: `401`, `403`/`404`, `409 PLAN_NOT_SUBMITTABLE`, `422 PLAN_VALIDATION_FAILED` (порушення в `details`).
 
 Подальші переходи `submitted` → `awaiting_deanery` → `approved` робить не студент: їх ставить синхронізація з САЗ (⛔, див. нижче). Фронтенд лише відображає ці статуси.
 
-#### `GET /plans/{plan_id}/export` 🟡
+#### `GET /plans/{plan_id}/export` ✅
 
 Фіксація і експорт плану (use-case 16). Query: `format=pdf` (поки єдине значення). Відповідь `200`, `Content-Type: application/pdf`, `Content-Disposition: attachment; filename="plan-2026.pdf"`. PDF містить вибіркові й нормативні дисципліни по триместрах, кредити, рівні навантаження і посилання «Почитати відгуки» (`reviews_url`). Фронтенд завантажує файл через `fetch` з `Authorization` і зберігає як blob (простий `<a href>` не надішле Bearer-токен).
 
@@ -867,7 +869,7 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 
 ---
 
-### 3.5. Довідники 🟡
+### 3.5. Довідники ✅
 
 #### `GET /directions`
 
@@ -897,7 +899,7 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 
 ---
 
-### 3.6. Документ деканату 🟡
+### 3.6. Документ деканату ✅
 
 Перед побудовою плану на рік студент завантажує документ деканату з нормативними дисциплінами (use-case 3). Сервер розпізнає їх у фоні.
 
@@ -1069,7 +1071,7 @@ Query: `direction_id`, `availability` (необов'язкові). Програ�
 
 ---
 
-### 3.9. Адміністрування 🟡
+### 3.9. Адміністрування ✅
 
 Усі кінцеві точки `/admin/*` вимагають `role = admin`. Студент отримує `403 FORBIDDEN_ROLE` (R2). Фронтенд приховує адмінку за `GET /me → role`, але це лише UI, не захист.
 
@@ -1351,7 +1353,7 @@ export interface PlanResponse {
 }
 export interface PlanFilters extends PageParams { status?: PlanStatus; academic_year?: number }
 export interface PaginatedPlans { plans: PlanResponse[]; pagination: PaginationInfo }
-export interface PlanValidationResult {                   // 🟡
+export interface PlanValidationResult {                   // ✅
   valid: boolean;
   errors: (Warning & { field: string | null })[];
   warnings: Warning[];
@@ -1365,7 +1367,7 @@ export interface PlanValidationResult {                   // 🟡
   };
 }
 
-// ---------- Auth і профіль (🟡) ----------
+// ---------- Auth і профіль (✅) ----------
 export interface AuthUser { id: number; email: string; full_name: string; role: "student" | "admin" }
 export interface TokenResponse { access_token: string; token_type: "Bearer"; expires_in: number; user: AuthUser }
 export interface Me extends AuthUser {
@@ -1388,7 +1390,7 @@ export interface Me extends AuthUser {
 export type CourseYearSource = "self_declared" | "admin" | "saz_sync";
 export interface OnboardingRequest { course_year: 1 | 2 | 3 | 4; specialty: string }
 
-// ---------- Конфігурація (🟡) ----------
+// ---------- Конфігурація (✅) ----------
 export interface AppConfig {
   api_version: string;
   google_client_id: string;
@@ -1403,7 +1405,7 @@ export interface AppConfig {
   features: { ai_generation: boolean; certificate_programs: boolean; saz_sync: boolean; plan_export: boolean };
 }
 
-// ---------- Академічна історія і побажання (🟡) ----------
+// ---------- Академічна історія і побажання (✅) ----------
 export type AcademicCategory = "normative" | "professional" | "free_choice";
 export type RecordSource = "self_declared" | "deanery_document" | "approved_plan" | "admin" | "saz_sync";
 export interface AcademicRecord {
@@ -1472,7 +1474,7 @@ export interface ModerationItem {
   reviewed_by: { id: number; full_name: string } | null; reviewed_at: string | null;
 }
 
-// ---------- Адмінка: користувачі, довідники, аудит (🟡) ----------
+// ---------- Адмінка: користувачі, довідники, аудит (✅) ----------
 export interface AdminUser {
   id: number; email: string; full_name: string; role: "student" | "admin";
   created_at: string; last_login_at: string | null;
@@ -1498,12 +1500,12 @@ export interface BulkReviewResult { approved: number[]; rejected: number[]; skip
 ## 5. Паралельна розробка: як працювати
 
 **Фронтенд:**
-- Для ✅-кінцевих точок працювати проти реального бекенду: `uvicorn src.api.main:app --reload --port 3000`, токен `Bearer test`. Автентифікація поки заглушка: будь-який токен означає студента з id `42`. Дані зберігаються в БД (без `DATABASE_URL` — локальний файл `yourpath.sqlite`, див. [`../architecture/data-model.md`](../architecture/data-model.md)); у порожню БД при старті додаються демо-дані: дисципліни `101`, `102`, `205` (вибіркові) і `301` (нормативна), плани `1` (`draft`) і `2` (`submitted`) студента 42, план `3` — чужий (403). `POST /plans` повертає новий id, зміни зберігаються між запитами. Щоб почати з чистих демо-даних, видаліть `yourpath.sqlite`.
-- Для 🟡/🔵-кінцевих точок використовувати моки (напр. MSW) з прикладами з цього документа.
+- Для ✅-кінцевих точок працювати проти реального бекенду: `uvicorn src.api.main:app --reload --port 3000`. Токен для запитів видає вхід через Microsoft або `scripts/issue_token.py` (порядок запуску: `README.md`). Дані зберігаються в БД (без `DATABASE_URL` — локальний файл `yourpath.sqlite`, див. [`../architecture/data-model.md`](../architecture/data-model.md)); у порожню БД при старті додаються демо-дані: дисципліни `101`, `102`, `205` (вибіркові) і `301` (нормативна), плани `1` (`draft`) і `2` (`submitted`) студента 42, план `3` — чужий (403). `POST /plans` повертає новий id, зміни зберігаються між запитами. Щоб почати з чистих демо-даних, видаліть `yourpath.sqlite`.
+- Якщо кінцевої точки ще немає в розгорнутому бекенді (⛔, а також 🔵, поки їх не звірено), використовувати моки (напр. MSW) з прикладами з цього документа.
 - Не покладатися на клієнтську валідацію як на єдину перевірку: завжди обробляти 422 від сервера.
 
 **Бекенд:**
-- Реалізувати 🟡-кінцеві точки з формами, описаними тут, через Pydantic-моделі. Кожна нова кінцева точка: `error_responses(...)` для документування помилок, `ApiError` для бізнес-помилок, smoke-тест у `tests/test_api_smoke.py`, перегенерована специфікація.
+- Нові кінцеві точки реалізувати з формами, описаними тут, через Pydantic-моделі. Кожна нова кінцева точка: `error_responses(...)` для документування помилок, `ApiError` для бізнес-помилок, smoke-тест у `tests/test_api_smoke.py`, перегенерована специфікація.
 - Змінювати ✅-форми лише сумісно (§1.7).
 
 **CORS:** зараз `allow_origins=["*"]`, `allow_credentials=False`. Цього достатньо для запитів з Bearer-токеном, але refresh-cookie (§3.1) вимагає `allow_credentials=True` і **явний** список origin фронтенду (з `*` браузер cookie не надішле). Змінити разом з реалізацією `/auth/*`.
@@ -1539,7 +1541,7 @@ export interface BulkReviewResult { approved: number[]; rejected: number[]; skip
 
 | № | Кейс | Кінцеві точки |
 |---|---|---|
-| 1 | Автентифікація | `/auth/google`, `/auth/refresh`, `/auth/logout`, `/config` |
+| 1 | Автентифікація | `/auth/microsoft`, `/auth/refresh`, `/auth/logout`, `/config` |
 | 2 | Профіль + Індивідуальний план | `/me`, `/me/onboarding`, `/me/academic-history`, `GET /plans?status=approved` |
 | 3 | Документ деканату | `/deanery-documents` (POST, GET, GET `{id}`, `{id}/file`, DELETE) |
 | 4 | Створення плану вибіркових | `POST /plans`, `PUT /plans/{id}`, `/plans/validate`, `/plan-generations`, `/disciplines` |
@@ -1572,7 +1574,7 @@ export interface BulkReviewResult { approved: number[]; rejected: number[]; skip
 | FR-009 2–3 альтернативи | `alternatives` (`rank` 1–3) |
 | FR-010 ліміт 25 при заміні на альтернативу | `PUT /plans/{id}` + §2.4 |
 | FR-011 журнал `SyncJob` | `GET /admin/sync-jobs`, `error_message` |
-| FR-012 вхід лише з домену НаУКМА | `/auth/google`, `403 DOMAIN_NOT_ALLOWED` |
+| FR-012 вхід лише з домену НаУКМА | `/auth/microsoft`, `403 DOMAIN_NOT_ALLOWED` |
 | FR-013 каталог і сертифікатні програми для читання | `/disciplines`, `/certificate-programs` |
 
 User stories US-001…US-010 відповідають тим самим FR і покриті тими самими кінцевими точками. NFR: PERF-001 (асинхронна генерація, §3.7), REL-001 (`AI_UNAVAILABLE` після повторів), SEC-001 (лише власник, `/admin/audit-log`), USE-001 (онбординг → побажання → генерація: 3 кроки).
@@ -1596,3 +1598,4 @@ User stories US-001…US-010 відповідають тим самим FR і п
 - **Що створено:** весь документ підготовлено за допомогою Claude (Claude Code, модель Opus 5.5) за запитом команди. Розділи про ✅-кінцеві точки описують поточний код; форми 🟡/🔵-кінцевих точок, коди помилок і попереджень, типи TypeScript і рекомендації в §6 — **пропозиції ШІ**, виведені з `requirements.md`, `user-stories.md`, `data-model.md`, `threat-model.md`, `quality-attributes.md`, `api-design.md`, `AGENTS.md` і `Project-Description.md`. Вони потребують узгодження командою.
 - **Як перевірено:** форми, обмеження, коди помилок і статус-коди ✅-кінцевих точок звірено вручну з `src/api/common.py`, `src/api/routes/plans.py`, `src/api/routes/disciplines.py` і `src/api/main.py`. Поведінку заглушки (id планів, власник, id нового плану) звірено з кодом. Приклади помилок перевірено запитами через `TestClient` до реального застосунку: 422 для ліміту вільного вибору (`field: "body"`, `28.0 > 25`), 403 для чужого плану, `HTTP_404` для неіснуючого шляху, 422 для `limit=500`. Кінцеві точки 🟡/🔵 не існують у коді й не перевірялись; TypeScript-типи не компілювались.
 - **Друга ітерація (також Claude):** додано контракти, яких бракувало для повного покриття: `/config`, онбординг і академічна історія, побажання, експорт плану, файл і видалення документа деканату, адмінські кінцеві точки для користувачів, напрямків, профорієнтовності дисциплін, сертифікатних програм і журналу аудиту; розбіжності 10–14 у §6; матриця покриття §7. Покриття перевірено вручну: кожен use-case з `AGENTS.md` §6, кожна FR з `requirements.md` і кожна сутність з `data-model.md`, яку бачить фронтенд, зіставлені з кінцевими точками в §7.
+- **Виправлення після проміжного оцінювання (01.11.2026, Claude):** `POST /auth/google` замінено на `POST /auth/microsoft` (зведена таблиця, §3.1, приклад `code`, §7.1, §7.2); позначку 🟡 знято з кінцевих точок і заголовків розділів, для яких у `src/api/routes/` є обробники; прибрано опис заглушки автентифікації («будь-який непорожній токен», `Bearer test`) і додано пояснення про `scripts/issue_token.py`. **Як перевірено:** відповідність кінцевих точок обробникам зіставлено за виводом `grep "@router\.\|@app\." src/api` (кількість і порядок декораторів по файлах); шляхи в самих декораторах напряму не звірялись, а специфікацію `openapi-generated.yaml` з документом не порівнювали; тести не запускались. Поле `google_client_id` у `GET /config` лишено без змін, бо в `src/api/routes/system.py` воно ще мало таку назву; якщо його перейменують, оновити приклад у §3.0 і відповідне поле TypeScript-типу конфігурації.
