@@ -30,7 +30,7 @@ export function CatalogPage() {
 
   // Викладач вводиться текстом: оновлюємо адресу лише після паузи, щоб не слати запит на кожну літеру.
   const [instructor, setInstructor] = useState(filters.instructor ?? "");
-  const debouncedInstructor = useDebouncedValue(instructor, 300);
+  const debouncedInstructor = useDebouncedValue(instructor, 500);
   useEffect(() => {
     if (debouncedInstructor !== (filters.instructor ?? "")) {
       setParams(paramsFromFilters({ ...filters, instructor: debouncedInstructor || undefined }, 1));

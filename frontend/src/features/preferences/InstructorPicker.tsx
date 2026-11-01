@@ -22,7 +22,7 @@ export function InstructorPicker({
   onRemove: (id: number) => void;
 }) {
   const [text, setText] = useState("");
-  const term = useDebouncedValue(text, 300);
+  const term = useDebouncedValue(text, 500);
   const found = useInstructors(term).data?.instructors ?? [];
   // Викладач не може бути і в цьому списку, і в протилежному, тож таких не пропонуємо.
   const options = found.filter(

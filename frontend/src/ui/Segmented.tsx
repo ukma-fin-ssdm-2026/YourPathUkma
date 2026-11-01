@@ -5,6 +5,8 @@ type SegmentedProps<T extends string | number> = {
   onChange: (value: T) => void;
   ariaLabel: string;
   disabled?: boolean;
+  /** Вужчі кнопки й дрібніший шрифт для вузьких колонок. */
+  compact?: boolean;
 };
 
 export function Segmented<T extends string | number>({
@@ -13,13 +15,14 @@ export function Segmented<T extends string | number>({
   onChange,
   ariaLabel,
   disabled = false,
+  compact = false,
 }: SegmentedProps<T>) {
   const activeIndex = options.findIndex((option) => option.value === value);
   return (
     <div
       role="group"
       aria-label={ariaLabel}
-      className="relative flex rounded-[10px] bg-paper p-[3px]"
+      className="relative grid grid-flow-col auto-cols-fr rounded-[10px] bg-paper p-[3px]"
     >
       {activeIndex >= 0 && (
         <span
@@ -41,7 +44,9 @@ export function Segmented<T extends string | number>({
             disabled={disabled}
             onClick={() => onChange(option.value)}
             className={
-              "relative z-10 flex-1 cursor-pointer rounded-lg px-1.5 py-2 font-medium transition-colors duration-150 ease-out active:scale-[.97] " +
+              "relative z-10 cursor-pointer whitespace-nowrap rounded-lg font-medium " +
+              (compact ? "px-1 py-1.5 text-[13px] " : "px-1.5 py-2 ") +
+              " transition-colors duration-150 ease-out active:scale-[.97] " +
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt " +
               "disabled:cursor-not-allowed disabled:opacity-60 " +
               (active ? "text-ink" : "text-ink-2 hover:text-ink")
