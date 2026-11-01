@@ -71,7 +71,7 @@ Dev-сервер проксює `/api` на `http://localhost:3000` (`vite.confi
 2. У корені: `cp .env.example .env`, заповніть `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `JWT_SECRET` (`python -c "import secrets; print(secrets.token_urlsafe(48))"`), `COOKIE_SECURE=0` за потреби, `ADMIN_EMAILS` для адміністратора. Запустіть `uvicorn src.api.main:app --port 3000`.
 3. У `frontend/`: `cp .env.example .env.local`, заповніть `VITE_MS_CLIENT_ID` і `VITE_MS_TENANT` (ті самі значення), `npm run dev`. Перший вхід автоматично створює студента, далі відкривається онбординг.
 
-Без Microsoft-застосунку UI можна запустити з `VITE_USE_MOCKS=true` (вхід через мок). Змінні оболонки мають пріоритет над `.env.local`.
+Без Microsoft-застосунку UI можна запустити з `VITE_USE_MOCKS=true` (вхід через мок): залиште `VITE_MS_CLIENT_ID` порожнім, і кнопка «Увійти через Microsoft» увійде мок-користувачем (з `VITE_MOCK_ROLE=admin` це адміністратор). Якщо `VITE_MS_CLIENT_ID` заповнено, вхід завжди справжній. Змінні оболонки мають пріоритет над `.env.local`.
 
 У тестах (`src/test/setup.ts`) вмикаються і `handlers`, і `backendHandlers`; окремі тести перекривають їх через `server.use(...)` (`src/test/handlers.ts`).
 

@@ -65,6 +65,30 @@ describe("startLogin", () => {
     await expect(startLogin(navigate)).rejects.toMatchObject({ code: "OAUTH_NOT_CONFIGURED" });
     expect(navigate).not.toHaveBeenCalled();
   });
+
+  it.each(["true", "full"])(
+    "з VITE_USE_MOCKS=%s і без VITE_MS_CLIENT_ID імітує повернення з Microsoft",
+    async (mode) => {
+      vi.stubEnv("VITE_MS_CLIENT_ID", "");
+      vi.stubEnv("VITE_USE_MOCKS", mode);
+      const navigate = vi.fn();
+      await startLogin(navigate);
+      expect(navigate).toHaveBeenCalledWith(
+        `${window.location.origin}/auth/callback?code=mock&state=mock-state`,
+      );
+      expect(sessionStorage.getItem("oauth_state")).toBe("mock-state");
+      // Той самий completeLogin, що й для справжнього входу, проходить через мок /auth/microsoft.
+      const auth = await completeLogin("?code=mock&state=mock-state");
+      expect(auth.access_token).toBeTruthy();
+    },
+  );
+
+  it("з VITE_MS_CLIENT_ID моки не підміняють справжній вхід", async () => {
+    vi.stubEnv("VITE_USE_MOCKS", "true");
+    const navigate = vi.fn();
+    await startLogin(navigate);
+    expect(String(navigate.mock.calls[0]![0])).toContain("login.microsoftonline.com");
+  });
 });
 
 describe("completeLogin", () => {

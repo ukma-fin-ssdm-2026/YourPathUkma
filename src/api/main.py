@@ -18,10 +18,11 @@ OpenAPI-специфікація генерується з коду при ст�
 не стартував з NameError) і виклик init_database() при старті (міграції та демо-дані).
 Перевірка: ручний огляд; запуск сервера, pytest і ruff check src/api виконати перед комітом.
 
+
 Правка за зауваженням №1 рев'ю (Claude, Anthropic): CORSMiddleware тепер додається останнім (найзовнішній
 middleware), щоб CORS-заголовки були й на відповідях з помилками. Перевірка: pytest, ruff check src/api та
 ручний запит з заголовком Origin до маршруту, що повертає помилку, виконати перед комітом.
-"""
+
 
 import json
 import logging
@@ -85,8 +86,8 @@ app = FastAPI(
     description=(
         "REST API платформи для побудови індивідуального навчального плану студентів НаУКМА: "
         "плани вибіркових дисциплін, каталог дисциплін, контроль кредитного навантаження.\n\n"
-        "**Автентифікація:** JWT Bearer (Microsoft 365 SSO). У поточній заглушці приймається "
-        "будь-який непорожній токен: натисніть Authorize і введіть, наприклад, `test`."
+        "**Автентифікація:** JWT Bearer (Microsoft 365 SSO). Access-токен видає `POST /auth/microsoft`; "
+        "у Swagger UI натисніть Authorize і вставте токен (для розробки: `python -m scripts.issue_token <email>`)."
     ),
     version="1.0.0",
     docs_url="/api-docs",
@@ -101,7 +102,7 @@ app = FastAPI(
         {"name": "System", "description": "Системні маршрути (моніторинг)"},
         {"name": "Plans", "description": "Індивідуальні навчальні плани студента (CRUD)"},
         {"name": "Disciplines", "description": "Каталог дисциплін (читання, фільтри)"},
-        {"name": "Auth", "description": "Вхід через Microsoft, оновлення і відкликання токена (заглушка)"},
+        {"name": "Auth", "description": "Вхід через Microsoft, оновлення і відкликання токена"},
         {"name": "Reference", "description": "Довідники: напрямки розвитку і викладачі"},
         {"name": "Preferences", "description": "Побажання студента на навчальний рік"},
         {"name": "Deanery documents", "description": "Документи деканату"},
