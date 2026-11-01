@@ -42,11 +42,22 @@ export function buildAuthorizeUrl(
   return url.toString();
 }
 
+const mocksEnabled = () => ["true", "full"].includes(import.meta.env.VITE_USE_MOCKS ?? "");
+
+/** Без Microsoft Entra: імітує повернення з Microsoft, далі працює звичайний completeLogin з мок-обробником. */
+function startMockLogin(origin: string, navigate: (url: string) => void): void {
+  sessionStorage.setItem(VERIFIER_KEY, "mock-verifier");
+  sessionStorage.setItem(STATE_KEY, "mock-state");
+  sessionStorage.setItem(NONCE_KEY, "mock-nonce");
+  navigate(`${origin}/auth/callback?code=mock&state=mock-state`);
+}
+
 export async function startLogin(
   navigate: (url: string) => void = (url) => window.location.assign(url),
 ): Promise<void> {
   const env = loginEnv();
   if (!env.clientId) {
+    if (mocksEnabled()) return startMockLogin(env.origin, navigate);
     throw new ApiError(0, "OAUTH_NOT_CONFIGURED", "Вхід не налаштовано: немає VITE_MS_CLIENT_ID");
   }
   const verifier = randomUrlSafe(32);

@@ -100,12 +100,24 @@ Students sign in via their corporate NaUKMA email.
 Потрібні Python 3.12 і Node.js 22 (як у CI).
 
 ```bash
+cp .env.example .env                            # Windows (cmd): copy .env.example .env
+# Секрет підпису токенів (мінімум 32 символи) записується в .env; без нього API не стартує
+python -c "import re,secrets,pathlib; p=pathlib.Path('.env'); p.write_text(re.sub(r'(?m)^JWT_SECRET=.*$', 'JWT_SECRET='+secrets.token_urlsafe(48), p.read_text()))"
 pip install -r requirements.txt -r requirements-dev.txt
 uvicorn src.api.main:app --reload --port 3000   # Swagger UI: http://127.0.0.1:3000/api-docs
 pytest -q
 ```
 
-Без `DATABASE_URL` дані зберігаються в локальному файлі `yourpath.sqlite`; для PostgreSQL: `docker compose up -d db` і `DATABASE_URL` з [`.env.example`](.env.example). Усі змінні середовища необов'язкові, їхній перелік є в `.env.example`. Міграції (Alembic) і демо-дані застосовуються при старті. Деталі: [docs/architecture/data-model.md](docs/architecture/data-model.md).
+Файл `.env` застосунок читає сам при старті (`python-dotenv`). **Обов'язкова лише `JWT_SECRET`** (не менше 32 символів, інакше застосунок зупиняється на старті). Решта має типові значення:
+
+| Змінна | Коли потрібна |
+|---|---|
+| `DATABASE_URL` | не потрібна: без неї дані зберігаються в локальному файлі `yourpath.sqlite`; для PostgreSQL: `docker compose up -d db` і значення з [`.env.example`](.env.example) |
+| `MS_TENANT_ID`, `MS_CLIENT_ID` (і `MS_CLIENT_SECRET` для типу застосунку Web) | для входу через Microsoft і обов'язково при `APP_ENV=production` |
+| `ADMIN_EMAILS` | пошти, які при першому вході отримують роль адміністратора |
+| `COOKIE_SECURE=0` | лише для `http://localhost` (Safari); у production заборонено |
+
+Міграції (Alembic) і демо-дані застосовуються при старті. Деталі: [docs/architecture/data-model.md](docs/architecture/data-model.md).
 
 ## Запуск frontend
 
@@ -119,6 +131,39 @@ npm run dev                   # http://localhost:5173, запити /api про�
 ```
 
 Для роботи з реальними даними спершу запустіть API (розділ вище).
+
+## Вхід у застосунок
+
+Є два способи ввійти: з власною реєстрацією застосунку в Microsoft Entra або без неї.
+
+### Варіант A. Реальний вхід через Microsoft Entra
+
+1. У Microsoft Entra (tenant НаУКМА) створіть app registration з redirect URI `http://localhost:5173/auth/callback`.
+2. У `.env` (корінь) заповніть `MS_TENANT_ID`, `MS_CLIENT_ID` (і `MS_CLIENT_SECRET`, якщо тип застосунку Web), `JWT_SECRET`, `ALLOWED_REDIRECT_URIS`, `COOKIE_SECURE=0` для `http://localhost`, а в `ADMIN_EMAILS` вкажіть свою пошту, щоб отримати роль адміністратора.
+3. У `frontend/.env.local` (`cp .env.example .env.local`) задайте `VITE_USE_MOCKS=false`, `VITE_MS_CLIENT_ID` і `VITE_MS_TENANT` (ті самі значення, що в `.env`), запустіть API і `npm run dev`.
+
+Докладніше: [frontend/README.md](frontend/README.md).
+
+### Варіант B. Без власної реєстрації в Entra
+
+**Інтерфейс із моками.** У `frontend/.env.local` задайте:
+
+```bash
+VITE_USE_MOCKS=true        # вхід і адмінка на моках, решта запитів іде на реальний API
+# VITE_USE_MOCKS=full      # моки всього, бекенд не потрібен
+VITE_MOCK_ROLE=admin       # необов'язково: екрани адміністратора (користувачі, модерація, синхронізація, журнал дій)
+```
+
+`VITE_MS_CLIENT_ID` залиште порожнім і натисніть «Увійти через Microsoft»: з увімкненими моками застосунок імітує повернення з Microsoft і входить мок-користувачем. Без `VITE_MOCK_ROLE` це студент.
+
+**API та Swagger.** Токен для демо-користувача з бази:
+
+```bash
+python -m scripts.issue_token admin@ukma.edu.ua     # адміністратор
+python -m scripts.issue_token student@ukma.edu.ua   # студент 2 курсу
+```
+
+Скрипт друкує access-токен (живе 15 хв, потрібен `JWT_SECRET` у `.env`). Вставте його в Authorize у Swagger UI (`/api-docs`) або передайте заголовком `Authorization: Bearer <токен>`. Демо-користувачі створюються разом із демо-даними при першому старті API.
 
 ## Тести
 
@@ -167,6 +212,8 @@ npm run typecheck
 
 ---
 **Нотатка щодо використання ШІ (посилання на API-контракт):** рядок із посиланням на `docs/api/contract.md` у розділі «Архітектура» додано за допомогою Claude (Claude Code); перевірено, що файл існує за цим шляхом.
+
+**Нотатка щодо використання ШІ (запуск, змінні середовища, вхід):** розділи «Запуск API» (кроки з `.env` і `JWT_SECRET`, таблиця змінних) і «Вхід у застосунок» створено за допомогою Claude (Claude Code) за зауваженнями репетиції проміжного оцінювання. Перевірка: порожній `.env` без `JWT_SECRET` зупиняє старт, а після кроків з README API стартує; `scripts/issue_token.py` видає токен, який приймає API.
 
 **Нотатка щодо використання ШІ (запуск і тести):** розділи «Запуск frontend» і «Тести» та версії Python/Node у «Запуск API» додано за допомогою Claude (Claude Code). Команди й версії звірено з `.github/workflows/ci.yaml`, `requirements-dev.txt` і `frontend/README.md`; самі команди з README я не запускав. Посилання на Swagger UI (GitHub Pages) перевірено запитом 2026-10-24: `/api/`, `/api/index.html` і `/api/openapi-generated.yaml` відповідають кодом 200.
 

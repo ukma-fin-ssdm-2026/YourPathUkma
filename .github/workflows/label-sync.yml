@@ -1,5 +1,7 @@
 name: Sync status label on close
 
+# На self-hosted раннері немає CLI `gh` (прогони 29.10 падали з «gh: command not found», код 127),
+# тому мітки міняє actions/github-script: йому потрібен лише Node, який є в самому раннері.
 on:
   issues:
     types: [closed]
@@ -12,11 +14,17 @@ jobs:
     runs-on: [self-hosted, linux]
     steps:
       - name: Remove in-progress/review labels, add done
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh issue edit ${{ github.event.issue.number }} \
-            --repo ${{ github.repository }} \
-            --remove-label "status: in progress" \
-            --remove-label "status: needs review" \
-            --add-label "status: done"
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.issue.number;
+            for (const name of ["status: in progress", "status: needs review"]) {
+              try {
+                await github.rest.issues.removeLabel({ owner, repo, issue_number, name });
+              } catch (error) {
+                // Мітки на issue може не бути: це не помилка (404).
+                if (error.status !== 404) throw error;
+              }
+            }
+            await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ["status: done"] });
