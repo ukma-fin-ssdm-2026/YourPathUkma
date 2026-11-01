@@ -7,16 +7,17 @@ GET /admin/moderation-items, POST /admin/moderation-items/{id}/approve|reject, P
 Зміна каталогу від парсера потрапляє в `courses` лише після схвалення. Формат `payload` елемента
 модерації описано в `CoursePayload` нижче: перевірте, що парсер формує його саме так.
 
-TODO(команда): POST /admin/sync-jobs створює задачу зі статусом `queued`, але сам парсер сюди не підключено.
-Поки воркер не підхопить задачу й не переведе її в `running`/`succeeded`/`failed`, нова задача для того
+Для джерела `saz_catalog` задачу після відповіді підхоплює `src.parser.sync.run_sync_job` (BackgroundTasks) і
+веде її `queued` -> `running` -> `succeeded`/`failed`. Вимкнути автозапуск: SAZ_AUTORUN=0.
+TODO(команда): для `faculty_certificates` парсера ще немає, така задача лишається в `queued`, а нова для того
 самого джерела дасть 409 SYNC_JOB_ALREADY_RUNNING (часткова унікальність у БД).
 """
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
-from fastapi import APIRouter, Depends, Path, Query, Request, Response, status
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, Request, Response, status
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -24,9 +25,11 @@ from sqlalchemy.orm import Session
 from ....db import enums as db_enums
 from ....db.base import normalize_text, utcnow
 from ....db.models.admin import ModerationItem, SyncJob
-from ....db.models.catalog import Course
+from ....db.models.catalog import Course, CourseInstructor, Instructor
 from ....db.models.users import User
 from ....db.session import get_db
+from ....parser.config import autorun_enabled
+from ....parser.sync import fail_stale_jobs, run_sync_job
 from ...common import ApiError, ErrorDetail, PaginationInfo, error_responses
 from .common import client_ip, require_admin, write_audit
 
@@ -115,7 +118,7 @@ class CoursePayload(BaseModel):
     """
     Очікуваний вміст `moderation_items.payload` для add/update (зайві ключі ігноруються).
     add: обов'язкові saz_code, title, credits, trimester (1–3), recommended_year (1–4), kind.
-    update: будь-яка підмножина title, description, credits, trimester, recommended_year, kind.
+    update: будь-яка підмножина title, description, credits, trimester, recommended_year, kind, instructors.
     remove: payload не читається, дисципліна архівується.
     """
 
@@ -128,6 +131,15 @@ class CoursePayload(BaseModel):
     trimester: Optional[int] = Field(None, ge=1, le=3)
     recommended_year: Optional[int] = Field(None, ge=1, le=4)
     kind: Optional[db_enums.CourseKind] = None
+    instructors: Optional[List[str]] = Field(None, description="Прізвища викладачів; None = не змінювати")
+
+    @field_validator("instructors")
+    @classmethod
+    def clean_instructors(cls, value: Optional[List[str]]) -> Optional[List[str]]:
+        if value is None:
+            return None
+        names = list(dict.fromkeys(name.strip()[:200] for name in value if name and name.strip()))
+        return names[:20]
 
 
 # ---------- Допоміжні функції ----------
@@ -216,6 +228,20 @@ def _check_change(db: Session, item: ModerationItem) -> Tuple[Optional[Course], 
     return course, data
 
 
+def _set_instructors(db: Session, course: Course, names: List[str]) -> None:
+    """Прив'язує до дисципліни викладачів за іменем без урахування регістру; відсутніх створює."""
+    linked: List[CourseInstructor] = []
+    for name in names:
+        key = normalize_text(name)
+        instructor = db.scalar(select(Instructor).where(Instructor.full_name_normalized == key))
+        if instructor is None:
+            instructor = Instructor(full_name=name, full_name_normalized=key)
+            db.add(instructor)
+            db.flush()
+        linked.append(CourseInstructor(instructor_id=instructor.id, role=db_enums.InstructorRole.LECTURER))
+    course.course_instructors = linked
+
+
 def _apply_change(db: Session, item: ModerationItem, course: Optional[Course], data: Optional[CoursePayload]) -> None:
     change = item.change_type
     if change == db_enums.ModerationChangeType.ADD:
@@ -233,6 +259,8 @@ def _apply_change(db: Session, item: ModerationItem, course: Optional[Course], d
         )
         db.add(course)
         db.flush()
+        if data.instructors:
+            _set_instructors(db, course, data.instructors)
         item.course_id = course.id
     elif change == db_enums.ModerationChangeType.UPDATE:
         if data.title is not None:
@@ -248,6 +276,8 @@ def _apply_change(db: Session, item: ModerationItem, course: Optional[Course], d
             course.recommended_year = data.recommended_year
         if data.kind is not None:
             course.kind = data.kind
+        if data.instructors is not None:
+            _set_instructors(db, course, data.instructors)
         course.last_sync_job_id = item.sync_job_id
     else:  # REMOVE
         course.publication_status = db_enums.PublicationStatus.ARCHIVED
@@ -330,9 +360,11 @@ def start_sync_job(
     payload: SyncJobCreate,
     request: Request,
     response: Response,
+    background_tasks: BackgroundTasks,
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
+    fail_stale_jobs(db)
     conflict = ApiError(409, "SYNC_JOB_ALREADY_RUNNING", "Для цього джерела вже виконується синхронізація")
     active = db.scalar(
         select(SyncJob.id).where(
@@ -366,6 +398,8 @@ def start_sync_job(
         db.rollback()
         raise conflict
     response.headers["Location"] = f"/api/v1/admin/sync-jobs/{job.id}"
+    if payload.source == db_enums.SyncSource.SAZ_CATALOG and autorun_enabled():
+        background_tasks.add_task(run_sync_job, job.id)
     return _job_response(job, {admin.id: admin})
 
 
