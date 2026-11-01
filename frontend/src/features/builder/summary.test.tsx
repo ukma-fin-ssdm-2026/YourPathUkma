@@ -204,3 +204,32 @@ describe("SummaryStrip: помилки й попередження", () => {
     expect(screen.getAllByText("За рік менше 57 кредитів").length).toBeGreaterThan(0);
   });
 });
+
+describe("SummaryStrip: показ перевірок лише після спроби зберегти", () => {
+  const props = {
+    plan: planWith([item(1, 3, true)]),
+    validation: validation({
+      total: 3,
+      errors: [issue("ONLY_FREE_ELECTIVES")],
+      warnings: [issue("LOW_LOAD_FUTURE_INCREASE")],
+    }),
+    credits,
+    normativeCredits: 0,
+  };
+
+  it("showIssues=false: ні помилок, ні попереджень, ні «Є попередження»", () => {
+    render(<SummaryStrip {...props} showIssues={false} />);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.queryByText(/менше 57 кредитів/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Є попередження/)).not.toBeInTheDocument();
+    expect(screen.getByText("Виконаються під час збереження")).toBeInTheDocument();
+  });
+
+  it("showIssues=true показує їх, як і раніше", () => {
+    render(<SummaryStrip {...props} showIssues />);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Оберіть хоча б одну профорієнтовну дисципліну",
+    );
+    expect(screen.getByText(/менше 57 кредитів/)).toBeInTheDocument();
+  });
+});

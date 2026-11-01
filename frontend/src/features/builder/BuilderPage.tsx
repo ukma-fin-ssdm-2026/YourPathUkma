@@ -130,6 +130,8 @@ export function BuilderPage() {
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [errors, setErrors] = useState<SaveErrors>(NO_ERRORS);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Перевірки плану показуємо лише після спроби зберегти чи подати, а не при кожному додаванні дисципліни.
+  const [checked, setChecked] = useState(false);
 
   // Незбережені зміни: порівнюємо з тим, що збережено востаннє (або з завантаженою чернеткою).
   const current = plan ? JSON.stringify(plan) : null;
@@ -204,6 +206,7 @@ export function BuilderPage() {
     setDraft(next);
     setSavedAt(null);
     setErrors(NO_ERRORS);
+    setChecked(false);
   }
 
   function handleAdd(discipline: Discipline) {
@@ -267,10 +270,23 @@ export function BuilderPage() {
           <Link to={`/path/create/preferences?year=${year}`} className={linkGhostClass}>
             Побажання
           </Link>
-          <Button variant="ghost" disabled={empty || busy} onClick={() => void persist()}>
+          <Button
+            variant="ghost"
+            disabled={empty || busy}
+            onClick={() => {
+              setChecked(true);
+              void persist();
+            }}
+          >
             Зберегти чернетку
           </Button>
-          <Button disabled={empty || busy} onClick={() => setConfirmOpen(true)}>
+          <Button
+            disabled={empty || busy}
+            onClick={() => {
+              setChecked(true);
+              setConfirmOpen(true);
+            }}
+          >
             Подати на розгляд
           </Button>
         </div>
@@ -300,6 +316,7 @@ export function BuilderPage() {
         validation={validation.data}
         credits={student.credits}
         normativeCredits={normativeCredits}
+        showIssues={checked}
       />
       {notice && (
         <p role="status" className="rounded-[10px] bg-warn-bg px-4 py-2.5 text-warn">

@@ -93,3 +93,10 @@ frontend/src/api/generated/
 
 .aider*
 .aider.chat.history.md
+
+# =========================
+# SAZ parser (raw saved pages and session; contain personal data)
+# =========================
+
+saz_raw/
+*saz_state*.json

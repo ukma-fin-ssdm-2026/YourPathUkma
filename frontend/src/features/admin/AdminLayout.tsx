@@ -33,7 +33,7 @@ export function AdminLayout() {
           </NavLink>
         ))}
       </nav>
-      <div key={pathname} className="rise min-w-0 flex-1">
+      <div key={pathname} className="fade-in min-w-0 flex-1">
         <Outlet />
       </div>
     </div>

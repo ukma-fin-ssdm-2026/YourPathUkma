@@ -101,7 +101,7 @@ export function CatalogPanel({
   const [direction, setDirection] = useState("");
   const [instructor, setInstructor] = useState("");
   const [page, setPage] = useState(1);
-  const debouncedInstructor = useDebouncedValue(instructor, 300);
+  const debouncedInstructor = useDebouncedValue(instructor, 500);
 
   const filters: DisciplineFilters = useMemo(
     () => ({

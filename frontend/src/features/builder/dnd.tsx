@@ -2,6 +2,7 @@
 // Перетягування дисципліни з каталогу у власну колонку. Запасний шлях для клавіатури й телефону кнопка «+».
 import {
   DndContext,
+  DragOverlay,
   KeyboardSensor,
   PointerSensor,
   pointerWithin,
@@ -15,7 +16,9 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { createContext, useContext, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import type { Discipline } from "../../api/types";
+import { creditsWord, formatCredits } from "../../lib/credits";
 import type { Trimester } from "../../lib/trimester";
 import { dropVerdict } from "./plan";
 
@@ -82,6 +85,21 @@ export function makeDragHandlers(deps: {
 const ActiveContext = createContext<Discipline | null>(null);
 export const useActiveDiscipline = () => useContext(ActiveContext);
 
+/**
+ * Картка, яка «летить» за вказівником. Малюється в DragOverlay у body, поверх усього:
+ * власна картка в каталозі лежить у контейнері з прокруткою (overflow) і там обрізалась би.
+ */
+function DragPreview({ discipline }: { discipline: Discipline }) {
+  return (
+    <div className="cursor-grabbing rounded-[10px] bg-surface px-3 py-2.5 shadow-lg ring-2 ring-cobalt">
+      <b className="block break-words font-semibold">{discipline.title}</b>
+      <small className="block text-ink-2">
+        {formatCredits(discipline.credits)} {creditsWord(discipline.credits)}
+      </small>
+    </div>
+  );
+}
+
 export function BuilderDnd({
   onDropDiscipline,
   children,
@@ -105,6 +123,12 @@ export function BuilderDnd({
           </p>
         )}
         {children}
+        {createPortal(
+          <DragOverlay zIndex={60}>
+            {active ? <DragPreview discipline={active} /> : null}
+          </DragOverlay>,
+          document.body,
+        )}
       </ActiveContext.Provider>
     </DndContext>
   );
@@ -119,19 +143,15 @@ export function DraggableRow({
   disabled?: boolean;
   children: ReactNode;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `discipline-${discipline.id}`,
     data: { discipline },
     disabled,
   });
-  const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined;
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className={"rise " + (isDragging ? "relative z-10 opacity-90 shadow-lg" : "")}
+      className={"rise transition-opacity duration-150 " + (isDragging ? "opacity-40" : "")}
     >
       <div className="flex items-stretch gap-1">
         <button
