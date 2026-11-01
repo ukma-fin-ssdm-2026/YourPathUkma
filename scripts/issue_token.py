@@ -1,10 +1,23 @@
+"""
+Видає access-токен для користувача з бази: для Swagger UI (Authorize) і ручних запитів без входу через Microsoft.
+
+Запуск з кореня репозиторію: python -m scripts.issue_token admin@ukma.edu.ua
+JWT_SECRET і DATABASE_URL береться з .env так само, як у застосунку.
+
+Використання ШІ: читання .env (load_dotenv) додано за допомогою Claude (Claude Code): без нього скрипт падав
+з «HMAC key must not be empty». Перевірка: запуск у чистій теці за кроками README.
+"""
+
 import sys
 
+from dotenv import load_dotenv
 from sqlalchemy import select
 
-from src.api.tokens import issue_access_token
-from src.db.models.users import User
-from src.db.session import session_factory
+load_dotenv()  # до імпорту налаштувань: get_auth_settings() кешується при першому виклику
+
+from src.api.tokens import issue_access_token  # noqa: E402
+from src.db.models.users import User  # noqa: E402
+from src.db.session import session_factory  # noqa: E402
 
 
 def main() -> None:
