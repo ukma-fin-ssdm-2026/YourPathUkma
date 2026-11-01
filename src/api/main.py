@@ -35,6 +35,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from ..db.migrate import init_database
 from .common import RequestIdMiddleware, assert_safe_environment, cors_origins, register_error_handlers
+from .frontend_site import mount_frontend
 from .routes import ai, auth, certificates, deanery, disciplines, plans, preferences, reference, system, user
 from .routes.admin import audit as admin_audit
 from .routes.admin import catalog as admin_catalog
@@ -145,6 +146,10 @@ app.include_router(admin_certificates.router)
 async def health_check():
     """Повертає стан сервісу для моніторингу."""
     return {"status": "ok", "version": "1.0.0", "message": "All systems operational"}
+
+
+# Усі API-маршрути вже зареєстровано: збірка фронтенду (якщо є, див. frontend_site.py) обробляє лише решту шляхів.
+mount_frontend(app)
 
 
 if __name__ == "__main__":
