@@ -5,6 +5,7 @@ import { http, HttpResponse } from "msw";
 import type { ReactNode } from "react";
 import { setAccessToken } from "../../api/token";
 import { server } from "../../mocks/server";
+import { mockDownloads } from "../../test/downloads";
 import { useExportPlan } from "./useExportPlan";
 
 function wrapper({ children }: { children: ReactNode }) {
@@ -12,20 +13,9 @@ function wrapper({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
 
-const saved: string[] = [];
-let click: { mockRestore: () => void };
+const saved = mockDownloads();
 
-beforeEach(() => {
-  setAccessToken("t");
-  saved.length = 0;
-  Object.assign(URL, { createObjectURL: vi.fn(() => "blob:test"), revokeObjectURL: vi.fn() });
-  click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
-    this: HTMLAnchorElement,
-  ) {
-    saved.push(this.download);
-  });
-});
-afterEach(() => click.mockRestore());
+beforeEach(() => setAccessToken("t"));
 
 describe("useExportPlan", () => {
   it("запитує PDF і зберігає файл з іменем із відповіді", async () => {
