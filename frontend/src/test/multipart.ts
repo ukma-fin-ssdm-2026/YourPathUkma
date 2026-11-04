@@ -4,7 +4,7 @@ function readBytes(blob: Blob): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
-    reader.onerror = () => reject(reader.error);
+    reader.onerror = () => reject(reader.error ?? new Error("Не вдалося прочитати Blob"));
     reader.readAsArrayBuffer(blob);
   });
 }
