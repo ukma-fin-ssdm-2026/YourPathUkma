@@ -2,7 +2,8 @@
 function toBase64Url(bytes: Uint8Array): string {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  // '=' у base64 бувають лише як доповнення в кінці, тож їх можна прибрати без прив'язки до кінця рядка (/=+$/ давав backtracking).
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
 /** Випадковий рядок, безпечний для URL: 32 байти дають 43 символи. */
