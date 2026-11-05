@@ -29,11 +29,11 @@
 
 ## 3. Security
 
-**Показники:** проблем Security — 14 (Blocker 1, High 1, Medium 12); Vulnerabilities — 14; Security Hotspots (переглянуто / усього) — 0 / 0; рейтинг — E.
+**Показники:** проблем Security — 16 (Blocker 1, High 1, Medium 12, Low 2); Vulnerabilities — 14; Security Hotspots (переглянуто / усього) — 0 / 0; рейтинг — E.
 
 **Результати аналізу:**
 
-Усі 14 проблем категорії Security стосуються CI/CD-конфігурації (`.github/workflows/`), коду застосунку вони не зачіпають. За severity: Blocker — 1, High — 1, Medium — 12. Найкритичніша — ін'єкція скрипта через `inputs.paths` у `mutation.yml`. Решта — незафіксовані версії залежностей, встановлення без `--only-binary :all:` / `--ignore-scripts` та action без фіксації за SHA. Орієнтовна трудомісткість за оцінкою Sonar: 1 год на ін'єкцію, по 30 хв на SHA, PASSWORD і `--ignore-scripts`, по 1 год на кожну з решти.
+14 проблем категорії Security стосуються CI/CD-конфігурації (`.github/workflows/`), 2 — фронтенду. Коду застосунку вони не зачіпають. За severity: Blocker — 1, High — 1, Medium — 12, Low — 2. Найкритичніша — ін'єкція скрипта через `inputs.paths` у `mutation.yml`. Решта — незафіксовані версії залежностей, встановлення без `--only-binary :all:` / `--ignore-scripts` та action без фіксації за SHA. Орієнтовна трудомісткість за оцінкою Sonar: 1 год на ін'єкцію, по 30 хв на SHA, PASSWORD і `--ignore-scripts`, по 1 год на кожну з решти.
 
 | # | Файл | Правило | Severity | Опис | Рішення | Статус |
 |---|---|---|---|---|---|---|
@@ -51,6 +51,8 @@
 | 12 | `.github/workflows/deploy-api-docs.yml` L31 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open |
 | 13 | `.github/workflows/mutation.yml` L30 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Open |
 | 14 | `.github/workflows/mutation.yml` L30 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open |
+| 15 | `frontend/src/test/handlers.ts` L302 | захардкоджена IP адреса (S1313 / CWE-547) | Low | Виявлено захардкоджену IP-адресу 10.0.0.15 у фікстурах записів аудиту | Перевірено: це синтетичні мок-дані для імітації журналу аудиту в UI, реального мережевого з'єднання немає. Позначити як Safe / Won't Fix у SonarCloud. | Open (Safe by design) |
+| 16 | `frontend/src/test/fixtures.ts` L275 | захардкоджена IP адреса (S1313 / CWE-547) | Low | Виявлено захардкоджену IP-адресу 10.0.0.15 у тестових MSW-хендлерах журналу аудиту | Перевірено: це тестовий об'єкт аудиту для Vitest/MSW. Загрози розкриття внутрішньої мережі немає. Позначити як Safe / Won't Fix у SonarCloud. | Open (Safe by design) |
 
 ## 4. Reliability
 
