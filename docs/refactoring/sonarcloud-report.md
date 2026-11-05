@@ -22,7 +22,7 @@
 |---|---|---|---|
 | Security | 14 | E | Усі проблеми в CI/CD workflow; 1 Blocker (script injection) |
 | Reliability | 28 | C | 1 Blocker (CORS); 21 проблема у згенерованому звіті покриття |
-| Maintainability | 7 | A | 4 Blocker; 3 з них у згенерованому JS-звіті покриття |
+| Maintainability | 16 | A | 4 Blocker, 2 High, 1 Medium, 9 Low; 12 з них у згенерованому JS-звіті покриття |
 | Duplications | 5,5% | — | 46 файлів, 3170 дубльованих рядків; 41 файлів — згенерований звіт покриття |
 
 Додатково: Security Hotspots — 0, Technical Debt — 2h 24min.
@@ -82,11 +82,11 @@
 
 ## 5. Maintainability
 
-**Показники:** проблем Maintainability — 7 (Blocker 4, High 2, Medium 1); Code Smells — 20; Technical Debt — 2h 24min; Debt Ratio — 0 %; рейтинг — A.
+**Показники:** проблем Maintainability — 16 (Blocker 4, High 2, Medium 1, Low 9); Code Smells — 20; Technical Debt — 2h 24min; Debt Ratio — 0 %; рейтинг — A.
 
 **Результати аналізу:**
 
-Знайдено 7 проблем Maintainability: Blocker — 4, High — 2, Medium — 1. Чотири з них (CORS у `main.py`, значення за замовчуванням у `deanery.py` і `preferences.py`, `pytest.raises`) одночасно належать до Reliability. Ще три Blocker — неоголошені змінні в згенерованому `coverage_html_cb_*.js` (звіт покриття в `docs/testing/coverage/`); цей файл генерується інструментом покриття, тож його краще виключити з аналізу Sonar, а не правити вручну. Усі проблеми мають оцінку трудомісткості 2–5 хв.
+Знайдено 16 проблем Maintainability: Blocker — 4, High — 2, Medium — 1, Low — 9. Чотири з них (CORS у `main.py`, значення за замовчуванням у `deanery.py` і `preferences.py`, `pytest.raises`) одночасно належать до Reliability. Ще три Blocker — неоголошені змінні в згенерованому `coverage_html_cb_*.js` (звіт покриття в `docs/testing/coverage/`); цей файл генерується інструментом покриття, тож його краще виключити з аналізу Sonar, а не правити вручну. Решта 9 проблем категорії Low — це convention-зауваження (`Number.isNaN` та `Number.parseInt`) у тому ж згенерованому файлі покриття. Усі проблеми мають оцінку трудомісткості 2–5 хв.
 
 | # | Файл | Правило | Severity | Опис | Рішення | Статус |
 |---|---|---|---|---|---|---|
@@ -97,6 +97,8 @@
 | 5 | `docs/testing/coverage/coverage_html_cb_c6c441fc.js` L166 | pitfall | Blocker | Змінна `cell` оголошена без `let`/`const`/`var` | Додати `let` / `const` / `var` | Open |
 | 6 | `docs/testing/coverage/coverage_html_cb_c6c441fc.js` L358 | pitfall | Blocker | Змінна `cls` оголошена без `let`/`const`/`var` | Додати `let` / `const` / `var` | Open |
 | 7 | `docs/testing/coverage/coverage_html_cb_c6c441fc.js` (рядок не вказано) | pitfall | Blocker | Змінна `key` оголошена без `let`/`const`/`var` | Додати `let` / `const` / `var` | Open |
+| 8 | `docs/testing/coverage/coverage_html_cb_c6c441fc.js` L53 | convention | Low | `isNaN` замість `Number.isNaN` (2 проблеми на одному рядку; також Reliability, Medium) | Замінити на `Number.isNaN` (або виключити звіт покриття з аналізу) | Open |
+| 9 | `docs/testing/coverage/coverage_html_cb_c6c441fc.js` L203, L204, L207, L324, L556, L576, L671 | convention | Low | `parseInt` замість `Number.parseInt` (7 шт.; також Reliability, Medium) | Замінити на `Number.parseInt` (або виключити звіт покриття з аналізу) | Open |
 
 ## 6. Duplications
 
@@ -127,3 +129,4 @@ TODO
 Статуси `src/api/main.py` L113 і `src/api/routes/preferences.py` L59 оновлено за допомогою Claude Code. Перевірено через API SonarCloud (2026-10-30): аналіз PR #171 (коміт `d263e9a`) — Quality Gate OK, 0 нових проблем; на `main` (аналіз `0b62882`, до виправлень) обидві проблеми ще відкриті, тож остаточно вони закриються після мерджу й нового аналізу.
 Статус «Fixed» для пункту 1 розділу Security (script injection у `mutation.yml`) додано за допомогою Claude Code; перевірка — перегляд диффу, нового аналізу SonarCloud ще не було.
 Статус «Fixed» для `deanery.py` (Reliability 2, Maintainability 2) додано за допомогою Claude Code; перевірка — перегляд диффу PR #170, нового аналізу SonarCloud ще не було.
+До розділу Maintainability та зведеної таблиці додано 9 проблем рівня Low (Number.isNaN та Number.parseInt у згенерованому JS-звіті покриття docs/testing/coverage/) за допомогою Gemini. Перевірено: звірка зі скриншотами панелі SonarCloud та розділом Reliability.
