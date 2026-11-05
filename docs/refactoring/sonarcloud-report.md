@@ -330,7 +330,6 @@ TODO: Короткий висновок команди про ефективні
 | Коміт `chore(release): 0.1.1` (автор: `semantic-release`; змінює `pyproject.toml` і `CHANGELOG.md`) | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/339f226 |
 | Тег `v0.1.1` і GitHub Release | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/releases/tag/v0.1.1 |
 | `CHANGELOG.md` із секцією `## [0.1.1] - 2026-11-05` / `### Refactoring` (6 записів `refactor:`) | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/blob/v0.1.1/CHANGELOG.md |
-| PR, на якому `pr-title` відхилив некоректну назву (необов'язково) | TODO |
 
 #### Верифікація до першого прогону в CI
 
