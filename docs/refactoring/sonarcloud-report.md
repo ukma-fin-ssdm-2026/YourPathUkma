@@ -187,3 +187,55 @@ Sonar показує дублювання у 46 файлах, усього 3170 
 - **Завдання агенту:** запах зі звіту → техніка → інваріант («зовнішня поведінка не змінюється, тести проходять після кожного кроку»); див. таблицю в розділі 7.
 - **Як верифіковано:** кожен рефакторинг окремим комітом з повним прогоном тестів (результати в розділі 7); для regex — вимірювання часу на старому й новому коді та тест, що падав до виправлення (1222 мс при порозі 100 мс).
 - **Перегляд людиною рядок за рядком:** виконано керівником рефакторингу на сторінці PR #197 (Files changed) до злиття.
+
+## Бонуси
+
+### Автоматизований реліз
+
+Версію, запис у `CHANGELOG.md` і git-тег створює інструмент у CI, а не людина. Коміти й назви PR у форматі Conventional Commits, `refactor:` дає patch.
+
+**Інструмент:** python-semantic-release. Release-please не використано, бо організація `ukma-fin-ssdm-2026` забороняє GitHub Actions створювати PR (API повертає `The organization does not allow GitHub Actions to create or approve pull requests`), а release-please працює через Release PR. Python-semantic-release працює без PR: бот комітить версію й журнал у `main` і ставить тег, для чого достатньо `contents: write`.
+
+**Як працює:**
+1. PR зливаємо squash-merge, тож назва PR стає комітом на `main`. Формат назви перевіряє `.github/workflows/pr-title.yml`.
+2. На push у `main` стартує `.github/workflows/release.yml` і запускає `semantic-release version`.
+3. Інструмент бере останній тег `vX.Y.Z` (базовий `v0.1.0`) і читає коміти після нього. Тип коміту визначає рівень: `fix:`, `perf:`, `refactor:` дають patch, `feat:` дає minor, `feat!:` або `BREAKING CHANGE` дає major (до 1.0.0 minor), `docs:`/`test:`/`ci:`/`build:`/`chore:`/`style:` реліз не створюють.
+4. Бот оновлює `version` у `pyproject.toml`, дописує блок у `CHANGELOG.md`, комітить `chore(release): X.Y.Z`, ставить тег `vX.Y.Z` і створює GitHub Release.
+
+**Налаштування «`refactor:` дає patch».** За замовчуванням інструмент рефакторинг не релізить. У `pyproject.toml`, розділ `[tool.semantic_release.commit_parser_options]`: `patch_tags = ["fix", "perf", "refactor"]`.
+
+**Формат журналу.** Власні шаблони в `.github/changelog-templates/` дають заголовок `## [X.Y.Z] - РРРР-ММ-ДД` і секцію `### Refactoring`; службові коміти (`ci:`, `docs:`, `test:`, `chore:`, `build:`, `style:`) із журналу виключено.
+
+**Правила команди:** `TeamCharter.md` (розділ 10.1) і `AGENTS.md` (розділ 9.1).
+
+#### Докази
+
+| Що | Посилання |
+|---|---|
+| PR з налаштуванням релізу | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/198 |
+| PR з рефакторингом (джерело `refactor:`-коміту) | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/197 |
+| Базовий тег `v0.1.0` (стан `pre-refactor`, коміт `8bdc115`) | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/releases/tag/v0.1.0 |
+| **Прогін workflow `Release`, який створив реліз Лаб 8** | TODO |
+| Коміт `chore(release): 0.1.1` | TODO |
+| Тег `v0.1.1` і GitHub Release | TODO |
+| `CHANGELOG.md` із секцією `### Refactoring` | TODO |
+| PR, на якому `pr-title` відхилив некоректну назву (необов'язково) | TODO |
+
+#### Верифікація до першого прогону в CI
+
+Повний прогін `semantic-release version` (без push і без GitHub Release) в одноразовому клоні репозиторію:
+- `refactor:` після `v0.1.0` дає 0.1.1, потім `feat:` дає 0.2.0;
+- створюються коміт `chore(release)`, теги `v0.1.1` / `v0.2.0` і оновлений `version` у `pyproject.toml`;
+- заголовок журналу `## [0.1.1] - дата`, секція `### Refactoring`, службові коміти відсутні, повторний реліз не дублює записи;
+- коли випускати нічого (лише `docs:`/`ci:`), інструмент виходить із кодом 0 і повідомленням `No release will be made`;
+- залежності інструмента ставляться лише з wheel-ів для Linux (`pip install --only-binary :all:`).
+
+Справжній прогін у GitHub Actions на self-hosted runner підтвердиться після злиття PR #198 і #197 (TODO).
+
+#### Хто пояснює бонус у відео
+
+TODO: ім'я учасника і посилання на відео, де пояснено, що саме зроблено й як працює.
+
+#### Використання ШІ
+
+Налаштування релізу (конфіг у `pyproject.toml`, `.github/workflows/release.yml`, `pr-title.yml`, шаблони журналу, правила в `TeamCharter.md` і `AGENTS.md`) створено за допомогою Claude Code (Anthropic). Перевірка: локальний прогін інструмента та YAML, перегляд командою (TODO: підтвердити), справжній прогін у CI після злиття.
