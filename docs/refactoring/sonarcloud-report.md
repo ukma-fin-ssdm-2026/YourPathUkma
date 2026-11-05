@@ -41,19 +41,19 @@
 | # | Файл | Правило | Severity | Опис | Рішення | Статус |
 |---|---|---|---|---|---|---|
 | 1 | `.github/workflows/mutation.yml` L36 | script injection (CWE) | Blocker | `inputs.paths` потрапляє напряму в `run`; значення задає той, хто запускає workflow | Передати вираз через змінну середовища (`env:`) і використовувати її в `run` | Fixed: `inputs.paths` передається через `env: MUTATE_PATHS`, у `run` використано `"$MUTATE_PATHS"` (PR #168) |
-| 2 | `.github/workflows/deploy-api-docs.yml` L37 | full commit SHA (CWE) | High | Залежність підключена не за повним SHA коміту | Зафіксувати action за повним SHA коміту | Open |
-| 3 | `.github/workflows/ci.yaml` L21 | hard-coded credential (CWE) | Medium | Виявлено «PASSWORD», можливий захардкоджений секрет | Перевірити, що це не реальний секрет; за потреби винести в GitHub Secrets | Open |
-| 4 | `.github/workflows/ci.yaml` L38 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Open |
-| 5 | `.github/workflows/ci.yaml` L38 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open |
-| 6 | `.github/workflows/ci.yaml` L40 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Open |
-| 7 | `.github/workflows/ci.yaml` L40 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open |
-| 8 | `.github/workflows/ci.yaml` L42 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Open |
-| 9 | `.github/workflows/ci.yaml` L42 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open |
-| 10 | `.github/workflows/ci.yaml` L70 | npm: `--ignore-scripts` (CWE) | Medium | Без `--ignore-scripts` під час встановлення пакетів запускаються lifecycle-скрипти | Додати `--ignore-scripts` | Open |
-| 11 | `.github/workflows/deploy-api-docs.yml` L31 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Open |
-| 12 | `.github/workflows/deploy-api-docs.yml` L31 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open |
-| 13 | `.github/workflows/mutation.yml` L30 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Open |
-| 14 | `.github/workflows/mutation.yml` L30 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open |
+| 2 | `.github/workflows/deploy-api-docs.yml` L37 | full commit SHA (CWE) | High | Залежність підключена не за повним SHA коміту | Зафіксувати action за повним SHA коміту | Fixed: Виправлено в гілці `refactor/sonar-report-fixes` (`fde10e2`): `peaceiris/actions-gh-pages` закріплено за SHA коміту `84c30a8…` (v4.1.0); підтвердить аналіз після мерджу |
+| 3 | `.github/workflows/ci.yaml` L21 | hard-coded credential (CWE) | Medium | Виявлено «PASSWORD», можливий захардкоджений секрет | Перевірити, що це не реальний секрет; за потреби винести в GitHub Secrets | Open (імовірний false positive): `POSTGRES_PASSWORD` — пароль тестової БД у service-контейнері CI, не секрет; не змінювалось. Позначити як False Positive у Sonar (потрібні права адміна) |
+| 4 | `.github/workflows/ci.yaml` L38 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Fixed: Виправлено в гілці `refactor/sonar-report-fixes` (`fde10e2`): `pip install --only-binary :all:`; підтвердить аналіз після мерджу |
+| 5 | `.github/workflows/ci.yaml` L38 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open: потрібен lock-файл з усіма транзитивними залежностями (`pip-compile`/constraints); окремий PR, у цій лабораторній не виконується |
+| 6 | `.github/workflows/ci.yaml` L40 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Fixed: Виправлено в гілці `refactor/sonar-report-fixes` (`fde10e2`): `pip install --only-binary :all:`; підтвердить аналіз після мерджу |
+| 7 | `.github/workflows/ci.yaml` L40 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Fixed: Виправлено в гілці `refactor/sonar-report-fixes` (`fde10e2`): `ruff==0.17.0`; підтвердить аналіз після мерджу |
+| 8 | `.github/workflows/ci.yaml` L42 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Fixed: Виправлено в гілці `refactor/sonar-report-fixes` (`fde10e2`): `pip install --only-binary :all:`; підтвердить аналіз після мерджу |
+| 9 | `.github/workflows/ci.yaml` L42 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Fixed: Виправлено в гілці `refactor/sonar-report-fixes` (`fde10e2`): `bandit[toml]==1.9.4`; підтвердить аналіз після мерджу |
+| 10 | `.github/workflows/ci.yaml` L70 | npm: `--ignore-scripts` (CWE) | Medium | Без `--ignore-scripts` під час встановлення пакетів запускаються lifecycle-скрипти | Додати `--ignore-scripts` | Fixed: Виправлено в гілці `refactor/sonar-report-fixes` (`fde10e2`): `npm ci --ignore-scripts` (перевірено на чистій копії: `gen:api`, `typecheck`, 452 тести, `build`); підтвердить аналіз після мерджу |
+| 11 | `.github/workflows/deploy-api-docs.yml` L31 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Fixed: Виправлено в гілці `refactor/sonar-report-fixes` (`fde10e2`): `pip install --only-binary :all:`; підтвердить аналіз після мерджу |
+| 12 | `.github/workflows/deploy-api-docs.yml` L31 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open: потрібен lock-файл з усіма транзитивними залежностями (`pip-compile`/constraints); окремий PR, у цій лабораторній не виконується |
+| 13 | `.github/workflows/mutation.yml` L30 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Fixed: Виправлено в гілці `refactor/sonar-report-fixes` (`fde10e2`): `pip install --only-binary :all:`; підтвердить аналіз після мерджу |
+| 14 | `.github/workflows/mutation.yml` L30 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open: потрібен lock-файл з усіма транзитивними залежностями (`pip-compile`/constraints); окремий PR, у цій лабораторній не виконується |
 
 ## 4. Reliability
 
@@ -129,6 +129,7 @@ Sonar показує дублювання у 46 файлах, усього 3170 
 | Надійність (Reliability) | Відхилення Promise не з `Error` (правило Sonar) | `reject(reader.error)`, де значення може бути `null` (Reliability №6) | Replace Error Code with Exception | `f90af3f` |
 | Надійність (Reliability) | Regex з backtracking (правило Sonar, performance) | Квадратична складність у `download.ts` і `pkce.ts` (Reliability №4, №5) | Substitute Algorithm | `ebaa831` |
 | Згенерований код | Згенерований звіт покриття | Дублювання й проблеми в `docs/testing/coverage/` (Duplications №1, Reliability №8–15, Maintainability №5–7) | не Refactoring: зміна області аналізу (`.sonarcloud.properties`) | `4a57173` |
+| Безпека (Security, CI/CD) | Небезпечні налаштування CI | `pip` без `--only-binary`, незакріплені ruff/bandit, `npm ci` без `--ignore-scripts`, action без SHA (Security №2, №4, №6–11, №13) | не Refactoring: hardening конфігурації CI | `fde10e2` |
 
 ### Для кожного рефакторингу: що лишається незмінним, що змінюється, який тест це доводить
 
@@ -164,6 +165,8 @@ Sonar показує дублювання у 46 файлах, усього 3170 
 
 **7. Виключення згенерованого звіту покриття.** Це не рефакторинг, а зміна області аналізу: `docs/testing/coverage/**` додано до `sonar.exclusions` і `sonar.cpd.exclusions` у `.sonarcloud.properties`. Дублювання й проблеми Reliability/Maintainability у цих файлах зникнуть через зміну налаштувань, а не через покращення коду.
 
+**8. Security (CI/CD), не рефакторинг коду.** У `ci.yaml`, `deploy-api-docs.yml` і `mutation.yml` додано `pip install --only-binary :all:`, закріплено `ruff==0.17.0` і `bandit==1.9.4`, `npm ci --ignore-scripts`, `peaceiris/actions-gh-pages` закріплено за SHA (коміт `fde10e2`). Перевірено локально: усі залежності `requirements*.txt` мають готові manylinux-wheels для CPython 3.12 (`pip download --only-binary :all:` без помилок); `npm ci --ignore-scripts` на чистій копії проходить `gen:api`, `typecheck`, 452 тести й `build`. Не виправлено: пункти про незафіксовані версії для `requirements.txt` (потрібен lock-файл) і `POSTGRES_PASSWORD` (імовірний false positive). Робота CI на self-hosted runner підтвердиться лише прогоном PR.
+
 ### Регресійне тестування на гілці `refactor/sonar-report-fixes`
 - `pytest -q`: 389 passed, 1 skipped.
 - `vitest run`: 452 passed (49 файлів); було 443 до додавання тестів у п. 6.
@@ -180,7 +183,7 @@ Sonar показує дублювання у 46 файлах, усього 3170 
 Статус «Fixed» для `deanery.py` (Reliability 2, Maintainability 2) додано за допомогою Claude Code; перевірка — перегляд диффу PR #170, нового аналізу SonarCloud ще не було. Статуси `Fixed` для CORS і `preferences.py` оновлено за допомогою Claude Code (перевірено в коді `main` і за мерджами PR #168, #170, #171; фактичної верифікації окремих issues у Sonar не виконувалось).
 
 ### Рефакторинг із ШІ-агентом (Лаб 8)
-- **Хто й що згенерував:** Claude Code (Anthropic) виконав рефакторинги 1–6 з розділу 7 у гілці `refactor/sonar-report-fixes`, змінив `.sonarcloud.properties` і додав тести (`download.test.ts`, `pkce.test.ts`).
+- **Хто й що згенерував:** Claude Code (Anthropic) виконав рефакторинги 1–6 з розділу 7 у гілці `refactor/sonar-report-fixes`, змінив `.sonarcloud.properties`, додав тести (`download.test.ts`, `pkce.test.ts`) і посилив workflow CI (пункт 8: перевірено локально, роботу на runner підтвердить прогін PR).
 - **Завдання агенту:** запах зі звіту → техніка → інваріант («зовнішня поведінка не змінюється, тести проходять після кожного кроку»); див. таблицю в розділі 7.
 - **Як верифіковано:** кожен рефакторинг окремим комітом з повним прогоном тестів (результати в розділі 7); для regex — вимірювання часу на старому й новому коді та тест, що падав до виправлення (1222 мс при порозі 100 мс).
 - **Перегляд людиною рядок за рядком:** TODO — підтвердити керівнику рефакторингу після перегляду `git diff main..HEAD`.
