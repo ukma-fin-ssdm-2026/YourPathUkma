@@ -8,24 +8,23 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Refactoring
 
-- Extract shared download mock from plan-view tests [REFACTOR]
+- Extract shared download mock from plan-view tests [REFACTOR] (Extract Method)
   ([`e828997`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e828997692b755076dfef06bde3956cd7072d302))
 
-- Parametrize completeLogin rejection tests [REFACTOR]
+- Parametrize completeLogin rejection tests [REFACTOR] (Parameterize Method)
   ([`8c0ce5a`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/8c0ce5a96cc93241165cac08b2e864388122fd2c))
 
-- Reject with Error in multipart test helper [REFACTOR]
+- Reject with Error in multipart test helper [REFACTOR] (Substitute Algorithm)
   ([`f90af3f`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/f90af3f9cac7c3fe9fd816eb4c11cf286278c3bd))
 
-- Replace backtracking regexes in download and pkce helpers [REFACTOR]
+- Replace backtracking regexes in download and pkce helpers [REFACTOR] (Substitute Algorithm)
   ([`ebaa831`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/ebaa831fb640d1a59e6185b0ab2801f49aa903dc))
 
-- Share config fixture between mocks and test handlers [REFACTOR]
+- Share config fixture between mocks and test handlers [REFACTOR] (Extract Method)
   ([`49f0422`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/49f0422506f5ea47d6e367fbaab40d3ef3749cda))
 
-- Use pytest.raises context manager in free elective test [REFACTOR]
+- Use pytest.raises context manager in free elective test [REFACTOR] (Substitute Algorithm)
   ([`1603686`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/1603686117b387662df1f1575532b22e8bbe36a6))
-
 
 ## [0.1.0] - 2026-11-01
 
