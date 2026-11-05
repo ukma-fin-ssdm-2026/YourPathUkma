@@ -1,10 +1,11 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: тести, що його використовують.
+// Рефакторинг (Replace Magic Literal with Constant, S1313): імпортовано та використано DEFAULT_MOCK_AUDIT_IP за допомогою Gemini.
 // Тестові відповіді ✅-ендпоінтів (які в dev ходять на реальний бекенд) для `server.use(...)`.
 import { http, HttpResponse } from "msw";
 import type { ConfigResponse } from "../api/types";
-import { configFixture } from "../mocks/fixtures";
+import { configFixture, DEFAULT_MOCK_AUDIT_IP } from "../mocks/fixtures";
 
-export { configFixture };
+export { configFixture, DEFAULT_MOCK_AUDIT_IP };
 
 export const configHandler = (overrides: Partial<ConfigResponse> = {}) =>
   http.get("*/api/v1/config", () => HttpResponse.json({ ...configFixture(), ...overrides }));
@@ -271,7 +272,7 @@ export function auditEntryFixture(overrides: Partial<AuditLogEntry> = {}): Audit
     object_type: "IndividualPlan",
     object_id: 3,
     outcome: "denied",
-    ip: "10.0.0.15",
+    ip: DEFAULT_MOCK_AUDIT_IP,
     created_at: "2026-10-08T10:00:00Z",
     ...overrides,
   };
