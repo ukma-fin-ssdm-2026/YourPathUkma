@@ -3,36 +3,33 @@
 **Проєкт:** YourPathUkma (REST API + вебфронтенд)
 **Відповідальні ролі:** Quality Lead
 **Інструмент:** SonarCloud (проєкт `ukma-fin-ssdm-2026_YourPathUkma`)
-**Станом на:** TODO
-**Версія / коміт аналізу:** TODO
-
-> Шаблон звіту. Значення `TODO` потрібно заповнити за даними з SonarCloud;
-> у цьому файлі їх не вигадано.
+**Станом на:** 30.10.2026
+**Версія / коміт аналізу:** 0b62882
 
 ## 1. Загальна інформація
 
 | Параметр | Значення |
 |---|---|
 | Репозиторій | ukma-fin-ssdm-2026/YourPathUkma |
-| Гілка / PR аналізу | TODO |
-| Дата аналізу | TODO |
-| Quality Gate | TODO (Passed / Failed) |
-| Кількість рядків коду (LoC) | TODO |
+| Гілка / PR аналізу | pre-refactor / PR #167 |
+| Дата аналізу | 30.10.2026 |
+| Quality Gate | Passed |
+| Кількість рядків коду (LoC) | 52,881 |
 
 ## 2. Підсумок за категоріями
 
 | Категорія | Кількість проблем | Рейтинг (A–E) | Висновок |
 |---|---|---|---|
-| Security | 14 | TODO | Усі проблеми в CI/CD workflow; 1 Blocker (script injection) |
-| Reliability | 28 | TODO | 1 Blocker (CORS); 21 проблема у згенерованому звіті покриття |
-| Maintainability | 7 | TODO | 4 Blocker; 3 з них у згенерованому JS-звіті покриття |
-| Duplications | TODO % | — | 46 файлів, 3170 дубльованих рядків; 41 файлів — згенерований звіт покриття |
+| Security | 14 | E | Усі проблеми в CI/CD workflow; 1 Blocker (script injection) |
+| Reliability | 28 | C | 1 Blocker (CORS); 21 проблема у згенерованому звіті покриття |
+| Maintainability | 7 | A | 4 Blocker; 3 з них у згенерованому JS-звіті покриття |
+| Duplications | 5,5% | — | 46 файлів, 3170 дубльованих рядків; 41 файлів — згенерований звіт покриття |
 
-Додатково: Security Hotspots — TODO, Coverage — TODO %, Technical Debt — TODO.
+Додатково: Security Hotspots — 0, Coverage — 0 %, Technical Debt — 2h 24min.
 
 ## 3. Security
 
-**Показники:** проблем Security — 14 (Blocker 1, High 1, Medium 12); Vulnerabilities — TODO; Security Hotspots (переглянуто / усього) — TODO; рейтинг — TODO.
+**Показники:** проблем Security — 14 (Blocker 1, High 1, Medium 12); Vulnerabilities — 14; Security Hotspots (переглянуто / усього) — 0 / 0; рейтинг — E.
 
 **Результати аналізу:**
 
@@ -57,7 +54,7 @@
 
 ## 4. Reliability
 
-**Показники:** проблем Reliability — 28 (Blocker 1, High 2, Medium 25); Bugs — TODO; рейтинг — TODO.
+**Показники:** проблем Reliability — 28 (Blocker 1, High 2, Medium 25); Bugs — 13; рейтинг — C.
 
 **Результати аналізу:**
 
@@ -83,7 +80,7 @@
 
 ## 5. Maintainability
 
-**Показники:** проблем Maintainability — 7 (Blocker 4, High 2, Medium 1); Code Smells — TODO; Technical Debt — TODO; Debt Ratio — TODO %; рейтинг — TODO.
+**Показники:** проблем Maintainability — 7 (Blocker 4, High 2, Medium 1); Code Smells — 20; Technical Debt — 2h 24min; Debt Ratio — 0 %; рейтинг — A.
 
 **Результати аналізу:**
 
@@ -101,7 +98,7 @@
 
 ## 6. Duplications
 
-**Показники:** файлів з дублюванням — 46; дубльованих рядків — 3170; Duplicated Lines Density — TODO %; Duplicated Blocks — TODO; Duplicated Files — TODO.
+**Показники:** файлів з дублюванням — 46; дубльованих рядків — 3170; Duplicated Lines Density — 5,5%; Duplicated Blocks — 202; Duplicated Files — 46.
 
 **Результати аналізу:**
 
