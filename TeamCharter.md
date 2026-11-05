@@ -162,6 +162,7 @@
 - **Принципи проєктування:** код дотримується принципів SOLID (відповідно до назви команди): одна відповідальність на клас/модуль, залежність від абстракцій, відсутність дублювання (DRY). Функції — короткі та з однією метою.
 - **Структура проєкту:** вихідний код, тести та документація розділені (`src/`, `tests/`, `docs/`). Секрети та ключі не комітяться; використовуються змінні середовища та `.gitignore`.
 - **Повідомлення комітів:** формат [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`), імперативний спосіб, до 72 символів у заголовку.
+- **Автоматичні релізи (Лаб 8):** PR зливаємо squash-merge, тому **назва PR** має бути в форматі Conventional Commits (перевіряє `.github/workflows/pr-title.yml`). Версію, `CHANGELOG.md` і git-тег `vX.Y.Z` створює python-semantic-release (`.github/workflows/release.yml`, правила в `[tool.semantic_release]` у `pyproject.toml`): `fix:`, `perf:` і `refactor:` дають patch, `feat:` — minor (до 1.0.0), `feat!:` або `BREAKING CHANGE` — major; `docs:`, `test:`, `chore:`, `ci:`, `build:` реліз не створюють. Версію й `CHANGELOG.md` вручну не змінюємо: після злиття в `main` бот робить коміт `chore(release): X.Y.Z` і ставить тег.
 - **Назви гілок:** `feature/<короткий-опис>`, `fix/<короткий-опис>`, `docs/<короткий-опис>`; за потреби з номером Issue (`feature/12-login-form`).
 
 ### 10.2 Обов'язкові інструменти
