@@ -7,6 +7,7 @@ import { RouterProvider, createMemoryRouter } from "react-router";
 import type { PlanItem } from "../../api/types";
 import { setAccessToken } from "../../api/token";
 import { server } from "../../mocks/server";
+import { mockDownloads } from "../../test/downloads";
 import { configFixture, configHandler, planFixture, plansCrudHandlers } from "../../test/handlers";
 import { PlanViewPage } from "./PlanViewPage";
 
@@ -58,21 +59,12 @@ function renderPage(path = "/path/plan/1") {
   return router;
 }
 
-const saved: string[] = [];
-let click: { mockRestore: () => void };
+const saved = mockDownloads();
 
 beforeEach(() => {
   setAccessToken("t");
-  saved.length = 0;
-  Object.assign(URL, { createObjectURL: vi.fn(() => "blob:test"), revokeObjectURL: vi.fn() });
-  click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
-    this: HTMLAnchorElement,
-  ) {
-    saved.push(this.download);
-  });
   server.use(configHandler(), ...plansCrudHandlers([plan()]).handlers);
 });
-afterEach(() => click.mockRestore());
 
 describe("PlanViewPage: вміст", () => {
   it("показує заголовок, статус, метрики й дисципліни по триместрах", async () => {

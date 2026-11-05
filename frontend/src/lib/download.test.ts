@@ -13,6 +13,19 @@ describe("parseDispositionFilename / filenameFromDisposition", () => {
       parseDispositionFilename("attachment; filename*=UTF-8''%D0%BF%D0%BB%D0%B0%D0%BD.pdf"),
     ).toBe("план.pdf");
   });
+  it("filename* з пробілами навколо = і порожнім кодуванням", () => {
+    expect(parseDispositionFilename("attachment; filename*  =  UTF-8''plan.pdf")).toBe("plan.pdf");
+    expect(parseDispositionFilename("filename*=''plan.pdf; size=1")).toBe("plan.pdf");
+  });
+  it("filename* без другої пари лапок не підходить і дає null", () => {
+    expect(parseDispositionFilename("filename*=UTF-8'uk'plan.pdf")).toBeNull();
+  });
+  it("довгий хвіст із пробілів не гальмує розбір (лінійна складність)", () => {
+    const header = `filename*=${" ".repeat(30_000)}x`;
+    const started = performance.now();
+    expect(parseDispositionFilename(header)).toBeNull();
+    expect(performance.now() - started).toBeLessThan(100);
+  });
   it("без заголовка або без імені дає null, а filenameFromDisposition запасне ім'я", () => {
     expect(parseDispositionFilename(null)).toBeNull();
     expect(parseDispositionFilename("attachment")).toBeNull();
