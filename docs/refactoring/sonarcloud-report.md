@@ -92,8 +92,8 @@
 | 12 | `.github/workflows/deploy-api-docs.yml` L31 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open: потрібен lock-файл з усіма транзитивними залежностями (`pip-compile`/constraints); окремий PR, у цій лабораторній не виконується |
 | 13 | `.github/workflows/mutation.yml` L30 | pip: `--only-binary :all:` (CWE) | Medium | Відсутність `--only-binary :all:` дозволяє виконання setup-скриптів | Додати `--only-binary :all:` або підтвердити безпечність | Fixed: Виправлено в гілці `refactor/sonar-report-fixes` (`fde10e2`): `pip install --only-binary :all:`; підтвердить аналіз після мерджу |
 | 14 | `.github/workflows/mutation.yml` L30 | незафіксовані залежності | Medium | Залежності без зафіксованих версій | Зафіксувати версії (lock-файл / `==`) | Open: потрібен lock-файл з усіма транзитивними залежностями (`pip-compile`/constraints); окремий PR, у цій лабораторній не виконується |
-| 15 | `frontend/src/test/handlers.ts` L302 | захардкоджена IP адреса (S1313 / CWE-547) | Low | Виявлено захардкоджену IP-адресу 10.0.0.15 у фікстурах записів аудиту | Перевірено: це синтетичні мок-дані для імітації журналу аудиту в UI, реального мережевого з'єднання немає. Позначити як Safe / Won't Fix у SonarCloud. | Open (Safe by design) |
-| 16 | `frontend/src/test/fixtures.ts` L275 | захардкоджена IP адреса (S1313 / CWE-547) | Low | Виявлено захардкоджену IP-адресу 10.0.0.15 у тестових MSW-хендлерах журналу аудиту | Перевірено: це тестовий об'єкт аудиту для Vitest/MSW. Загрози розкриття внутрішньої мережі немає. Позначити як Safe / Won't Fix у SonarCloud. | Open (Safe by design) |
+| 15 | `frontend/src/test/handlers.ts` L274 | захардкоджена IP адреса (S1313 / CWE-547) | Low | Виявлено захардкоджену IP-адресу 10.0.0.15 у фікстурах записів аудиту | Замінено на константу loopback `DEFAULT_MOCK_AUDIT_IP` ("127.0.0.1"), безпечну за S1313 | Fixed: Виправлено в гілці `refactor/ip-address-fix` |
+| 16 | `frontend/src/mocks/fixtures.ts` L309 | захардкоджена IP адреса (S1313 / CWE-547) | Low | Виявлено захардкоджену IP-адресу 10.0.0.15 у тестових MSW-хендлерах журналу аудиту | Замінено на константу loopback `DEFAULT_MOCK_AUDIT_IP` ("127.0.0.1"), безпечну за S1313 | Fixed: Виправлено в гілці `refactor/ip-address-fix` |
 
 ## 4. Reliability
 
@@ -275,12 +275,32 @@ Sonar показує дублювання у 46 файлах, усього 3170 
 
 ---
 
-### Рефакторинг 1 (Виконавець: Данило Савчук, Аналітик коду / Безпеки)
-* **Запах коду (Code Smell):** TODO (наприклад: *Порушення порядку middleware у `main.py`* або *Некоректний виклик `pytest.raises` у `tests/test_free_elective_remaining.py`*)
-* **Техніка рефакторингу з каталогу:** TODO (наприклад: *Reorder Middleware Chain* / *Use Idiomatic Context Manager*)
-* **Що залишилося незмінним (інваріант):** TODO (наприклад: *Формат відповідей API та додавання заголовків X-Request-ID і CORS*)
-* **Який тест це доводить:** TODO (наприклад: *`tests/test_api_common.py`*)
-* **Використання ШІ:** Виконано з допомогою ШІ-агента; запропоновані зміни перевірено рядок за рядком; регресійні тести пройдено.
+### Рефакторинг за звітом SonarQube Cloud (Виконавець: Данило Савчук, аналітик коду та аналітик безпеки; PR #171 та гілка `refactor/ip-address-fix`, виконано з ШІ-агентом)
+
+#### Запахи й техніки
+
+| Категорія | Code Smell | Опис (джерело в звіті) | Рішення (Refactoring) | Коміт |
+|---|---|---|---|---|
+| Надійність (Reliability) | Архітектурна помилка конвеєра (Misplaced Middleware) | `CORSMiddleware` додано не останнім у ланцюжку Starlette (Reliability №1, Maintainability №1, Blocker) | Reorder Statements | `d263e9a` |
+| Підтримуваність (Maintainability) | Неповне визначення типу (Incomplete Type Definition) | Опційне поле моделі без явного значення за замовчуванням (Reliability №3, Maintainability №3, High) | Introduce Default Parameter | `b35dcac` |
+| Безпека (Security) / Надмірність | Захардкоджена IP-адреса / Magic Literal | Хардкод IP `10.0.0.15` у тестових хендлерах та моках (Security №15, №16, S1313) | Replace Magic Literal with Constant | гілка `refactor/ip-address-fix` |
+
+#### Для кожного рефакторингу: що лишається незмінним, що змінюється, який тест це доводить
+
+**1. Reorder Statements: порядок `CORSMiddleware` у `src/api/main.py`.**
+- *Незмінне:* маршрутизація всіх ендпоінтів API, реєстрація обробників помилок `register_error_handlers`, логіка додавання `X-Request-ID` у `RequestIdMiddleware` та бізнес-поведінка застосунку.
+- *Змінюється в структурі:* `CORSMiddleware` перенесено в кінець викликів `app.add_middleware()`, після `RequestIdMiddleware`. Оскільки в архітектурі Starlette middleware огортають застосунок за принципом цибулини (останній доданий виконується найпершим ззовні), `CORSMiddleware` стає найзовнішнім шаром, гарантуючи додавання заголовків `access-control-allow-*` навіть у разі падіння внутрішніх обробників з кодами 4xx/5xx.
+- *Доказ:* `tests/test_api_smoke.py` та `tests/test_request_id.py` (усі тести зелені до й після); ручний HTTP-запит з заголовком `Origin` на неіснуючий маршрут підтверджує присутність CORS-заголовків на відповіді 404.
+
+**2. Introduce Default Parameter: явне `= None` для `certificate_program_id` у `src/api/routes/preferences.py`.**
+- *Незмінне:* семантика контракту API для ендпоінтів `GET` та `PUT /preferences/{academic_year}`, схема таблиць бази даних і логіка збереження побажань студента.
+- *Змінюється в структурі:* у Pydantic-моделі `PreferencesResponse` визначення поля `certificate_program_id: Optional[int]` доповнено явним значенням за замовчуванням `= None`. Це запобігає валідаційним збоям під час серіалізації моделей без заповненого сертифіката та відповідає стандарту валідації Pydantic v2.
+- *Доказ:* `tests/test_preferences.py` (2 тести) та `tests/test_ai.py` (5 тестів) проходять успішно; синхронізовано схему в `docs/api/openapi-generated.json` та `docs/api/openapi-generated.yaml`.
+
+**3. Replace Magic Literal with Constant: `DEFAULT_MOCK_AUDIT_IP` у `frontend/src/mocks/fixtures.ts` та `frontend/src/test/handlers.ts`.**
+- *Незмінне:* структура записів журналу аудиту `AuditLogEntry`, відображення IP-адреси на сторінці аудиту в UI `AuditPage` та поведінка моків/тестів.
+- *Змінюється в структурі:* магічний рядок адреси приватної мережі `"10.0.0.15"` замінено на спільну константу `DEFAULT_MOCK_AUDIT_IP = "127.0.0.1"`, яка експортується з `mocks/fixtures.ts` і використовується в `handlers.ts` та тесті `audit.test.tsx`. Використання loopback-адреси відповідає виняткам правила Sonar S1313 і запобігає тригеру вразливості, одночасно прибираючи дублювання літерала.
+- *Доказ:* `src/features/admin/audit/audit.test.tsx` (10 тестів зелені), повний прогін `vitest run` (452 тести зелені).
 
 ### Рефакторинг 2 (Виконавець: ...)
 * **Запах коду:** ...
@@ -303,7 +323,7 @@ TODO: Короткий висновок команди про ефективні
 Статус «Fixed» для пункту 1 розділу Security (script injection у `mutation.yml`) додано за допомогою Claude Code; перевірка — перегляд диффу, нового аналізу SonarCloud ще не було.
 Статус «Fixed» для `deanery.py` (Reliability 2, Maintainability 2) додано за допомогою Claude Code; перевірка — перегляд диффу PR #170, нового аналізу SonarCloud ще не було. Статуси `Fixed` для CORS і `preferences.py` оновлено за допомогою Claude Code (перевірено в коді `main` і за мерджами PR #168, #170, #171; фактичної верифікації окремих issues у Sonar не виконувалось).
 До розділу Maintainability та зведеної таблиці додано 9 проблем рівня Low (Number.isNaN та Number.parseInt у згенерованому JS-звіті покриття docs/testing/coverage/) за допомогою Gemini. Перевірено: звірка зі скриншотами панелі SonarCloud та розділом Reliability.
-Секції 2.1 (стан «ДО», вибір 3 метрик і Security Rating зі зв'язком з Лаб 3 і 5) та 7–9 (стан «ПІСЛЯ», порівняльна таблиця, регресійне тестування, опис рефакторингів) додано за допомогою Gemini. Перевірено: відповідність критеріям оцінювання Лабораторної роботи 8.
+Секції 2.1 (стан «ДО», вибір 3 метрик і Security Rating зі зв'язком з Лаб 3 і 5), 7–9 (стан «ПІСЛЯ», порівняльна таблиця, регресійне тестування, детальний опис трьох рефакторингів Данила Савчука) та рефакторинг DEFAULT_MOCK_AUDIT_IP у fixtures.ts/handlers.ts додано та оновлено за допомогою Gemini. Перевірено: pytest, vitest run (452 тести зелені), tsc --noEmit, eslint, відповідність критеріям Лабораторної роботи 8.
 
 ### Рефакторинг із ШІ-агентом (Лаб 8)
 - **Хто й що згенерував:** Claude Code (Anthropic) виконав рефакторинги 1–6 з розділу 8 у гілці `refactor/sonar-report-fixes`, змінив `.sonarcloud.properties`, додав тести (`download.test.ts`, `pkce.test.ts`) і посилив workflow CI (Security-зміни, п. 8 переліку в розділі 8: перевірено локально, роботу на runner підтвердить прогін PR).
