@@ -326,10 +326,10 @@ TODO: Короткий висновок команди про ефективні
 | PR з налаштуванням релізу | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/198 |
 | PR з рефакторингом (джерело `refactor:`-коміту) | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/197 |
 | Базовий тег `v0.1.0` (стан `pre-refactor`, коміт `8bdc115`) | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/releases/tag/v0.1.0 |
-| **Прогін workflow `Release`, який створив реліз Лаб 8** | TODO |
-| Коміт `chore(release): 0.1.1` | TODO |
-| Тег `v0.1.1` і GitHub Release | TODO |
-| `CHANGELOG.md` із секцією `### Refactoring` | TODO |
+| **Прогін workflow `Release`, який створив реліз Лаб 8** (спроба 2; спроба 1 впала на `git push` з 403, бо токен ще не був схвалений організацією) | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42014996328 |
+| Коміт `chore(release): 0.1.1` (автор: `semantic-release`; змінює `pyproject.toml` і `CHANGELOG.md`) | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/339f226 |
+| Тег `v0.1.1` і GitHub Release | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/releases/tag/v0.1.1 |
+| `CHANGELOG.md` із секцією `## [0.1.1] - 2026-11-05` / `### Refactoring` (6 записів `refactor:`) | https://github.com/ukma-fin-ssdm-2026/YourPathUkma/blob/v0.1.1/CHANGELOG.md |
 | PR, на якому `pr-title` відхилив некоректну назву (необов'язково) | TODO |
 
 #### Верифікація до першого прогону в CI
@@ -341,7 +341,9 @@ TODO: Короткий висновок команди про ефективні
 - коли випускати нічого (лише `docs:`/`ci:`), інструмент виходить із кодом 0 і повідомленням `No release will be made`;
 - залежності інструмента ставляться лише з wheel-ів для Linux (`pip install --only-binary :all:`).
 
-Справжній прогін у GitHub Actions на self-hosted runner підтвердиться після злиття PR #198 і #197 (TODO).
+Справжній прогін у GitHub Actions на self-hosted runner відбувся 2026-11-05 після злиття PR #198 і #197: версія в `pyproject.toml` (0.1.1), заголовок у `CHANGELOG.md` (`## [0.1.1]`) і git-тег (`v0.1.1`) збігаються. Перший прогін після #198 дав `No release will be made` (серед нових комітів не було `refactor:`/`fix:`/`feat:`), після #197 інструмент визначив `patch` і порахував 0.1.1.
+
+**Що довелось налаштувати, і чому перші спроби впали.** Основна гілка захищена двома rulesets (зміни лише через PR, 3 схвалення, обов'язкові перевірки `frontend` і `build`), винятків не було, тож push релізного коміту ботом блокувався б. Тому: (1) у обидва rulesets додано виняток для ролі Repository admin (режим `always`); (2) для push використовується секрет `RELEASE_TOKEN` (fine-grained PAT з Contents: Read and write, схвалений організацією). Перший реліз-прогін впав двічі з очікуваних причин: `Upstream branch has changed` (поки він йшов, у `main` злили інший PR; інструмент свідомо не випускає реліз із застарілого коміту) і `403 Permission denied` (токен ще не був схвалений). Повторний прогін для актуального `main` завершився успішно.
 
 #### Хто пояснює бонус у відео
 
