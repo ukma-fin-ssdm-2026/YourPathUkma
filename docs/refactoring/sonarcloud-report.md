@@ -25,7 +25,7 @@
 | Maintainability | 7 | A | 4 Blocker; 3 з них у згенерованому JS-звіті покриття |
 | Duplications | 5,5% | — | 46 файлів, 3170 дубльованих рядків; 41 файлів — згенерований звіт покриття |
 
-Додатково: Security Hotspots — 0, Coverage — 0 %, Technical Debt — 2h 24min.
+Додатково: Security Hotspots — 0, Technical Debt — 2h 24min.
 
 ## 3. Security
 
