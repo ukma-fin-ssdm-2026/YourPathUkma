@@ -7,4 +7,4 @@ httpx>=0.28.1
 beautifulsoup4>=4.12
 lxml>=5.0
 PyJWT[crypto]>=2.8
-python-dotenv>=1.0
+python-dotenv>=1.2.4
