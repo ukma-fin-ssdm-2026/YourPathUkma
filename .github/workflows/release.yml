@@ -24,12 +24,17 @@ concurrency:
 jobs:
   release:
     runs-on: [self-hosted, linux]
-    # Реліз-коміт бот пушить сам (GITHUB_TOKEN нові запуски не тригерить), цей запис лише робить наміри явними.
+    # Реліз-коміт `chore(release): X.Y.Z` бот пушить сам. З GITHUB_TOKEN це не запускає workflow, а з PAT
+    # (RELEASE_TOKEN) запускає, тому ця умова обов'язкова: вона не дає релізу запустити сам себе.
     if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # потрібна вся історія й теги, інакше версію не порахувати
+          # Звичайно вистачає GITHUB_TOKEN. Якщо main захищено (обов'язкові перевірки / лише через PR),
+          # додайте секрет RELEASE_TOKEN (PAT адміна з Contents: write): його push можна пропустити
+          # через виняток «Repository admin» у правилі захисту. Без секрету працює GITHUB_TOKEN.
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
@@ -40,5 +45,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
         run: semantic-release -v version
