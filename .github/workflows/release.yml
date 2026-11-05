@@ -1,0 +1,49 @@
+# Використання ШІ: файл створено за допомогою Claude (Anthropic) для бонусу «Автоматизований реліз» (Лаб 8).
+# Перевірка: повний прогін `semantic-release version` (без push) у локальному клоні: refactor: -> 0.1.1,
+# feat: -> 0.2.0, docs: -> без релізу (код виходу 0), коміт `chore(release)`, тег і CHANGELOG.md; YAML розібрано
+# локально. Перший справжній прогін у GitHub Actions — після злиття в main.
+#
+# python-semantic-release читає Conventional Commits на main, сам рахує версію (pyproject.toml), оновлює
+# CHANGELOG.md, комітить, ставить тег vX.Y.Z і створює GitHub Release. Без Release PR і без PAT: організація
+# забороняє Actions створювати PR, а коміт у main і тег потребують лише contents: write.
+# Правила (refactor: = patch, формат журналу) — у [tool.semantic_release] у pyproject.toml.
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: [self-hosted, linux]
+    # Реліз-коміт `chore(release): X.Y.Z` бот пушить сам. З GITHUB_TOKEN це не запускає workflow, а з PAT
+    # (RELEASE_TOKEN) запускає, тому ця умова обов'язкова: вона не дає релізу запустити сам себе.
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # потрібна вся історія й теги, інакше версію не порахувати
+          # Звичайно вистачає GITHUB_TOKEN. Якщо main захищено (обов'язкові перевірки / лише через PR),
+          # додайте секрет RELEASE_TOKEN (PAT адміна з Contents: write): його push можна пропустити
+          # через виняток «Repository admin» у правилі захисту. Без секрету працює GITHUB_TOKEN.
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: "pip install --only-binary :all: python-semantic-release==10.7.0"
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+        run: semantic-release -v version
