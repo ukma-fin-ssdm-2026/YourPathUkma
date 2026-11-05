@@ -120,15 +120,15 @@ Sonar показує дублювання у 46 файлах, усього 3170 
 
 ### Запахи й рефакторинги
 
-| # | Запах (джерело в звіті) | Техніка | Файли | Коміт |
+| Категорія | Code Smell | Опис (джерело в звіті) | Рішення (Refactoring) | Коміт |
 |---|---|---|---|---|
-| 1 | Дубльований блок імітації завантаження файлу (Duplications №3, №6) | Extract Method | `export.test.tsx`, `view.test.tsx`, новий `test/downloads.ts` | `e828997` |
-| 2 | Дубльоване тіло відповіді `/config` (Duplications №4, №5) | Extract Method + спільне джерело | `mocks/core.ts`, `test/handlers.ts`, `mocks/fixtures.ts` | `49f0422` |
-| 3 | Три однакові за структурою тести (Duplications №2) | Parametrize Test (`it.each`) | `auth/login.test.ts` | `8c0ce5a` |
-| 4 | `pytest.raises` через lambda (Reliability №7, Maintainability №4) | Use Context Manager (ідіома `with pytest.raises`) | `tests/test_free_elective_remaining.py` | `1603686` |
-| 5 | Promise відхиляється не `Error` (Reliability №6) | Replace Value With Error Object | `frontend/src/test/multipart.ts` | `f90af3f` |
-| 6 | Regex з backtracking (Reliability №4, №5) | Substitute Algorithm | `lib/download.ts`, `auth/pkce.ts` | `ebaa831` |
-| 7 | Згенерований звіт покриття (Duplications №1, Reliability №8–15, Maintainability №5–7) | не рефакторинг коду, а зміна області аналізу | `.sonarcloud.properties` | `4a57173` |
+| Надмірність (Duplications) | Duplicate Code | Однаковий блок імітації завантаження файлу в двох тестах (Duplications №3, №6) | Extract Method | `e828997` |
+| Надмірність (Duplications) | Duplicate Code | Тіло відповіді `/config` продубльоване в моках і тестових хендлерах (Duplications №4, №5) | Extract Method | `49f0422` |
+| Надмірність (Duplications) | Duplicate Code | Три тести з однаковою структурою (Duplications №2) | Parameterize Method | `8c0ce5a` |
+| Надійність (Reliability) | Невірне використання API (правило Sonar для pytest) | `pytest.raises` викликається з lambda (Reliability №7, Maintainability №4) | Substitute Algorithm | `1603686` |
+| Надійність (Reliability) | Відхилення Promise не з `Error` (правило Sonar) | `reject(reader.error)`, де значення може бути `null` (Reliability №6) | Replace Error Code with Exception | `f90af3f` |
+| Надійність (Reliability) | Regex з backtracking (правило Sonar, performance) | Квадратична складність у `download.ts` і `pkce.ts` (Reliability №4, №5) | Substitute Algorithm | `ebaa831` |
+| Згенерований код | Згенерований звіт покриття | Дублювання й проблеми в `docs/testing/coverage/` (Duplications №1, Reliability №8–15, Maintainability №5–7) | не Refactoring: зміна області аналізу (`.sonarcloud.properties`) | `4a57173` |
 
 ### Для кожного рефакторингу: що лишається незмінним, що змінюється, який тест це доводить
 
@@ -142,17 +142,17 @@ Sonar показує дублювання у 46 файлах, усього 3170 
 - *Змінюється в структурі:* 23 дубльовані рядки замінено одним джерелом у `mocks/fixtures.ts`; `core.ts` викликає `configFixture({ saz_sync: true })`.
 - *Доказ:* `mocks/core.test.ts`, `mocks/handlers.test.ts` і всі тести, що використовують `configHandler` (повний прогін: 49 файлів зелені).
 
-**3. Parametrize Test: `it.each` у `login.test.ts`.**
+**3. Parameterize Method: `it.each` у `login.test.ts`.**
 - *Незмінне:* три сценарії відхилення (чужий `state`, `error` від Microsoft, немає `code`), очікувані коди `OAUTH_STATE_MISMATCH` / `OAUTH_ERROR` / `OAUTH_MISSING_CODE` і те, що запиту до API не було.
 - *Змінюється в структурі:* три копії тіла тесту замінено таблицею випадків і одним тілом.
 - *Доказ:* `login.test.ts`: 12 тестів зелені до й після; кожен випадок лишився окремим тестом.
 
-**4. Use Context Manager: `with pytest.raises`.**
+**4. Substitute Algorithm: `with pytest.raises`.**
 - *Незмінне:* перевіряється, що `free_elective_remaining(-1)` кидає `ValueError`.
 - *Змінюється:* виклик у lambda замінено блоком `with`; це ідіоматична форма, яку вимагає правило Sonar.
 - *Доказ:* `tests/test_free_elective_remaining.py` (4 тести) зелені.
 
-**5. Replace Value With Error Object: `multipart.ts`.**
+**5. Replace Error Code with Exception: `multipart.ts`.**
 - *Незмінне:* `readBytes` резолвить `Uint8Array`, на успішному шляху нічого не змінилось.
 - *Змінюється:* у `reader.onerror` відхилення йде з `reader.error ?? new Error(...)`, а не з потенційним `null`.
 - *Доказ:* `multipart.test.ts` і всі тести завантаження файлів (повний прогін зелений). Шлях помилки окремо тестом не покрито: ризик низький, бо змінено лише значення причини відхилення.
