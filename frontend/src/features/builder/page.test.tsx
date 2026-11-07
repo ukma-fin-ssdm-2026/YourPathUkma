@@ -2,6 +2,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http, HttpResponse } from "msw";
 import { RouterProvider, createMemoryRouter } from "react-router";
 import type { DeaneryDocument, PlanItem } from "../../api/types";
 import { useSession } from "../../auth/session";
@@ -108,6 +109,16 @@ describe("BuilderPage: початковий стан", () => {
     expect(screen.getByText("із 57–60").parentElement).toHaveTextContent("0 із 57–60");
     await new Promise((resolve) => setTimeout(resolve, 600));
     expect(validateCalls).toBe(0);
+  });
+
+  it("збій завантаження побажань дає повідомлення, а не вічне «Завантаження…»", async () => {
+    server.use(
+      http.get("*/api/v1/preferences/:year", () =>
+        HttpResponse.json({ code: "INTERNAL_ERROR", message: "x", details: [] }, { status: 500 }),
+      ),
+    );
+    renderPage();
+    expect(await screen.findByText(/Не вдалося завантажити побажання/)).toBeInTheDocument();
   });
 
   it("?plan=1 підвантажує елементи у відповідні колонки", async () => {
