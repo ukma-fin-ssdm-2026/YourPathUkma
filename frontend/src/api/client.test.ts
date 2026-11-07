@@ -169,3 +169,139 @@ describe("request: refresh на 401", () => {
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("request: тайм-аут", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /** Підставний fetch, який ніколи не відповідає, але реагує на abort, як справжній. */
+  const hangingFetch = () =>
+    vi.fn().mockImplementation(
+      (_url: string, init?: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () =>
+            reject(new DOMException("Aborted", "AbortError")),
+          );
+        }),
+    );
+
+  it("«мовчазний» сервер дає ApiError TIMEOUT після 20 с, а не вічне очікування", async () => {
+    vi.useFakeTimers();
+    setFetch(hangingFetch());
+    const pending = request("/me").catch((e: unknown) => e);
+    let settled = false;
+    void pending.then(() => (settled = true));
+    await vi.advanceTimersByTimeAsync(19_999);
+    expect(settled).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    const error = await pending;
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ status: 0, code: "TIMEOUT" });
+  });
+
+  it("timeoutMs переозначає ліміт", async () => {
+    vi.useFakeTimers();
+    setFetch(hangingFetch());
+    const pending = request("/me", { timeoutMs: 500 }).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(500);
+    expect(await pending).toMatchObject({ code: "TIMEOUT" });
+  });
+
+  it("завантаження файлу (FormData) має довший ліміт, ніж звичайний запит", async () => {
+    vi.useFakeTimers();
+    setFetch(hangingFetch());
+    const form = new FormData();
+    form.append("academic_year", "2026");
+    const pending = request("/deanery-documents", { method: "POST", body: form }).catch(
+      (e: unknown) => e,
+    );
+    let settled = false;
+    void pending.then(() => (settled = true));
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(settled).toBe(false);
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(await pending).toMatchObject({ code: "TIMEOUT" });
+  });
+
+  it("скасування викликачем лишається NETWORK_ERROR, а не TIMEOUT", async () => {
+    setFetch(hangingFetch());
+    const controller = new AbortController();
+    const pending = request("/me", { signal: controller.signal }).catch((e: unknown) => e);
+    controller.abort();
+    expect(await pending).toMatchObject({ status: 0, code: "NETWORK_ERROR" });
+  });
+
+  it("швидка відповідь не лишає активного таймера", async () => {
+    vi.useFakeTimers();
+    setFetch(vi.fn().mockResolvedValue(json({ ok: true })));
+    await expect(request("/me")).resolves.toEqual({ ok: true });
+    expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+describe("request: тимчасовий збій refresh не розлогінює", () => {
+  it("мережева помилка refresh: запит падає з NETWORK_ERROR, onAuthLost не викликано", async () => {
+    const fetchMock = vi.fn().mockImplementation(async () => unauthorized());
+    const onAuthLost = vi.fn();
+    setFetch(fetchMock);
+    setAccessToken("old-token");
+    configureAuth({
+      refresh: async () => {
+        throw new ApiError(0, "NETWORK_ERROR", "Не вдалося з'єднатися з сервером");
+      },
+      onAuthLost,
+    });
+    const error = await request("/me").catch((e: unknown) => e);
+    expect(error).toMatchObject({ status: 0, code: "NETWORK_ERROR" });
+    expect(onAuthLost).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("5xx під час refresh прокидається користувачу як є, сесія зберігається", async () => {
+    const onAuthLost = vi.fn();
+    setFetch(vi.fn().mockImplementation(async () => unauthorized()));
+    setAccessToken("old-token");
+    configureAuth({
+      refresh: async () => {
+        throw new ApiError(503, "HTTP_503", "Помилка запиту (503)");
+      },
+      onAuthLost,
+    });
+    await expect(request("/me")).rejects.toMatchObject({ status: 503 });
+    expect(onAuthLost).not.toHaveBeenCalled();
+  });
+
+  it("не-ApiError у refresh перетворюється на NETWORK_ERROR", async () => {
+    const onAuthLost = vi.fn();
+    setFetch(vi.fn().mockImplementation(async () => unauthorized()));
+    setAccessToken("old-token");
+    configureAuth({
+      refresh: async () => {
+        throw new Error("щось пішло не так");
+      },
+      onAuthLost,
+    });
+    await expect(request("/me")).rejects.toMatchObject({ code: "NETWORK_ERROR" });
+    expect(onAuthLost).not.toHaveBeenCalled();
+  });
+
+  it("після тимчасового збою наступний запит знову пробує refresh", async () => {
+    const refresh = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiError(0, "NETWORK_ERROR", "x"))
+      .mockResolvedValueOnce("new-token");
+    setFetch(
+      vi
+        .fn()
+        .mockImplementationOnce(async () => unauthorized())
+        .mockImplementationOnce(async () => unauthorized())
+        .mockImplementationOnce(async () => json({ ok: true })),
+    );
+    setAccessToken("old-token");
+    configureAuth({ refresh, onAuthLost: () => {} });
+    await expect(request("/me")).rejects.toMatchObject({ code: "NETWORK_ERROR" });
+    await expect(request("/me")).resolves.toEqual({ ok: true });
+    expect(refresh).toHaveBeenCalledTimes(2);
+  });
+});
