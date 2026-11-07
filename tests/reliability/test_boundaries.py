@@ -1,8 +1,8 @@
 """
 Тести надійності: граничні випадки вводу (Лаб 9, знахідки №7, №8, №11).
 
-Завантаження документа деканату (порожній файл, рівно ліміт, ліміт + 1 байт, регістр розширення, межі
-`academic_year`), кількість сторінок каталогу САЗ, межі терміну дії JWT.
+Завантаження документа деканату (порожній файл, рівно ліміт, ліміт + 1 байт, регістр розширення, магічні байти,
+межі `academic_year`), кількість сторінок і загальний час обходу каталогу САЗ, межі терміну дії JWT.
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: запуск `pytest tests/reliability`.
 """
@@ -21,6 +21,8 @@ from src.parser.sync import MAX_PAGES, SyncFailure, _scan
 
 client = TestClient(app)
 AUTH = {"Authorization": "Bearer test"}
+PDF = b"%PDF-1.4 "
+DOCX = b"PK\x03\x04 docx"
 
 
 def _upload(content: bytes, filename="plan.pdf", content_type="application/pdf", year=2026):
@@ -39,18 +41,43 @@ def test_empty_file_is_rejected():
 
 
 def test_file_of_exactly_max_size_is_accepted():
-    assert _upload(b"0" * MAX_UPLOAD_BYTES).status_code == 202
+    assert _upload(PDF + b"0" * (MAX_UPLOAD_BYTES - len(PDF))).status_code == 202
 
 
 def test_file_one_byte_over_limit_is_rejected():
-    response = _upload(b"0" * (MAX_UPLOAD_BYTES + 1))
+    response = _upload(PDF + b"0" * (MAX_UPLOAD_BYTES + 1 - len(PDF)))
     assert response.status_code == 413
     assert response.json()["code"] == "FILE_TOO_LARGE"
 
 
-@pytest.mark.parametrize("filename", ["SCAN.PDF", "Plan.Docx"])
-def test_uppercase_extension_is_recognised_when_mime_is_generic(filename):
-    assert _upload(b"data", filename=filename, content_type="application/octet-stream").status_code == 202
+@pytest.mark.parametrize("filename,content", [("SCAN.PDF", PDF), ("Plan.Docx", DOCX)])
+def test_uppercase_extension_is_recognised_when_mime_is_generic(filename, content):
+    assert _upload(content, filename=filename, content_type="application/octet-stream").status_code == 202
+
+
+@pytest.mark.parametrize(
+    "filename,content_type,content",
+    [
+        ("fake.pdf", "application/pdf", b"MZ\x90\x00 not a pdf"),
+        ("fake.docx", "application/octet-stream", b"%PDF-1.4 pdf disguised as docx"),
+        ("fake.pdf", "application/pdf", b"PK\x03\x04 zip disguised as pdf"),
+    ],
+)
+def test_content_not_matching_declared_type_is_rejected(filename, content_type, content):
+    response = _upload(content, filename=filename, content_type=content_type)
+    assert response.status_code == 415
+    assert response.json()["code"] == "UNSUPPORTED_FILE_TYPE"
+
+
+@pytest.mark.parametrize(
+    "content_type,content",
+    [
+        ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", DOCX),
+        ("application/msword", b"\xd0\xcf\x11\xe0 legacy doc OLE"),
+    ],
+)
+def test_word_documents_with_valid_signature_are_accepted(content_type, content):
+    assert _upload(content, filename="plan.docx", content_type=content_type).status_code == 202
 
 
 def test_unknown_extension_is_rejected_with_415():
@@ -92,6 +119,23 @@ def test_scan_refuses_to_walk_more_pages_than_the_limit():
     with pytest.raises(SyncFailure):
         _scan(fetcher, _FakeParser(MAX_PAGES + 1))
     assert fetcher.pages == [1]  # далі першої сторінки не йдемо
+
+
+def test_scan_stops_when_total_time_exceeds_deadline():
+    fetcher = _FakeFetcher()
+    ticks = iter(range(0, 10_000, 10))  # кожен виклик годинника «минає» 10 с
+
+    with pytest.raises(SyncFailure) as caught:
+        _scan(fetcher, _FakeParser(MAX_PAGES), deadline_s=25, clock=lambda: next(ticks))
+
+    assert "ліміт часу" in str(caught.value)
+    assert len(fetcher.pages) < MAX_PAGES  # обхід обірвано, а не доведено до кінця
+
+
+def test_scan_within_deadline_completes():
+    fetcher = _FakeFetcher()
+    pages, _total, _html = _scan(fetcher, _FakeParser(5), deadline_s=25, clock=lambda: 0.0)
+    assert len(pages) == 5
 
 
 def _token(**overrides):

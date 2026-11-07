@@ -11,6 +11,7 @@
 
 import hashlib
 import logging
+import time
 from contextlib import AbstractContextManager
 from datetime import timedelta
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -34,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 ERROR_MAX = 2000
 MAX_PAGES = 200  # верхня межа обходу каталогу (захист від хибного last_page)
+SCAN_DEADLINE_S = 30 * 60  # PERF-002: повне оновлення до 30 хв (менше за STALE_AFTER)
 STALE_AFTER = timedelta(minutes=35)  # PERF-002: повне оновлення до 30 хв
 FetcherFactory = Callable[[], AbstractContextManager[PageFetcher]]
 
@@ -93,8 +95,17 @@ def _fail(db: Session, job_id: int, message: str, snapshot: Optional[str] = None
     db.commit()
 
 
-def _scan(fetcher: PageFetcher, parser: CatalogParser) -> Tuple[List[CatalogPage], int, str]:
-    """Усі сторінки каталогу. Повертає сторінки, `total` із першої й HTML першої сторінки."""
+def _scan(
+    fetcher: PageFetcher,
+    parser: CatalogParser,
+    deadline_s: float = SCAN_DEADLINE_S,
+    clock: Callable[[], float] = time.monotonic,
+) -> Tuple[List[CatalogPage], int, str]:
+    """
+    Усі сторінки каталогу. Повертає сторінки, `total` із першої й HTML першої сторінки.
+    Обхід обмежено кількістю сторінок (`MAX_PAGES`) і загальним часом (`deadline_s`).
+    """
+    started = clock()
     first_html = fetcher.fetch(1)
     first = parser.parse(first_html)
     if first.total is None:
@@ -108,6 +119,12 @@ def _scan(fetcher: PageFetcher, parser: CatalogParser) -> Tuple[List[CatalogPage
         )
     pages = [first]
     for number in range(2, last_page + 1):
+        if clock() - started > deadline_s:
+            logger.error("Обхід каталогу перевищив %s с на сторінці %s із %s", deadline_s, number, last_page)
+            raise SyncFailure(
+                f"Перевищено ліміт часу обходу каталогу ({deadline_s:.0f} с): оброблено {number - 1} із {last_page}",
+                first_html,
+            )
         pages.append(parser.parse(fetcher.fetch(number)))
     return pages, first.total, first_html
 

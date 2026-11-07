@@ -133,6 +133,8 @@ class PlaywrightFetcher:
         self._playwright = sync_playwright().start()
         self._browser = self._playwright.chromium.launch(headless=True)
         self._context = self._browser.new_context(storage_state=str(self._settings.state_path))
+        # Глобальний тайм-аут контексту (на випадок викликів без явного `timeout`)
+        self._context.set_default_timeout(self._settings.timeout_s * 1000)
 
     def _stop(self) -> None:
         """Закриває те, що встигло запуститись; помилки закриття ігноруємо."""
