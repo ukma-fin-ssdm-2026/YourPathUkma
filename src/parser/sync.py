@@ -10,6 +10,7 @@
 """
 
 import hashlib
+import logging
 from contextlib import AbstractContextManager
 from datetime import timedelta
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -29,7 +30,10 @@ from .mapper import MappingError, course_to_payload
 from .models import CatalogPage
 from .parsers.catalog import CatalogParser
 
+logger = logging.getLogger(__name__)
+
 ERROR_MAX = 2000
+MAX_PAGES = 200  # верхня межа обходу каталогу (захист від хибного last_page)
 STALE_AFTER = timedelta(minutes=35)  # PERF-002: повне оновлення до 30 хв
 FetcherFactory = Callable[[], AbstractContextManager[PageFetcher]]
 
@@ -95,8 +99,15 @@ def _scan(fetcher: PageFetcher, parser: CatalogParser) -> Tuple[List[CatalogPage
     first = parser.parse(first_html)
     if first.total is None:
         raise SyncFailure("Не знайдено загальної кількості записів: імовірно, змінилась розмітка САЗ", first_html)
+    last_page = first.last_page or 1
+    if last_page > MAX_PAGES:
+        # Швидка відмова: обрізаний обхід дав би хибні REMOVE, а нескінченний цикл заблокував би запуски
+        logger.error("САЗ повернув %s сторінок (ліміт %s): обхід скасовано", last_page, MAX_PAGES)
+        raise SyncFailure(
+            f"Забагато сторінок каталогу ({last_page} > {MAX_PAGES}): імовірно, змінилась розмітка САЗ", first_html
+        )
     pages = [first]
-    for number in range(2, (first.last_page or 1) + 1):
+    for number in range(2, last_page + 1):
         pages.append(parser.parse(fetcher.fetch(number)))
     return pages, first.total, first_html
 

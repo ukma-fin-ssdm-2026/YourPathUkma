@@ -223,11 +223,14 @@ async def upload_document(
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
-    content = await file.read()
+    # Читаємо не більше ліміту + 1 байт: великий файл не завантажується в пам'ять повністю
+    content = await file.read(MAX_UPLOAD_BYTES + 1)
     size = len(content)
 
     if size > MAX_UPLOAD_BYTES:
         raise ApiError(413, "FILE_TOO_LARGE", "Файл більший за 10 МБ")
+    if size == 0:
+        raise ApiError(422, "EMPTY_FILE", "Файл порожній")
 
     mime_map = {
         "application/pdf": db_enums.DocumentMimeType.PDF,
@@ -237,9 +240,10 @@ async def upload_document(
 
     doc_mime = mime_map.get(file.content_type)
     if not doc_mime:
-        if file.filename and file.filename.endswith(".pdf"):
+        filename = (file.filename or "").lower()
+        if filename.endswith(".pdf"):
             doc_mime = db_enums.DocumentMimeType.PDF
-        elif file.filename and file.filename.endswith(".docx"):
+        elif filename.endswith(".docx"):
             doc_mime = db_enums.DocumentMimeType.DOCX
         else:
             raise ApiError(415, "UNSUPPORTED_FILE_TYPE", "Дозволені лише файли PDF та DOCX")
