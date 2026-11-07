@@ -4,7 +4,7 @@
 Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: запуск pytest локально
 і в CI; кожне правило має позитивний і негативний тест.
 Додатково (Claude): кейс (25.0, 1.0) для check_free_elective_total, що вбиває мутанта mutmut
-(`used_in_other_years <= 0` → `<= 1`). Перевірка: mutmut run, pytest із застосованим мутантом падає.
+(`used_in_other_plans <= 0` → `<= 1`). Перевірка: mutmut run, pytest із застосованим мутантом падає.
 """
 
 from types import SimpleNamespace
@@ -150,7 +150,7 @@ def test_catalog_flags_collected_from_items_and_courses():
 
 
 @pytest.mark.parametrize(
-    "current_credits, used_in_other_years, expected_codes",
+    "current_credits, used_in_other_plans, expected_codes",
     [
         (10.0, 18.0, ["FREE_ELECTIVE_TOTAL_EXCEEDED"]),  # 28 > 25 з урахуванням минулих років
         (10.0, 15.0, []),  # рівно 25: межа дозволена
@@ -158,11 +158,11 @@ def test_catalog_flags_collected_from_items_and_courses():
         (25.0, 1.0, ["FREE_ELECTIVE_TOTAL_EXCEEDED"]),  # мінімальна історія теж рахується (вбиває мутанта <= 1)
     ],
 )
-def test_check_free_elective_total_with_previous_years(current_credits, used_in_other_years, expected_codes):
+def test_check_free_elective_total_with_previous_years(current_credits, used_in_other_plans, expected_codes):
     # Arrange: кредити поточного плану та кредити вільного вибору за інші роки (параметри)
 
     # Act
-    violations = plan_rules.check_free_elective_total(current_credits, used_in_other_years)
+    violations = plan_rules.check_free_elective_total(current_credits, used_in_other_plans)
 
     # Assert
     assert [v.code for v in violations] == expected_codes
