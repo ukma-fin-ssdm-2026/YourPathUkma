@@ -228,7 +228,7 @@ async def upload_document(
     size = len(content)
 
     if size > MAX_UPLOAD_BYTES:
-        raise ApiError(413, "FILE_TOO_LARGE", "Файл більший за 10 МБ")
+        raise ApiError(413, "FILE_TOO_LARGE", f"Файл більший за {MAX_UPLOAD_BYTES // (1024 * 1024)} МБ")
     if size == 0:
         raise ApiError(422, "EMPTY_FILE", "Файл порожній")
 
