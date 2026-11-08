@@ -146,20 +146,20 @@ def test_catalog_flags_collected_from_items_and_courses():
     assert [v.field for v in violations] == ["items.0.is_free_elective"]
 
 
-# --- Загальний ліміт вільного вибору з урахуванням минулих років ---
+# --- Загальний ліміт вільного вибору з урахуванням інших поданих планів (будь-якого року) ---
 
 
 @pytest.mark.parametrize(
     "current_credits, used_in_other_plans, expected_codes",
     [
-        (10.0, 18.0, ["FREE_ELECTIVE_TOTAL_EXCEEDED"]),  # 28 > 25 з урахуванням минулих років
+        (10.0, 18.0, ["FREE_ELECTIVE_TOTAL_EXCEEDED"]),  # 28 > 25 з урахуванням інших поданих планів
         (10.0, 15.0, []),  # рівно 25: межа дозволена
-        (30.0, 0.0, []),  # без історії ліміт за всі роки не застосовується
-        (25.0, 1.0, ["FREE_ELECTIVE_TOTAL_EXCEEDED"]),  # мінімальна історія теж рахується (вбиває мутанта <= 1)
+        (30.0, 0.0, []),  # інших планів немає: ліміт за всі роки тут не застосовується
+        (25.0, 1.0, ["FREE_ELECTIVE_TOTAL_EXCEEDED"]),  # навіть 1 кредит в іншому плані рахується (вбиває мутанта <= 1)
     ],
 )
-def test_check_free_elective_total_with_previous_years(current_credits, used_in_other_plans, expected_codes):
-    # Arrange: кредити поточного плану та кредити вільного вибору за інші роки (параметри)
+def test_check_free_elective_total_with_other_plans(current_credits, used_in_other_plans, expected_codes):
+    # Arrange: кредити поточного плану та кредити вільного вибору в інших поданих планах (параметри)
 
     # Act
     violations = plan_rules.check_free_elective_total(current_credits, used_in_other_plans)
