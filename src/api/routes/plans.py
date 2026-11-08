@@ -29,6 +29,7 @@ from sqlalchemy.orm import Session
 from ...db import enums as db_enums
 from ...db.models import Course, IndividualPlan
 from ...db.models import PlanItem as PlanItemRow
+from ...db.models.users import User
 from ...db.session import get_db
 from ...services import plan_rules
 from ..common import ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
@@ -232,6 +233,18 @@ def _find_plan(db: Session, plan_id: int, student_id: int) -> IndividualPlan:
     if plan.student_id != student_id:
         raise ApiError(403, "PLAN_FORBIDDEN", "Цей план належить іншому студенту")
     return plan
+
+
+def _lock_student(db: Session, student_id: int) -> None:
+    """
+    Блокує рядок студента до кінця транзакції: подання планів одного студента виконуються по черзі.
+
+    Ліміт вільного вибору рахується за всіма його планами. Без блокування два паралельні подання різних
+    планів обидва бачили б інший план як чернетку, обидва проходили б перевірку й разом перевищили б ліміт.
+    `FOR NO KEY UPDATE` не конфліктує з вставками, що посилаються на користувача зовнішнім ключем.
+    На SQLite блокування ігнорується (там один записувач).
+    """
+    db.execute(select(User.id).where(User.id == student_id).with_for_update(key_share=True))
 
 
 def _check_catalog(db: Session, items: List[PlanItem]) -> Dict[int, Course]:
@@ -511,6 +524,7 @@ def submit_plan(
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
+    _lock_student(db, student_id)  # перед перевіркою ліміту: див. _lock_student
     plan = _find_plan(db, plan_id, student_id)
     if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_SUBMITTABLE", "Подати можна лише план у статусі draft")
