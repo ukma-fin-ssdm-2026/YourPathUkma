@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.1.4] - 2026-11-08
+
+### Bug Fixes
+
+- Count all submitted plans in the free elective credit cap
+  ([`e028767`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e0287677d669595839e2530d03e640ce662dcb68))
+
+- Serialize plan submissions per student to protect the credit cap
+  ([`8bacf2e`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/8bacf2ee8e1eda993f3bb1b48a015ba44d1316cf))
+
+
 ## [0.1.3] - 2026-11-08
 
 ### Bug Fixes
