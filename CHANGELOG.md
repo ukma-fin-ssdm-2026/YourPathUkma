@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.1.2] - 2026-11-08
+
+### Bug Fixes
+
+- Add magic-byte check and scan deadline for full coverage
+  ([`c8bf8cd`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/c8bf8cd4c1a95e2feeb567bbbb6c0b0609bd08ce))
+
+- Build upload size message from MAX_UPLOAD_BYTES
+  ([`71c9060`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/71c906022921b2d8570f007d7509e01fc6ad4d1e))
+
+- Harden parser, token and upload reliability
+  ([`0e3ab13`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/0e3ab13c939b6f46d6f45dfaaae34327225f516d))
+
+
 ## [0.1.1] - 2026-11-05
 
 ### Refactoring
