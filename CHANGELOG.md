@@ -4,6 +4,29 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.1.3] - 2026-11-08
+
+### Bug Fixes
+
+- Add grace window to refresh token rotation
+  ([`693a155`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/693a1558dba374871015c44a4e82ab06966ff9fc))
+
+- Add request timeout and keep session on transient refresh errors
+  ([`63a73a7`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/63a73a77d38c77051cfb5f15c678cba053edb6d2))
+
+- Harden demo seed default and database connection settings
+  ([`fbcf652`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/fbcf6522c9e27d5e823ae288e6dcdea7c7efd58d))
+
+- Render the app even if API mocks fail to start
+  ([`29c7290`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/29c7290ae11041aa0c414c9717b92b42989d3f91))
+
+- Require academic_year in plan generation request
+  ([`8e11b8b`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/8e11b8beb940b154f20df9bd521e8ff047c05c2c))
+
+- Show an error instead of endless loading when preferences fail
+  ([`04aa204`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/04aa2042ba7f2dafd6efa82f477d46e79674e7dc))
+
+
 ## [0.1.2] - 2026-11-08
 
 ### Bug Fixes
