@@ -5025,7 +5025,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PreferencesRequest"
+                "$ref": "#/components/schemas/PlanGenerationRequest"
               }
             }
           },
@@ -7990,6 +7990,79 @@
             "total": 2
           }
         ]
+      },
+      "PlanGenerationRequest": {
+        "properties": {
+          "academic_year": {
+            "type": "integer",
+            "maximum": 2030.0,
+            "minimum": 2024.0,
+            "title": "Academic Year",
+            "description": "Навчальний рік",
+            "examples": [
+              2026
+            ]
+          },
+          "load_levels": {
+            "$ref": "#/components/schemas/LoadLevels",
+            "description": "Для 4 курсу ігнорується: рівні розраховує сервер (FR-003)"
+          },
+          "direction_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Direction Ids",
+            "description": "0–3 напрямки"
+          },
+          "include_free_electives": {
+            "type": "boolean",
+            "title": "Include Free Electives",
+            "description": "false — лише профорієнтовні",
+            "default": true
+          },
+          "preferred_instructor_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Preferred Instructor Ids"
+          },
+          "unwanted_instructor_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Unwanted Instructor Ids"
+          },
+          "wants_certificate": {
+            "type": "boolean",
+            "title": "Wants Certificate",
+            "default": false
+          },
+          "certificate_program_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Certificate Program Id",
+            "description": "Етап 2: поки лише зберігається"
+          }
+        },
+        "type": "object",
+        "required": [
+          "academic_year"
+        ],
+        "title": "PlanGenerationRequest",
+        "description": "Тіло POST /plan-generations: як побажання, але `academic_year` обов'язковий (contract.md §3.7)."
       },
       "PlanGenerationResponse": {
         "properties": {
