@@ -1,0 +1,24 @@
+# ДЕМОНСТРАЦІЯ: НЕ ЗЛИВАТИ В main. Цей файл навмисно містить проблему, яку позначає SonarCloud
+# (правило S8544: `pip install -r requirements*.txt` без lock-файлу з хешами), щоб показати, що обов'язковий
+# статус «SonarCloud Code Analysis» зупиняє PR. Воркфлоу запускається лише вручну і в CI ніколи не виконується.
+#
+# Використання ШІ: файл створено за допомогою Claude (Claude Code) лише для демонстрації блокування PR
+# Quality Gate. Перевірка: на PR #212 такий самий рядок уже валив Quality Gate (C Security Rating on New Code).
+name: Quality Gate demo (do not merge)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: "pip install --only-binary :all: -r requirements.txt -r requirements-dev.txt"
