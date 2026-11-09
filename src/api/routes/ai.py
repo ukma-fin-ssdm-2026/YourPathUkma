@@ -5,17 +5,24 @@ POST /plan-generations, GET /plan-generations/{generation_id}.
 
 Генерація асинхронна (R10): запит повертає 202, фронтенд опитує статус. Ліміт: 1 активна генерація
 на студента, 20 на добу (R10).
+
+Використання ШІ: файл доповнено за допомогою Antigravity (Claude Sonnet 4.6, Google DeepMind):
+додано запуск BackgroundTask після POST /plan-generations (adapter.run via worker.run_generation_task),
+імпорт BackgroundTasks, збереження preferences перед генерацією.
+Перевірено: pytest tests/test_ai.py tests/test_ai_worker.py, ruff check src/api/routes/ai.py.
 """
 
+import os
 import time
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Path, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Response, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from ...ai.worker import run_generation_task
 from ...db import enums as db_enums
 from ...db.models.ai import PlanGeneration
 from ...db.models.users import StudentProfile
@@ -29,6 +36,11 @@ router = APIRouter(prefix="/api/v1", tags=["AI generation"])
 _GENERATION_NOT_FOUND = ("GENERATION_NOT_FOUND", "Генерації з ID 77 не знайдено")
 _GENERATION_IN_PROGRESS = ("GENERATION_IN_PROGRESS", "Вже виконується генерація плану")
 _RATE_LIMITED = ("RATE_LIMITED", "Досягнуто ліміт генерацій (20 за добу)")
+
+
+def autorun_enabled() -> bool:
+    """Чи запускати AI-генерацію у фоні автоматично (AI_AUTORUN=0 для тестів API)."""
+    return os.getenv("AI_AUTORUN", "1") != "0"
 
 
 class GenerationNotice(BaseModel):
@@ -70,6 +82,7 @@ class PlanGenerationResponse(BaseModel):
 def start_generation(
     payload: PreferencesRequest,
     response: Response,
+    background_tasks: BackgroundTasks,
     profile: StudentProfile = Depends(get_onboarded_student),
     db: Session = Depends(get_db),
 ):
@@ -103,6 +116,10 @@ def start_generation(
     db.add(generation)
     db.commit()
     db.refresh(generation)
+
+    # Запускаємо AI-воркер як BackgroundTask (генерація асинхронна, R10)
+    if autorun_enabled():
+        background_tasks.add_task(run_generation_task, generation.id)
 
     response.headers["Location"] = f"/api/v1/plan-generations/{generation.id}"
     return PlanGenerationResponse(

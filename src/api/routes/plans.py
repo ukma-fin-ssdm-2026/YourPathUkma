@@ -15,6 +15,9 @@ enum-и, бізнес-валідація з AGENTS.md (вільний вибір
 а не лише перше з model_validator); submit перевіряє план через enforce_submit_rules (каталог, деканат, ліміти);
 title елемента до 300 символів (як у БД); кредити округлюються до 0.1. Перевірка: ручний огляд, pytest і
 лінтери запустити перед комітом.
+
+Доповнено за допомогою Antigravity (Gemini 2.5 Flash, Google DeepMind): додано PlanAlternativeResponse,
+поля ai_explanation та alternatives у відповідь плану (FR-009, contract.md §3.4). Перевірка: pytest.
 """
 
 from datetime import datetime
@@ -62,6 +65,16 @@ class LoadLevels(BaseModel):
     summer: LoadLevel = Field(LoadLevel.MEDIUM, description="Навантаження на літній триместр")
 
 
+class PlanAlternativeResponse(BaseModel):
+    course_id: int = Field(..., gt=0, description="ID дисципліни з каталогу")
+    title: str = Field(..., description="Назва дисципліни")
+    trimester: int = Field(..., ge=1, le=3, description="Номер триместру (1–3)")
+    credits: float = Field(..., gt=0, le=30, description="Кількість кредитів")
+    is_free_elective: bool = Field(False, description="Чи є дисципліна вільним вибором")
+    rank: int = Field(..., ge=1, le=3, description="Порядок переваги від ШІ (1–3, FR-009)")
+    ai_explanation: Optional[str] = Field(None, description="Пояснення ШІ")
+
+
 class PlanItem(BaseModel):
     course_id: int = Field(..., gt=0, description="Унікальний ID дисципліни з каталогу САЗ", examples=[101])
     title: str = Field(
@@ -80,6 +93,10 @@ class PlanItem(BaseModel):
     )
     credits: float = Field(..., gt=0, le=30, description="Кількість кредитів ECTS", examples=[5.0])
     is_free_elective: bool = Field(False, description="Чи є дисципліна вільним вибором (ліміт 25 кредитів)")
+    ai_explanation: Optional[str] = Field(None, description="Пояснення ШІ, чому дисципліна корисна")
+    alternatives: List[PlanAlternativeResponse] = Field(
+        default_factory=list, description="Альтернативні варіанти дисципліни (FR-009)"
+    )
 
 
 class RuleIssue(BaseModel):
@@ -198,6 +215,19 @@ def _plan_items(plan: IndividualPlan) -> List[PlanItem]:
             trimester=item.trimester.number,
             credits=item.course.credits,
             is_free_elective=item.category == db_enums.PlanItemCategory.FREE_CHOICE,
+            ai_explanation=item.ai_explanation,
+            alternatives=[
+                PlanAlternativeResponse(
+                    course_id=alt.course_id,
+                    title=alt.course.title,
+                    trimester=alt.trimester.number,
+                    credits=alt.course.credits,
+                    is_free_elective=alt.course.kind == db_enums.CourseKind.ELECTIVE and not alt.course.directions,
+                    rank=alt.rank,
+                    ai_explanation=alt.explanation,
+                )
+                for alt in getattr(item, "alternatives", [])
+            ],
         )
         for item in plan.items
     ]
