@@ -134,7 +134,7 @@ pytest -q
 
 | Змінна | Коли потрібна |
 |---|---|
-| `DATABASE_URL` | не потрібна: без неї дані зберігаються в локальному файлі `yourpath.sqlite`; для PostgreSQL: `docker compose up -d db` і значення з [`.env.example`](.env.example) |
+| `DATABASE_URL` | не потрібна поза production: без неї дані зберігаються в локальному файлі `yourpath.sqlite` (при `APP_ENV=production` змінна обов'язкова); для PostgreSQL: `docker compose up -d db` і значення з [`.env.example`](.env.example) |
 | `MS_TENANT_ID`, `MS_CLIENT_ID` (і `MS_CLIENT_SECRET` для типу застосунку Web) | для входу через Microsoft і обов'язково при `APP_ENV=production` |
 | `ADMIN_EMAILS` | пошти, які при першому вході отримують роль адміністратора |
 | `COOKIE_SECURE=0` | лише для `http://localhost` (Safari); у production заборонено |

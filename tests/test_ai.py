@@ -154,6 +154,13 @@ def test_start_generation_invalid_body_returns_422(client):
     assert response.status_code == 422
 
 
+def test_start_generation_without_academic_year_returns_422_not_500(client):
+    body = {key: value for key, value in PAYLOAD.items() if key != "academic_year"}
+    response = client.post(URL, json=body)
+    assert response.status_code == 422
+    assert response.json()["code"] == "VALIDATION_ERROR"
+
+
 def test_start_generation_requires_auth():
     app.dependency_overrides.clear()
     assert TestClient(app).post(URL, json=PAYLOAD).status_code == 401

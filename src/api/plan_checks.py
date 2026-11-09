@@ -30,10 +30,13 @@ _COUNTED_STATUSES = (
 )
 
 
-def free_elective_used_in_other_years(
-    db: Session, student_id: int, academic_year: int, exclude_plan_id: Optional[int] = None
-) -> float:
-    """Кредити вільного вибору в планах студента за інші навчальні роки (без чернеток)."""
+def free_elective_used_in_other_plans(db: Session, student_id: int, exclude_plan_id: Optional[int] = None) -> float:
+    """
+    Кредити вільного вибору в усіх поданих планах студента (без чернеток), крім `exclude_plan_id`.
+
+    Ліміт 25 кредитів діє за ВСІ роки разом, тому плани того самого навчального року теж враховуються:
+    інакше два подані плани на один рік могли б мати по 25 кредитів кожен.
+    """
     query = (
         select(func.coalesce(func.sum(Course.credits), 0.0))
         .select_from(PlanItemRow)
@@ -41,7 +44,6 @@ def free_elective_used_in_other_years(
         .join(Course, Course.id == PlanItemRow.course_id)
         .where(
             IndividualPlan.student_id == student_id,
-            IndividualPlan.academic_year != academic_year,
             IndividualPlan.status.in_(_COUNTED_STATUSES),
             PlanItemRow.category == db_enums.PlanItemCategory.FREE_CHOICE,
         )
@@ -94,7 +96,7 @@ def _collect_violations(
         sum(getattr(item, "credits", 0.0) or 0.0 for item in items if getattr(item, "is_free_elective", False)), 1
     )
     violations += plan_rules.check_free_elective_in_plan(current_free)
-    used = free_elective_used_in_other_years(db, student_id, academic_year, exclude_plan_id)
+    used = free_elective_used_in_other_plans(db, student_id, exclude_plan_id)
     violations += plan_rules.check_free_elective_total(current_free, used)
 
     normative = normative_course_ids(db, student_id, academic_year)

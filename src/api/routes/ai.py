@@ -80,7 +80,7 @@ class PlanGenerationResponse(BaseModel):
     },
 )
 def start_generation(
-    payload: PreferencesRequest,
+    payload: PlanGenerationRequest,
     response: Response,
     background_tasks: BackgroundTasks,
     profile: StudentProfile = Depends(get_onboarded_student),

@@ -20,6 +20,7 @@ class SazSettings:
     level: int  # `filter[level][]`: 1 = Бакалавр, 2 = Магістр
     delay_s: float  # пауза між запитами, щоб САЗ не заблокував IP
     max_retries: int
+    timeout_s: float = 30.0  # тайм-аут одного HTTP-запиту до САЗ (Лаб 9, знахідка №4)
 
 
 def load_settings() -> SazSettings:
@@ -30,6 +31,7 @@ def load_settings() -> SazSettings:
         level=int(os.getenv("SAZ_LEVEL", "1")),
         delay_s=float(os.getenv("SAZ_DELAY_S", "1.0")),
         max_retries=int(os.getenv("SAZ_MAX_RETRIES", "3")),
+        timeout_s=float(os.getenv("SAZ_TIMEOUT_S", "30")),
     )
 
 

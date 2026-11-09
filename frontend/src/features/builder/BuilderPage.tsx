@@ -194,6 +194,9 @@ export function BuilderPage() {
       </Notice>
     );
   }
+  if (!plan && prefs.isError) {
+    return <Notice>Не вдалося завантажити побажання. Оновіть сторінку.</Notice>;
+  }
   if (!plan) {
     return (
       <p role="status" className="text-ink-2">

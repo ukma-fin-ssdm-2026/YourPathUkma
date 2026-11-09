@@ -1,3 +1,11 @@
+"""
+Видача й перевірка JWT доступу.
+
+Використання ШІ: у `decode_access_token` додано логування відхилених токенів (Лаб 9, знахідка №8) за допомогою
+Claude (Claude Code). Перевірка: tests/reliability/test_error_handling.py.
+"""
+
+import logging
 import os
 import time
 import uuid
@@ -6,6 +14,8 @@ from functools import lru_cache
 from typing import Optional
 
 import jwt
+
+logger = logging.getLogger(__name__)
 
 ACCESS_TOKEN_TTL_SECONDS = 900
 REFRESH_TOKEN_TTL_SECONDS = 7 * 24 * 3600
@@ -83,5 +93,10 @@ def decode_access_token(token: str) -> Optional[int]:
             options={"require": ["exp", "iat", "sub"]},
         )
         return int(claims["sub"])
-    except (jwt.PyJWTError, ValueError):
+    except jwt.ExpiredSignatureError:
+        logger.info("Токен доступу прострочено")  # штатна ситуація: клієнт оновить токен
+        return None
+    except (jwt.PyJWTError, ValueError) as exc:
+        # Сам токен у лог не потрапляє, лише тип помилки
+        logger.warning("Токен доступу відхилено: %s", type(exc).__name__)
         return None

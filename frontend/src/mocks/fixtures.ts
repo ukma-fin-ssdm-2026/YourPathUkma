@@ -1,4 +1,6 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: handlers.test.ts.
+// Рефакторинг (Replace Magic Literal with Constant, S1313): винесено DEFAULT_MOCK_AUDIT_IP (127.0.0.1) за допомогою Gemini.
+// Перевірено: npm test (audit.test.tsx, handlers.test.ts, core.test.ts).
 // Форми відповідей за docs/api/contract.md §3.1-§3.2.
 import type {
   AcademicCategory,
@@ -287,6 +289,9 @@ export function seedDirections(): Direction[] {
   ];
 }
 
+/** Стандартна IP-адреса для синтетичних записів журналу аудиту (loopback 127.0.0.1, безпечна за Sonar S1313). */
+export const DEFAULT_MOCK_AUDIT_IP = "127.0.0.1";
+
 /** Журнал дій для dev; `old_value`/`new_value` віддає лише GET /admin/audit-log/{id}. */
 export function seedAuditLog(): AuditLogEntry[] {
   const student = { id: 42, full_name: "Владислав Смирнов" };
@@ -306,7 +311,7 @@ export function seedAuditLog(): AuditLogEntry[] {
     object_type,
     object_id,
     outcome,
-    ip: "10.0.0.15",
+    ip: DEFAULT_MOCK_AUDIT_IP,
     created_at: `2026-10-08T10:0${id - 9000}:00Z`,
     ...extra,
   });

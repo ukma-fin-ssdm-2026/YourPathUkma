@@ -92,25 +92,25 @@ def check_free_elective_flags(flags: Iterable[CatalogFlag]) -> List[Violation]:
     return violations
 
 
-def check_free_elective_total(current_credits: float, used_in_other_years: float) -> List[Violation]:
+def check_free_elective_total(current_credits: float, used_in_other_plans: float) -> List[Violation]:
     """
     Ліміт 25 кредитів вільного вибору діє сумарно за всі 4 роки.
     Перевірку в межах одного плану робить check_free_elective_in_plan, тому тут лише випадок,
-    коли в інші роки вже є вибір.
+    коли в інших поданих планах студента (будь-якого року) вже є вільний вибір.
     """
-    if used_in_other_years <= 0:
+    if used_in_other_plans <= 0:
         return []
-    total = round(current_credits + used_in_other_years, 1)
+    total = round(current_credits + used_in_other_plans, 1)
     if total <= FREE_ELECTIVE_LIMIT:
         return []
-    remaining = max(0.0, round(FREE_ELECTIVE_LIMIT - used_in_other_years, 1))
+    remaining = max(0.0, round(FREE_ELECTIVE_LIMIT - used_in_other_plans, 1))
     return [
         Violation(
             code="FREE_ELECTIVE_TOTAL_EXCEEDED",
             message=(
                 f"Перевищено ліміт вільного вибору за всі роки: {total} > {FREE_ELECTIVE_LIMIT:g} кредитів "
-                f"(в інші роки вже використано {used_in_other_years:g}, у цьому плані можна обрати не більше "
-                f"{remaining:g})"
+                f"(в інших поданих планах вже використано {used_in_other_plans:g}, "
+                f"у цьому плані можна обрати не більше {remaining:g})"
             ),
             field="items",
         )

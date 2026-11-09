@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Рефакторинг (Replace Magic Literal with Constant, S1313): імпортовано DEFAULT_MOCK_AUDIT_IP за допомогою Gemini.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -6,7 +7,7 @@ import { http, HttpResponse } from "msw";
 import { setAccessToken } from "../../../api/token";
 import { db } from "../../../mocks/db";
 import { server } from "../../../mocks/server";
-import { auditEntryFixture } from "../../../test/handlers";
+import { auditEntryFixture, DEFAULT_MOCK_AUDIT_IP } from "../../../test/handlers";
 import { AuditPage } from "./AuditPage";
 import { outcomeLabel } from "./useAudit";
 
@@ -35,7 +36,7 @@ describe("AuditPage", () => {
     expect(within(denied).getByText("Владислав Смирнов")).toBeInTheDocument();
     expect(within(denied).getByText("IndividualPlan #3")).toBeInTheDocument();
     expect(within(denied).getByText("Відмовлено")).toBeInTheDocument();
-    expect(within(denied).getByText("10.0.0.15")).toBeInTheDocument();
+    expect(within(denied).getByText(DEFAULT_MOCK_AUDIT_IP)).toBeInTheDocument();
   });
 
   it("анонімна спроба позначена «Анонімно»", async () => {

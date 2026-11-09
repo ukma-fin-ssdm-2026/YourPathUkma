@@ -9,12 +9,15 @@ Playwright імпортується лише всередині `PlaywrightFetch
 """
 
 import contextlib
+import logging
 import os
 import time
 from typing import Callable, Optional, Protocol, Tuple
 from urllib.parse import urlencode
 
 from .config import SazSettings
+
+logger = logging.getLogger(__name__)
 
 # (HTTP-статус, фінальний URL після редиректів, текст відповіді)
 RawResponse = Tuple[int, str, str]
@@ -26,6 +29,10 @@ class SessionExpired(Exception):
 
 class FetchError(Exception):
     """Сторінку не вдалося завантажити після всіх повторів."""
+
+
+class TransientFetchError(Exception):
+    """Тимчасовий збій одного запиту (тайм-аут, обрив з'єднання): його можна повторити."""
 
 
 class PageFetcher(Protocol):
@@ -54,10 +61,19 @@ def fetch_with_retry(
     delay_s: float,
     sleep: Callable[[float], None] = time.sleep,
 ) -> str:
-    """429 і 5xx повторюємо з наростаючою паузою; редирект на логін означає протухлу сесію."""
+    """
+    429, 5xx і тимчасові збої (тайм-аут, обрив) повторюємо з наростаючою паузою; кількість спроб обмежена
+    (`retries + 1`), після останньої — `FetchError`. Редирект на логін означає протухлу сесію.
+    """
     last_error = "невідома помилка"
     for attempt in range(retries + 1):
-        status, url, body = get()
+        try:
+            status, url, body = get()
+        except TransientFetchError as exc:
+            last_error = str(exc)
+            if attempt < retries:
+                sleep(delay_s * (2**attempt))
+            continue
         if looks_like_login(url):
             raise SessionExpired("SAZ_SESSION_EXPIRED: виконайте scripts/saz_login.py")
         if status == 200:
@@ -117,6 +133,8 @@ class PlaywrightFetcher:
         self._playwright = sync_playwright().start()
         self._browser = self._playwright.chromium.launch(headless=True)
         self._context = self._browser.new_context(storage_state=str(self._settings.state_path))
+        # Глобальний тайм-аут контексту (на випадок викликів без явного `timeout`)
+        self._context.set_default_timeout(self._settings.timeout_s * 1000)
 
     def _stop(self) -> None:
         """Закриває те, що встигло запуститись; помилки закриття ігноруємо."""
@@ -163,7 +181,11 @@ class PlaywrightFetcher:
 
         def get() -> RawResponse:
             self._pause()
-            response = self._context.request.get(url)
-            return response.status, response.url, response.text()
+            try:
+                response = self._context.request.get(url, timeout=self._settings.timeout_s * 1000)
+                return response.status, response.url, response.text()
+            except Exception as exc:  # Playwright кидає різні типи (TimeoutError, Error); не імпортуємо його тут
+                logger.warning("Запит до САЗ не вдався (сторінка %s): %s", page, type(exc).__name__)
+                raise TransientFetchError(f"{type(exc).__name__} під час запиту сторінки {page}") from exc
 
         return fetch_with_retry(get, retries=self._settings.max_retries, delay_s=self._settings.delay_s)

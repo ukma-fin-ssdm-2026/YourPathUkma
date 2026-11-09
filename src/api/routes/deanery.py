@@ -31,6 +31,17 @@ router = APIRouter(prefix="/api/v1/deanery-documents", tags=["Deanery documents"
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
+# Магічні байти: PDF, DOCX (zip-контейнер) і старий DOC (OLE), який приходить з MIME application/msword
+_PDF_SIGNATURE = b"%PDF"
+_DOCX_SIGNATURES = (b"PK\x03\x04", b"\xd0\xcf\x11\xe0")
+
+
+def _matches_signature(content: bytes, mime: db_enums.DocumentMimeType) -> bool:
+    """Перевіряє, що початок файлу відповідає заявленому типу (а не лише розширенню чи MIME)."""
+    if mime == db_enums.DocumentMimeType.PDF:
+        return content.startswith(_PDF_SIGNATURE)
+    return content.startswith(_DOCX_SIGNATURES)
+
 
 class NormativeCourseResponse(BaseModel):
     course_id: Optional[int] = Field(None, description="null, якщо не знайдено в каталозі")
@@ -223,11 +234,14 @@ async def upload_document(
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
-    content = await file.read()
+    # Читаємо не більше ліміту + 1 байт: великий файл не завантажується в пам'ять повністю
+    content = await file.read(MAX_UPLOAD_BYTES + 1)
     size = len(content)
 
     if size > MAX_UPLOAD_BYTES:
-        raise ApiError(413, "FILE_TOO_LARGE", "Файл більший за 10 МБ")
+        raise ApiError(413, "FILE_TOO_LARGE", f"Файл більший за {MAX_UPLOAD_BYTES // (1024 * 1024)} МБ")
+    if size == 0:
+        raise ApiError(422, "EMPTY_FILE", "Файл порожній")
 
     mime_map = {
         "application/pdf": db_enums.DocumentMimeType.PDF,
@@ -237,12 +251,16 @@ async def upload_document(
 
     doc_mime = mime_map.get(file.content_type)
     if not doc_mime:
-        if file.filename and file.filename.endswith(".pdf"):
+        filename = (file.filename or "").lower()
+        if filename.endswith(".pdf"):
             doc_mime = db_enums.DocumentMimeType.PDF
-        elif file.filename and file.filename.endswith(".docx"):
+        elif filename.endswith(".docx"):
             doc_mime = db_enums.DocumentMimeType.DOCX
         else:
             raise ApiError(415, "UNSUPPORTED_FILE_TYPE", "Дозволені лише файли PDF та DOCX")
+
+    if not _matches_signature(content, doc_mime):
+        raise ApiError(415, "UNSUPPORTED_FILE_TYPE", "Вміст файлу не відповідає заявленому типу PDF або DOCX")
 
     doc = DeaneryPlanDocument(
         student_id=student_id,
