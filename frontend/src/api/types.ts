@@ -29,6 +29,7 @@ export interface Features {
   ai_generation: boolean;
   certificate_programs: boolean;
   saz_catalog_live: boolean;
+  saz_remote_login?: boolean;
   saz_sync: boolean;
   plan_export: boolean;
 }

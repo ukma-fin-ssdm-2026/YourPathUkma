@@ -1,4 +1,4 @@
-// Використання ШІ: тест імпорту каталогу додано Codex. Перевірка: Vitest.
+// Використання ШІ: Codex перевірив режими імпорту та віддаленого входу. Перевірка: Vitest.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
@@ -49,11 +49,36 @@ describe("SyncPage", () => {
     await screen.findByText("Запусків ще не було");
     expect(screen.queryByRole("button", { name: "Запустити парсинг" })).not.toBeInTheDocument();
     await userEvent.upload(
-      screen.getByLabelText("Файл каталогу САЗ"),
+      await screen.findByLabelText("Файл каталогу САЗ"),
       new File(['{"version":1}'], "saz_export.json", { type: "application/json" }),
     );
     await userEvent.click(screen.getByRole("button", { name: "Імпортувати каталог" }));
     expect(await screen.findByText("Успішно")).toBeInTheDocument();
+  });
+
+  it("вимагає сесію перед серверним парсингом у режимі віддаленого входу", async () => {
+    server.use(configHandler({
+      features: { ...configFixture().features, saz_catalog_live: true, saz_remote_login: true },
+    }));
+    server.use(
+      http.get("*/api/v1/admin/saz-session", () => HttpResponse.json({ connected: false })),
+      http.post("*/api/v1/admin/saz-session/login", () => HttpResponse.json({ id: "test-id" }, { status: 201 })),
+      http.get("*/api/v1/admin/saz-session/login/test-id/frame", () =>
+        new HttpResponse(null, {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+      http.delete("*/api/v1/admin/saz-session/login/test-id", () => new HttpResponse(null, { status: 204 })),
+    );
+
+    renderSync();
+    expect(await screen.findByRole("button", { name: "Запустити парсинг" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Імпортувати каталог" })).not.toBeInTheDocument();
+    await userEvent.click(await screen.findByRole("button", { name: "Підключити САЗ" }));
+    expect(await screen.findByRole("button", { name: "Перевірити й зберегти сесію" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Скасувати" }));
+    expect(await screen.findByRole("button", { name: "Підключити САЗ" })).toBeInTheDocument();
   });
 
   it("показує журнал: джерело, статус, лічильники й повідомлення про помилку", async () => {
@@ -83,8 +108,10 @@ describe("SyncPage", () => {
   it("«Запустити парсинг» додає запис «У черзі»", async () => {
     db.admin.syncJobs = [];
     renderSync();
-    await screen.findByText("Запусків ще не було");
-    await userEvent.click(screen.getByRole("button", { name: "Запустити парсинг" }));
+    const start = await screen.findByRole("button", { name: "Запустити парсинг" });
+    expect(screen.queryByLabelText("Файл каталогу САЗ")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Імпортувати каталог" })).not.toBeInTheDocument();
+    await userEvent.click(start);
     const row = await screen.findByRole("row", { name: /У черзі/ });
     expect(within(row).getByText("Каталог САЗ")).toBeInTheDocument();
   });
