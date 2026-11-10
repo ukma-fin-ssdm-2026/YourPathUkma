@@ -5661,7 +5661,7 @@
           "System"
         ],
         "summary": "Перевірка стану системи (Healthcheck)",
-        "description": "Повертає стан сервісу для моніторингу.",
+        "description": "Перевіряє БД у фоновому потоці з обмеженим очікуванням.",
         "operationId": "health_check_health_get",
         "responses": {
           "200": {
@@ -5671,6 +5671,9 @@
                 "schema": {}
               }
             }
+          },
+          "503": {
+            "description": "База даних недоступна"
           }
         }
       }
