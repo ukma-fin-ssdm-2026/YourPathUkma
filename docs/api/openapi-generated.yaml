@@ -3134,6 +3134,147 @@ paths:
                 request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/saz-session:
+    get:
+      tags:
+      - Admin
+      summary: Стан серверної сесії САЗ
+      operationId: session_status_api_v1_admin_saz_session_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionStatus'
+      security:
+      - HTTPBearer: []
+    delete:
+      tags:
+      - Admin
+      summary: Відключити серверну сесію САЗ
+      operationId: disconnect_session_api_v1_admin_saz_session_delete
+      responses:
+        '204':
+          description: Successful Response
+      security:
+      - HTTPBearer: []
+  /api/v1/admin/saz-session/login:
+    post:
+      tags:
+      - Admin
+      summary: Відкрити браузер для входу до САЗ
+      operationId: start_login_api_v1_admin_saz_session_login_post
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginStarted'
+      security:
+      - HTTPBearer: []
+      x-ai-usage: 'Використання ШІ: Codex додав віддалений вхід. Перевірка: pytest.'
+  /api/v1/admin/saz-session/login/{login_id}/frame:
+    get:
+      tags:
+      - Admin
+      summary: Кадр браузера САЗ
+      operationId: login_frame_api_v1_admin_saz_session_login__login_id__frame_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: login_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Login Id
+      responses:
+        '200':
+          description: Кадр браузера
+          content:
+            application/json:
+              schema: {}
+            image/jpeg: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/admin/saz-session/login/{login_id}/input:
+    post:
+      tags:
+      - Admin
+      summary: Керувати браузером САЗ
+      operationId: login_input_api_v1_admin_saz_session_login__login_id__input_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: login_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Login Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/admin/saz-session/login/{login_id}/complete:
+    post:
+      tags:
+      - Admin
+      summary: Зберегти перевірену сесію САЗ
+      operationId: complete_login_api_v1_admin_saz_session_login__login_id__complete_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: login_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Login Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/admin/saz-session/login/{login_id}:
+    delete:
+      tags:
+      - Admin
+      summary: Закрити браузер САЗ
+      operationId: cancel_login_api_v1_admin_saz_session_login__login_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: login_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Login Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/admin/audit-log:
     get:
       tags:
@@ -4913,6 +5054,11 @@ components:
           title: Saz Catalog Live
           description: Серверний парсинг каталогу САЗ
           default: false
+        saz_remote_login:
+          type: boolean
+          title: Saz Remote Login
+          description: Віддалений вхід адміністратора до САЗ
+          default: false
         saz_sync:
           type: boolean
           title: Saz Sync
@@ -5077,6 +5223,15 @@ components:
           default: medium
       type: object
       title: LoadLevels
+    LoginStarted:
+      properties:
+        id:
+          type: string
+          title: Id
+      type: object
+      required:
+      - id
+      title: LoginStarted
     MeResponse:
       properties:
         id:
@@ -5889,6 +6044,15 @@ components:
       - code
       - message
       title: RuleIssue
+    SessionStatus:
+      properties:
+        connected:
+          type: boolean
+          title: Connected
+      type: object
+      required:
+      - connected
+      title: SessionStatus
     SkippedItem:
       properties:
         id:

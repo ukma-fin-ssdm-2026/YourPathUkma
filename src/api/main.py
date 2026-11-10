@@ -22,6 +22,8 @@ OpenAPI-специфікація генерується з коду при ст�
 middleware), щоб CORS-заголовки були й на відповідях з помилками. Перевірка: pytest, ruff check src/api та
 ручний запит з заголовком Origin до маршруту, що повертає помилку, виконати перед комітом.
 
+Використання ШІ: маршрути віддаленого входу САЗ підключено Codex. Перевірка: pytest.
+
 Опис API про автентифікацію оновлено за допомогою Claude (Claude Code): прибрано застарілу згадку про заглушку
 з будь-яким непорожнім токеном. Перевірка: перегенерація docs/api/openapi-generated.* і pytest.
 """
@@ -38,11 +40,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..db.migrate import init_database
+from ..parser.remote_login import remote_login
 from .common import RequestIdMiddleware, assert_safe_environment, cors_origins, register_error_handlers
 from .routes import ai, auth, certificates, deanery, disciplines, plans, preferences, reference, system, user
 from .routes.admin import audit as admin_audit
 from .routes.admin import catalog as admin_catalog
 from .routes.admin import certificates as admin_certificates
+from .routes.admin import saz_session as admin_saz_session
 from .routes.admin import sync as admin_sync
 from .routes.admin import users as admin_users
 
@@ -80,7 +84,10 @@ async def lifespan(app: FastAPI):
     init_database()
     save_openapi_spec(app)
     logger.info("Swagger UI: http://127.0.0.1:3000/api-docs, ReDoc: http://127.0.0.1:3000/redoc")
-    yield
+    try:
+        yield
+    finally:
+        await remote_login.shutdown()
 
 
 app = FastAPI(
@@ -126,7 +133,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["X-Request-ID"],
+    expose_headers=["X-Request-ID", "X-SAZ-Login-Host"],
 )
 
 register_error_handlers(app)
@@ -141,6 +148,7 @@ app.include_router(deanery.router)
 app.include_router(admin_users.router)
 app.include_router(admin_catalog.router)
 app.include_router(admin_sync.router)
+app.include_router(admin_saz_session.router)
 app.include_router(admin_audit.router)
 app.include_router(ai.router)
 app.include_router(certificates.router)

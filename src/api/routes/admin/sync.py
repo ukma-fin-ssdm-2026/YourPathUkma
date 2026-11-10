@@ -9,7 +9,7 @@ GET /admin/moderation-items, POST /admin/moderation-items/{id}/approve|reject, P
 
 Для джерела `saz_catalog` задачу після відповіді підхоплює `src.parser.sync.run_sync_job` (BackgroundTasks) і
 веде її `queued` -> `running` -> `succeeded`/`failed`. Вимкнути автозапуск: SAZ_AUTORUN=0.
-Використання ШІ: імпорт каталогу САЗ додано Codex. Перевірка: pytest.
+Використання ШІ: імпорт каталогу та перевірку підключення САЗ додано Codex. Перевірка: pytest.
 
 TODO(команда): для `faculty_certificates` парсера ще немає, така задача лишається в `queued`, а нова для того
 самого джерела дасть 409 SYNC_JOB_ALREADY_RUNNING (часткова унікальність у БД).
@@ -32,7 +32,7 @@ from ....db.models.catalog import Course, CourseInstructor, Instructor
 from ....db.models.users import User
 from ....db.session import get_db
 from ....parser.bundle import MAX_BUNDLE_BYTES, CatalogBundle
-from ....parser.config import autorun_enabled
+from ....parser.config import autorun_enabled, load_settings, remote_login_enabled
 from ....parser.sync import fail_stale_jobs, run_sync_job, stage_catalog
 from ...common import ApiError, ErrorDetail, ErrorResponse, PaginationInfo, error_responses
 from .common import client_ip, require_admin, write_audit
@@ -372,6 +372,13 @@ def start_sync_job(
     is_saz = payload.source == db_enums.SyncSource.SAZ_CATALOG
     if is_saz and not autorun_enabled():
         raise ApiError(503, "SAZ_LIVE_SYNC_DISABLED", "Серверний парсинг САЗ вимкнено. Імпортуйте файл каталогу.")
+    if is_saz and remote_login_enabled():
+        try:
+            connected = load_settings().state_path.is_file()
+        except ValueError:
+            raise ApiError(503, "SAZ_REMOTE_LOGIN_CONFIG", "Віддалений вхід до САЗ не налаштовано") from None
+        if not connected:
+            raise ApiError(409, "SAZ_SESSION_REQUIRED", "Підключіть САЗ перед запуском парсингу")
     fail_stale_jobs(db)
     conflict = ApiError(409, "SYNC_JOB_ALREADY_RUNNING", "Для цього джерела вже виконується синхронізація")
     active = db.scalar(

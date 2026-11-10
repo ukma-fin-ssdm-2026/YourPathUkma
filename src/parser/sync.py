@@ -21,7 +21,7 @@ from ..db.models.catalog import Course
 from ..db.session import session_factory
 from .bundle import CatalogBundle
 from .catalog_scan import SyncFailure, scan_catalog
-from .config import load_settings
+from .config import load_settings, remote_login_enabled
 from .diff import ExistingCourse, build_changes, item_key
 from .fetcher import FetchError, PageFetcher, PlaywrightFetcher, SessionExpired
 
@@ -188,7 +188,10 @@ def run_sync_job(job_id: int, fetcher_factory: Optional[FetcherFactory] = None) 
             job = db.get(SyncJob, job_id)
             if job is not None and stage_catalog(db, job, bundle):
                 db.commit()
-        except (SessionExpired, FetchError) as exc:
+        except SessionExpired as exc:
+            message = "SAZ_SESSION_EXPIRED: підключіть САЗ повторно в адмінці" if remote_login_enabled() else str(exc)
+            _fail(db, job_id, message)
+        except FetchError as exc:
             _fail(db, job_id, str(exc))
         except SyncFailure as exc:
             _fail(db, job_id, str(exc), exc.snapshot)

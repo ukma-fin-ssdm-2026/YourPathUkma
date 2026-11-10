@@ -4,7 +4,7 @@
 Playwright імпортується лише всередині `PlaywrightFetcher`, тому тести й CI його не потребують. Запити йдуть
 через `context.request` (cookies сесії, без рендеру JS). Логіка повторів винесена в `fetch_with_retry`.
 
-Використання ШІ: атомарне збереження сесії та бюджет часу додано Codex. Перевірка: pytest.
+Використання ШІ: атомарне збереження, шифрування сесії та бюджет часу додано Codex. Перевірка: pytest.
 Файл створено за допомогою Claude (Claude Code). Перевірка: tests/test_saz_fetcher.py
 (на підставних відповідях, без мережі).
 """
@@ -15,14 +15,18 @@ import logging
 import os
 import re
 import tempfile
+import threading
 import time
 from pathlib import Path
 from typing import Callable, Optional, Protocol, Tuple
 from urllib.parse import urlencode, urljoin, urlsplit
 
+from cryptography.fernet import Fernet, InvalidToken
+
 from .config import SazSettings
 
 logger = logging.getLogger(__name__)
+_state_lock = threading.Lock()
 
 # (HTTP-статус, фінальний URL після редиректів, текст відповіді)
 RawResponse = Tuple[int, str, str]
@@ -122,22 +126,42 @@ def start_with_retry(
 
 
 def save_session_state(context, settings: SazSettings) -> None:
-    """Persist only cookies usable by SAZ, via a private temporary file."""
+    persist_session_cookies(context.storage_state()["cookies"], settings)
+
+
+def persist_session_cookies(cookies, settings: SazSettings, previous: Optional[bytes] = None) -> None:
+    """Save only SAZ cookies. A worker must preserve a newer login saved during its scan."""
+    with _state_lock:
+        path = settings.state_path
+        if previous is not None and (not path.is_file() or path.read_bytes() != previous):
+            return
+        _write_session_cookies(cookies, settings)
+
+
+def clear_session_state(settings: SazSettings) -> None:
+    with _state_lock:
+        settings.state_path.unlink(missing_ok=True)
+
+
+def _write_session_cookies(browser_cookies, settings: SazSettings) -> None:
     path = settings.state_path
-    path.parent.mkdir(parents=True, exist_ok=True)
+    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     host = urlsplit(settings.base_url).hostname or ""
     cookies = []
-    for cookie in context.storage_state()["cookies"]:
+    for cookie in browser_cookies:
         domain = cookie["domain"].lstrip(".").lower()
         if domain and (domain == host or ("." in domain and host.endswith("." + domain))):
             cookies.append(cookie)
     if not cookies:
         raise FetchError("САЗ не надав cookies для повторного входу")
+    data = json.dumps({"cookies": cookies, "origins": []}).encode("utf-8")
+    if settings.session_key:
+        data = Fernet(settings.session_key.encode("ascii")).encrypt(data)
     temporary = None
     try:
-        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent, delete=False) as temp:
+        with tempfile.NamedTemporaryFile(mode="wb", dir=path.parent, delete=False) as temp:
             temporary = Path(temp.name)
-            json.dump({"cookies": cookies, "origins": []}, temp)
+            temp.write(data)
         os.replace(temporary, path)
     finally:
         if temporary is not None:
@@ -165,14 +189,19 @@ class PlaywrightFetcher:
         self._last_request_at: Optional[float] = None
         self._deadline: Optional[float] = None
         self._state = None
+        self._state_bytes: Optional[bytes] = None
 
     def __enter__(self) -> "PlaywrightFetcher":
         try:
-            self._state = json.loads(self._settings.state_path.read_text(encoding="utf-8"))
+            self._state_bytes = self._settings.state_path.read_bytes()
+            data = self._state_bytes
+            if self._settings.session_key:
+                data = Fernet(self._settings.session_key.encode("ascii")).decrypt(data)
+            self._state = json.loads(data)
             cookies = self._state["cookies"]
             if not isinstance(cookies, list) or not cookies:
                 raise ValueError
-        except (FileNotFoundError, ValueError, TypeError, KeyError) as exc:
+        except (FileNotFoundError, ValueError, TypeError, KeyError, InvalidToken) as exc:
             raise SessionExpired("SAZ_SESSION_EXPIRED: оновіть сесію через scripts/saz_login.py") from exc
         except OSError:
             raise FetchError("Не вдалося прочитати файл сесії САЗ") from None
@@ -183,7 +212,9 @@ class PlaywrightFetcher:
         from playwright.sync_api import sync_playwright
 
         self._playwright = sync_playwright().start()
-        self._browser = self._playwright.chromium.launch(headless=True)
+        self._browser = self._playwright.chromium.launch(
+            headless=True, chromium_sandbox=bool(self._settings.session_key)
+        )
         self._context = self._browser.new_context(storage_state=self._state)
         # Глобальний тайм-аут контексту (на випадок викликів без явного `timeout`)
         self._context.set_default_timeout(self._settings.timeout_s * 1000)
@@ -219,7 +250,7 @@ class PlaywrightFetcher:
         try:
             if exc_type is None and self._context is not None:
                 try:
-                    save_session_state(self._context, self._settings)
+                    persist_session_cookies(self._context.storage_state()["cookies"], self._settings, self._state_bytes)
                 except Exception as exc:
                     logger.warning("Не вдалося оновити файл сесії САЗ: %s", type(exc).__name__)
         finally:
