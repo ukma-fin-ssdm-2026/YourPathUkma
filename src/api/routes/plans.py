@@ -15,6 +15,8 @@ enum-и, бізнес-валідація з AGENTS.md (вільний вибір
 а не лише перше з model_validator); submit перевіряє план через enforce_submit_rules (каталог, деканат, ліміти);
 title елемента до 300 символів (як у БД); кредити округлюються до 0.1. Перевірка: ручний огляд, pytest і
 лінтери запустити перед комітом.
+
+Codex додав блокування плану під час зміни, видалення й подання. Перевірка: pytest на PostgreSQL.
 """
 
 from datetime import datetime
@@ -225,9 +227,9 @@ def _to_response(plan: IndividualPlan) -> PlanResponse:
     )
 
 
-def _find_plan(db: Session, plan_id: int, student_id: int) -> IndividualPlan:
-    """Повертає план або кидає 404 (немає) / 403 (чужий план)."""
-    plan = db.get(IndividualPlan, plan_id)
+def _find_plan(db: Session, plan_id: int, student_id: int, *, for_update: bool = False) -> IndividualPlan:
+    """Повертає план або кидає 404 / 403. Мутації блокують рядок до завершення транзакції."""
+    plan = db.get(IndividualPlan, plan_id, with_for_update=for_update)
     if plan is None:
         raise ApiError(404, "PLAN_NOT_FOUND", f"План з ID {plan_id} не знайдено")
     if plan.student_id != student_id:
@@ -420,7 +422,7 @@ def update_plan(
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
-    plan = _find_plan(db, plan_id, student_id)
+    plan = _find_plan(db, plan_id, student_id, for_update=True)
     if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_EDITABLE", "Редагувати можна лише план у статусі draft")
     courses = _check_catalog(db, payload.items)
@@ -454,7 +456,7 @@ def delete_plan(
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
-    plan = _find_plan(db, plan_id, student_id)
+    plan = _find_plan(db, plan_id, student_id, for_update=True)
     if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_DELETABLE", "Видаляти можна лише план у статусі draft")
     db.delete(plan)
@@ -525,7 +527,7 @@ def submit_plan(
     db: Session = Depends(get_db),
 ):
     _lock_student(db, student_id)  # перед перевіркою ліміту: див. _lock_student
-    plan = _find_plan(db, plan_id, student_id)
+    plan = _find_plan(db, plan_id, student_id, for_update=True)
     if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_SUBMITTABLE", "Подати можна лише план у статусі draft")
 
