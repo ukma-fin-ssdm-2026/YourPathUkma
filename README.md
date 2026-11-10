@@ -187,6 +187,16 @@ python -m scripts.issue_token student@ukma.edu.ua   # студент 2 курс�
 
 Скрипт друкує access-токен (живе 15 хв, потрібен `JWT_SECRET` у `.env`). Вставте його в Authorize у Swagger UI (`/api-docs`) або передайте заголовком `Authorization: Bearer <токен>`. Демо-користувачі створюються разом із демо-даними при першому старті API.
 
+## Docker і розгортання
+
+Фронтенд і API збираються в один образ (`Dockerfile`): API сам роздає зібраний фронтенд, тож на Azure достатньо одного контейнера й бази PostgreSQL. Перевірити образ локально разом із базою:
+
+```bash
+JWT_SECRET=<мінімум 32 символи> docker compose --profile app up --build   # http://localhost:8000
+```
+
+Публікація на Docker Hub (workflow [`docker-publish.yml`](.github/workflows/docker-publish.yml)) і розгортання на Azure Container Apps: [docs/deployment/azure.md](docs/deployment/azure.md). Розгорнутої системи за публічною адресою поки немає.
+
 ## Тести
 
 ```bash
