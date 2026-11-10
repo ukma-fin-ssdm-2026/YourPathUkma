@@ -38,7 +38,7 @@ class Features(BaseModel):
     ai_generation: bool = Field(False, description="AI-генерація плану (етап 2)")
     certificate_programs: bool = Field(False, description="Сертифікатні програми (етап 2)")
     saz_sync: bool = Field(False, description="Синхронізація з САЗ (заблоковано, R14)")
-    plan_export: bool = Field(True, description="Експорт плану в PDF")
+    plan_export: bool = Field(False, description="Експорт плану в PDF (поки не реалізовано: 501)")
 
 
 class ConfigResponse(BaseModel):

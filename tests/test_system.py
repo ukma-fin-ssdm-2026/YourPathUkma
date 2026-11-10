@@ -14,4 +14,5 @@ def test_config_is_public_and_has_limits():
     assert body["limits"]["total_credits"] == 240
     assert body["limits"]["free_choice_credits"] == 25
     assert body["features"]["saz_sync"] is False
+    assert body["features"]["plan_export"] is False  # експорт ще не реалізовано (501)
     assert response.headers["cache-control"] == "max-age=300"

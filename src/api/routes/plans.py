@@ -29,9 +29,11 @@ from sqlalchemy.orm import Session
 from ...db import enums as db_enums
 from ...db.models import Course, IndividualPlan
 from ...db.models import PlanItem as PlanItemRow
+from ...db.models.users import StudentProfile
 from ...db.session import get_db
 from ...services import plan_rules
 from ..common import ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
+from ..onboarding import get_onboarded_student
 from ..plan_checks import enforce_plan_rules, enforce_submit_rules
 
 router = APIRouter(prefix="/api/v1", tags=["Plans"])
@@ -273,6 +275,35 @@ def _check_catalog(db: Session, items: List[PlanItem]) -> Dict[int, Course]:
     return courses
 
 
+def _check_course_year(payload: CreatePlanRequest, profile: StudentProfile) -> None:
+    """План не можна створити на курс, старший за поточний курс студента (can_create_plan)."""
+    if payload.course > profile.course_year:
+        raise ApiError(
+            422,
+            "VALIDATION_ERROR",
+            "Курс плану перевищує курс студента",
+            [
+                ErrorDetail(
+                    field="course",
+                    message=f"COURSE_YEAR_EXCEEDED: студент навчається на {profile.course_year} курсі",
+                )
+            ],
+        )
+
+
+def _ensure_credits_up_to_date(plan: IndividualPlan, items: List[PlanItem], courses: Dict[int, Course]) -> None:
+    """Збережені plan.total_credits мають збігатися з поточними кредитами каталогу, інакше 409."""
+    current = round(sum(courses[item.course_id].credits for item in items), 1)
+    stored = plan.total_credits or 0.0
+    if abs(current - stored) > 0.05:
+        raise ApiError(
+            409,
+            "PLAN_CATALOG_CHANGED",
+            f"Кредити дисциплін у каталозі змінилися (у плані {stored}, у каталозі {current}). "
+            "Оновіть план (PUT) перед поданням",
+        )
+
+
 def _apply_payload(plan: IndividualPlan, payload: CreatePlanRequest, courses: Dict[int, Course]) -> None:
     plan.academic_year = payload.academic_year
     plan.course_year = payload.course
@@ -307,15 +338,22 @@ def _apply_payload(plan: IndividualPlan, payload: CreatePlanRequest, courses: Di
     ),
     responses={
         201: {"description": "План успішно створено"},
-        **error_responses(401, 422),
+        **error_responses(
+            401,
+            409,
+            422,
+            overrides={409: ("ONBOARDING_REQUIRED", "Спершу вкажіть курс і спеціальність")},
+        ),
     },
 )
 def create_plan(
     payload: CreatePlanRequest,
     response: Response,
-    student_id: int = Depends(get_current_student_id),
+    profile: StudentProfile = Depends(get_onboarded_student),
     db: Session = Depends(get_db),
 ):
+    student_id = profile.user_id
+    _check_course_year(payload, profile)
     courses = _check_catalog(db, payload.items)
     enforce_plan_rules(db, student_id, payload, courses)
     plan = IndividualPlan(student_id=student_id, status=db_enums.PlanStatus.DRAFT, origin=db_enums.PlanOrigin.MANUAL)
@@ -404,12 +442,14 @@ def get_plan(
 def update_plan(
     payload: CreatePlanRequest,
     plan_id: int = Path(..., gt=0, description="Унікальний ідентифікатор плану", examples=[1]),
-    student_id: int = Depends(get_current_student_id),
+    profile: StudentProfile = Depends(get_onboarded_student),
     db: Session = Depends(get_db),
 ):
+    student_id = profile.user_id
     plan = _find_plan(db, plan_id, student_id)
     if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_EDITABLE", "Редагувати можна лише план у статусі draft")
+    _check_course_year(payload, profile)
     courses = _check_catalog(db, payload.items)
     enforce_plan_rules(db, student_id, payload, courses, exclude_plan_id=plan.id)
     plan.items.clear()
@@ -508,15 +548,17 @@ async def validate_plan(payload: PlanPayload):
 )
 def submit_plan(
     plan_id: int = Path(..., gt=0, examples=[1]),
-    student_id: int = Depends(get_current_student_id),
+    profile: StudentProfile = Depends(get_onboarded_student),
     db: Session = Depends(get_db),
 ):
-    plan = _find_plan(db, plan_id, student_id)
+    plan = _find_plan(db, plan_id, profile.user_id)
     if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_SUBMITTABLE", "Подати можна лише план у статусі draft")
 
-    courses = {row.course_id: row.course for row in plan.items}
-    enforce_submit_rules(db, plan, _plan_items(plan), courses)
+    items = _plan_items(plan)
+    courses = _check_catalog(db, items)  # дисципліну могли заархівувати чи змінити після створення чернетки
+    _ensure_credits_up_to_date(plan, items, courses)
+    enforce_submit_rules(db, plan, items, courses)
 
     plan.status = db_enums.PlanStatus.SUBMITTED
     db.commit()
@@ -528,7 +570,8 @@ def submit_plan(
     summary="Експорт плану в PDF",
     description="Фіксація і експорт плану у форматі PDF (use-case 16).",
     responses={
-        200: {"description": "Файл PDF", "content": {"application/pdf": {}}},
+        200: {"description": "Файл PDF (зараз не повертається)", "content": {"application/pdf": {}}},
+        501: {"description": "Експорт ще не реалізовано"},
         **error_responses(401, 403, 404, 422, overrides={404: _PLAN_NOT_FOUND}),
     },
 )
@@ -539,6 +582,8 @@ def export_plan(
     db: Session = Depends(get_db),
 ):
     plan = _find_plan(db, plan_id, student_id)
+    if plan.status != db_enums.PlanStatus.APPROVED:
+        raise ApiError(409, "PLAN_NOT_EXPORTABLE", "Експортувати можна лише план у статусі approved")
 
     if export_format.lower() != "pdf":
         raise ApiError(
@@ -548,11 +593,6 @@ def export_plan(
             [ErrorDetail(field="format", message="Підтримується лише формат pdf")],
         )
 
-    # TODO (команда): реалізувати генерацію реального PDF з даними плану. Поки повертається заглушка.
-    pdf_content = b"%PDF-1.4\n%Fake PDF content for endpoint testing\n%%EOF"
-
-    return Response(
-        content=pdf_content,
-        media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="plan-{plan.academic_year}.pdf"'},
-    )
+    # Реальної генерації PDF ще немає. Віддавати заглушку зі статусом 200 не можна: студент завантажив би порожній
+    # «план». Коли функцію буде реалізовано, поверніть Features.plan_export = True в system.py.
+    raise ApiError(501, "EXPORT_NOT_IMPLEMENTED", "Експорт плану в PDF ще не реалізовано")

@@ -22,7 +22,7 @@ def _create(items, **extra):
 
 
 def test_create_plan_is_persisted():
-    response = _create([FP, {**PRODUCT, "is_free_elective": True}], load_levels={"autumn": "low"})
+    response = _create([FP, {**PRODUCT, "is_free_elective": True}], load_levels={"autumn": "low"}, course=2)
     assert response.status_code == 201
     plan = response.json()
     assert response.headers["location"] == f"/api/v1/plans/{plan['id']}"

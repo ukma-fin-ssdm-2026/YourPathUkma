@@ -7,8 +7,7 @@ POST /plan-generations, GET /plan-generations/{generation_id}.
 на студента, 20 на добу (R10).
 """
 
-import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Path, Response, status
@@ -17,6 +16,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ...db import enums as db_enums
+from ...db.base import utcnow
 from ...db.models.ai import PlanGeneration
 from ...db.models.users import StudentProfile
 from ...db.session import get_db
@@ -84,11 +84,11 @@ def start_generation(
         raise ApiError(409, *_GENERATION_IN_PROGRESS)
 
     # Перевірка ліміту 20/добу
-    since = int(time.time()) - 24 * 3600
+    since = utcnow() - timedelta(hours=24)
     recent = db.scalar(
         select(func.count()).where(
             PlanGeneration.student_id == profile.user_id,
-            PlanGeneration.created_at >= datetime.fromtimestamp(since),
+            PlanGeneration.created_at >= since,
         )
     )
     if recent >= 20:
