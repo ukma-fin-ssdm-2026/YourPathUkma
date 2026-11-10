@@ -4,6 +4,7 @@
 Тестові дублери імітують тайм-аут і обрив з'єднання. Перевіряємо обрану реакцію: тайм-аут передається у виклик,
 повтори обмежені, після останньої спроби — швидка відмова `FetchError`; Microsoft недоступний — 503.
 
+Використання ШІ: підставну HTTP-відповідь оновлено Codex. Перевірка: pytest.
 Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: запуск `pytest tests/reliability`
 (без мережі, `sleep` підмінено).
 """
@@ -59,7 +60,7 @@ def test_request_timeout_is_passed_to_playwright_in_milliseconds():
 
     def fake_get(url, **kwargs):
         seen.update(kwargs)
-        return SimpleNamespace(status=200, url=url, text=lambda: "<html></html>")
+        return SimpleNamespace(status=200, url=url, text=lambda: "<html></html>", dispose=lambda: None)
 
     body = _fetcher_with_context(fake_get, timeout_s=5.0).fetch(1)
 

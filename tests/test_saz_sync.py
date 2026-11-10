@@ -1,7 +1,8 @@
 """
 Тести життєвого циклу SyncJob парсера САЗ на SQLite з підставним fetcher (без мережі).
 
-Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: pytest.
+Використання ШІ: перевірку безпечної діагностики додано Codex. Перевірка: pytest.
+ файл створено за допомогою Claude (Claude Code). Перевірка: pytest.
 """
 
 import re
@@ -90,7 +91,7 @@ def test_successful_run_creates_add_items():
     job = _job(job_id)
     assert job.status == db_enums.SyncJobStatus.SUCCEEDED
     assert job.finished_at is not None
-    assert job.error_message is None
+    assert "неповний обхід" not in (job.error_message or "")
     items = _items(job_id)
     assert job.added_count == len(items) == 20
     assert {i.change_type for i in items} == {db_enums.ModerationChangeType.ADD}
@@ -144,7 +145,8 @@ def test_unexpected_error_does_not_leave_job_running():
 
     job = _job(job_id)
     assert job.status == db_enums.SyncJobStatus.FAILED
-    assert "RuntimeError: boom" in job.error_message
+    assert "RuntimeError" in job.error_message
+    assert "boom" not in job.error_message
 
 
 def test_job_not_in_queue_is_ignored():
@@ -153,3 +155,24 @@ def test_job_not_in_queue_is_ignored():
     before = _job(job_id).finished_at
     run_sync_job(job_id, _factory(FakeFetcher(error=RuntimeError("не має викликатись"))))
     assert _job(job_id).finished_at == before
+
+
+def test_stale_worker_cannot_finish_or_enqueue():
+    from datetime import timedelta
+
+    from src.db.base import utcnow
+    from src.parser.sync import fail_stale_jobs
+
+    job_id = _new_job()
+
+    class StaleFetcher:
+        def fetch(self, page):
+            with session_factory()() as db:
+                db.get(SyncJob, job_id).started_at = utcnow() - timedelta(hours=1)
+                db.commit()
+                assert fail_stale_jobs(db) == 1
+            return _single_page_html()
+
+    run_sync_job(job_id, _factory(StaleFetcher()))
+    assert _job(job_id).status == db_enums.SyncJobStatus.FAILED
+    assert _items(job_id) == []

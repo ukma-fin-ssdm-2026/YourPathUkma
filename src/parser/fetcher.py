@@ -4,16 +4,21 @@
 Playwright імпортується лише всередині `PlaywrightFetcher`, тому тести й CI його не потребують. Запити йдуть
 через `context.request` (cookies сесії, без рендеру JS). Логіка повторів винесена в `fetch_with_retry`.
 
-Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: tests/test_saz_fetcher.py
+Використання ШІ: атомарне збереження сесії та бюджет часу додано Codex. Перевірка: pytest.
+Файл створено за допомогою Claude (Claude Code). Перевірка: tests/test_saz_fetcher.py
 (на підставних відповідях, без мережі).
 """
 
 import contextlib
+import json
 import logging
 import os
+import re
+import tempfile
 import time
+from pathlib import Path
 from typing import Callable, Optional, Protocol, Tuple
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin, urlsplit
 
 from .config import SazSettings
 
@@ -51,7 +56,8 @@ def catalog_url(settings: SazSettings, page: int) -> str:
 
 
 def looks_like_login(url: str) -> bool:
-    return "/auth/login" in url or "login.microsoftonline" in url
+    parsed = urlsplit(url)
+    return parsed.path.rstrip("/") == "/auth/login" or parsed.hostname == "login.microsoftonline.com"
 
 
 def fetch_with_retry(
@@ -74,9 +80,11 @@ def fetch_with_retry(
             if attempt < retries:
                 sleep(delay_s * (2**attempt))
             continue
-        if looks_like_login(url):
+        if status in (401, 403) or looks_like_login(url):
             raise SessionExpired("SAZ_SESSION_EXPIRED: виконайте scripts/saz_login.py")
         if status == 200:
+            if "/auth/login" in body and re.search(r"<input\b[^>]*\btype\s*=\s*['\"]?password\b", body, re.I):
+                raise SessionExpired("SAZ_SESSION_EXPIRED: виконайте scripts/saz_login.py")
             return body
         last_error = f"HTTP {status}"
         if status != 429 and status < 500:
@@ -103,7 +111,7 @@ def start_with_retry(
         try:
             return start()
         except Exception as exc:  # Playwright кидає різні типи винятків
-            last = f"{type(exc).__name__}: {exc}"
+            last = type(exc).__name__
             cleanup()
             if attempt < retries:
                 sleep(delay_s * (attempt + 1))
@@ -113,6 +121,41 @@ def start_with_retry(
     )
 
 
+def save_session_state(context, settings: SazSettings) -> None:
+    """Persist only cookies usable by SAZ, via a private temporary file."""
+    path = settings.state_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    host = urlsplit(settings.base_url).hostname or ""
+    cookies = []
+    for cookie in context.storage_state()["cookies"]:
+        domain = cookie["domain"].lstrip(".").lower()
+        if domain and (domain == host or ("." in domain and host.endswith("." + domain))):
+            cookies.append(cookie)
+    if not cookies:
+        raise FetchError("САЗ не надав cookies для повторного входу")
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent, delete=False) as temp:
+            temporary = Path(temp.name)
+            json.dump({"cookies": cookies, "origins": []}, temp)
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def read_catalog_response(request, url: str, timeout_ms: float) -> RawResponse:
+    response = request.get(url, timeout=timeout_ms, max_redirects=0)
+    try:
+        status = response.status
+        if 300 <= status < 400:
+            target = response.headers.get("location", "")
+            return status, urljoin(url, target), ""
+        return status, response.url, response.text() if status == 200 else ""
+    finally:
+        response.dispose()
+
+
 class PlaywrightFetcher:
     def __init__(self, settings: SazSettings):
         self._settings = settings
@@ -120,10 +163,19 @@ class PlaywrightFetcher:
         self._browser = None
         self._context = None
         self._last_request_at: Optional[float] = None
+        self._deadline: Optional[float] = None
+        self._state = None
 
     def __enter__(self) -> "PlaywrightFetcher":
-        if not self._settings.state_path.exists():
-            raise SessionExpired("SAZ_SESSION_EXPIRED: файл сесії не знайдено, виконайте scripts/saz_login.py")
+        try:
+            self._state = json.loads(self._settings.state_path.read_text(encoding="utf-8"))
+            cookies = self._state["cookies"]
+            if not isinstance(cookies, list) or not cookies:
+                raise ValueError
+        except (FileNotFoundError, ValueError, TypeError, KeyError) as exc:
+            raise SessionExpired("SAZ_SESSION_EXPIRED: оновіть сесію через scripts/saz_login.py") from exc
+        except OSError:
+            raise FetchError("Не вдалося прочитати файл сесії САЗ") from None
         start_with_retry(self._start, delay_s=self._settings.delay_s * 2, cleanup=self._stop)
         return self
 
@@ -132,7 +184,7 @@ class PlaywrightFetcher:
 
         self._playwright = sync_playwright().start()
         self._browser = self._playwright.chromium.launch(headless=True)
-        self._context = self._browser.new_context(storage_state=str(self._settings.state_path))
+        self._context = self._browser.new_context(storage_state=self._state)
         # Глобальний тайм-аут контексту (на випадок викликів без явного `timeout`)
         self._context.set_default_timeout(self._settings.timeout_s * 1000)
 
@@ -147,33 +199,37 @@ class PlaywrightFetcher:
                 self._playwright.stop()
         self._context = self._browser = self._playwright = None
 
-    def _refresh_session(self) -> None:
-        """Зберігає оновлені cookies після успішного обходу: сесія САЗ продовжується, адмінам не треба входити знову."""
-        state_path = self._settings.state_path
-        tmp = state_path.with_name(state_path.name + ".tmp")
-        self._context.storage_state(path=str(tmp))
-        os.replace(tmp, state_path)
-        try:
-            os.chmod(state_path, 0o600)  # на Windows діє лише частково
-        except OSError:
-            pass
+    def set_deadline(self, deadline: float) -> None:
+        self._deadline = deadline
+
+    def _remaining(self) -> float:
+        if self._deadline is None:
+            return self._settings.timeout_s
+        remaining = self._deadline - time.monotonic()
+        if remaining <= 0:
+            raise FetchError("Перевищено ліміт часу обходу каталогу")
+        return remaining
+
+    def _sleep(self, seconds: float) -> None:
+        if self._deadline is not None and seconds >= self._remaining():
+            raise FetchError("Перевищено ліміт часу обходу каталогу")
+        time.sleep(seconds)
 
     def __exit__(self, exc_type, *_exc) -> None:
         try:
             if exc_type is None and self._context is not None:
-                self._refresh_session()
+                try:
+                    save_session_state(self._context, self._settings)
+                except Exception as exc:
+                    logger.warning("Не вдалося оновити файл сесії САЗ: %s", type(exc).__name__)
         finally:
-            for resource in (self._context, self._browser):
-                if resource is not None:
-                    resource.close()
-            if self._playwright is not None:
-                self._playwright.stop()
+            self._stop()
 
     def _pause(self) -> None:
         if self._last_request_at is not None:
             wait = self._settings.delay_s - (time.monotonic() - self._last_request_at)
             if wait > 0:
-                time.sleep(wait)
+                self._sleep(wait)
         self._last_request_at = time.monotonic()
 
     def fetch(self, page: int) -> str:
@@ -181,11 +237,13 @@ class PlaywrightFetcher:
 
         def get() -> RawResponse:
             self._pause()
+            timeout_ms = min(self._settings.timeout_s, self._remaining()) * 1000
             try:
-                response = self._context.request.get(url, timeout=self._settings.timeout_s * 1000)
-                return response.status, response.url, response.text()
-            except Exception as exc:  # Playwright кидає різні типи (TimeoutError, Error); не імпортуємо його тут
+                return read_catalog_response(self._context.request, url, timeout_ms)
+            except Exception as exc:
                 logger.warning("Запит до САЗ не вдався (сторінка %s): %s", page, type(exc).__name__)
-                raise TransientFetchError(f"{type(exc).__name__} під час запиту сторінки {page}") from exc
+                raise TransientFetchError(f"Тимчасовий збій запиту сторінки {page}") from exc
 
-        return fetch_with_retry(get, retries=self._settings.max_retries, delay_s=self._settings.delay_s)
+        return fetch_with_retry(
+            get, retries=self._settings.max_retries, delay_s=self._settings.delay_s, sleep=self._sleep
+        )
