@@ -1,3 +1,5 @@
+// Використання ШІ: Codex відкрив заголовки бінарної відповіді для кадрів САЗ. Перевірка: Vitest.
+// Використання ШІ: підтримку JSON-файлів додано Codex. Перевірка: Vitest.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: client.test.ts.
 import { parseDispositionFilename } from "../lib/download";
 import { ApiError, type ErrorDetail } from "./errors";
@@ -75,6 +77,7 @@ async function send(
   const tokenUsed = useAuth ? getAccessToken() : null;
   const headers = new Headers({ Accept: options.accept ?? "application/json" });
   const isForm = options.body instanceof FormData;
+  const isFile = options.body instanceof Blob;
   if (options.body !== undefined && !isForm) headers.set("Content-Type", "application/json");
   if (tokenUsed) headers.set("Authorization", `Bearer ${tokenUsed}`);
 
@@ -84,7 +87,7 @@ async function send(
   const timer = setTimeout(() => {
     timedOut = true;
     controller.abort();
-  }, options.timeoutMs ?? (isForm ? UPLOAD_TIMEOUT_MS : DEFAULT_TIMEOUT_MS));
+  }, options.timeoutMs ?? (isForm || isFile ? UPLOAD_TIMEOUT_MS : DEFAULT_TIMEOUT_MS));
   const abortWithCaller = () => controller.abort();
   if (options.signal?.aborted) controller.abort();
   else options.signal?.addEventListener("abort", abortWithCaller, { once: true });
@@ -96,8 +99,8 @@ async function send(
       body:
         options.body === undefined
           ? undefined
-          : isForm
-            ? (options.body as FormData)
+          : isForm || isFile
+            ? (options.body as FormData | Blob)
             : JSON.stringify(options.body),
       credentials: "include",
       signal: controller.signal,
@@ -180,7 +183,7 @@ export async function request<T = void>(path: string, options: RequestOptions = 
 export async function requestBlob(
   path: string,
   options: RequestOptions = {},
-): Promise<{ blob: Blob; filename: string | null }> {
+): Promise<{ blob: Blob; filename: string | null; headers: Headers }> {
   const response = await execute(path, {
     accept: "application/pdf, application/json;q=0.5",
     timeoutMs: BLOB_TIMEOUT_MS,
@@ -188,6 +191,7 @@ export async function requestBlob(
   });
   return {
     blob: await response.blob(),
+    headers: response.headers,
     filename: parseDispositionFilename(response.headers.get("Content-Disposition")),
   };
 }

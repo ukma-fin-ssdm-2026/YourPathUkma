@@ -1,39 +1,49 @@
 """
-Ручний вхід у САЗ через Microsoft: відкривається видиме вікно Chromium, користувач входить сам (з MFA),
-після переходу на my.ukma.edu.ua cookies зберігаються у файл сесії. Пароль скрипт не бачить і не зберігає (R14).
+Ручний вхід до САЗ через Microsoft у видимому браузері.
 
-Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: вручну (потрібен живий акаунт);
-логіка редиректів покрита tests/test_saz_fetcher.py.
+Використання ШІ: перевірку каталогу та атомарне збереження сесії додано Codex.
+Перевірка: pytest із підставним браузером, живий вхід описано в README.
 """
 
-import os
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from .config import SazSettings
-from .fetcher import looks_like_login
+from .fetcher import FetchError, catalog_url, looks_like_login, read_catalog_response, save_session_state
+from .parsers.catalog import CatalogParser
 
 LOGIN_TIMEOUT_MS = 5 * 60 * 1000
 
 
 def login_interactive(settings: SazSettings) -> Path:
-    from playwright.sync_api import sync_playwright
+    from playwright.sync_api import Error, sync_playwright
 
-    state_path = settings.state_path
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=False)
-        context = browser.new_context()
-        page = context.new_page()
-        page.goto(f"{settings.base_url}/auth/login")
-        print("Увійдіть у САЗ через Microsoft у вікні браузера (до 5 хвилин)...")
-        page.wait_for_url(
-            lambda url: url.startswith(settings.base_url) and not looks_like_login(url),
-            timeout=LOGIN_TIMEOUT_MS,
-        )
-        context.storage_state(path=str(state_path))
-        browser.close()
+    origin = urlsplit(settings.base_url)
+
+    def is_saz_page(url: str) -> bool:
+        parsed = urlsplit(url)
+        return (parsed.scheme, parsed.netloc) == (origin.scheme, origin.netloc) and not looks_like_login(url)
+
     try:
-        os.chmod(state_path, 0o600)  # на Windows діє лише частково
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=False)
+            try:
+                context = browser.new_context()
+                page = context.new_page()
+                page.goto(f"{settings.base_url}/auth/login")
+                print("Увійдіть у САЗ через Microsoft у вікні браузера (до 5 хвилин)...")
+                page.wait_for_url(is_saz_page, timeout=LOGIN_TIMEOUT_MS)
+                status, url, html = read_catalog_response(
+                    context.request, catalog_url(settings, 1), settings.timeout_s * 1000
+                )
+                if status != 200 or not is_saz_page(url) or CatalogParser().parse(html).total is None:
+                    raise FetchError("Не вдалося підтвердити доступ до каталогу САЗ після входу")
+                save_session_state(context, settings)
+            finally:
+                browser.close()
+    except Error:
+        raise FetchError("Не вдалося завершити вхід у САЗ. Перевірте Chromium і повторіть спробу") from None
     except OSError:
-        pass
-    return state_path
+        raise FetchError("Не вдалося зберегти файл сесії САЗ") from None
+
+    return settings.state_path
