@@ -1,4 +1,6 @@
 """
+Використання ШІ: Codex додав перевірку БД у /health; перевірка: pytest і Ruff.
+
 Точка входу API YourPathUkma. Запуск з кореня репозиторію:
 
     uvicorn src.api.main:app --reload --port 3000
@@ -38,7 +40,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..db.migrate import init_database
-from .common import RequestIdMiddleware, assert_safe_environment, cors_origins, register_error_handlers
+from ..healthcheck import check_health
+from .common import ApiError, RequestIdMiddleware, assert_safe_environment, cors_origins, register_error_handlers
 from .routes import ai, auth, certificates, deanery, disciplines, plans, preferences, reference, system, user
 from .routes.admin import audit as admin_audit
 from .routes.admin import catalog as admin_catalog
@@ -147,10 +150,18 @@ app.include_router(certificates.router)
 app.include_router(admin_certificates.router)
 
 
-@app.get("/health", tags=["System"], summary="Перевірка стану системи (Healthcheck)")
-async def health_check():
-    """Повертає стан сервісу для моніторингу."""
-    return {"status": "ok", "version": "1.0.0", "message": "All systems operational"}
+@app.get(
+    "/health",
+    responses={503: {"description": "База даних недоступна"}},
+    tags=["System"],
+    summary="Перевірка стану системи (Healthcheck)",
+)
+def health_check():
+    """Перевіряє БД у фоновому потоці з обмеженим очікуванням."""
+    result = check_health()
+    if result["status"] != "healthy":
+        raise ApiError(503, "DATABASE_UNAVAILABLE", "База даних тимчасово недоступна")
+    return {"status": "ok", "version": "1.0.0", "message": "Database operational", "checks": result["checks"]}
 
 
 if __name__ == "__main__":
