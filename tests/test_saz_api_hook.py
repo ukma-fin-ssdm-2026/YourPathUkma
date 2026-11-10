@@ -52,10 +52,11 @@ def test_certificates_job_is_not_started(admin_client, started):
     assert started == []
 
 
-def test_autorun_can_be_disabled(admin_client, started, monkeypatch):
+def test_disabled_autorun_does_not_queue_jobs(admin_client, started, monkeypatch):
     monkeypatch.setenv("SAZ_AUTORUN", "0")
     response = admin_client.post("/api/v1/admin/sync-jobs", json={"source": "saz_catalog"})
-    assert response.status_code == 202
+    assert response.status_code == 503
+    assert response.json()["code"] == "SAZ_LIVE_SYNC_DISABLED"
     assert started == []
 
 

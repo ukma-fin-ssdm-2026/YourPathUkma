@@ -2505,6 +2505,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SyncJobResponse'
+        '503':
+          description: Серверний парсинг САЗ вимкнено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
           content:
@@ -2635,6 +2641,98 @@ paths:
                 request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/sync-jobs/saz-import:
+    post:
+      tags:
+      - Admin
+      summary: Імпортувати каталог САЗ
+      operationId: import_saz_catalog_api_v1_admin_sync_jobs_saz_import_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Файл експорту САЗ v1
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncJobResponse'
+        '401':
+          description: 'Неавторизований доступ: відсутній або некоректний JWT-токен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: UNAUTHORIZED
+                message: Відсутній або некоректний токен авторизації
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '403':
+          description: 'Доступ заборонено: ресурс належить іншому студенту'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: FORBIDDEN_ROLE
+                message: Потрібна роль адміністратора
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '409':
+          description: 'Конфлікт: дія неможлива в поточному стані ресурсу'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: SYNC_JOB_ALREADY_RUNNING
+                message: Для цього джерела вже виконується синхронізація
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '413':
+          description: Файл завеликий
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: FILE_TOO_LARGE
+                message: Файл більший за 25 МіБ
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '415':
+          description: Непідтримуваний тип файлу
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: UNSUPPORTED_FILE_TYPE
+                message: Потрібен файл JSON
+                details: []
+                request_id: req_3f9a1c7e2b4d4a6e
+        '422':
+          description: Помилка валідації вхідних даних
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: SAZ_BUNDLE_INVALID
+                message: Некоректний файл каталогу САЗ
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
+      security:
+      - HTTPBearer: []
+      x-ai-usage: 'Використання ШІ: Codex додав імпорт САЗ. Перевірка: pytest та генерація
+        OpenAPI.'
   /api/v1/admin/sync-jobs/{job_id}:
     get:
       tags:
@@ -4809,6 +4907,11 @@ components:
           type: boolean
           title: Certificate Programs
           description: Сертифікатні програми (етап 2)
+          default: false
+        saz_catalog_live:
+          type: boolean
+          title: Saz Catalog Live
+          description: Серверний парсинг каталогу САЗ
           default: false
         saz_sync:
           type: boolean

@@ -9,6 +9,8 @@ GET /admin/moderation-items, POST /admin/moderation-items/{id}/approve|reject, P
 
 Для джерела `saz_catalog` задачу після відповіді підхоплює `src.parser.sync.run_sync_job` (BackgroundTasks) і
 веде її `queued` -> `running` -> `succeeded`/`failed`. Вимкнути автозапуск: SAZ_AUTORUN=0.
+Використання ШІ: імпорт каталогу САЗ додано Codex. Перевірка: pytest.
+
 TODO(команда): для `faculty_certificates` парсера ще немає, така задача лишається в `queued`, а нова для того
 самого джерела дасть 409 SYNC_JOB_ALREADY_RUNNING (часткова унікальність у БД).
 """
@@ -21,6 +23,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from starlette.concurrency import run_in_threadpool
 
 from ....db import enums as db_enums
 from ....db.base import normalize_text, utcnow
@@ -28,9 +31,10 @@ from ....db.models.admin import ModerationItem, SyncJob
 from ....db.models.catalog import Course, CourseInstructor, Instructor
 from ....db.models.users import User
 from ....db.session import get_db
+from ....parser.bundle import MAX_BUNDLE_BYTES, CatalogBundle
 from ....parser.config import autorun_enabled
-from ....parser.sync import fail_stale_jobs, run_sync_job
-from ...common import ApiError, ErrorDetail, PaginationInfo, error_responses
+from ....parser.sync import fail_stale_jobs, run_sync_job, stage_catalog
+from ...common import ApiError, ErrorDetail, ErrorResponse, PaginationInfo, error_responses
 from .common import client_ip, require_admin, write_audit
 
 router = APIRouter(
@@ -344,6 +348,7 @@ def _review_item(
     description="Створює задачу зі статусом `queued`. На джерело не більше однієї активної задачі (409).",
     responses={
         202: {"description": "Задачу поставлено в чергу"},
+        503: {"model": ErrorResponse, "description": "Серверний парсинг САЗ вимкнено"},
         **error_responses(
             401,
             403,
@@ -364,6 +369,9 @@ def start_sync_job(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
+    is_saz = payload.source == db_enums.SyncSource.SAZ_CATALOG
+    if is_saz and not autorun_enabled():
+        raise ApiError(503, "SAZ_LIVE_SYNC_DISABLED", "Серверний парсинг САЗ вимкнено. Імпортуйте файл каталогу.")
     fail_stale_jobs(db)
     conflict = ApiError(409, "SYNC_JOB_ALREADY_RUNNING", "Для цього джерела вже виконується синхронізація")
     active = db.scalar(
@@ -398,8 +406,87 @@ def start_sync_job(
         db.rollback()
         raise conflict
     response.headers["Location"] = f"/api/v1/admin/sync-jobs/{job.id}"
-    if payload.source == db_enums.SyncSource.SAZ_CATALOG and autorun_enabled():
+    if is_saz:
         background_tasks.add_task(run_sync_job, job.id)
+    return _job_response(job, {admin.id: admin})
+
+
+@router.post(
+    "/sync-jobs/saz-import",
+    response_model=SyncJobResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Імпортувати каталог САЗ",
+    openapi_extra={
+        "x-ai-usage": "Використання ШІ: Codex додав імпорт САЗ. Перевірка: pytest та генерація OpenAPI.",
+        "requestBody": {
+            "required": True,
+            "content": {"application/json": {"schema": {"type": "object", "description": "Файл експорту САЗ v1"}}},
+        },
+    },
+    responses=error_responses(
+        401,
+        403,
+        409,
+        413,
+        415,
+        422,
+        overrides={
+            403: _FORBIDDEN,
+            409: ("SYNC_JOB_ALREADY_RUNNING", "Для цього джерела вже виконується синхронізація"),
+            413: ("FILE_TOO_LARGE", "Файл більший за 25 МіБ"),
+            415: ("UNSUPPORTED_FILE_TYPE", "Потрібен файл JSON"),
+            422: ("SAZ_BUNDLE_INVALID", "Некоректний файл каталогу САЗ"),
+        },
+    ),
+)
+async def import_saz_catalog(
+    request: Request,
+    response: Response,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    if request.headers.get("content-type", "").partition(";")[0].strip().lower() != "application/json":
+        raise ApiError(415, "UNSUPPORTED_FILE_TYPE", "Потрібен файл JSON")
+    content = bytearray()
+    async for chunk in request.stream():
+        if len(content) + len(chunk) > MAX_BUNDLE_BYTES:
+            raise ApiError(413, "FILE_TOO_LARGE", "Файл більший за 25 МіБ")
+        content.extend(chunk)
+    return await run_in_threadpool(_import_saz_catalog, request, response, db, admin, content)
+
+
+def _import_saz_catalog(request: Request, response: Response, db: Session, admin: User, content: bytearray):
+    try:
+        bundle = CatalogBundle.model_validate_json(content)
+    except ValidationError:
+        raise ApiError(422, "SAZ_BUNDLE_INVALID", "Некоректний файл каталогу САЗ") from None
+
+    fail_stale_jobs(db)
+    job = SyncJob(
+        source=db_enums.SyncSource.SAZ_CATALOG,
+        initiator=db_enums.SyncInitiator.ADMIN,
+        initiated_by=admin.id,
+        status=db_enums.SyncJobStatus.RUNNING,
+    )
+    db.add(job)
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        raise ApiError(409, "SYNC_JOB_ALREADY_RUNNING", "Для цього джерела вже виконується синхронізація") from None
+
+    write_audit(
+        db,
+        actor_id=admin.id,
+        action="sync_job.start",
+        object_type="SyncJob",
+        object_id=job.id,
+        new_value={"source": job.source.value, "mode": "import"},
+        ip=client_ip(request),
+    )
+    stage_catalog(db, job, bundle)
+    db.commit()
+    response.headers["Location"] = f"/api/v1/admin/sync-jobs/{job.id}"
     return _job_response(job, {admin.id: admin})
 
 

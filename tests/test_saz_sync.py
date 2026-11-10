@@ -176,3 +176,30 @@ def test_stale_worker_cannot_finish_or_enqueue():
     run_sync_job(job_id, _factory(StaleFetcher()))
     assert _job(job_id).status == db_enums.SyncJobStatus.FAILED
     assert _items(job_id) == []
+
+
+def test_local_scan_and_upload_stage_same_payloads(admin_client):
+    from src.parser.catalog_scan import scan_catalog
+    from src.parser.config import load_settings
+
+    fetcher = FakeFetcher({1: _single_page_html()})
+    local = _new_job()
+    run_sync_job(local, _factory(fetcher))
+    expected = {item.payload["saz_code"]: item.payload for item in _items(local)}
+    assert len(expected) == 20
+
+    with session_factory()() as db:
+        for item in db.scalars(select(ModerationItem).where(ModerationItem.sync_job_id == local)):
+            item.status = db_enums.ModerationStatus.REJECTED
+        db.commit()
+
+    bundle = scan_catalog(fetcher, load_settings())
+    response = admin_client.post(
+        "/api/v1/admin/sync-jobs/saz-import",
+        content=bundle.model_dump_json(exclude_unset=True),
+        headers={"Content-Type": "application/json"},
+    )
+    assert response.status_code == 201
+    imported = _items(response.json()["id"])
+    assert {item.payload["saz_code"]: item.payload for item in imported} == expected
+    assert {item.change_type for item in imported} == {db_enums.ModerationChangeType.ADD}
