@@ -4,6 +4,7 @@
 import { http, HttpResponse } from "msw";
 import type { Discipline, Instructor, PlanItem, PlanResponse } from "../api/types";
 import { db } from "./db";
+import { configFixture } from "./fixtures";
 import { API, apiError, hasAuth, paginate, unauthorized } from "./http";
 
 const DIRECTIONS = [
@@ -170,36 +171,7 @@ const replace = (plan: PlanResponse) => {
 };
 
 export const coreHandlers = [
-  http.get(`${API}/config`, () =>
-    HttpResponse.json({
-      api_version: "1.0.0",
-      allowed_email_domain: "ukma.edu.ua",
-      reviews_url: "https://example.ukma.edu.ua/reviews",
-      limits: {
-        total_credits: 240,
-        free_choice_credits: 25,
-        professional_credits: 54,
-        min_year_credits: 57,
-        max_directions: 3,
-        max_plan_items: 30,
-        max_item_credits: 30,
-        academic_year_min: 2024,
-        academic_year_max: 2030,
-        max_upload_bytes: 10485760,
-      },
-      load_levels: {
-        low: { max_hours_per_week: 20 },
-        medium: { min_hours_per_week: 20, max_hours_per_week: 23 },
-        high: { min_hours_per_week: 23, max_hours_per_week: 25 },
-      },
-      features: {
-        ai_generation: false,
-        certificate_programs: false,
-        saz_sync: true,
-        plan_export: true,
-      },
-    }),
-  ),
+  http.get(`${API}/config`, () => HttpResponse.json(configFixture({ saz_sync: true }))),
 
   // Довідник напрямків спільний з адмінкою, тож додані там напрямки одразу видно скрізь.
   http.get(`${API}/directions`, () => HttpResponse.json({ directions: db.admin.directions })),

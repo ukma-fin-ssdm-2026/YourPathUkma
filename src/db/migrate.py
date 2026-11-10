@@ -5,6 +5,7 @@
 upgrade head і видаляється через downgrade base на SQLite і PostgreSQL).
 """
 
+import logging
 import os
 
 from alembic import command
@@ -13,6 +14,8 @@ from alembic.config import Config
 from .config import ROOT_DIR, database_url
 from .seed import seed_demo_data
 from .session import session_factory
+
+logger = logging.getLogger(__name__)
 
 
 def alembic_config(url: str = "") -> Config:
@@ -33,13 +36,25 @@ def downgrade_base(url: str = "") -> None:
     command.downgrade(alembic_config(url), "base")
 
 
+def demo_data_enabled() -> bool:
+    """
+    SEED_DEMO_DATA=1/0 задає це явно. Без неї демо-дані (адмін, студенти, вигадані дисципліни) вмикаються лише
+    поза production: на порожній продакшн-БД їх не має бути.
+    """
+    production = os.getenv("APP_ENV", "development") == "production"
+    explicit = os.getenv("SEED_DEMO_DATA")
+    if explicit is None:
+        return not production
+    enabled = explicit == "1"
+    if enabled and production:
+        logger.warning("SEED_DEMO_DATA=1 при APP_ENV=production: у порожню БД буде додано демо-акаунти й дані")
+    return enabled
+
+
 def init_database() -> None:
-    """
-    Виклик при старті API: схема до останньої версії + демо-дані в порожню БД.
-    SEED_DEMO_DATA=0 вимикає демо-дані (потрібно, коли з'явиться справжня автентифікація).
-    """
+    """Виклик при старті API: схема до останньої версії + (за потреби) демо-дані в порожню БД."""
     upgrade_head()
-    if os.getenv("SEED_DEMO_DATA", "1") == "1":
+    if demo_data_enabled():
         with session_factory()() as db:
             if seed_demo_data(db):
                 db.commit()

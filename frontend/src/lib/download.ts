@@ -2,7 +2,8 @@
 /** Ім'я файлу з Content-Disposition: `filename*=UTF-8''…`, `filename="…"` або `filename=…`; інакше null. */
 export function parseDispositionFilename(header: string | null): string | null {
   if (!header) return null;
-  const encoded = /filename\*\s*=\s*[^']*''([^;]+)/i.exec(header)?.[1];
+  // Після `=` одразу `[^']*`: він і так охоплює пробіли, а другий `\s*` поруч давав квадратичний backtracking.
+  const encoded = /filename\*\s*=[^']*''([^;]+)/i.exec(header)?.[1];
   if (encoded) {
     try {
       return decodeURIComponent(encoded.trim());

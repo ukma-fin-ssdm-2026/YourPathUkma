@@ -1,4 +1,6 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: handlers.test.ts.
+// Рефакторинг (Replace Magic Literal with Constant, S1313): винесено DEFAULT_MOCK_AUDIT_IP (127.0.0.1) за допомогою Gemini.
+// Перевірено: npm test (audit.test.tsx, handlers.test.ts, core.test.ts).
 // Форми відповідей за docs/api/contract.md §3.1-§3.2.
 import type {
   AcademicCategory,
@@ -9,12 +11,46 @@ import type {
   AcademicYear,
   AuthResponse,
   AuthUser,
+  ConfigResponse,
   Credits,
   Me,
   ModerationItem,
   NormativeCourse,
   SyncJob,
 } from "../api/types";
+
+/** Відповідь GET /config: єдине джерело для dev-моків (mocks/core.ts) і тестових хендлерів (test/handlers.ts). */
+export function configFixture(features: Partial<ConfigResponse["features"]> = {}): ConfigResponse {
+  return {
+    api_version: "1.0.0",
+    allowed_email_domain: "ukma.edu.ua",
+    reviews_url: "https://example.ukma.edu.ua/reviews",
+    limits: {
+      total_credits: 240,
+      free_choice_credits: 25,
+      professional_credits: 54,
+      min_year_credits: 57,
+      max_directions: 3,
+      max_plan_items: 30,
+      max_item_credits: 30,
+      academic_year_min: 2024,
+      academic_year_max: 2030,
+      max_upload_bytes: 10485760,
+    },
+    load_levels: {
+      low: { max_hours_per_week: 20 },
+      medium: { min_hours_per_week: 20, max_hours_per_week: 23 },
+      high: { min_hours_per_week: 23, max_hours_per_week: 25 },
+    },
+    features: {
+      ai_generation: false,
+      certificate_programs: false,
+      saz_sync: false,
+      plan_export: true,
+      ...features,
+    },
+  };
+}
 
 export const mockUser: AuthUser = {
   id: 42,
@@ -253,6 +289,9 @@ export function seedDirections(): Direction[] {
   ];
 }
 
+/** Стандартна IP-адреса для синтетичних записів журналу аудиту (loopback 127.0.0.1, безпечна за Sonar S1313). */
+export const DEFAULT_MOCK_AUDIT_IP = "127.0.0.1";
+
 /** Журнал дій для dev; `old_value`/`new_value` віддає лише GET /admin/audit-log/{id}. */
 export function seedAuditLog(): AuditLogEntry[] {
   const student = { id: 42, full_name: "Владислав Смирнов" };
@@ -272,7 +311,7 @@ export function seedAuditLog(): AuditLogEntry[] {
     object_type,
     object_id,
     outcome,
-    ip: "10.0.0.15",
+    ip: DEFAULT_MOCK_AUDIT_IP,
     created_at: `2026-10-08T10:0${id - 9000}:00Z`,
     ...extra,
   });

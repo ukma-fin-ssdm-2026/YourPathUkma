@@ -5,6 +5,8 @@
 > A web platform for NaUKMA Faculty of Informatics students to build
 > personalized academic plans with AI-powered course recommendations.
 
+**Онлайн-версія:** [https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io](https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io) · [Розгорнута система](docs/deployment/deployed-system.md)
+
 ## Team
 
 | Member | GitHub | Email |
@@ -31,6 +33,14 @@ The platform allows students to:
 
 Students sign in via their corporate NaUKMA email.
 
+## Розгорнута система
+
+Застосунок розгорнуто публічно в Microsoft Azure (Azure Container Apps і Azure Database for PostgreSQL, один Docker-образ):
+
+- **Сайт:** [https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io](https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io) (вхід лише з поштою `@ukma.edu.ua` через Microsoft)
+- **Swagger UI розгорнутого API:** [https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io/api-docs](https://yourpath.blackbush-960afa87.francecentral.azurecontainerapps.io/api-docs)
+- Опис, схема, обмеження й перевірка: [docs/deployment/deployed-system.md](docs/deployment/deployed-system.md)
+
 ---
 
 ## Карта документації
@@ -45,6 +55,7 @@ Students sign in via their corporate NaUKMA email.
 | 4 | API | [API](#api) | [`docs/api/`](docs/api/) |
 | 5 | Якість коду | [Якість коду](#якість-коду) | [`docs/code-quality/`](docs/code-quality/) |
 | 6 | Тестування | [Тестування](#тестування) | [`docs/testing/`](docs/testing/) |
+| 7 | Валідація й рефакторинг | [Валідація](#валідація), [Рефакторинг](#рефакторинг) | [`docs/validation/`](docs/validation/), [`docs/refactoring/`](docs/refactoring/) |
 
 Також: [Project-Description.md](Project-Description.md) (повний опис проєкту), [AGENTS.md](AGENTS.md) (контекст для AI-агентів), [frontend/README.md](frontend/README.md) (frontend).
 
@@ -95,6 +106,17 @@ Students sign in via their corporate NaUKMA email.
 - [Нотатки про якість тестів](docs/testing/test-quality-notes.md)
 - [Звіт про покриття (HTML)](docs/testing/coverage/README.md)
 
+## Валідація
+Документація: [`/docs/validation/`](docs/validation/)
+
+- [Тест-план](docs/validation/test-plan.md): тест-кейси TP-01…TP-18 для правил плану, API планів і каталогу дисциплін, ризики й критерії виходу; бонуси: таблиця переходів між станами плану (ST-01…ST-13) і виконуваний нефункціональний тест SEC-001
+- [Журнал оглядів](docs/validation/review-log.md): огляд нашого тест-плану командою Rehab і внесені зміни; огляд PR із тестами, згенерованими ШІ
+
+## Рефакторинг
+Документація: [`/docs/refactoring/`](docs/refactoring/)
+
+- [Звіт про аналіз якості коду в SonarCloud](docs/refactoring/sonarcloud-report.md): проблеми за категоріями (Security, Reliability, Maintainability, Duplications) і статуси їх виправлення
+
 ## Запуск API
 
 Потрібні Python 3.12 і Node.js 22 (як у CI).
@@ -112,7 +134,7 @@ pytest -q
 
 | Змінна | Коли потрібна |
 |---|---|
-| `DATABASE_URL` | не потрібна: без неї дані зберігаються в локальному файлі `yourpath.sqlite`; для PostgreSQL: `docker compose up -d db` і значення з [`.env.example`](.env.example) |
+| `DATABASE_URL` | не потрібна поза production: без неї дані зберігаються в локальному файлі `yourpath.sqlite` (при `APP_ENV=production` змінна обов'язкова); для PostgreSQL: `docker compose up -d db` і значення з [`.env.example`](.env.example) |
 | `MS_TENANT_ID`, `MS_CLIENT_ID` (і `MS_CLIENT_SECRET` для типу застосунку Web) | для входу через Microsoft і обов'язково при `APP_ENV=production` |
 | `ADMIN_EMAILS` | пошти, які при першому вході отримують роль адміністратора |
 | `COOKIE_SECURE=0` | лише для `http://localhost` (Safari); у production заборонено |
@@ -223,7 +245,7 @@ npm run typecheck
 ---
 **Нотатка щодо використання ШІ (посилання на API-контракт):** рядок із посиланням на `docs/api/contract.md` у розділі «Архітектура» додано за допомогою Claude (Claude Code); перевірено, що файл існує за цим шляхом.
 
-**Нотатка щодо використання ШІ (Docker і розгортання):** розділ «Docker і розгортання», `Dockerfile`, `.dockerignore`, `docs/deployment/azure.md`, `src/api/frontend_site.py` і workflow `docker-publish.yml` створено за допомогою Claude (Claude Code). Перевірка: збірка образу, запуск контейнера, pytest; команди Azure не запускались у реальній підписці.
+**Нотатка щодо використання ШІ (розгорнута система):** рядок про онлайн-версію, розділ «Розгорнута система» і сторінку `docs/deployment/deployed-system.md` створено за допомогою Claude (Claude Code) за станом реального розгортання в Azure. Перевірка: `GET /health` = 200, сайт і Swagger відкриваються.
 
 **Нотатка щодо використання ШІ (запуск, змінні середовища, вхід):** розділи «Запуск API» (кроки з `.env` і `JWT_SECRET`, таблиця змінних) і «Вхід у застосунок» створено за допомогою Claude (Claude Code) за зауваженнями репетиції проміжного оцінювання. Перевірка: порожній `.env` без `JWT_SECRET` зупиняє старт, а після кроків з README API стартує; `scripts/issue_token.py` видає токен, який приймає API.
 
@@ -232,3 +254,5 @@ npm run typecheck
 **Нотатка щодо використання ШІ (міні-ТЗ):** посилання на міні-ТЗ у розділі «Артефакти вимог» додано за допомогою Claude (Claude Code); перевірено, що файл існує.
 
 **Нотатка щодо використання ШІ (карта документації):** розділи «Карта документації», «Командний процес», «API», «Якість коду», «Тестування» та оновлені списки в «Артефакти вимог» й «Архітектура» створено за допомогою Claude (Claude Code). Перевірено скриптом, що відносні посилання в `.md` файлах репозиторію ведуть на наявні файли; опис CI звірено з файлами в `.github/workflows/`.
+
+**Нотатка щодо використання ШІ (валідація й рефакторинг):** рядок «7» у «Карті документації» та розділи «Валідація» і «Рефакторинг» додано за допомогою Claude. Опис складено за початками `docs/validation/test-plan.md`, `docs/validation/review-log.md` і `docs/refactoring/sonarcloud-report.md`; існування файлів за вказаними шляхах звірено зі структурою репозиторію. Посилання-якорі `#валідація` і `#рефакторинг` скриптом не перевірялись.

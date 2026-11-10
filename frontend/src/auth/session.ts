@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: session.test.ts.
 import { create } from "zustand";
 import { configureAuth, request } from "../api/client";
+import { ApiError } from "../api/errors";
 import { queryClient } from "../api/queryClient";
 import { setAccessToken } from "../api/token";
 import type { AuthResponse, AuthUser } from "../api/types";
@@ -26,17 +27,27 @@ export const useSession = create<SessionState>((set) => ({
   },
 }));
 
+/**
+ * `null`: сервер визнав сесію недійсною (401/403). Збій мережі, тайм-аут чи 5xx прокидаються як виняток:
+ * вони не мають розлогінювати користувача й скидати його незбережені дані.
+ */
 async function refreshRequest(): Promise<AuthResponse | null> {
   try {
     return await request<AuthResponse>("/auth/refresh", { method: "POST", auth: false });
-  } catch {
-    return null;
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 401 || error.status === 403)) return null;
+    throw error;
   }
 }
 
 /** Відновлює сесію з refresh-cookie при старті застосунку. */
 export async function restoreSession(): Promise<void> {
-  const auth = await refreshRequest();
+  let auth: AuthResponse | null = null;
+  try {
+    auth = await refreshRequest();
+  } catch {
+    // Сервер недоступний при старті: скидати ще нічого, показуємо вхід замість вічного «Завантаження…»
+  }
   if (auth) useSession.getState().setAuthenticated(auth);
   else useSession.getState().setAnonymous();
 }

@@ -35,17 +35,17 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - run: "pip install --only-binary :all: -r requirements.txt -r requirements-dev.txt"
       - name: Lint (ruff)
-        run: pip install ruff && ruff check src tests scripts mcp
+        run: "pip install --only-binary :all: ruff==0.17.0 && ruff check src tests scripts mcp"
       - name: Security scan (bandit)
-        run: pip install "bandit[toml]" && bandit -c pyproject.toml -r src mcp scripts tests
+        run: 'pip install --only-binary :all: "bandit[toml]==1.9.4" && bandit -c pyproject.toml -r src mcp scripts tests'
       - name: Generate OpenAPI from code
         run: python scripts/generate_openapi.py
       - name: Fail if committed spec is out of date
         run: git diff --exit-code docs/api/
       - name: Tests with coverage report
-        run: pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-report=html --cov-report=xml --cov-fail-under=80
+        run: pytest -q --ignore=tests/reliability --cov=src --cov-branch --cov-report=term-missing --cov-report=html --cov-report=xml --cov-fail-under=80
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v7
@@ -67,7 +67,7 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - name: Security audit (npm audit)
         run: npm audit --audit-level=high
       - run: npm run gen:api

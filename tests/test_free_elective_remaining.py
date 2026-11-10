@@ -16,4 +16,5 @@ def test_remaining_never_negative():
 
 
 def test_negative_used_rejected():
-    pytest.raises(ValueError, lambda: plan_rules.free_elective_remaining(-1))
+    with pytest.raises(ValueError):
+        plan_rules.free_elective_remaining(-1)

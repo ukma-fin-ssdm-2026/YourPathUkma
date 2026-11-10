@@ -98,27 +98,13 @@ describe("completeLogin", () => {
     sessionStorage.setItem("oauth_nonce", "n".repeat(22));
   });
 
-  it("чужий state: OAUTH_STATE_MISMATCH без запиту до API", async () => {
+  it.each([
+    ["чужий state", "?code=c&state=WRONG", "OAUTH_STATE_MISMATCH"],
+    ["error у відповіді Microsoft", "?error=access_denied&state=state-1", "OAUTH_ERROR"],
+    ["немає code", "?state=state-1", "OAUTH_MISSING_CODE"],
+  ])("%s: відхиляється без запиту до API", async (_case, query, code) => {
     const counter = countExchanges();
-    await expect(completeLogin("?code=c&state=WRONG")).rejects.toMatchObject({
-      code: "OAUTH_STATE_MISMATCH",
-    });
-    expect(counter.calls).toBe(0);
-  });
-
-  it("error у відповіді Microsoft: OAUTH_ERROR без запиту до API", async () => {
-    const counter = countExchanges();
-    await expect(completeLogin("?error=access_denied&state=state-1")).rejects.toMatchObject({
-      code: "OAUTH_ERROR",
-    });
-    expect(counter.calls).toBe(0);
-  });
-
-  it("немає code: OAUTH_MISSING_CODE без запиту до API", async () => {
-    const counter = countExchanges();
-    await expect(completeLogin("?state=state-1")).rejects.toMatchObject({
-      code: "OAUTH_MISSING_CODE",
-    });
+    await expect(completeLogin(query)).rejects.toMatchObject({ code });
     expect(counter.calls).toBe(0);
   });
 

@@ -14,6 +14,14 @@ describe("pkce", () => {
     expect(value).toMatch(/^[A-Za-z0-9_-]+$/);
   });
 
+  it.each([1, 2, 3, 16, 31, 32])("randomUrlSafe(%i) не містить base64-доповнення '='", (bytes) => {
+    const value = randomUrlSafe(bytes);
+    expect(value).not.toContain("=");
+    expect(value).toMatch(/^[A-Za-z0-9_-]+$/);
+    // base64 без доповнення: ceil(bytes * 4 / 3) символів
+    expect(value).toHaveLength(Math.ceil((bytes * 4) / 3));
+  });
+
   it("два виклики дають різні значення", () => {
     expect(randomUrlSafe(16)).not.toBe(randomUrlSafe(16));
   });

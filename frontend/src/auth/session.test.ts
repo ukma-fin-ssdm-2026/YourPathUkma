@@ -89,4 +89,44 @@ describe("session", () => {
     await expect(request("/me")).rejects.toMatchObject({ code: "UNAUTHORIZED" });
     expect(useSession.getState().status).toBe("anonymous");
   });
+
+  it("installAuth: збій мережі під час refresh не розлогінює й не стирає кеш", async () => {
+    await signInOnServer();
+    await restoreSession();
+    queryClient.setQueryData(["plans", "all"], { plans: ["чернетка"] });
+    installAuth();
+    setAccessToken("expired");
+    server.use(
+      http.get("*/api/v1/me", () =>
+        HttpResponse.json({ code: "UNAUTHORIZED", message: "x", details: [] }, { status: 401 }),
+      ),
+      http.post("*/api/v1/auth/refresh", () => HttpResponse.error()),
+    );
+    await expect(request("/me")).rejects.toMatchObject({ status: 0, code: "NETWORK_ERROR" });
+    expect(useSession.getState().status).toBe("authenticated");
+    expect(queryClient.getQueryData(["plans", "all"])).toEqual({ plans: ["чернетка"] });
+  });
+
+  it("installAuth: 5xx під час refresh не розлогінює", async () => {
+    await signInOnServer();
+    await restoreSession();
+    installAuth();
+    setAccessToken("expired");
+    server.use(
+      http.get("*/api/v1/me", () =>
+        HttpResponse.json({ code: "UNAUTHORIZED", message: "x", details: [] }, { status: 401 }),
+      ),
+      http.post("*/api/v1/auth/refresh", () =>
+        HttpResponse.json({ code: "INTERNAL_ERROR", message: "x", details: [] }, { status: 503 }),
+      ),
+    );
+    await expect(request("/me")).rejects.toMatchObject({ status: 503 });
+    expect(useSession.getState().status).toBe("authenticated");
+  });
+
+  it("restoreSession: недоступний сервер при старті дає anonymous, а не вічне loading", async () => {
+    server.use(http.post("*/api/v1/auth/refresh", () => HttpResponse.error()));
+    await restoreSession();
+    expect(useSession.getState().status).toBe("anonymous");
+  });
 });

@@ -40,7 +40,7 @@
 
 | Сутність | Первинний ключ | Унікальні поля (`<<unique>>`) | Призначення | Дані |
 |---|---|---|---|---|
-| `User` | `id` | `google_sub`, `email` | Обліковий запис (студент або адмін) після Microsoft SSO. Спочатку вхід було реалізовано через Google, але згодом його переробили на Microsoft SSO (стандарт для сайтів НаУКМА); назву поля `google_sub` при цьому не змінили, зараз воно зберігає унікальний ідентифікатор користувача від Microsoft SSO | **PII** |
+| `User` | `id` | `ms_oid`, `email` | Обліковий запис (студент або адмін) після Microsoft SSO. `ms_oid` зберігає унікальний ідентифікатор користувача від Microsoft SSO. Спочатку вхід було реалізовано через Google, тому поле мало назву `google_sub`; його перейменовано на `ms_oid` міграцією `0004_microsoft_auth` | **PII** |
 | `StudentProfile` | `user_id` (PK = FK, 1:1 з `User`) | — | Курс, спеціальність, лічильники кредитів | **PII** |
 | `PlanPreferences` | `id` | — | Побажання студента на навчальний рік | **PII** |
 | `PreferenceDirection` | (`preferences_id`, `direction_id`) | — | 1–3 обрані напрямки (FR-007) | — |
@@ -67,7 +67,7 @@
 
 | Поле | Категорія | Чому чутливе | Як захищене (див. `threat-model.md`) |
 |---|---|---|---|
-| `User.email`, `User.full_name`, `User.google_sub` | PII, пряма ідентифікація | Ідентифікують студента | Доступ лише власнику (R3); не передаються в LLM (R1) |
+| `User.email`, `User.full_name`, `User.ms_oid` | PII, пряма ідентифікація | Ідентифікують студента | Доступ лише власнику (R3); не передаються в LLM (R1) |
 | `User.role` | sensitive (права) | Визначає доступ до адмін-модулів | Змінюється лише іншим адміном, не з тіла запиту (R2) |
 | `StudentProfile.specialty`, `course_year` | PII; `course_year` ще й визначає права (FR-001, FR-003) | Освітні дані студента | `course_year` змінює лише синхронізація з САЗ або адмін (`course_year_source`, R15) |
 | `StudentProfile.credits_used_*` | PII (академічний прогрес) | Освітні дані | Похідні, обчислюються сервером (R15) |
@@ -104,3 +104,4 @@
 - **Що створено/змінено:** модель даних (`uml/data-model.plantuml`) і цей документ складено за допомогою Claude (Claude Code) на основі `Project-Description.md`, `requirements.md`, `AGENTS.md`, `traceability-matrix.md`, `component-diagram.plantuml`, `uml/deployment.puml`, `sequence-generate-plan.puml`. Сутності `AuditLog`, `AIGenerationRequest` і поля `course_year_source`, `sha256`, `raw_snapshot*` додано за результатами STRIDE-аналізу (`threat-model.md`). Тип ключів змінено з `UUID` на `bigint` на прохання команди.
 - **Як перевірено:** діаграму відрендерено PlantUML без помилок; вручну звірено, що кожна з 7 ключових функцій має сутності, кожна сутність має PK, а позначки `{PII}` відповідають таблиці розділу 3; посилання на FR / NFR / Test звірено з `requirements.md` і `rtm.md`.
 - **Редагування (виправлення документації):** за допомогою Claude (Claude Code) замінено неіснуюче посилання `database.md` на посилання до коду (`src/db`, `migrations`), оновлено діапазон FR-001…FR-013, прибрано неіснуючу вимогу «НФВ-1» (замість неї FR-013 і PERF-002 для каталогу), статуси плану узгоджено з `src/db/enums.py`, додано примітку про історичну назву поля `google_sub`, виправлено заголовок цього розділу. Перевірено звіркою з `requirements.md`, `traceability-matrix.md`, `src/db/models/users.py` і `src/db/enums.py`; PlantUML-діаграму не змінювано і не перерендерювано.
+- **Виправлення після проміжного оцінювання (01.11.2026, Claude):** у таблиці сутностей (розділ 2) і в таблиці PII (розділ 3) поле `User.google_sub` замінено на `ms_oid` з поясненням про перейменування. **Як перевірено:** назву поля й унікальність зіставлено з `src/db/models/users.py:24` (`ms_oid`, `unique=True`), `src/api/auth_service.py` і міграцією `migrations/versions/0004_microsoft_auth.py` (перейменування `google_sub` → `ms_oid`, констрейнт `uq_users_ms_oid`) за виводом `grep`. PlantUML-діаграму `uml/data-model.plantuml` і `uml/svg/data-model.svg` цим комітом не змінено, у них ще може бути `google_sub`; тести не запускались.
