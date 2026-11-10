@@ -1,4 +1,4 @@
-"""Гонки між перевіркою й записом у планах.
+"""Гонки між перевіркою й записом у планах та академічній історії.
 
 Використання ШІ: Codex додав регресійні тести. Перевірка: pytest на PostgreSQL до й після виправлення.
 """
@@ -10,12 +10,14 @@ from time import monotonic
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import delete, event, text
+from sqlalchemy import delete, event, select, text
 
+from src.api.common import get_current_student_id
 from src.api.main import app
 from src.db.config import database_url
 from src.db.enums import PlanStatus
-from src.db.models import IndividualPlan
+from src.db.models import AcademicRecord, IndividualPlan, User
+from src.db.models.users import StudentProfile
 from src.db.session import get_engine, session_factory
 
 pytestmark = pytest.mark.skipif(
@@ -25,6 +27,7 @@ pytestmark = pytest.mark.skipif(
 
 WAIT_SECONDS = 15
 PLAN_URL = "/api/v1/plans"
+HISTORY_URL = "/api/v1/me/academic-history"
 PLAN = {
     "academic_year": 2027,
     "course": 3,
@@ -108,3 +111,57 @@ def test_submitting_plan_rejects_concurrent_draft_mutation(draft_plan, method, e
         plan = db.get(IndividualPlan, draft_plan)
         assert plan.status == PlanStatus.SUBMITTED
         assert [item.course_id for item in plan.items] == [101]
+
+
+@pytest.fixture
+def history_student(monkeypatch):
+    with session_factory()() as db:
+        user = User(ms_oid="race-history", email="race-history@example.test", full_name="Студент")
+        user.student_profile = StudentProfile(course_year=3, specialty="Комп'ютерні науки")
+        db.add(user)
+        db.commit()
+        student_id = user.id
+    monkeypatch.setitem(app.dependency_overrides, get_current_student_id, lambda: student_id)
+    yield student_id
+    with session_factory()() as db:
+        db.execute(delete(User).where(User.id == student_id))
+        db.commit()
+
+
+@pytest.mark.parametrize(
+    "category, prior_credits, error_code",
+    [
+        ("free_choice", [23], "FREE_ELECTIVE_LIMIT_EXCEEDED"),
+        ("professional", [30] * 7 + [28], "TOTAL_CREDITS_EXCEEDED"),
+    ],
+)
+def test_concurrent_history_writes_cannot_exceed_credit_limit(history_student, category, prior_credits, error_code):
+    def record(title, credits):
+        return {
+            "title": title,
+            "credits": credits,
+            "academic_year": 2025,
+            "course_year": 2,
+            "trimester": 1,
+            "category": category,
+        }
+
+    def add_records(records):
+        return TestClient(app).post(HISTORY_URL, json={"records": records})
+
+    baseline = add_records(
+        [record(f"Попередня дисципліна {index}", credits) for index, credits in enumerate(prior_credits)]
+    )
+    assert baseline.status_code == 201, baseline.text
+    first, second = _concurrent_requests(
+        lambda: add_records([record("Паралельна дисципліна А", 2)]),
+        lambda: add_records([record("Паралельна дисципліна Б", 2)]),
+        lambda db: any(isinstance(row, AcademicRecord) and row.title == "Паралельна дисципліна А" for row in db.new),
+    )
+
+    assert first.status_code == 201, first.text
+    assert second.status_code == 422, second.text
+    assert error_code in second.json()["details"][0]["message"]
+    with session_factory()() as db:
+        credits = db.scalars(select(AcademicRecord.credits).where(AcademicRecord.student_id == history_student)).all()
+    assert sum(credits) == sum(prior_credits) + 2
