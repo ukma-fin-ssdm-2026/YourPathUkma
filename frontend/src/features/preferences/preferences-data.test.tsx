@@ -1,7 +1,9 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
+import { http, HttpResponse } from "msw";
 import { setAccessToken } from "../../api/token";
 import { server } from "../../mocks/server";
 import { instructorsHandler } from "../../test/handlers";
@@ -142,8 +144,34 @@ describe("useInstructors / useInstructorNames", () => {
         { id: 12, full_name: "Гончар В. Т." },
       ]),
     );
-    const { result } = renderHook(() => useInstructorNames(), { wrapper });
+    const { result } = renderHook(() => useInstructorNames([7, 12]), { wrapper });
     await waitFor(() => expect(result.current.size).toBe(2));
     expect(result.current.get(12)).toBe("Гончар В. Т.");
+  });
+
+  it("пошук all має окремий кеш, а довідник знаходить імена на другій сторінці", async () => {
+    server.use(
+      http.get("*/api/v1/instructors", ({ request }) => {
+        const query = new URL(request.url).searchParams;
+        const offset = Number(query.get("offset"));
+        const search = query.get("q") === "all";
+        const instructor = search
+          ? { id: 8, full_name: "Allison" }
+          : { id: offset === 100 ? 101 : 1, full_name: "Ім’я з довідника" };
+        return HttpResponse.json({
+          instructors: [instructor],
+          pagination: { limit: 100, offset, total: 101, has_more: !search && offset === 0 },
+        });
+      }),
+    );
+    const { result } = renderHook(
+      () => ({
+        directory: useInstructorNames([101]),
+        search: useInstructors("all"),
+      }),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.directory.get(101)).toBe("Ім’я з довідника"));
+    expect(result.current.search.data?.instructors).toEqual([{ id: 8, full_name: "Allison" }]);
   });
 });

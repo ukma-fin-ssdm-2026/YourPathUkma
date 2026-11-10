@@ -1,18 +1,20 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: page.test.tsx.
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useConfig } from "../../api/config";
 import { ApiError } from "../../api/errors";
 import type { Discipline } from "../../api/types";
+import { parsePlanId, planYearFromParam } from "../../lib/planParams";
 import { trimesterKey, type Trimester } from "../../lib/trimester";
+import { useSessionDraft } from "../../lib/useSessionDraft";
 import { Badge } from "../../ui/Badge";
 import { Button } from "../../ui/Button";
 import { linkGhostClass } from "../../ui/linkButton";
 import { useDeaneryDocument, useDeaneryDocuments } from "../deanery/useDeanery";
 import { useDirections } from "../catalog/useDisciplines";
 import { usePreferences } from "../preferences/usePreferences";
-import { defaultPlanYear } from "../profile/ProfilePage";
 import { ConfirmDialog } from "../plans/ConfirmDialog";
 import { useAcademicHistory, useMe } from "../profile/useMe";
 import { CatalogPanel } from "./CatalogPanel";
@@ -62,14 +64,8 @@ function Notice({
 export function BuilderPage() {
   const [params] = useSearchParams();
   const limits = useConfig().data?.limits;
-  const year =
-    Number(params.get("year")) ||
-    defaultPlanYear(
-      new Date(),
-      limits?.academic_year_min ?? 2024,
-      limits?.academic_year_max ?? 2030,
-    );
-  const planId = Number(params.get("plan")) || null;
+  const year = planYearFromParam(params.get("year"), limits);
+  const planId = parsePlanId(params.get("plan"));
 
   const me = useMe();
   const prefs = usePreferences(year);
@@ -116,27 +112,24 @@ export function BuilderPage() {
     };
   }, [student, planId, planQuery.data, prefs.data, year]);
 
-  const [draft, setDraft] = useState<BuilderPlan | null>(null);
+  const [draft, setDraft] = useSessionDraft<BuilderPlan>(`plan:${planId ?? `new:${year}`}`);
   const [notice, setNotice] = useState<string | null>(null);
-  const plan = draft ?? base;
+  const plan = base && (draft ?? base);
   const validation = useValidatePlan(plan ?? EMPTY_PLAN);
 
   const navigate = useNavigate();
   const [, setSearchParams] = useSearchParams();
   const save = useSavePlan();
   const submit = useSubmitPlan();
-  const [savedId, setSavedId] = useState<number | null>(planId);
-  const [snapshot, setSnapshot] = useState<string | null>(null);
-  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [saved, setSaved] = useState<{ id: number; at: string } | null>(null);
+  const savedAt = saved?.id === planId ? saved.at : null;
   const [errors, setErrors] = useState<SaveErrors>(NO_ERRORS);
   const [confirmOpen, setConfirmOpen] = useState(false);
   // Перевірки плану показуємо лише після спроби зберегти чи подати, а не при кожному додаванні дисципліни.
   const [checked, setChecked] = useState(false);
 
   // Незбережені зміни: порівнюємо з тим, що збережено востаннє (або з завантаженою чернеткою).
-  const current = plan ? JSON.stringify(plan) : null;
-  const savedSnapshot = snapshot ?? (planId !== null && base ? JSON.stringify(base) : null);
-  const dirty = plan !== null && plan.items.length > 0 && current !== savedSnapshot;
+  const dirty = plan !== null && draft !== null && JSON.stringify(draft) !== JSON.stringify(base);
   useEffect(() => {
     if (!dirty) return;
     const warn = (event: BeforeUnloadEvent) => {
@@ -206,8 +199,9 @@ export function BuilderPage() {
   }
 
   function edit(next: BuilderPlan) {
+    if (busy) return;
     setDraft(next);
-    setSavedAt(null);
+    setSaved(null);
     setErrors(NO_ERRORS);
     setChecked(false);
   }
@@ -225,10 +219,12 @@ export function BuilderPage() {
   /** Зберігає чернетку: новий план це POST, наявний це PUT. Повертає id або null, якщо збереження не вдалось. */
   async function persist(): Promise<number | null> {
     try {
-      const saved = await save.mutateAsync({ id: savedId, plan: plan! });
-      setSavedId(saved.id);
-      setSnapshot(JSON.stringify(plan));
-      setSavedAt(new Date().toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" }));
+      const saved = await save.mutateAsync({ id: planId, plan: plan! });
+      setDraft(null);
+      setSaved({
+        id: saved.id,
+        at: new Date().toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" }),
+      });
       setErrors(NO_ERRORS);
       if (planId !== saved.id) {
         setSearchParams({ year: String(year), plan: String(saved.id) }, { replace: true });
@@ -242,7 +238,7 @@ export function BuilderPage() {
 
   async function confirmSubmit() {
     setConfirmOpen(false);
-    const id = dirty || savedId === null ? await persist() : savedId;
+    const id = dirty || planId === null ? await persist() : planId;
     if (id === null) return;
     try {
       await submit.mutateAsync(id);
