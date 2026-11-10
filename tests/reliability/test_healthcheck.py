@@ -1,12 +1,15 @@
 """Перевірка CLI під час втрати доступу до файлу БД (ін'єкція збою).
 
-Використання ШІ: тест створено за допомогою Codex. Перевірка: pytest і Ruff.
+subprocess потрібен для перевірки справжньої CLI-команди.
+
+Використання ШІ: тест і точкові виключення Bandit створено за допомогою Codex.
+Перевірка: pytest, Ruff і Bandit; аргументи запуску перевірено вручну.
 """
 
 import json
 import os
 import sqlite3
-import subprocess
+import subprocess  # nosec B404
 import sys
 
 from src.db.config import ROOT_DIR
@@ -19,7 +22,8 @@ def test_healthcheck_reports_unhealthy_when_database_disappears(tmp_path):
     env = dict(os.environ, DATABASE_URL=f"sqlite:///{database}")
 
     def run_command():
-        return subprocess.run(
+        # Фіксований модуль і поточний Python; користувацького вводу й shell немає.
+        return subprocess.run(  # nosec B603
             [sys.executable, "-m", "src.healthcheck"],
             cwd=ROOT_DIR,
             env=env,
@@ -27,6 +31,7 @@ def test_healthcheck_reports_unhealthy_when_database_disappears(tmp_path):
             text=True,
             timeout=10,
             check=False,
+            shell=False,
         )
 
     healthy = run_command()
