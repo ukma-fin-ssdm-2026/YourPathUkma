@@ -2,6 +2,7 @@
 
 Використання ШІ: команду створено за допомогою Codex. Перевірка: Ruff і ручні
 запуски з доступною SQLite, недоступною БД та некоректним налаштуванням.
+Codex: виділено check_health для HTTP-маршруту; перевірка: pytest і Ruff.
 """
 
 import json
@@ -44,8 +45,8 @@ def _check_database(sender: Connection) -> None:
         sender.close()
 
 
-def main() -> int:
-    load_dotenv(ROOT_DIR / ".env")
+def check_health() -> dict:
+    """Перевіряє БД з обмеженим очікуванням; не змінює оточення процесу."""
     context = multiprocessing.get_context("spawn")
     receiver, sender = context.Pipe(duplex=False)
     process = context.Process(target=_check_database, args=(sender,))
@@ -76,8 +77,14 @@ def main() -> int:
     result = {"status": status, "checks": {"database": status}}
     if status != "healthy":
         result["message"] = reason
+    return result
+
+
+def main() -> int:
+    load_dotenv(ROOT_DIR / ".env")
+    result = check_health()
     print(json.dumps(result))
-    return 0 if status == "healthy" else 1
+    return 0 if result["status"] == "healthy" else 1
 
 
 if __name__ == "__main__":
