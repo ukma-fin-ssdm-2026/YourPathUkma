@@ -1,3 +1,4 @@
+// Використання ШІ: тест імпорту каталогу додано Codex. Перевірка: Vitest.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
@@ -34,6 +35,27 @@ describe("syncStatusLabel", () => {
 });
 
 describe("SyncPage", () => {
+  it("імпортує JSON, коли серверний парсинг вимкнений", async () => {
+    server.use(configHandler({
+      features: { ...configFixture().features, saz_catalog_live: false },
+    }));
+    server.use(http.post("*/api/v1/admin/sync-jobs/saz-import", async ({ request }) => {
+      expect(await request.json()).toEqual({ version: 1 });
+      db.admin.syncJobs = [syncJobFixture({ status: "succeeded", added_count: 1 })];
+      return HttpResponse.json(db.admin.syncJobs[0], { status: 201 });
+    }));
+    db.admin.syncJobs = [];
+    renderSync();
+    await screen.findByText("Запусків ще не було");
+    expect(screen.queryByRole("button", { name: "Запустити парсинг" })).not.toBeInTheDocument();
+    await userEvent.upload(
+      screen.getByLabelText("Файл каталогу САЗ"),
+      new File(['{"version":1}'], "saz_export.json", { type: "application/json" }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Імпортувати каталог" }));
+    expect(await screen.findByText("Успішно")).toBeInTheDocument();
+  });
+
   it("показує журнал: джерело, статус, лічильники й повідомлення про помилку", async () => {
     db.admin.syncJobs = [
       syncJobFixture({

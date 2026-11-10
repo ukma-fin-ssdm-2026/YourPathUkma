@@ -1,3 +1,4 @@
+// Використання ШІ: форму імпорту каталогу додано Codex. Перевірка: Vitest.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: sync.test.tsx.
 import { useState } from "react";
 import { useConfig } from "../../../api/config";
@@ -11,6 +12,7 @@ import {
   SYNC_PAGE_SIZE,
   type SyncSource,
   syncStatusLabel,
+  useImportSaz,
   useRunSync,
   useSyncJobs,
 } from "./useSync";
@@ -36,9 +38,12 @@ export function SyncPage({ pollMs }: { pollMs?: number }) {
   const config = useConfig();
   const jobs = useSyncJobs(page, pollMs);
   const run = useRunSync();
-  const sources: SyncSource[] = config.data?.features.certificate_programs
-    ? ["saz_catalog", "faculty_certificates"]
-    : ["saz_catalog"];
+  const upload = useImportSaz();
+  const [file, setFile] = useState<File | null>(null);
+  const liveEnabled = config.data?.features.saz_catalog_live === true;
+  const sources: SyncSource[] = liveEnabled ? ["saz_catalog"] : [];
+  if (config.data?.features.certificate_programs) sources.push("faculty_certificates");
+  const selectedSource = sources.includes(source) ? source : sources[0];
 
   const message = run.error
     ? run.error.code === "SYNC_JOB_ALREADY_RUNNING"
@@ -50,33 +55,75 @@ export function SyncPage({ pollMs }: { pollMs?: number }) {
   return (
     <section aria-label="Синхронізація">
       <h1 className="font-display text-[22px]">Синхронізація</h1>
-      <Card className="mt-4 flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 font-medium">
-          Джерело
-          <select
-            value={source}
-            onChange={(event) => setSource(event.target.value as SyncSource)}
-            className="rounded-[10px] border border-rule bg-surface px-3 py-2"
+      {selectedSource && (
+        <Card className="mt-4 flex flex-wrap items-end gap-3">
+          <label className="flex flex-col gap-1 font-medium">
+            Джерело
+            <select
+              value={selectedSource}
+              onChange={(event) => setSource(event.target.value as SyncSource)}
+              className="rounded-[10px] border border-rule bg-surface px-3 py-2"
+            >
+              {sources.map((value) => (
+                <option key={value} value={value}>
+                  {SOURCE_LABEL[value]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Button
+            disabled={run.isPending}
+            onClick={() => run.mutate(selectedSource, { onSuccess: () => toast.success("Парсинг запущено") })}
           >
-            {sources.map((value) => (
-              <option key={value} value={value}>
-                {SOURCE_LABEL[value]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Button
-          disabled={run.isPending}
-          onClick={() => run.mutate(source, { onSuccess: () => toast.success("Парсинг запущено") })}
-        >
-          Запустити парсинг
-        </Button>
-        {message && (
-          <p role="alert" className="basis-full text-bad">
-            {message}
+            Запустити парсинг
+          </Button>
+          {message && (
+            <p role="alert" className="basis-full text-bad">
+              {message}
+            </p>
+          )}
+        </Card>
+      )}
+      <form
+        className="mt-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const form = event.currentTarget;
+          if (file) {
+            upload.mutate(file, {
+              onSuccess: () => {
+                setFile(null);
+                form.reset();
+                toast.success("Каталог додано до черги модерації");
+              },
+            });
+          }
+        }}
+      >
+        <Card className="flex flex-wrap items-end gap-3">
+          <p className="basis-full text-ink-2">
+            Запустіть <code>python scripts/saz_export.py --bundle</code> на своєму комп’ютері та
+            завантажте створений файл JSON із теки <code>saz_raw</code>.
           </p>
-        )}
-      </Card>
+          <label className="flex flex-col gap-1 font-medium">
+            Файл каталогу САЗ
+            <input
+              type="file"
+              accept=".json,application/json"
+              disabled={upload.isPending}
+              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+            />
+          </label>
+          <Button type="submit" disabled={!file || upload.isPending}>
+            Імпортувати каталог
+          </Button>
+          {upload.error && (
+            <p role="alert" className="basis-full text-bad">
+              {upload.error.message}
+            </p>
+          )}
+        </Card>
+      </form>
 
       <div className="relative mt-6 overflow-x-auto">
         {jobs.isError ? (
