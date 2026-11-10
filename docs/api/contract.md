@@ -1085,6 +1085,20 @@ Query: `direction_id`, `availability` (необов'язкові). Програ�
 
 Відповідь `202` + `Location`: об'єкт `SyncJob` зі `status: "queued"`. Помилки: `401`, `403`, `409 SYNC_JOB_ALREADY_RUNNING`, `422`.
 
+#### `POST /admin/sync-jobs/saz-import`
+
+Лише для адміністратора. Тіло запиту — вміст файлу `saz_export.json` з типом
+`application/json`. Формат v1 містить `version`, `academic_year`, `level`,
+`expected`, `seen`, `skipped`, `pagination_changed` і `courses`.
+Ліміти — 25 МіБ та 4 000 дисциплін. Імпорт повертає `201`, об'єкт завершеної задачі
+та заголовок `Location`. Помилки: `409 SYNC_JOB_ALREADY_RUNNING`, `413 FILE_TOO_LARGE`,
+`415 UNSUPPORTED_FILE_TYPE`, `422 SAZ_BUNDLE_INVALID`. Повторний імпорт ідентичних даних
+не дублює пропозиції, що очікують модерації.
+
+`features.saz_catalog_live` у `GET /config` визначає доступність серверного обходу.
+При вимкненому обході запуск із `source: "saz_catalog"` повертає `503 SAZ_LIVE_SYNC_DISABLED`.
+Імпорт файлу працює незалежно від цього прапорця.
+
 #### `GET /admin/sync-jobs`
 
 Журнал (FR-011). Query: `limit`, `offset`, `source`, `status`. Сортування: `started_at` за спаданням.
@@ -1402,7 +1416,7 @@ export interface AppConfig {
     academic_year_min: number; academic_year_max: number; max_upload_bytes: number;
   };
   load_levels: Record<LoadLevel, { min_hours_per_week?: number; max_hours_per_week?: number }>;
-  features: { ai_generation: boolean; certificate_programs: boolean; saz_sync: boolean; plan_export: boolean };
+  features: { ai_generation: boolean; certificate_programs: boolean; saz_catalog_live: boolean; saz_sync: boolean; plan_export: boolean };
 }
 
 // ---------- Академічна історія і побажання (✅) ----------
@@ -1599,3 +1613,5 @@ User stories US-001…US-010 відповідають тим самим FR і п
 - **Як перевірено:** форми, обмеження, коди помилок і статус-коди ✅-кінцевих точок звірено вручну з `src/api/common.py`, `src/api/routes/plans.py`, `src/api/routes/disciplines.py` і `src/api/main.py`. Поведінку заглушки (id планів, власник, id нового плану) звірено з кодом. Приклади помилок перевірено запитами через `TestClient` до реального застосунку: 422 для ліміту вільного вибору (`field: "body"`, `28.0 > 25`), 403 для чужого плану, `HTTP_404` для неіснуючого шляху, 422 для `limit=500`. Кінцеві точки 🟡/🔵 не існують у коді й не перевірялись; TypeScript-типи не компілювались.
 - **Друга ітерація (також Claude):** додано контракти, яких бракувало для повного покриття: `/config`, онбординг і академічна історія, побажання, експорт плану, файл і видалення документа деканату, адмінські кінцеві точки для користувачів, напрямків, профорієнтовності дисциплін, сертифікатних програм і журналу аудиту; розбіжності 10–14 у §6; матриця покриття §7. Покриття перевірено вручну: кожен use-case з `AGENTS.md` §6, кожна FR з `requirements.md` і кожна сутність з `data-model.md`, яку бачить фронтенд, зіставлені з кінцевими точками в §7.
 - **Виправлення після проміжного оцінювання (01.11.2026, Claude):** `POST /auth/google` замінено на `POST /auth/microsoft` (зведена таблиця, §3.1, приклад `code`, §7.1, §7.2); позначку 🟡 знято з кінцевих точок і заголовків розділів, для яких у `src/api/routes/` є обробники; прибрано опис заглушки автентифікації («будь-який непорожній токен», `Bearer test`) і додано пояснення про `scripts/issue_token.py`. **Як перевірено:** відповідність кінцевих точок обробникам зіставлено за виводом `grep "@router\.\|@app\." src/api` (кількість і порядок декораторів по файлах); шляхи в самих декораторах напряму не звірялись, а специфікацію `openapi-generated.yaml` з документом не порівнювали; тести не запускались. Поле `google_client_id` у `GET /config` лишено без змін, бо в `src/api/routes/system.py` воно ще мало таку назву; якщо його перейменують, оновити приклад у §3.0 і відповідне поле TypeScript-типу конфігурації.
+
+**Використання ШІ.** Codex описав API імпорту САЗ і прапорець серверного обходу. Перевірка: pytest і згенерована специфікація OpenAPI.
