@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: page.test.tsx.
+// Codex додав мобільну навігацію. Перевірка — браузер.
 // Codex узгодив дії з доступністю конструктора. Перевірка — фронтенд-тести.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useEffect, useMemo, useState } from "react";
@@ -299,6 +300,9 @@ export function BuilderPage() {
           >
             Подати на розгляд
           </Button>
+          <a href="#builder-catalog" className={`${linkGhostClass} lg:hidden`}>
+            До каталогу дисциплін
+          </a>
         </div>
       </div>
       <div className="min-h-5 text-sm" aria-live="polite">
@@ -336,7 +340,14 @@ export function BuilderPage() {
 
       <BuilderDnd onDropDiscipline={handleAdd}>
         <div className="grid items-start gap-4 lg:grid-cols-[1fr_360px]">
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid min-w-0 gap-3 md:grid-cols-3">
+            <h2
+              id="builder-trimesters"
+              tabIndex={-1}
+              className="scroll-mt-20 font-display md:col-span-3 lg:sr-only"
+            >
+              Триместри плану
+            </h2>
             {([1, 2, 3] as Trimester[]).map((trimester) => (
               <DroppableColumn key={trimester} trimester={trimester}>
                 {(hint) => (
