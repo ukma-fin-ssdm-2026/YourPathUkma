@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: handlers.test.ts.
+// Codex уточнив конфігурацію відгуків. Перевірка — фронтенд-тести.
 // Рефакторинг (Replace Magic Literal with Constant, S1313): винесено DEFAULT_MOCK_AUDIT_IP (127.0.0.1) за допомогою Gemini.
 // Перевірено: npm test (audit.test.tsx, handlers.test.ts, core.test.ts).
 // Форми відповідей за docs/api/contract.md §3.1-§3.2.
@@ -24,7 +25,7 @@ export function configFixture(features: Partial<ConfigResponse["features"]> = {}
   return {
     api_version: "1.0.0",
     allowed_email_domain: "ukma.edu.ua",
-    reviews_url: "https://example.ukma.edu.ua/reviews",
+    reviews_url: null,
     limits: {
       total_credits: 240,
       free_choice_credits: 25,

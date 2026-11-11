@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex уточнив конфігурацію відгуків. Перевірка — фронтенд-тести.
 // Codex узгодив дії з доступністю конструктора. Перевірка — фронтенд-тести.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
@@ -120,13 +121,21 @@ describe("PlanViewPage: вміст", () => {
   });
 
   it("посилання на відгуки безпечне, а «До списку планів» веде назад", async () => {
+    const url = "https://reviews.ukma.edu.ua/reviews";
+    server.use(configHandler({ reviews_url: url }));
     renderPage();
     const reviews = await screen.findByRole("link", { name: /Почитати відгуки/ });
-    expect(reviews).toHaveAttribute("href", "https://example.ukma.edu.ua/reviews");
+    expect(reviews).toHaveAttribute("href", url);
     expect(reviews).toHaveAttribute("target", "_blank");
     expect(reviews).toHaveAttribute("rel", "noopener noreferrer");
     await userEvent.click(screen.getByRole("link", { name: "До списку планів" }));
     expect(await screen.findByText("список планів")).toBeInTheDocument();
+  });
+
+  it("приховує відгуки, якщо посилання не налаштовано", async () => {
+    renderPage();
+    await screen.findByRole("button", { name: "Експорт PDF" });
+    expect(screen.queryByRole("link", { name: /Почитати відгуки/ })).not.toBeInTheDocument();
   });
 });
 

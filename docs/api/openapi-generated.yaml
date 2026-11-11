@@ -4380,9 +4380,11 @@ components:
           description: Дозволений домен пошти
           default: ukma.edu.ua
         reviews_url:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Reviews Url
-          description: Посилання «Почитати відгуки»
+          description: HTTPS-посилання на відгуки або null
         limits:
           $ref: '#/components/schemas/Limits'
         load_levels:

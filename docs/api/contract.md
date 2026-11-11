@@ -337,7 +337,7 @@ Query-параметри:
   "api_version": "1.0.0",
   "google_client_id": "1234567890-abc.apps.googleusercontent.com",
   "allowed_email_domain": "ukma.edu.ua",
-  "reviews_url": "https://example.ukma.edu.ua/reviews",
+  "reviews_url": null,
   "limits": {
     "total_credits": 240,
     "free_choice_credits": 25,
@@ -753,7 +753,7 @@ Query-параметри (усі необов'язкові, комбінують
 | `year_total_credits` | number | `total_credits` + кредити нормативних |
 | `credits_by_trimester` | `{ "1": number, "2": number, "3": number }` | Вибіркові + нормативні по триместрах, для індикатора навантаження |
 | `warnings` | `Warning[]` | Попередження (§2.4) |
-| `reviews_url` | string | Посилання «Почитати відгуки» на зовнішню платформу (`AGENTS.md` §4) |
+| `reviews_url` | string або null | HTTPS-посилання на зовнішню платформу відгуків із `REVIEWS_URL`. Якщо адресу не налаштовано, повертається null |
 
 #### `POST /plans` ✅
 
@@ -1397,7 +1397,7 @@ export interface AppConfig {
   api_version: string;
   google_client_id: string;
   allowed_email_domain: string;
-  reviews_url: string;
+  reviews_url: string | null;
   limits: {
     total_credits: number; free_choice_credits: number; professional_credits: number;
     min_year_credits: number; max_directions: number; max_plan_items: number; max_item_credits: number;
@@ -1598,6 +1598,7 @@ User stories US-001…US-010 відповідають тим самим FR і п
 ## Використання ШІ
 
 - Codex уточнив підсумок вільного вибору в контракті. Перевірка — тести API та згенерована OpenAPI.
+- Codex описав необов’язкове посилання на відгуки. Перевірка — тести конфігурації та згенерована OpenAPI.
 
 - **Що створено:** весь документ підготовлено за допомогою Claude (Claude Code, модель Opus 5.5) за запитом команди. Розділи про ✅-кінцеві точки описують поточний код; форми 🟡/🔵-кінцевих точок, коди помилок і попереджень, типи TypeScript і рекомендації в §6 — **пропозиції ШІ**, виведені з `requirements.md`, `user-stories.md`, `data-model.md`, `threat-model.md`, `quality-attributes.md`, `api-design.md`, `AGENTS.md` і `Project-Description.md`. Вони потребують узгодження командою.
 - **Як перевірено:** форми, обмеження, коди помилок і статус-коди ✅-кінцевих точок звірено вручну з `src/api/common.py`, `src/api/routes/plans.py`, `src/api/routes/disciplines.py` і `src/api/main.py`. Поведінку заглушки (id планів, власник, id нового плану) звірено з кодом. Приклади помилок перевірено запитами через `TestClient` до реального застосунку: 422 для ліміту вільного вибору (`field: "body"`, `28.0 > 25`), 403 для чужого плану, `HTTP_404` для неіснуючого шляху, 422 для `limit=500`. Кінцеві точки 🟡/🔵 не існують у коді й не перевірялись; TypeScript-типи не компілювались.
