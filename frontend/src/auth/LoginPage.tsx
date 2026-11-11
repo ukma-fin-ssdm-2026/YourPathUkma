@@ -1,5 +1,6 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: auth-ui.test.tsx.
-import { useState } from "react";
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
+import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router";
 import { AuthShell } from "./AuthShell";
 import { startLogin } from "./login";
@@ -34,6 +35,13 @@ export function LoginPage({ onLogin = () => startLogin() }: { onLogin?: () => Pr
   const location = useLocation();
   const [localError, setLocalError] = useState<LoginErrorInfo | null>(null);
   const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    const restore = (event: PageTransitionEvent) => {
+      if (event.persisted) setBusy(false);
+    };
+    window.addEventListener("pageshow", restore);
+    return () => window.removeEventListener("pageshow", restore);
+  }, []);
 
   if (status === "authenticated") return <Navigate to="/" replace />;
 

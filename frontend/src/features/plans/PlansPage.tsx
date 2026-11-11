@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: plans.test.tsx.
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useMemo, useState, type CSSProperties } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -9,9 +10,10 @@ import { Button } from "../../ui/Button";
 import { Card } from "../../ui/Card";
 import { StatusBadge } from "../../ui/Badge";
 import { linkButtonClass, linkButtonSmClass, linkGhostClass } from "../../ui/linkButton";
+import { Pagination } from "../catalog/Pagination";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { courseHeading, groupPlansByCourse } from "./groupPlans";
-import { useDeletePlan, usePlans } from "./usePlans";
+import { PLANS_PAGE_SIZE, useDeletePlan, usePlans } from "./usePlans";
 
 const LEVEL_LABEL = { low: "низьке", medium: "середнє", high: "високе" } as const;
 const LEVEL_OPACITY = { low: 0.35, medium: 0.7, high: 1 } as const;
@@ -47,11 +49,19 @@ function deleteMessage(error: ApiError): string {
 }
 
 export function PlansPage({ mode }: { mode: "all" | "saved" }) {
-  const plans = usePlans(mode === "saved" ? "draft" : undefined);
+  return <PlansList key={mode} mode={mode} />;
+}
+
+function PlansList({ mode }: { mode: "all" | "saved" }) {
+  const [page, setPage] = useState(1);
+  const plans = usePlans(mode === "saved" ? "draft" : undefined, page);
   const remove = useDeletePlan();
   const [target, setTarget] = useState<PlanResponse | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const groups = useMemo(() => groupPlansByCourse(plans.data?.plans ?? []), [plans.data]);
+  const total = plans.data?.pagination.total ?? 0;
+  const lastPage = Math.max(1, Math.ceil(total / PLANS_PAGE_SIZE));
+  if (plans.data && page > lastPage) setPage(lastPage);
 
   function confirmDelete() {
     if (!target) return;
@@ -205,6 +215,7 @@ export function PlansPage({ mode }: { mode: "all" | "saved" }) {
         </p>
       )}
       {content}
+      <Pagination page={page} pageSize={PLANS_PAGE_SIZE} total={total} onPage={setPage} />
       <ConfirmDialog
         open={target !== null}
         title="Видалити план?"

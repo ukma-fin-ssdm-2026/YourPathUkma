@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { render, screen, within } from "@testing-library/react";
 import type { Credits, PlanItem, PlanValidationResponse, RuleIssue } from "../../api/types";
 import type { BuilderPlan } from "./plan";
@@ -71,6 +72,25 @@ describe("SummaryStrip: числа", () => {
     metric("із 57–60", "0 із 57–60");
     expect(bar("Кредитів за рік")).toHaveAttribute("aria-valuenow", "0");
     expect(screen.getByText("Усе гаразд")).toBeInTheDocument();
+  });
+
+  it("після очищення плану ігнорує попередню перевірку", () => {
+    render(
+      <SummaryStrip
+        plan={planWith([])}
+        validation={validation({
+          total: 31,
+          used: 25,
+          errors: [issue("FREE_ELECTIVE_LIMIT_EXCEEDED")],
+        })}
+        credits={credits}
+        normativeCredits={0}
+        showIssues
+      />,
+    );
+    metric("із 57–60", "0 із 57–60");
+    metric("з 25", "9 з 25");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("кредити за рік це вибіркові з документа деканату разом з нормативними", () => {

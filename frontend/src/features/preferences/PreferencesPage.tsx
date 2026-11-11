@@ -1,19 +1,14 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: instructors.test.tsx.
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { Link, useSearchParams } from "react-router";
 import { useConfig } from "../../api/config";
-import { defaultPlanYear } from "../profile/ProfilePage";
+import { planYearFromParam } from "../../lib/planParams";
 import { PreferencesForm } from "./PreferencesForm";
 
 export function PreferencesPage() {
   const [params] = useSearchParams();
   const limits = useConfig().data?.limits;
-  const year =
-    Number(params.get("year")) ||
-    defaultPlanYear(
-      new Date(),
-      limits?.academic_year_min ?? 2024,
-      limits?.academic_year_max ?? 2030,
-    );
+  const year = planYearFromParam(params.get("year"), limits);
   return (
     <div className="grid gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -35,7 +30,7 @@ export function PreferencesPage() {
           </Link>
         </div>
       </div>
-      <PreferencesForm year={year} />
+      <PreferencesForm key={year} year={year} />
     </div>
   );
 }
