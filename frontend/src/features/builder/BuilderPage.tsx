@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: page.test.tsx.
+// Codex узгодив дії з доступністю конструктора. Перевірка — фронтенд-тести.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
@@ -16,7 +17,12 @@ import { useDeaneryDocument, useDeaneryDocuments } from "../deanery/useDeanery";
 import { useDirections } from "../catalog/useDisciplines";
 import { usePreferences } from "../preferences/usePreferences";
 import { ConfirmDialog } from "../plans/ConfirmDialog";
-import { useAcademicHistory, useMe } from "../profile/useMe";
+import {
+  FIRST_YEAR_PLAN_NOTICE,
+  PLAN_PROFILE_REQUIRED,
+  useAcademicHistory,
+  useMe,
+} from "../profile/useMe";
 import { CatalogPanel } from "./CatalogPanel";
 import { BuilderDnd, DroppableColumn } from "./dnd";
 import {
@@ -83,7 +89,7 @@ export function BuilderPage() {
 
   // Початковий стан: збережена чернетка або порожній план із навантаженням із побажань.
   const base = useMemo<BuilderPlan | null>(() => {
-    if (!student?.course_year || student.course_year < 2) return null;
+    if (!student?.can_create_plan || !student.course_year) return null;
     if (planId !== null) {
       const saved = planQuery.data;
       if (!saved) return null;
@@ -159,11 +165,16 @@ export function BuilderPage() {
       </p>
     );
   }
-  if (!student) return <Notice>Конструктор доступний лише студентам.</Notice>;
-  if (!student.course_year || student.course_year < 2) {
+  if (!student?.can_create_plan) {
     return (
-      <Notice action={{ to: "/", label: "До профілю" }}>
-        Для 1 курсу план формує деканат, тож у застосунку його не створити.
+      <Notice
+        action={
+          student?.course_year === 1
+            ? { to: "/", label: "До профілю" }
+            : { to: "/path/saved", label: "Збережені плани" }
+        }
+      >
+        {student?.course_year === 1 ? FIRST_YEAR_PLAN_NOTICE : PLAN_PROFILE_REQUIRED}
       </Notice>
     );
   }

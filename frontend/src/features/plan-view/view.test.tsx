@@ -1,11 +1,14 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex узгодив дії з доступністю конструктора. Перевірка — фронтенд-тести.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse, delay } from "msw";
 import { RouterProvider, createMemoryRouter } from "react-router";
 import type { PlanItem } from "../../api/types";
-import { setAccessToken } from "../../api/token";
+import { useSession } from "../../auth/session";
+import { db } from "../../mocks/db";
+import { authResponse } from "../../mocks/fixtures";
 import { server } from "../../mocks/server";
 import { mockDownloads } from "../../test/downloads";
 import { configFixture, configHandler, planFixture, plansCrudHandlers } from "../../test/handlers";
@@ -62,7 +65,8 @@ function renderPage(path = "/path/plan/1") {
 const saved = mockDownloads();
 
 beforeEach(() => {
-  setAccessToken("t");
+  useSession.getState().setAuthenticated(authResponse());
+  db.me.student = { ...db.me.student!, course_year: 3, can_create_plan: true };
   server.use(configHandler(), ...plansCrudHandlers([plan()]).handlers);
 });
 
