@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.1.6] - 2026-11-11
+
+### Bug Fixes
+
+- Paginate saved and individual plans
+  ([`33841ba`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/33841bafff7ff51872a0c791c6ffef7f50fb0ae0))
+
+- Preserve catalog history, dialog focus, and login recovery
+  ([`f9ceb99`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/f9ceb99ec4e4f97cba8cda0c06dd030e0a346922))
+
+- Restore planning drafts and validate planning inputs
+  ([`40515af`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/40515af1ffbace8d1a8e6c796a052484cae2863e))
+
+
 ## [0.1.5] - 2026-11-11
 
 ### Bug Fixes
