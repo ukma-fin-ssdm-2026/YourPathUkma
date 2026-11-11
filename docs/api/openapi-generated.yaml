@@ -3662,6 +3662,20 @@ paths:
                 request_id: req_3f9a1c7e2b4d4a6e
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /health/ready:
+    get:
+      tags:
+      - System
+      summary: 'Перевірка готовності: критичні залежності (БД, Microsoft)'
+      operationId: readiness_check_health_ready_get
+      responses:
+        '200':
+          description: Усі критичні залежності доступні
+          content:
+            application/json:
+              schema: {}
+        '503':
+          description: Принаймні одна критична залежність недоступна
   /health:
     get:
       tags:
