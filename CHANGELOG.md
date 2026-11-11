@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.1.7] - 2026-11-11
+
+### Bug Fixes
+
+- Format course additions in the moderation queue
+  ([`e7cb814`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e7cb814eb75ae79b519dc7a5451b522baedace5b))
+
+
 ## [0.1.6] - 2026-11-11
 
 ### Bug Fixes
