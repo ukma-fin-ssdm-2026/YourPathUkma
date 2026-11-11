@@ -1,7 +1,7 @@
 # Версію веде python-semantic-release ([tool.semantic_release] нижче): вручну не змінювати.
 [project]
 name = "yourpathukma"
-version = "0.1.4"
+version = "0.1.5"
 
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]

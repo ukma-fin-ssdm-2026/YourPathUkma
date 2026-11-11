@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.1.5] - 2026-11-11
+
+### Bug Fixes
+
+- Serialize academic history writes before checking limits
+  ([`7722e73`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/7722e73405bc0306eae7a7e5c78dab3c43928d5f))
+
+- Serialize updates, deletions, and submissions of a plan
+  ([`fe96c53`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/fe96c530540f23f8c9d0935deebad03d61397d29))
+
+
 ## [0.1.4] - 2026-11-08
 
 ### Bug Fixes
