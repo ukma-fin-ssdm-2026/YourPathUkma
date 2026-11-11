@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex уточнив підсумок кредитів і живу валідацію. Перевірка — фронтенд-тести.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { render, screen, within } from "@testing-library/react";
 import type { Credits, PlanItem, PlanValidationResponse, RuleIssue } from "../../api/types";
@@ -106,11 +107,11 @@ describe("SummaryStrip: числа", () => {
     expect(bar("Кредитів за рік")).toHaveStyle({ width: "96.66666666666667%" });
   });
 
-  it("вільний вибір за весь час береться з відповіді сервера", () => {
+  it("вільний вибір за весь час поєднує історію та поточний план", () => {
     render(
       <SummaryStrip
         plan={planWith([item(1, 5), item(2, 3, true)])}
-        validation={validation({ total: 8, used: 12 })}
+        validation={validation({ total: 8, used: 3 })}
         credits={credits}
         normativeCredits={0}
       />,

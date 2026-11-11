@@ -31,6 +31,7 @@ from sqlalchemy.orm import Session
 from ...db import enums as db_enums
 from ...db.models import Course, IndividualPlan
 from ...db.models import PlanItem as PlanItemRow
+from ...db.models.history import AcademicRecord
 from ...db.models.users import User
 from ...db.session import get_db
 from ...services import plan_rules
@@ -470,16 +471,26 @@ def delete_plan(
     summary="Перевірити план без збереження",
     description=(
         "Для живих підказок у конструкторі. Завжди 200, якщо тіло відповідає схемі; "
-        "порушення правил повертаються в `errors`. Поки без БД: не перевіряються каталог, "
-        "нормативні дисципліни, документ деканату, вільний вибір попередніх років і попередження про навантаження."
+        "порушення правил повертаються в `errors`. Підсумок вільного вибору враховує академічну історію. "
+        "Перевірка каталогу, документа деканату та інших поданих планів виконується під час збереження й подання."
     ),
-    dependencies=[Depends(get_current_student_id)],
     responses={200: {"description": "Перевірку виконано"}, **error_responses(401, 422)},
 )
-async def validate_plan(payload: PlanPayload):
+def validate_plan(
+    payload: PlanPayload,
+    student_id: int = Depends(get_current_student_id),
+    db: Session = Depends(get_db),
+):
     errors = collect_rule_errors(payload.items)
     total = round(sum(item.credits for item in payload.items), 1)
     free = round(sum(item.credits for item in payload.items if item.is_free_elective), 1)
+    history_free = db.scalar(
+        select(func.coalesce(func.sum(AcademicRecord.credits), 0)).where(
+            AcademicRecord.student_id == student_id,
+            AcademicRecord.category == db_enums.AcademicCategory.FREE_CHOICE,
+        )
+    )
+    free_all_years = round(float(history_free or 0) + free, 1)
     by_trimester = {"1": 0.0, "2": 0.0, "3": 0.0}
     for item in payload.items:
         by_trimester[str(item.trimester)] += item.credits
@@ -492,8 +503,8 @@ async def validate_plan(payload: PlanPayload):
         summary=PlanSummary(
             total_credits=total,
             free_elective_credits=free,
-            free_elective_used_all_years=free,  # TODO: додати вільний вибір попередніх років з історії студента
-            free_elective_remaining=max(0.0, round(FREE_ELECTIVE_LIMIT - free, 1)),
+            free_elective_used_all_years=free_all_years,
+            free_elective_remaining=max(0.0, round(FREE_ELECTIVE_LIMIT - free_all_years, 1)),
             year_total_credits=total,  # TODO: додати нормативні дисципліни року
             credits_by_trimester=by_trimester,
         ),

@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: core.test.ts і ручний запуск dev з VITE_USE_MOCKS=full.
+// Codex уточнив підсумок кредитів і живу валідацію. Перевірка — фронтенд-тести.
 // Обробники ✅-ендпоінтів, які реальний бекенд уже має. Вмикаються лише в режимі VITE_USE_MOCKS=full,
 // щоб увесь застосунок можна було пройти без запущеного бекенду.
 import { http, HttpResponse } from "msw";
@@ -114,6 +115,7 @@ interface PlanBody {
 
 function validate(body: PlanBody) {
   const free = body.items.filter((i) => i.is_free_elective).reduce((sum, i) => sum + i.credits, 0);
+  const freeAllYears = Math.round(((db.me.student?.credits.free_choice_used ?? 0) + free) * 10) / 10;
   const total = body.items.reduce((sum, i) => sum + i.credits, 0);
   const errors: { code: string; message: string; field: string | null }[] = [];
   if (new Set(body.items.map((i) => i.course_id)).size !== body.items.length) {
@@ -155,8 +157,8 @@ function validate(body: PlanBody) {
     summary: {
       total_credits: total,
       free_elective_credits: free,
-      free_elective_used_all_years: free,
-      free_elective_remaining: 25 - free,
+      free_elective_used_all_years: freeAllYears,
+      free_elective_remaining: Math.max(0, Math.round((25 - freeAllYears) * 10) / 10),
       year_total_credits: total,
       credits_by_trimester: byTrimester,
     },
