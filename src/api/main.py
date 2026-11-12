@@ -1,4 +1,7 @@
 """
+Використання ШІ: Codex підключив health.router та спільну перевірку готовності для /health;
+перевірка: pytest, Ruff і перегенерація OpenAPI.
+
 Точка входу API YourPathUkma. Запуск з кореня репозиторію:
 
     uvicorn src.api.main:app --reload --port 3000
@@ -131,6 +134,7 @@ app.add_middleware(
 )
 
 register_error_handlers(app)
+app.include_router(health.router)
 app.include_router(plans.router)
 app.include_router(disciplines.router)
 app.include_router(auth.router)
@@ -146,13 +150,17 @@ app.include_router(admin_audit.router)
 app.include_router(ai.router)
 app.include_router(certificates.router)
 app.include_router(admin_certificates.router)
-app.include_router(health.router)
 
 
-@app.get("/health", tags=["System"], summary="Перевірка стану системи (Healthcheck)")
-async def health_check():
-    """Повертає стан сервісу для моніторингу."""
-    return {"status": "ok", "version": "1.0.0", "message": "All systems operational"}
+@app.get(
+    "/health",
+    responses={503: {"description": "Критична залежність недоступна"}},
+    tags=["System"],
+    summary="Перевірка стану системи (Healthcheck)",
+)
+def health_check():
+    """Перевіряє готовність БД і Microsoft, як і /health/ready."""
+    return health.readiness_check()
 
 
 if __name__ == "__main__":
