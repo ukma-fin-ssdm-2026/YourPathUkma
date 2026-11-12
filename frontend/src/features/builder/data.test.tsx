@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex уточнив підсумок кредитів і живу валідацію. Перевірка — фронтенд-тести.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -110,6 +111,18 @@ describe("useValidatePlan", () => {
     await waitFor(() => expect(result.current.data?.summary.total_credits).toBe(11));
     await new Promise((resolve) => setTimeout(resolve, 350));
     expect(result.current.data?.summary.total_credits).toBe(11);
+  });
+
+  it("прибирає попередній результат відразу після редагування", async () => {
+    server.use(validateHandler());
+    const { result, rerender } = renderHook(({ plan }) => useValidatePlan(plan, { debounceMs: 30 }), {
+      wrapper,
+      initialProps: { plan: planWith([item(1, 5)]) },
+    });
+    await waitFor(() => expect(result.current.data?.summary.total_credits).toBe(5));
+    rerender({ plan: planWith([item(1, 5), item(2, 6)]) });
+    expect(result.current.data).toBeUndefined();
+    await waitFor(() => expect(result.current.data?.summary.total_credits).toBe(11));
   });
 });
 

@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: onboarding.test.tsx.
+// Codex відокремив доступ адміністратора від студентського онбордингу. Перевірка — onboarding.test.tsx.
 import { Navigate, Outlet } from "react-router";
 import { useMe } from "./useMe";
 
@@ -19,6 +20,8 @@ export function RequireOnboarded() {
       </p>
     );
   }
-  if (me.data.student?.onboarding_required) return <Navigate to="/onboarding" replace />;
+  if (me.data.role === "student" && me.data.student?.onboarding_required) {
+    return <Navigate to="/onboarding" replace />;
+  }
   return <Outlet />;
 }

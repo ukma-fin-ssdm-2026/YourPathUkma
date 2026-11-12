@@ -2,9 +2,13 @@
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import delete
 
 from src.api.main import app
 from src.api.routes.plans import PlanItem, collect_rule_errors
+from src.db import enums
+from src.db.models.history import AcademicRecord
+from src.db.session import session_factory
 
 client = TestClient(app)
 AUTH = {"Authorization": "Bearer test"}
@@ -40,6 +44,37 @@ def test_validate_valid_plan():
     assert data["summary"]["total_credits"] == 8.0
     assert data["summary"]["free_elective_remaining"] == 22.0
     assert data["summary"]["credits_by_trimester"] == {"1": 5.0, "2": 3.0, "3": 0.0}
+
+
+def test_validate_adds_only_owners_free_choice_history():
+    with session_factory()() as db:
+        records = [
+            AcademicRecord(
+                student_id=student_id,
+                academic_year=2025,
+                course_year=2,
+                title="Тест вільного вибору",
+                credits=credits,
+                trimester=enums.Trimester.AUTUMN,
+                category=enums.AcademicCategory.FREE_CHOICE,
+                source=enums.RecordSource.SELF_DECLARED,
+            )
+            for student_id, credits in [(42, 9), (1, 12)]
+        ]
+        db.add_all(records)
+        db.commit()
+        record_ids = [record.id for record in records]
+    try:
+        for current, expected, remaining in [(6, 15, 10), (20, 29, 0)]:
+            response = client.post("/api/v1/plans/validate", json=_plan([_item(205, current, free=True)]))
+            assert response.status_code == 200, response.text
+            summary = response.json()["summary"]
+            assert summary["free_elective_used_all_years"] == expected
+            assert summary["free_elective_remaining"] == remaining
+    finally:
+        with session_factory()() as db:
+            db.execute(delete(AcademicRecord).where(AcademicRecord.id.in_(record_ids)))
+            db.commit()
 
 
 def test_validate_returns_200_with_errors_for_business_rule_violation():

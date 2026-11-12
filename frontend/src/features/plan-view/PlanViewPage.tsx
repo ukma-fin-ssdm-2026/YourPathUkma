@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: view.test.tsx.
+// Codex узгодив дії з доступністю конструктора. Перевірка — фронтенд-тести.
 import type { CSSProperties } from "react";
 import { Link, useParams } from "react-router";
 import { useConfig } from "../../api/config";
@@ -12,6 +13,7 @@ import { Card } from "../../ui/Card";
 import { CountUp } from "../../ui/CountUp";
 import { linkButtonClass, linkGhostClass } from "../../ui/linkButton";
 import { usePlan } from "../builder/useBuilderData";
+import { useMe } from "../profile/useMe";
 import { useExportPlan } from "./useExportPlan";
 
 const STATUS_NOTE: Record<PlanResponse["status"], string> = {
@@ -50,6 +52,7 @@ export function PlanViewPage() {
   const planId = id && /^\d+$/.test(id) ? Number(id) : null;
   const query = usePlan(planId);
   const config = useConfig();
+  const canEdit = useMe().data?.student?.can_create_plan === true;
   const exportPlan = useExportPlan();
 
   if (planId === null) return <NotFound />;
@@ -82,12 +85,14 @@ export function PlanViewPage() {
             <StatusBadge status={plan.status} />
           </h1>
           <p className="mt-1 text-ink-2">
-            <span>{STATUS_NOTE[plan.status]}</span> · створено{" "}
-            {new Date(plan.created_at).toLocaleDateString("uk-UA")}
+            <span>
+              {plan.status === "draft" && !canEdit ? "Чернетка" : STATUS_NOTE[plan.status]}
+            </span>{" "}
+            · створено {new Date(plan.created_at).toLocaleDateString("uk-UA")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
-          {plan.status === "draft" && (
+          {plan.status === "draft" && canEdit && (
             <Link to={`/path/create?plan=${plan.id}`} className={linkButtonClass}>
               Редагувати
             </Link>

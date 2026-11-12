@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex узгодив дії з доступністю конструктора. Перевірка — фронтенд-тести.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
@@ -6,10 +7,14 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { RouterProvider, createMemoryRouter } from "react-router";
 import type { PlanResponse } from "../../api/types";
+import { useSession } from "../../auth/session";
+import { db } from "../../mocks/db";
+import { authResponse } from "../../mocks/fixtures";
 import { server } from "../../mocks/server";
 import { configHandler, planFixture, plansHandler } from "../../test/handlers";
 import { PathLayout } from "./PathLayout";
 import { PlansPage } from "./PlansPage";
+import { PlanViewPage } from "../plan-view/PlanViewPage";
 import { courseHeading, groupPlansByCourse } from "./groupPlans";
 
 describe("groupPlansByCourse", () => {
@@ -30,6 +35,8 @@ describe("groupPlansByCourse", () => {
 });
 
 function renderPlans(mode: "all" | "saved", entry = "/path/plan") {
+  useSession.getState().setAuthenticated(authResponse());
+  if (db.me.student) db.me.student = { ...db.me.student, course_year: 3, can_create_plan: true };
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const router = createMemoryRouter(
     [
@@ -38,6 +45,7 @@ function renderPlans(mode: "all" | "saved", entry = "/path/plan") {
         element: <PathLayout />,
         children: [
           { path: "plan", element: <PlansPage mode="all" /> },
+          { path: "plan/:id", element: <PlanViewPage /> },
           { path: "saved", element: <PlansPage mode="saved" /> },
           { path: "create", element: <p>конструктор</p> },
         ],
@@ -83,6 +91,40 @@ function statefulPlans(initial: PlanResponse[], deleteResponse?: () => Response)
 
 describe("PlansPage", () => {
   beforeEach(() => server.use(configHandler()));
+
+  it("адмін без студентського профілю може переглянути власну чернетку", async () => {
+    db.me = { ...db.me, role: "admin", student: null };
+    server.use(
+      plansHandler([draft]),
+      http.get("*/api/v1/plans/1", () => HttpResponse.json(draft)),
+    );
+    renderPlans("saved");
+    const row = await screen.findByTestId("plan-1");
+    expect(screen.queryByRole("link", { name: "Новий план" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Створити план" })).not.toBeInTheDocument();
+    await userEvent.click(within(row).getByRole("link", { name: "Переглянути" }));
+    expect(await screen.findByRole("heading", { name: /План на 2026/ })).toBeVisible();
+    expect(screen.queryByRole("link", { name: "Редагувати" })).not.toBeInTheDocument();
+  });
+
+  it("порожній список пояснює умову створення для адміна без профілю", async () => {
+    db.me = { ...db.me, role: "admin", student: null };
+    server.use(plansHandler([]));
+    renderPlans("all");
+    expect(
+      await screen.findByText(
+        "Для створення плану потрібні курс і спеціальність у студентському профілі.",
+      ),
+    ).toBeVisible();
+    expect(screen.queryByRole("link", { name: "Новий план" })).not.toBeInTheDocument();
+  });
+
+  it("адмін зі студентським профілем бачить дію створення", async () => {
+    db.me = { ...db.me, role: "admin" };
+    server.use(plansHandler([]));
+    renderPlans("all");
+    expect(await screen.findByRole("link", { name: "Новий план" })).toBeVisible();
+  });
 
   it("відкриває плани після перших ста", async () => {
     server.use(
@@ -231,6 +273,6 @@ describe("PathLayout", () => {
       "aria-current",
     );
     const tabs = within(screen.getByRole("navigation", { name: "Науковий шлях" }));
-    expect(tabs.getByRole("link", { name: "Створити план" })).toBeInTheDocument();
+    expect(await tabs.findByRole("link", { name: "Створити план" })).toBeInTheDocument();
   });
 });
