@@ -12,6 +12,28 @@
     }
   ],
   "paths": {
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Перевірка готовності: критичні залежності (БД, Microsoft)",
+        "operationId": "readiness_check_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Усі критичні залежності доступні",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "503": {
+            "description": "Принаймні одна критична залежність недоступна"
+          }
+        }
+      }
+    },
     "/api/v1/plans": {
       "post": {
         "tags": [
@@ -5655,35 +5677,13 @@
         }
       }
     },
-    "/health/ready": {
-      "get": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Перевірка готовності: критичні залежності (БД, Microsoft)",
-        "operationId": "readiness_check_health_ready_get",
-        "responses": {
-          "200": {
-            "description": "Усі критичні залежності доступні",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "503": {
-            "description": "Принаймні одна критична залежність недоступна"
-          }
-        }
-      }
-    },
     "/health": {
       "get": {
         "tags": [
           "System"
         ],
         "summary": "Перевірка стану системи (Healthcheck)",
-        "description": "Перевіряє БД у фоновому потоці з обмеженим очікуванням.",
+        "description": "Перевіряє готовність БД і Microsoft, як і /health/ready.",
         "operationId": "health_check_health_get",
         "responses": {
           "200": {
@@ -5695,7 +5695,7 @@
             }
           },
           "503": {
-            "description": "База даних недоступна"
+            "description": "Критична залежність недоступна"
           }
         }
       }

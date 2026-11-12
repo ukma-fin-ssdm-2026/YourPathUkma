@@ -1,5 +1,6 @@
 """
-Використання ШІ: Codex додав перевірку БД у /health; перевірка: pytest і Ruff.
+Використання ШІ: Codex підключив health.router та спільну перевірку готовності для /health;
+перевірка: pytest, Ruff і перегенерація OpenAPI.
 
 Точка входу API YourPathUkma. Запуск з кореня репозиторію:
 
@@ -40,8 +41,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..db.migrate import init_database
-from ..healthcheck import check_health
-from .common import ApiError, RequestIdMiddleware, assert_safe_environment, cors_origins, register_error_handlers
+from . import health
+from .common import RequestIdMiddleware, assert_safe_environment, cors_origins, register_error_handlers
 from .routes import ai, auth, certificates, deanery, disciplines, plans, preferences, reference, system, user
 from .routes.admin import audit as admin_audit
 from .routes.admin import catalog as admin_catalog
@@ -133,6 +134,7 @@ app.add_middleware(
 )
 
 register_error_handlers(app)
+app.include_router(health.router)
 app.include_router(plans.router)
 app.include_router(disciplines.router)
 app.include_router(auth.router)
@@ -152,16 +154,13 @@ app.include_router(admin_certificates.router)
 
 @app.get(
     "/health",
-    responses={503: {"description": "База даних недоступна"}},
+    responses={503: {"description": "Критична залежність недоступна"}},
     tags=["System"],
     summary="Перевірка стану системи (Healthcheck)",
 )
 def health_check():
-    """Перевіряє БД у фоновому потоці з обмеженим очікуванням."""
-    result = check_health()
-    if result["status"] != "healthy":
-        raise ApiError(503, "DATABASE_UNAVAILABLE", "База даних тимчасово недоступна")
-    return {"status": "ok", "version": "1.0.0", "message": "Database operational", "checks": result["checks"]}
+    """Перевіряє готовність БД і Microsoft, як і /health/ready."""
+    return health.readiness_check()
 
 
 if __name__ == "__main__":

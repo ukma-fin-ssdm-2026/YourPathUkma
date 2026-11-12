@@ -1,6 +1,7 @@
 """Регресійні перевірки issue #217: стан сервісу, конфігурація, помилки та MCP.
 
 Використання ШІ: тести створено Codex; перевірка: pytest, Ruff і Bandit.
+Codex адаптував ін’єкцію збою до нового health.py та перевірив обидва маршрути.
 """
 
 import asyncio
@@ -15,7 +16,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.testclient import TestClient
 
-from src.api import microsoft
+from src.api import health, microsoft
 from src.api.common import ApiError, RequestIdMiddleware, register_error_handlers
 from src.api.main import app
 from src.api.tokens import get_auth_settings, issue_access_token
@@ -29,14 +30,21 @@ def fresh_auth_settings():
     get_auth_settings.cache_clear()
 
 
-def test_health_returns_503_when_database_is_unavailable(monkeypatch, tmp_path, caplog):
-    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{tmp_path / 'missing.sqlite'}")
+@pytest.mark.parametrize("path", ["/health", "/health/ready"])
+def test_health_returns_503_when_database_is_unavailable(monkeypatch, caplog, path):
+    def database_down():
+        raise ConnectionError("private database failure")
+
+    monkeypatch.setitem(health.DEPENDENCIES, "database", database_down)
+    monkeypatch.setitem(health.DEPENDENCIES, "microsoft", lambda: None)
     with caplog.at_level(logging.ERROR, logger="yourpath.api"):
-        response = TestClient(app).get("/health")
+        response = TestClient(app).get(path)
     assert response.status_code == 503
-    assert response.json()["code"] == "DATABASE_UNAVAILABLE"
-    assert response.json()["request_id"] == response.headers["X-Request-ID"]
-    assert "DATABASE_UNAVAILABLE" in caplog.text
+    assert response.json()["status"] == "unhealthy"
+    assert response.json()["checks"]["database"]["status"] == "down"
+    assert response.headers["X-Request-ID"]
+    assert "private database failure" not in response.text
+    assert "database" in caplog.text
 
 
 def test_config_uses_microsoft_client_id(monkeypatch, fresh_auth_settings):
