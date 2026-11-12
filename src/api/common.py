@@ -1,4 +1,6 @@
 """
+Використання ШІ: Codex додав логування 5xx та CORS для необроблених помилок; перевірка: pytest і Ruff.
+
 Спільні елементи API YourPathUkma: єдиний формат помилок, пагінація, заглушка автентифікації.
 
 Використання ШІ: файл створено за допомогою Claude (Anthropic) за вимогами ЛР4 та api-design.md.
@@ -22,6 +24,7 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.cors import CORSMiddleware
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from .tokens import decode_access_token, validate_auth_settings
@@ -193,8 +196,9 @@ def _error_response(
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApiError)
     async def api_error_handler(request: Request, exc: ApiError):
-        if exc.status_code in (401, 403):
-            logger.warning(
+        if exc.status_code in (401, 403) or exc.status_code >= 500:
+            logger.log(
+                logging.ERROR if exc.status_code >= 500 else logging.WARNING,
                 "%s %s -> %s %s [%s]",
                 request.method,
                 request.url.path,
@@ -216,12 +220,25 @@ def register_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(StarletteHTTPException)
     async def http_error_handler(request: Request, exc: StarletteHTTPException):
+        if exc.status_code >= 500:
+            logger.error("%s %s -> %s [%s]", request.method, request.url.path, exc.status_code, get_request_id(request))
         return _error_response(request, exc.status_code, f"HTTP_{exc.status_code}", str(exc.detail))
 
     @app.exception_handler(Exception)
     async def unhandled_error_handler(request: Request, exc: Exception):
         logger.exception("Необроблена помилка %s %s [%s]", request.method, request.url.path, get_request_id(request))
-        return _error_response(request, 500, "INTERNAL_ERROR", "Внутрішня помилка сервера")
+        response = _error_response(request, 500, "INTERNAL_ERROR", "Внутрішня помилка сервера")
+        # ServerErrorMiddleware знаходиться зовні CORSMiddleware: його відповідь
+        # потребує тих самих CORS-заголовків для дозволених origin.
+        origin = request.headers.get("origin")
+        for middleware in app.user_middleware:
+            if middleware.cls is CORSMiddleware and origin in middleware.kwargs.get("allow_origins", []):
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Access-Control-Allow-Credentials"] = "true"
+                response.headers["Access-Control-Expose-Headers"] = "X-Request-ID"
+                response.headers.add_vary_header("Origin")
+                break
+        return response
 
 
 class PaginationInfo(BaseModel):
