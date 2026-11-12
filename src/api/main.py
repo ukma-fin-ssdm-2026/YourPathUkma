@@ -38,6 +38,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..db.migrate import init_database
+from . import health
 from .common import RequestIdMiddleware, assert_safe_environment, cors_origins, register_error_handlers
 from .routes import ai, auth, certificates, deanery, disciplines, plans, preferences, reference, system, user
 from .routes.admin import audit as admin_audit
@@ -145,6 +146,7 @@ app.include_router(admin_audit.router)
 app.include_router(ai.router)
 app.include_router(certificates.router)
 app.include_router(admin_certificates.router)
+app.include_router(health.router)
 
 
 @app.get("/health", tags=["System"], summary="Перевірка стану системи (Healthcheck)")
