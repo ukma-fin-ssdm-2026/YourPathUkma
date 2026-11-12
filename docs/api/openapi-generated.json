@@ -5655,6 +5655,28 @@
         }
       }
     },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Перевірка готовності: критичні залежності (БД, Microsoft)",
+        "operationId": "readiness_check_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Усі критичні залежності доступні",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "503": {
+            "description": "Принаймні одна критична залежність недоступна"
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
