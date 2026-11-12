@@ -4,6 +4,39 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.2.0] - 2026-11-12
+
+### Bug Fixes
+
+- Add b404 and b603 exceptions to pass ci
+  ([`5b57e62`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/5b57e62b03a0a5cc5c3e8364b976e578b88e8923))
+
+- Avoid database writes for denied admin requests
+  ([`357cc3b`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/357cc3bd6112c079b742818b2624313bad38d6c5))
+
+- Handle Microsoft outages and authenticate MCP requests
+  ([`6ea5dba`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/6ea5dba9af670ecb393f954e84cdc8e6c25abb55))
+
+- Log server errors and preserve CORS headers
+  ([`9dd49ce`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/9dd49ce7b6aebb1b9cdede07c47d4ba5b2cd682f))
+
+- Report database failures in health endpoint
+  ([`4345b28`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/4345b28dd306562bcc0d25468fbc111ce982dd57))
+
+- Use Microsoft client ID in public configuration
+  ([`35a520e`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/35a520e49774967ac49feb0c6e2a74ecb3dbdf22))
+
+### Features
+
+- Add healthcheck
+  ([`8b21e11`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/8b21e11256d8fe20997f8e2bd072636157c8fc70))
+
+### Refactoring
+
+- Extract check_health() to return the database status independently of CLI
+  ([`17d2f36`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/17d2f365287cbadd81470d6b62fca5142fc7e4cd))
+
+
 ## [0.1.7] - 2026-11-11
 
 ### Bug Fixes
