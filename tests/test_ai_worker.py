@@ -389,3 +389,19 @@ def test_run_fails_when_free_elective_limit_exceeded(generation: int, elective_c
         with session_factory()() as db:
             db.execute(delete(AcademicRecord).where(AcademicRecord.title == "Попередній вільний вибір"))
             db.commit()
+
+
+def test_run_generation_task_calls_adapter_run():
+    from src.ai.worker import run_generation_task
+
+    with patch("src.ai.adapter.run") as mock_run:
+        run_generation_task(42)
+        mock_run.assert_called_once_with(42)
+
+
+def test_run_generation_task_handles_unexpected_exception():
+    from src.ai.worker import run_generation_task
+
+    with patch("src.ai.adapter.run", side_effect=RuntimeError("Unexpected error")):
+        # Should not raise exception
+        run_generation_task(42)
