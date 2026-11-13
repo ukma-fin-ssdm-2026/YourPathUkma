@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { RouterProvider, createMemoryRouter } from "react-router";
@@ -184,5 +185,26 @@ describe("CatalogPage", () => {
       timeout: 3000,
     });
     expect(urls.filter((u) => u.searchParams.has("instructor"))).toHaveLength(1);
+  });
+
+  it("скидання очищає викладача і не повертає попередній фільтр в URL", async () => {
+    const urls: URL[] = [];
+    server.use(disciplinesHandler([disciplineFixture()], { onRequest: (url) => urls.push(url) }));
+    const router = renderCatalog("/catalog?instructor=Петренко");
+    await screen.findByRole("heading", { name: "Функціональне програмування" });
+    await userEvent.click(screen.getByRole("button", { name: "Скинути фільтри" }));
+    await waitFor(() => expect(urls.at(-1)?.searchParams.has("instructor")).toBe(false));
+    expect(router.state.location.search).toBe("");
+    expect(screen.getByLabelText("Викладач")).toHaveValue("");
+  });
+
+  it("після переходу Назад поле показує викладача з URL", async () => {
+    server.use(disciplinesHandler([disciplineFixture()]));
+    const router = renderCatalog("/catalog?instructor=Петренко");
+    await screen.findByRole("heading", { name: "Функціональне програмування" });
+    await userEvent.click(screen.getByRole("button", { name: "Скинути фільтри" }));
+    await act(() => router.navigate(-1));
+    expect(screen.getByLabelText("Викладач")).toHaveValue("Петренко");
+    expect(new URLSearchParams(router.state.location.search).get("instructor")).toBe("Петренко");
   });
 });

@@ -1,5 +1,6 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: ui.test.tsx.
-import { type RefObject, useEffect } from "react";
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
+import { type RefObject, useEffect, useEffectEvent } from "react";
 
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -13,6 +14,7 @@ export function useDialogFocus(
   onClose: () => void,
   active = true,
 ): void {
+  const close = useEffectEvent(onClose);
   useEffect(() => {
     if (!active) return;
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -22,7 +24,7 @@ export function useDialogFocus(
 
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose();
+        close();
         return;
       }
       if (event.key !== "Tab") return;
@@ -44,5 +46,5 @@ export function useDialogFocus(
       document.removeEventListener("keydown", onKey);
       opener?.focus();
     };
-  }, [active, onClose, panelRef]);
+  }, [active, panelRef]);
 }

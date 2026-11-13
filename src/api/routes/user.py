@@ -8,6 +8,8 @@
 Використання ШІ: файл доопрацьовано за допомогою Claude (Anthropic): серверна перевірка ліміту 240 кредитів
 за програму при додаванні історії (AGENTS.md §10), порядок перевірок у add_academic_history.
 Перевірка: ручний огляд; pytest і лінтери запустити перед комітом.
+
+Codex додав блокування профілю під час запису історії. Перевірка: pytest на PostgreSQL.
 """
 
 from collections import defaultdict
@@ -285,6 +287,8 @@ def add_academic_history(
     db: Session = Depends(get_db),
 ):
     student_id = profile.user_id
+    # Блокуємо профіль до перевірки дублікатів і сум кредитів, навіть якщо історія ще порожня.
+    db.execute(select(StudentProfile.user_id).where(StudentProfile.user_id == student_id).with_for_update())
     ids = [r.course_id for r in payload.records if r.course_id is not None]
     courses: Dict[int, Course] = {}
     already_taken: set = set()

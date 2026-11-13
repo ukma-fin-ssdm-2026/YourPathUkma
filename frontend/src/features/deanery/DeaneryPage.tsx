@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: upload.test.tsx, documents.test.tsx.
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -7,7 +8,7 @@ import { ApiError } from "../../api/errors";
 import type { DeaneryDocument } from "../../api/types";
 import { Card } from "../../ui/Card";
 import { ConfirmDialog } from "../plans/ConfirmDialog";
-import { defaultPlanYear } from "../profile/ProfilePage";
+import { planYearFromParam } from "../../lib/planParams";
 import { DocumentCard } from "./DocumentCard";
 import { Dropzone } from "./Dropzone";
 import { NormativePanel } from "./NormativePanel";
@@ -36,13 +37,7 @@ function deleteMessage(error: ApiError): string {
 export function DeaneryPage({ pollMs }: { pollMs?: number }) {
   const [params] = useSearchParams();
   const limits = useConfig().data?.limits;
-  const year =
-    Number(params.get("year")) ||
-    defaultPlanYear(
-      new Date(),
-      limits?.academic_year_min ?? 2024,
-      limits?.academic_year_max ?? 2030,
-    );
+  const year = planYearFromParam(params.get("year"), limits);
 
   const upload = useUploadDocument();
   const remove = useDeleteDocument();

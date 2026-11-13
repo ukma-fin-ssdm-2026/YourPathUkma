@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useState } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -126,6 +127,29 @@ function DialogHarness() {
 }
 
 describe("фокус у діалозі", () => {
+  it("зберігає фокус після ререндеру й викликає новий обробник Escape", async () => {
+    const oldCancel = vi.fn();
+    const newCancel = vi.fn();
+    const dialog = (onCancel: () => void) => (
+      <ConfirmDialog
+        open
+        title="Видалити?"
+        confirmLabel="Видалити"
+        onConfirm={() => {}}
+        onCancel={onCancel}
+      />
+    );
+    const { rerender } = render(dialog(oldCancel));
+    await userEvent.tab();
+    const confirm = screen.getByRole("button", { name: "Видалити" });
+    expect(confirm).toHaveFocus();
+    rerender(dialog(newCancel));
+    expect(confirm).toHaveFocus();
+    await userEvent.keyboard("{Escape}");
+    expect(newCancel).toHaveBeenCalledOnce();
+    expect(oldCancel).not.toHaveBeenCalled();
+  });
+
   it("переносить фокус у діалог, тримає Tab у його межах і повертає фокус після Escape", async () => {
     render(<DialogHarness />);
     const opener = screen.getByRole("button", { name: "Відкрити" });

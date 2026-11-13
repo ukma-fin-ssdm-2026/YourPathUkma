@@ -4,6 +4,72 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.2.0] - 2026-11-12
+
+### Bug Fixes
+
+- Add b404 and b603 exceptions to pass ci
+  ([`5b57e62`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/5b57e62b03a0a5cc5c3e8364b976e578b88e8923))
+
+- Avoid database writes for denied admin requests
+  ([`357cc3b`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/357cc3bd6112c079b742818b2624313bad38d6c5))
+
+- Handle Microsoft outages and authenticate MCP requests
+  ([`6ea5dba`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/6ea5dba9af670ecb393f954e84cdc8e6c25abb55))
+
+- Log server errors and preserve CORS headers
+  ([`9dd49ce`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/9dd49ce7b6aebb1b9cdede07c47d4ba5b2cd682f))
+
+- Report database failures in health endpoint
+  ([`4345b28`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/4345b28dd306562bcc0d25468fbc111ce982dd57))
+
+- Use Microsoft client ID in public configuration
+  ([`35a520e`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/35a520e49774967ac49feb0c6e2a74ecb3dbdf22))
+
+### Features
+
+- Add healthcheck
+  ([`8b21e11`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/8b21e11256d8fe20997f8e2bd072636157c8fc70))
+
+### Refactoring
+
+- Extract check_health() to return the database status independently of CLI
+  ([`17d2f36`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/17d2f365287cbadd81470d6b62fca5142fc7e4cd))
+
+
+## [0.1.7] - 2026-11-11
+
+### Bug Fixes
+
+- Format course additions in the moderation queue
+  ([`e7cb814`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e7cb814eb75ae79b519dc7a5451b522baedace5b))
+
+
+## [0.1.6] - 2026-11-11
+
+### Bug Fixes
+
+- Paginate saved and individual plans
+  ([`33841ba`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/33841bafff7ff51872a0c791c6ffef7f50fb0ae0))
+
+- Preserve catalog history, dialog focus, and login recovery
+  ([`f9ceb99`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/f9ceb99ec4e4f97cba8cda0c06dd030e0a346922))
+
+- Restore planning drafts and validate planning inputs
+  ([`40515af`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/40515af1ffbace8d1a8e6c796a052484cae2863e))
+
+
+## [0.1.5] - 2026-11-11
+
+### Bug Fixes
+
+- Serialize academic history writes before checking limits
+  ([`7722e73`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/7722e73405bc0306eae7a7e5c78dab3c43928d5f))
+
+- Serialize updates, deletions, and submissions of a plan
+  ([`fe96c53`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/fe96c530540f23f8c9d0935deebad03d61397d29))
+
+
 ## [0.1.4] - 2026-11-08
 
 ### Bug Fixes
