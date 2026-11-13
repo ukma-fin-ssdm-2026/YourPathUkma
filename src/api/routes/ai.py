@@ -6,10 +6,10 @@ POST /plan-generations, GET /plan-generations/{generation_id}.
 Генерація асинхронна (R10): запит повертає 202, фронтенд опитує статус. Ліміт: 1 активна генерація
 на студента, 20 на добу (R10).
 
-Використання ШІ: файл доповнено за допомогою Antigravity (Claude Sonnet 4.6, Google DeepMind):
+Використання ШІ: файл доповнено за допомогою Antigravity (Google DeepMind):
 додано запуск BackgroundTask після POST /plan-generations (adapter.run via worker.run_generation_task),
-імпорт BackgroundTasks, збереження preferences перед генерацією.
-Перевірено: pytest tests/test_ai.py tests/test_ai_worker.py, ruff check src/api/routes/ai.py.
+імпорт BackgroundTasks, схему PlanGenerationRequest(PreferencesRequest), збереження preferences перед генерацією.
+Перевірено: pytest tests/test_ai.py tests/test_ai_worker.py tests/reliability, ruff check src/api/routes/ai.py.
 """
 
 import os
@@ -41,6 +41,12 @@ _RATE_LIMITED = ("RATE_LIMITED", "Досягнуто ліміт генераці
 def autorun_enabled() -> bool:
     """Чи запускати AI-генерацію у фоні автоматично (AI_AUTORUN=0 для тестів API)."""
     return os.getenv("AI_AUTORUN", "1") != "0"
+
+
+class PlanGenerationRequest(PreferencesRequest):
+    """Тіло POST /plan-generations: як побажання, але `academic_year` обов'язковий (contract.md §3.7)."""
+
+    academic_year: int = Field(..., ge=2024, le=2030, examples=[2026], description="Навчальний рік")
 
 
 class GenerationNotice(BaseModel):
