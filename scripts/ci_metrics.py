@@ -11,7 +11,6 @@ import subprocess  # nosec B404
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from functools import cache
-from pathlib import Path
 from statistics import mean, median
 from urllib.parse import quote, urlencode, urlsplit
 
@@ -190,7 +189,7 @@ def main():
     parser.add_argument("--workflow", required=True, help="workflow file name or numeric ID")
     parser.add_argument("--from", dest="start", required=True, help="inclusive ISO timestamp")
     parser.add_argument("--to", dest="end", required=True, help="exclusive ISO timestamp")
-    parser.add_argument("--output", choices=("docs/ci-cd/lab10-automated-metrics.json", "-"), required=True)
+    parser.add_argument("--output", choices=("-",), default="-", help="emit JSON on stdout")
     args = parser.parse_args()
     try:
         owner, separator, repo = args.repo.partition("/")
@@ -215,11 +214,7 @@ def main():
             "Використання ШІ": "Codex додав автоматичний підрахунок. Результат звірено зі звітом Lab 10.",
             **calculate(rows, start, end),
         }
-        output = json.dumps(report, ensure_ascii=False, indent=2)
-        if args.output == "-":
-            print(output)
-        else:
-            Path("docs/ci-cd/lab10-automated-metrics.json").write_text(output + "\n", encoding="utf-8")
+        print(json.dumps(report, ensure_ascii=False, indent=2))
     except (OSError, KeyError, IndexError, TypeError, ValueError, RuntimeError, subprocess.TimeoutExpired) as error:
         parser.exit(1, f"ci_metrics: {error}\n")
 
