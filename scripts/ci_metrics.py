@@ -70,18 +70,6 @@ def github(endpoint, *, paginate=False):
     return pages
 
 
-def output_path(value):
-    normalized = value.replace("\\", "/")
-    match = re.fullmatch(r"(?:docs/ci-cd/)?([A-Za-z0-9_-]+\.json)", normalized)
-    if not match:
-        raise argparse.ArgumentTypeError("Use a JSON filename in docs/ci-cd/")
-    directory = (Path(__file__).resolve().parents[1] / "docs" / "ci-cd").resolve()
-    path = directory / match.group(1)
-    if not path.resolve().is_relative_to(directory):
-        raise argparse.ArgumentTypeError("Output must resolve inside docs/ci-cd/")
-    return path
-
-
 def measure(run, repo):
     run_id, sha, attempt = run["id"], run["head_sha"], run["run_attempt"]
     base = f"repos/{repo}"
@@ -202,7 +190,7 @@ def main():
     parser.add_argument("--workflow", required=True, help="workflow file name or numeric ID")
     parser.add_argument("--from", dest="start", required=True, help="inclusive ISO timestamp")
     parser.add_argument("--to", dest="end", required=True, help="exclusive ISO timestamp")
-    parser.add_argument("--output", type=output_path, required=True)
+    parser.add_argument("--output", choices=("docs/ci-cd/lab10-automated-metrics.json", "-"), required=True)
     args = parser.parse_args()
     try:
         owner, separator, repo = args.repo.partition("/")
@@ -227,7 +215,11 @@ def main():
             "Використання ШІ": "Codex додав автоматичний підрахунок. Результат звірено зі звітом Lab 10.",
             **calculate(rows, start, end),
         }
-        args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        output = json.dumps(report, ensure_ascii=False, indent=2)
+        if args.output == "-":
+            print(output)
+        else:
+            Path("docs/ci-cd/lab10-automated-metrics.json").write_text(output + "\n", encoding="utf-8")
     except (OSError, KeyError, IndexError, TypeError, ValueError, RuntimeError, subprocess.TimeoutExpired) as error:
         parser.exit(1, f"ci_metrics: {error}\n")
 
