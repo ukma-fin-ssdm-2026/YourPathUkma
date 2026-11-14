@@ -1,10 +1,15 @@
-"""Тести POST /api/v1/plans/validate і регресія POST /api/v1/plans після винесення правил."""
+"""Тести POST /api/v1/plans/validate і регресія POST /api/v1/plans після винесення правил.
+
+Використання ШІ: Codex налаштував профіль четвертокурсника для тесту навантаження. Перевірка: pytest.
+"""
 
 import pytest
 from fastapi.testclient import TestClient
 
 from src.api.main import app
+from src.api.onboarding import get_onboarded_student
 from src.api.routes.plans import PlanItem, collect_rule_errors
+from src.db.models.users import StudentProfile
 
 client = TestClient(app)
 AUTH = {"Authorization": "Bearer test"}
@@ -78,8 +83,10 @@ def test_create_plan_still_rejects_business_rule_violation(monkeypatch):
     assert any(m.startswith("FREE_ELECTIVE_LIMIT_EXCEEDED") and "3 > 2" in m for m in messages)
 
 
-def test_create_plan_fourth_course_with_load_levels_is_rejected():
+def test_create_plan_fourth_course_with_load_levels_is_rejected(monkeypatch):
     """Інтеграційний рівень правила FR-003: 4 курс не може надсилати рівні навантаження."""
+    profile = StudentProfile(user_id=42, course_year=4, specialty="Інженерія програмного забезпечення")
+    monkeypatch.setitem(app.dependency_overrides, get_onboarded_student, lambda: profile)
     body = {**_plan([_item(101, 5.0)]), "course": 4, "load_levels": {"autumn": "low"}}
     response = client.post("/api/v1/plans", json=body, headers=AUTH)
     assert response.status_code == 422

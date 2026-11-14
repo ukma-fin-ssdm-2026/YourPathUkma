@@ -11,6 +11,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Path, Request
 from pydantic import BaseModel, Field
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ....db import enums as db_enums
@@ -112,7 +113,9 @@ def update_certificate_entry(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    program = db.get(CertificateProgram, program_id)
+    # Використання ШІ: Codex серіалізував звірку записів однієї програми.
+    # Перевірка: сценарії звірки на PostgreSQL.
+    program = db.get(CertificateProgram, program_id, with_for_update=True)
     if not program:
         raise ApiError(404, *_PROGRAM_NOT_FOUND)
     entry = db.get(CertificateProgramCourse, entry_id)
@@ -120,8 +123,18 @@ def update_certificate_entry(
         raise ApiError(404, *_ENTRY_NOT_FOUND)
 
     old_course_id = entry.course_id
+    old_availability = program.availability
     entry.course_id = payload.course_id
-    program.availability = db_enums.CertificateAvailability.AVAILABLE
+    db.flush()
+    # Доступність виводимо з усіх записів програми: програма доступна лише коли кожну дисципліну звірено
+    unmatched = db.scalar(
+        select(func.count())
+        .select_from(CertificateProgramCourse)
+        .where(CertificateProgramCourse.program_id == program_id, CertificateProgramCourse.course_id.is_(None))
+    )
+    program.availability = (
+        db_enums.CertificateAvailability.UNAVAILABLE if unmatched else db_enums.CertificateAvailability.AVAILABLE
+    )
 
     write_audit(
         db,
@@ -129,8 +142,8 @@ def update_certificate_entry(
         action="certificate_program.match",
         object_type="CertificateProgramCourse",
         object_id=entry.id,
-        old_value={"course_id": old_course_id},
-        new_value={"course_id": payload.course_id},
+        old_value={"course_id": old_course_id, "availability": old_availability.value},
+        new_value={"course_id": payload.course_id, "availability": program.availability.value},
         ip=client_ip(request),
     )
     db.commit()

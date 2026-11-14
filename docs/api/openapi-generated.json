@@ -84,6 +84,22 @@
               }
             }
           },
+          "409": {
+            "description": "Конфлікт: дія неможлива в поточному стані ресурсу",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "ONBOARDING_REQUIRED",
+                  "message": "Спершу вкажіть курс і спеціальність",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Помилка валідації вхідних даних",
             "content": {
@@ -850,12 +866,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Файл PDF",
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {}
-              },
-              "application/pdf": {}
+              }
             }
           },
           "401": {
@@ -906,6 +921,22 @@
               }
             }
           },
+          "409": {
+            "description": "Конфлікт: дія неможлива в поточному стані ресурсу",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "PLAN_NOT_EXPORTABLE",
+                  "message": "Експортувати можна лише план у статусі approved",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Помилка валідації вхідних даних",
             "content": {
@@ -919,6 +950,22 @@
                       "message": "Input should be greater than 0"
                     }
                   ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Операцію ще не реалізовано",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "EXPORT_NOT_IMPLEMENTED",
+                  "message": "Експорт плану в PDF ще не реалізовано",
+                  "details": [],
                   "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
@@ -7356,8 +7403,8 @@
           "plan_export": {
             "type": "boolean",
             "title": "Plan Export",
-            "description": "Експорт плану в PDF",
-            "default": true
+            "description": "Експорт плану в PDF (поки не реалізовано: 501)",
+            "default": false
           }
         },
         "type": "object",

@@ -1,6 +1,7 @@
 """Гонки між перевіркою й записом у планах та академічній історії.
 
 Використання ШІ: Codex додав регресійні тести. Перевірка: pytest на PostgreSQL до й після виправлення.
+Codex узгодив курс тестового плану з профілем. Перевірка: pytest на PostgreSQL.
 """
 
 from concurrent.futures import ThreadPoolExecutor
@@ -30,7 +31,7 @@ PLAN_URL = "/api/v1/plans"
 HISTORY_URL = "/api/v1/me/academic-history"
 PLAN = {
     "academic_year": 2027,
-    "course": 3,
+    "course": 2,
     "items": [{"course_id": 101, "title": "Функціональне програмування", "trimester": 1, "credits": 5}],
 }
 

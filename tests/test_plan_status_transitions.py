@@ -23,7 +23,7 @@ client = TestClient(app)
 
 FP = {"course_id": 101, "title": "Функціональне програмування", "trimester": 1, "credits": 5.0}
 SECURITY = {"course_id": 102, "title": "Основи кібербезпеки", "trimester": 2, "credits": 4.0}
-BODY = {"academic_year": 2027, "course": 3, "items": [FP, SECURITY]}
+BODY = {"academic_year": 2027, "course": 2, "items": [FP, SECURITY]}
 
 DRAFT = db_enums.PlanStatus.DRAFT
 SUBMITTED = db_enums.PlanStatus.SUBMITTED
