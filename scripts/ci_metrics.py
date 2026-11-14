@@ -1,10 +1,11 @@
-# Використання ШІ: Codex додав збір і підрахунок метрик.
+# Використання ШІ: Codex додав підрахунок і підтримку GH_TOKEN для GitHub Actions.
 # Перевірка: pytest і відтворення історичної вибірки GitHub Actions.
 """Reproduce the Lab 10 CI metrics from GitHub Actions."""
 
 import argparse
 import http.client
 import json
+import os
 import re
 import shutil
 import subprocess  # nosec B404
@@ -24,6 +25,8 @@ def timestamp(value):
 
 @cache
 def github_token():
+    if token := os.environ.get("GH_TOKEN"):
+        return token
     executable = shutil.which("gh")
     if executable is None:
         raise RuntimeError("Install the GitHub CLI (gh)")
