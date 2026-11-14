@@ -1,5 +1,6 @@
 # Використання ШІ: Codex додав підрахунок і підтримку GH_TOKEN для GitHub Actions.
 # Перевірка: pytest і відтворення історичної вибірки GitHub Actions.
+# Codex додав обмежені повтори GET-запитів. Перевірка: ін’єкція збоїв і запуск workflow.
 """Reproduce the Lab 10 CI metrics from GitHub Actions."""
 
 import argparse
@@ -9,6 +10,7 @@ import os
 import re
 import shutil
 import subprocess  # nosec B404
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from functools import cache
@@ -41,6 +43,33 @@ def github_token():
     return result.stdout.strip()
 
 
+def github_page(endpoint, headers):
+    for attempt in range(4):
+        delay = 2**attempt
+        connection = http.client.HTTPSConnection("api.github.com", timeout=30)
+        try:
+            connection.request("GET", "/" + endpoint, headers=headers)
+            response = connection.getresponse()
+            if response.status == 200:
+                return json.loads(response.read()), response.getheader("Link", "")
+            retry_after = response.getheader("Retry-After")
+            failure = f"HTTP {response.status}"
+            retryable = response.status == 429 or 500 <= response.status < 600
+            if response.status == 403 and retry_after:
+                retryable = True
+            if retry_after and retry_after.isdecimal():
+                delay = max(delay, int(retry_after))
+            if not retryable:
+                raise RuntimeError(f"GitHub API {endpoint}: {failure}")
+        except (TimeoutError, ConnectionError, http.client.IncompleteRead) as error:
+            failure = type(error).__name__
+        finally:
+            connection.close()
+        if attempt == 3 or delay > 60:
+            raise RuntimeError(f"GitHub API {endpoint}: {failure} after {attempt + 1} attempt(s)")
+        time.sleep(delay)
+
+
 def github(endpoint, *, paginate=False):
     headers = {
         "Authorization": f"Bearer {github_token()}",
@@ -49,26 +78,18 @@ def github(endpoint, *, paginate=False):
         "User-Agent": "YourPathUkma-Lab10",
     }
     pages = []
-    connection = http.client.HTTPSConnection("api.github.com", timeout=30)
-    try:
-        while endpoint:
-            connection.request("GET", "/" + endpoint, headers=headers)
-            response = connection.getresponse()
-            if response.status != 200:
-                raise RuntimeError(f"GitHub API {endpoint}: HTTP {response.status}")
-            data = json.loads(response.read())
-            if not paginate:
-                return data
-            pages.append(data)
-            link = re.search(r'<([^>]+)>; rel="next"', response.getheader("Link", ""))
-            if not link:
-                break
-            next_page = urlsplit(link.group(1))
-            if next_page.scheme != "https" or next_page.netloc != "api.github.com":
-                raise ValueError("Unexpected pagination host")
-            endpoint = f"{next_page.path.lstrip('/')}?{next_page.query}"
-    finally:
-        connection.close()
+    while endpoint:
+        data, links = github_page(endpoint, headers)
+        if not paginate:
+            return data
+        pages.append(data)
+        link = re.search(r'<([^>]+)>; rel="next"', links)
+        if not link:
+            break
+        next_page = urlsplit(link.group(1))
+        if next_page.scheme != "https" or next_page.netloc != "api.github.com":
+            raise ValueError("Unexpected pagination host")
+        endpoint = f"{next_page.path.lstrip('/')}?{next_page.query}"
     return pages
 
 
