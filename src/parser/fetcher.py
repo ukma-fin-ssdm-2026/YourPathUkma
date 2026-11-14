@@ -6,11 +6,13 @@ Playwright імпортується лише всередині `PlaywrightFetch
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: tests/test_saz_fetcher.py
 (на підставних відповідях, без мережі).
+Codex уточнив класифікацію повторів запиту. Перевірка: тести ін'єкції збоїв без браузера.
 """
 
 import contextlib
 import logging
 import os
+import re
 import time
 from typing import Callable, Optional, Protocol, Tuple
 from urllib.parse import urlencode
@@ -33,6 +35,24 @@ class FetchError(Exception):
 
 class TransientFetchError(Exception):
     """Тимчасовий збій одного запиту (тайм-аут, обрив з'єднання): його можна повторити."""
+
+
+def _is_transient_request_error(error: Exception) -> bool:
+    if isinstance(error, (TimeoutError, ConnectionResetError, ConnectionAbortedError, BrokenPipeError)):
+        return True
+    try:
+        from playwright.sync_api import Error
+        from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+    except ModuleNotFoundError as exc:
+        if exc.name != "playwright":
+            raise
+        return False
+    if isinstance(error, PlaywrightTimeoutError):
+        return True
+    # APIRequestContext reports Node socket errors in the first line.
+    return isinstance(error, Error) and bool(
+        re.search(r"\b(?:ECONNRESET|ETIMEDOUT|EPIPE|EAI_AGAIN)\b", str(error).partition("\n")[0])
+    )
 
 
 class PageFetcher(Protocol):
@@ -183,9 +203,17 @@ class PlaywrightFetcher:
             self._pause()
             try:
                 response = self._context.request.get(url, timeout=self._settings.timeout_s * 1000)
-                return response.status, response.url, response.text()
-            except Exception as exc:  # Playwright кидає різні типи (TimeoutError, Error); не імпортуємо його тут
+            except Exception as exc:
                 logger.warning("Запит до САЗ не вдався (сторінка %s): %s", page, type(exc).__name__)
-                raise TransientFetchError(f"{type(exc).__name__} під час запиту сторінки {page}") from exc
+                message = f"{type(exc).__name__} під час запиту сторінки {page}"
+                if _is_transient_request_error(exc):
+                    raise TransientFetchError(message) from None
+                raise FetchError(message) from None
+            try:
+                status, final_url = response.status, response.url
+                body = response.text() if status == 200 and not looks_like_login(final_url) else ""
+            except Exception as exc:
+                raise FetchError(f"{type(exc).__name__} під час читання сторінки {page}") from None
+            return status, final_url, body
 
         return fetch_with_retry(get, retries=self._settings.max_retries, delay_s=self._settings.delay_s)
