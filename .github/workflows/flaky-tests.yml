@@ -1,5 +1,6 @@
 # Використання ШІ: Codex додав ручний запуск п'яти повторів на одному раннері.
 # Перевірка: pre-commit, тести аналізатора JUnit і ручний запуск після злиття.
+# Використання ШІ: Codex додав номер раунду для демонстраційного тесту в цьому PR.
 name: Flaky tests
 
 on:
@@ -57,7 +58,8 @@ jobs:
           for round in 1 2 3 4 5; do
             echo "::group::Round $round on $GITHUB_SHA"
             backend_status=0
-            python -m pytest -q -p no:cacheprovider --junitxml="$reports/backend-$round.xml" || backend_status=$?
+            LAB10_FLAKY_DEMO_ROUND="$round" python -m pytest -q -p no:cacheprovider \
+              --junitxml="$reports/backend-$round.xml" || backend_status=$?
             printf '%s\n' "$backend_status" > "$reports/backend-$round.exit"
             frontend_status=0
             (cd frontend && npm test -- --reporter=default --reporter=junit --outputFile.junit="$reports/frontend-$round.xml") || frontend_status=$?
