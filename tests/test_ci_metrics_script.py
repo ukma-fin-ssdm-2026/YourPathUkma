@@ -1,7 +1,13 @@
 # Використання ШІ: Codex додав перевірки меж вибірки, прямих комітів і відновлення.
 # Перевірка: окремий запуск pytest для цього модуля.
+# Codex додав тести відновлення після мережевого збою.
 from datetime import timedelta
+from http.client import RemoteDisconnected
+from unittest.mock import MagicMock
 
+import pytest
+
+from scripts import ci_metrics
 from scripts.ci_metrics import calculate, collect, timestamp
 
 
@@ -56,3 +62,32 @@ def test_collect_filters_completed_runs_locally_and_excludes_window_end(monkeypa
 
     monkeypatch.setattr("scripts.ci_metrics.github", github)
     assert collect("org/repo", "ci.yaml", start, end) == runs[:1]
+
+
+@pytest.mark.parametrize("first_status", [None, 429, 503, 404])
+def test_github_retries_only_temporary_failures(monkeypatch, first_status):
+    first, second = MagicMock(), MagicMock()
+    if first_status is None:
+        first.getresponse.side_effect = RemoteDisconnected()
+    else:
+        first.getresponse.return_value.status = first_status
+        first.getresponse.return_value.getheader.return_value = None
+    second.getresponse.return_value.status = 200
+    second.getresponse.return_value.read.return_value = b'{"ok": true}'
+    connect = MagicMock(side_effect=[first, second])
+    monkeypatch.setattr(ci_metrics.http.client, "HTTPSConnection", connect)
+    monkeypatch.setattr(ci_metrics, "github_token", lambda: "test")
+    pauses = MagicMock()
+    monkeypatch.setattr("time.sleep", pauses)
+
+    if first_status == 404:
+        with pytest.raises(RuntimeError, match="HTTP 404"):
+            ci_metrics.github("repos/org/repo")
+        assert connect.call_count == 1
+        pauses.assert_not_called()
+    else:
+        assert ci_metrics.github("repos/org/repo") == {"ok": True}
+        assert connect.call_count == 2
+        pauses.assert_called_once_with(1)
+        second.close.assert_called_once()
+    first.close.assert_called_once()
