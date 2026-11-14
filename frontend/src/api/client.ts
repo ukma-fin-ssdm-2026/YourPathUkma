@@ -5,6 +5,11 @@ import { getAccessToken, setAccessToken } from "./token";
 
 const BASE_URL: string = import.meta.env.VITE_API_BASE ?? "/api/v1";
 
+/** Скільки чекаємо відповідь сервера (до отримання заголовків); завантаження файлів і PDF довші. */
+const DEFAULT_TIMEOUT_MS = 20_000;
+const UPLOAD_TIMEOUT_MS = 120_000;
+const BLOB_TIMEOUT_MS = 60_000;
+
 export interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
@@ -14,9 +19,12 @@ export interface RequestOptions {
   signal?: AbortSignal;
   /** Заголовок Accept; за замовчуванням JSON. */
   accept?: string;
+  /** Максимальний час очікування відповіді, мс. За замовчуванням 20 с (120 с для FormData). */
+  timeoutMs?: number;
 }
 
 interface AuthHandlers {
+  /** Новий токен; `null`, якщо сесія недійсна. Виняток означає тимчасовий збій (мережа, тайм-аут, 5xx). */
   refresh: () => Promise<string | null>;
   onAuthLost: () => void;
 }
@@ -34,12 +42,11 @@ export function configureAuth(handlers: AuthHandlers): void {
   refreshInFlight = null;
 }
 
-/** Усі паралельні 401 ділять один виклик refresh. */
+/** Усі паралельні 401 ділять один виклик refresh. Тимчасовий збій refresh прокидається як виняток. */
 function refreshOnce(): Promise<string | null> {
   if (!refreshInFlight) {
     refreshInFlight = Promise.resolve()
       .then(() => authHandlers.refresh())
-      .catch(() => null)
       .then((token) => {
         setAccessToken(token);
         return token;
@@ -70,6 +77,18 @@ async function send(
   const isForm = options.body instanceof FormData;
   if (options.body !== undefined && !isForm) headers.set("Content-Type", "application/json");
   if (tokenUsed) headers.set("Authorization", `Bearer ${tokenUsed}`);
+
+  // Без тайм-ауту запит до «мовчазного» сервера висить вічно (і «Завантаження…» разом із ним)
+  const controller = new AbortController();
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, options.timeoutMs ?? (isForm ? UPLOAD_TIMEOUT_MS : DEFAULT_TIMEOUT_MS));
+  const abortWithCaller = () => controller.abort();
+  if (options.signal?.aborted) controller.abort();
+  else options.signal?.addEventListener("abort", abortWithCaller, { once: true });
+
   try {
     const response = await doFetch(buildUrl(path, options.query), {
       method: options.method ?? "GET",
@@ -81,11 +100,15 @@ async function send(
             ? (options.body as FormData)
             : JSON.stringify(options.body),
       credentials: "include",
-      signal: options.signal,
+      signal: controller.signal,
     });
     return { response, tokenUsed };
   } catch {
+    if (timedOut) throw new ApiError(0, "TIMEOUT", "Сервер не відповів вчасно. Спробуйте ще раз");
     throw new ApiError(0, "NETWORK_ERROR", "Не вдалося з'єднатися з сервером");
+  } finally {
+    clearTimeout(timer);
+    options.signal?.removeEventListener("abort", abortWithCaller);
   }
 }
 
@@ -122,7 +145,15 @@ async function execute(path: string, options: RequestOptions): Promise<Response>
   if (response.status === 401 && useAuth) {
     // Якщо токен уже оновив інший запит, достатньо повторити; інакше оновлюємо самі.
     if (tokenUsed === getAccessToken()) {
-      const fresh = await refreshOnce();
+      let fresh: string | null;
+      try {
+        fresh = await refreshOnce();
+      } catch (error) {
+        // Тимчасовий збій refresh (мережа, тайм-аут, 5xx) не означає, що сесія недійсна: не розлогінюємо
+        throw error instanceof ApiError
+          ? error
+          : new ApiError(0, "NETWORK_ERROR", "Не вдалося з'єднатися з сервером");
+      }
       if (!fresh) {
         authHandlers.onAuthLost();
         throw await toApiError(response);
@@ -152,6 +183,7 @@ export async function requestBlob(
 ): Promise<{ blob: Blob; filename: string | null }> {
   const response = await execute(path, {
     accept: "application/pdf, application/json;q=0.5",
+    timeoutMs: BLOB_TIMEOUT_MS,
     ...options,
   });
   return {

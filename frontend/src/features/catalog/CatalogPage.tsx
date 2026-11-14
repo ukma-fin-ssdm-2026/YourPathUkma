@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: catalog-ui.test.tsx.
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router";
+import { useLocation, useSearchParams } from "react-router";
 import { useConfig } from "../../api/config";
 import { ApiError } from "../../api/errors";
 import { Button } from "../../ui/Button";
@@ -8,7 +9,6 @@ import { CatalogFilters } from "./CatalogFilters";
 import { DisciplineCard } from "./DisciplineCard";
 import { Pagination } from "./Pagination";
 import { PAGE_SIZE, filtersFromParams, paramsFromFilters, type DisciplineFilters } from "./filters";
-import { useDebouncedValue } from "./useDebouncedValue";
 import { useDirections, useDisciplines } from "./useDisciplines";
 
 function SkeletonGrid() {
@@ -23,25 +23,38 @@ function SkeletonGrid() {
 
 export function CatalogPage() {
   const [params, setParams] = useSearchParams();
+  const { key: locationKey } = useLocation();
   const { filters, page } = useMemo(() => filtersFromParams(params), [params]);
   const disciplines = useDisciplines(filters, page);
   const directions = useDirections();
   const config = useConfig();
 
   // Викладач вводиться текстом: оновлюємо адресу лише після паузи, щоб не слати запит на кожну літеру.
-  const [instructor, setInstructor] = useState(filters.instructor ?? "");
-  const debouncedInstructor = useDebouncedValue(instructor, 500);
+  const [instructorEdit, setInstructorEdit] = useState<{
+    locationKey: string;
+    value: string;
+  } | null>(null);
+  const pendingInstructor =
+    instructorEdit?.locationKey === locationKey ? instructorEdit.value : null;
+  if (instructorEdit && pendingInstructor === null) setInstructorEdit(null);
+
   useEffect(() => {
-    if (debouncedInstructor !== (filters.instructor ?? "")) {
-      setParams(paramsFromFilters({ ...filters, instructor: debouncedInstructor || undefined }, 1));
-    }
-  }, [debouncedInstructor, filters, setParams]);
+    if (pendingInstructor === null) return;
+    const instructor = pendingInstructor.trim() || undefined;
+    if (instructor === filters.instructor) return;
+    const timer = setTimeout(() => {
+      setParams(paramsFromFilters({ ...filters, instructor }, 1), { replace: true });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [pendingInstructor, filters, setParams]);
 
   function changeFilters(next: DisciplineFilters) {
-    setParams(paramsFromFilters(next, 1));
+    const instructor =
+      pendingInstructor === null ? next.instructor : pendingInstructor.trim() || undefined;
+    setParams(paramsFromFilters({ ...next, instructor }, 1));
   }
   function reset() {
-    setInstructor("");
+    setInstructorEdit(null);
     setParams(new URLSearchParams());
   }
 
@@ -114,8 +127,8 @@ export function CatalogPage() {
           <CatalogFilters
             filters={filters}
             directions={directions.data?.directions ?? []}
-            instructor={instructor}
-            onInstructorChange={setInstructor}
+            instructor={pendingInstructor ?? filters.instructor ?? ""}
+            onInstructorChange={(value) => setInstructorEdit({ locationKey, value })}
             onChange={changeFilters}
             onReset={reset}
           />

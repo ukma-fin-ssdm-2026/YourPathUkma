@@ -15,7 +15,11 @@ DEFAULT_SQLITE_URL = f"sqlite:///{ROOT_DIR / 'yourpath.sqlite'}"
 
 
 def database_url() -> str:
-    url = os.getenv("DATABASE_URL", "").strip() or DEFAULT_SQLITE_URL
+    configured = os.getenv("DATABASE_URL", "").strip()
+    if not configured and os.getenv("APP_ENV", "development") == "production":
+        # Тихий перехід на локальний файл SQLite у продакшні ховав би неправильне налаштування
+        raise RuntimeError("DATABASE_URL обов'язковий при APP_ENV=production")
+    url = configured or DEFAULT_SQLITE_URL
     # Render/Railway видають postgres:// або postgresql:// — у проєкті встановлено лише драйвер psycopg (v3)
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://") :]

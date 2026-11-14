@@ -1,4 +1,6 @@
 """
+Використання ШІ: Codex виправив джерело client_id; перевірка: pytest і Ruff.
+
 Ресурс «Система» (System): публічна конфігурація для фронтенду (GET /api/v1/config).
 
 Без автентифікації. Ліміти тут мають збігатися з контрактом (docs/api/contract.md, §2.2 і §3.0),
@@ -10,6 +12,9 @@ from typing import Dict, Optional
 
 from fastapi import APIRouter, Response
 from pydantic import BaseModel, Field
+
+from ..common import ApiError
+from ..tokens import get_auth_settings
 
 router = APIRouter(prefix="/api/v1", tags=["System"])
 
@@ -59,9 +64,12 @@ class ConfigResponse(BaseModel):
     responses={200: {"description": "Конфігурацію отримано"}},
 )
 async def get_config(response: Response):
+    client_id = get_auth_settings().client_id
+    if not client_id and os.getenv("APP_ENV", "development") == "production":
+        raise ApiError(503, "AUTH_NOT_CONFIGURED", "Вхід через Microsoft не налаштовано")
     response.headers["Cache-Control"] = "max-age=300"
     return ConfigResponse(
-        google_client_id=os.getenv("GOOGLE_CLIENT_ID", "dev-client-id.apps.googleusercontent.com"),
+        google_client_id=client_id,
         reviews_url=os.getenv("REVIEWS_URL", "https://example.ukma.edu.ua/reviews"),
         limits=Limits(),
         load_levels={

@@ -4,6 +4,120 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.2.0] - 2026-11-12
+
+### Bug Fixes
+
+- Add b404 and b603 exceptions to pass ci
+  ([`5b57e62`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/5b57e62b03a0a5cc5c3e8364b976e578b88e8923))
+
+- Avoid database writes for denied admin requests
+  ([`357cc3b`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/357cc3bd6112c079b742818b2624313bad38d6c5))
+
+- Handle Microsoft outages and authenticate MCP requests
+  ([`6ea5dba`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/6ea5dba9af670ecb393f954e84cdc8e6c25abb55))
+
+- Log server errors and preserve CORS headers
+  ([`9dd49ce`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/9dd49ce7b6aebb1b9cdede07c47d4ba5b2cd682f))
+
+- Report database failures in health endpoint
+  ([`4345b28`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/4345b28dd306562bcc0d25468fbc111ce982dd57))
+
+- Use Microsoft client ID in public configuration
+  ([`35a520e`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/35a520e49774967ac49feb0c6e2a74ecb3dbdf22))
+
+### Features
+
+- Add healthcheck
+  ([`8b21e11`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/8b21e11256d8fe20997f8e2bd072636157c8fc70))
+
+### Refactoring
+
+- Extract check_health() to return the database status independently of CLI
+  ([`17d2f36`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/17d2f365287cbadd81470d6b62fca5142fc7e4cd))
+
+
+## [0.1.7] - 2026-11-11
+
+### Bug Fixes
+
+- Format course additions in the moderation queue
+  ([`e7cb814`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e7cb814eb75ae79b519dc7a5451b522baedace5b))
+
+
+## [0.1.6] - 2026-11-11
+
+### Bug Fixes
+
+- Paginate saved and individual plans
+  ([`33841ba`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/33841bafff7ff51872a0c791c6ffef7f50fb0ae0))
+
+- Preserve catalog history, dialog focus, and login recovery
+  ([`f9ceb99`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/f9ceb99ec4e4f97cba8cda0c06dd030e0a346922))
+
+- Restore planning drafts and validate planning inputs
+  ([`40515af`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/40515af1ffbace8d1a8e6c796a052484cae2863e))
+
+
+## [0.1.5] - 2026-11-11
+
+### Bug Fixes
+
+- Serialize academic history writes before checking limits
+  ([`7722e73`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/7722e73405bc0306eae7a7e5c78dab3c43928d5f))
+
+- Serialize updates, deletions, and submissions of a plan
+  ([`fe96c53`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/fe96c530540f23f8c9d0935deebad03d61397d29))
+
+
+## [0.1.4] - 2026-11-08
+
+### Bug Fixes
+
+- Count all submitted plans in the free elective credit cap
+  ([`e028767`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e0287677d669595839e2530d03e640ce662dcb68))
+
+- Serialize plan submissions per student to protect the credit cap
+  ([`8bacf2e`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/8bacf2ee8e1eda993f3bb1b48a015ba44d1316cf))
+
+
+## [0.1.3] - 2026-11-08
+
+### Bug Fixes
+
+- Add grace window to refresh token rotation
+  ([`693a155`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/693a1558dba374871015c44a4e82ab06966ff9fc))
+
+- Add request timeout and keep session on transient refresh errors
+  ([`63a73a7`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/63a73a77d38c77051cfb5f15c678cba053edb6d2))
+
+- Harden demo seed default and database connection settings
+  ([`fbcf652`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/fbcf6522c9e27d5e823ae288e6dcdea7c7efd58d))
+
+- Render the app even if API mocks fail to start
+  ([`29c7290`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/29c7290ae11041aa0c414c9717b92b42989d3f91))
+
+- Require academic_year in plan generation request
+  ([`8e11b8b`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/8e11b8beb940b154f20df9bd521e8ff047c05c2c))
+
+- Show an error instead of endless loading when preferences fail
+  ([`04aa204`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/04aa2042ba7f2dafd6efa82f477d46e79674e7dc))
+
+
+## [0.1.2] - 2026-11-08
+
+### Bug Fixes
+
+- Add magic-byte check and scan deadline for full coverage
+  ([`c8bf8cd`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/c8bf8cd4c1a95e2feeb567bbbb6c0b0609bd08ce))
+
+- Build upload size message from MAX_UPLOAD_BYTES
+  ([`71c9060`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/71c906022921b2d8570f007d7509e01fc6ad4d1e))
+
+- Harden parser, token and upload reliability
+  ([`0e3ab13`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/0e3ab13c939b6f46d6f45dfaaae34327225f516d))
+
+
 ## [0.1.1] - 2026-11-05
 
 ### Refactoring

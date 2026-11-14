@@ -4,6 +4,7 @@
 Запит і сесія БД підроблені, тож перевіряється лише логіка без HTTP і без бази.
 
 Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: pytest, ruff.
+Використання ШІ: Codex перевірив відмову без запису/commit у БД та запис у звичайному журналі.
 """
 
 from datetime import datetime
@@ -91,7 +92,7 @@ def test_require_admin_rejects_unknown_user(fake_session):
     fake_session.add.assert_not_called()
 
 
-def test_require_admin_denies_student_and_audits_attempt(fake_session):
+def test_require_admin_denies_student_without_database_writes(fake_session, caplog):
     student = SimpleNamespace(id=42, role=db_enums.UserRole.STUDENT)
     fake_session.get.return_value = student
 
@@ -99,11 +100,9 @@ def test_require_admin_denies_student_and_audits_attempt(fake_session):
         require_admin(_request("203.0.113.7", "DELETE", "/api/v1/admin/directions/3"), user_id=42, db=fake_session)
 
     assert (error.value.status_code, error.value.code) == (403, "FORBIDDEN_ROLE")
-    entry = fake_session.add.call_args.args[0]
-    assert entry.outcome == db_enums.AuditOutcome.DENIED
-    assert entry.new_value == {"method": "DELETE", "path": "/api/v1/admin/directions/3"}
-    assert entry.ip == "203.0.113.7"
-    fake_session.commit.assert_called_once()  # відмову фіксуємо, хоч запит і завершується помилкою
+    fake_session.add.assert_not_called()
+    fake_session.commit.assert_not_called()
+    assert "Admin access denied actor=42 method=DELETE path=/api/v1/admin/directions/3" in caplog.text
 
 
 def test_require_admin_returns_admin_user(fake_session):

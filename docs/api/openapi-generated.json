@@ -12,6 +12,28 @@
     }
   ],
   "paths": {
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Перевірка готовності: критичні залежності (БД, Microsoft)",
+        "operationId": "readiness_check_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Усі критичні залежності доступні",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "503": {
+            "description": "Принаймні одна критична залежність недоступна"
+          }
+        }
+      }
+    },
     "/api/v1/plans": {
       "post": {
         "tags": [
@@ -53,6 +75,22 @@
                 "example": {
                   "code": "UNAUTHORIZED",
                   "message": "Відсутній або некоректний токен авторизації",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфлікт: дія неможлива в поточному стані ресурсу",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "ONBOARDING_REQUIRED",
+                  "message": "Спершу вкажіть курс і спеціальність",
                   "details": [],
                   "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
@@ -828,12 +866,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Файл PDF",
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {}
-              },
-              "application/pdf": {}
+              }
             }
           },
           "401": {
@@ -884,6 +921,22 @@
               }
             }
           },
+          "409": {
+            "description": "Конфлікт: дія неможлива в поточному стані ресурсу",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "PLAN_NOT_EXPORTABLE",
+                  "message": "Експортувати можна лише план у статусі approved",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Помилка валідації вхідних даних",
             "content": {
@@ -897,6 +950,22 @@
                       "message": "Input should be greater than 0"
                     }
                   ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Операцію ще не реалізовано",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "EXPORT_NOT_IMPLEMENTED",
+                  "message": "Експорт плану в PDF ще не реалізовано",
+                  "details": [],
                   "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
@@ -5025,7 +5094,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PreferencesRequest"
+                "$ref": "#/components/schemas/PlanGenerationRequest"
               }
             }
           },
@@ -5661,7 +5730,7 @@
           "System"
         ],
         "summary": "Перевірка стану системи (Healthcheck)",
-        "description": "Повертає стан сервісу для моніторингу.",
+        "description": "Перевіряє готовність БД і Microsoft, як і /health/ready.",
         "operationId": "health_check_health_get",
         "responses": {
           "200": {
@@ -5671,6 +5740,9 @@
                 "schema": {}
               }
             }
+          },
+          "503": {
+            "description": "Критична залежність недоступна"
           }
         }
       }
@@ -7331,8 +7403,8 @@
           "plan_export": {
             "type": "boolean",
             "title": "Plan Export",
-            "description": "Експорт плану в PDF",
-            "default": true
+            "description": "Експорт плану в PDF (поки не реалізовано: 501)",
+            "default": false
           }
         },
         "type": "object",
@@ -7990,6 +8062,79 @@
             "total": 2
           }
         ]
+      },
+      "PlanGenerationRequest": {
+        "properties": {
+          "academic_year": {
+            "type": "integer",
+            "maximum": 2030.0,
+            "minimum": 2024.0,
+            "title": "Academic Year",
+            "description": "Навчальний рік",
+            "examples": [
+              2026
+            ]
+          },
+          "load_levels": {
+            "$ref": "#/components/schemas/LoadLevels",
+            "description": "Для 4 курсу ігнорується: рівні розраховує сервер (FR-003)"
+          },
+          "direction_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Direction Ids",
+            "description": "0–3 напрямки"
+          },
+          "include_free_electives": {
+            "type": "boolean",
+            "title": "Include Free Electives",
+            "description": "false — лише профорієнтовні",
+            "default": true
+          },
+          "preferred_instructor_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Preferred Instructor Ids"
+          },
+          "unwanted_instructor_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Unwanted Instructor Ids"
+          },
+          "wants_certificate": {
+            "type": "boolean",
+            "title": "Wants Certificate",
+            "default": false
+          },
+          "certificate_program_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Certificate Program Id",
+            "description": "Етап 2: поки лише зберігається"
+          }
+        },
+        "type": "object",
+        "required": [
+          "academic_year"
+        ],
+        "title": "PlanGenerationRequest",
+        "description": "Тіло POST /plan-generations: як побажання, але `academic_year` обов'язковий (contract.md §3.7)."
       },
       "PlanGenerationResponse": {
         "properties": {

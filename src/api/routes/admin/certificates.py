@@ -113,7 +113,9 @@ def update_certificate_entry(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    program = db.get(CertificateProgram, program_id)
+    # Використання ШІ: Codex серіалізував звірку записів однієї програми.
+    # Перевірка: сценарії звірки на PostgreSQL.
+    program = db.get(CertificateProgram, program_id, with_for_update=True)
     if not program:
         raise ApiError(404, *_PROGRAM_NOT_FOUND)
     entry = db.get(CertificateProgramCourse, entry_id)

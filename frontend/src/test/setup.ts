@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test.
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import "@testing-library/jest-dom/vitest";
 import { setFetch } from "../api/client";
 import { setAccessToken } from "../api/token";
@@ -20,7 +21,10 @@ const relativeFetch: typeof fetch = async (input, init) => {
 };
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-beforeEach(() => setFetch(relativeFetch));
+beforeEach(() => {
+  sessionStorage.clear();
+  setFetch(relativeFetch);
+});
 afterEach(() => {
   server.resetHandlers();
   resetMockDb();

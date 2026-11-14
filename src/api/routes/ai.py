@@ -31,6 +31,12 @@ _GENERATION_IN_PROGRESS = ("GENERATION_IN_PROGRESS", "Вже виконуєть�
 _RATE_LIMITED = ("RATE_LIMITED", "Досягнуто ліміт генерацій (20 за добу)")
 
 
+class PlanGenerationRequest(PreferencesRequest):
+    """Тіло POST /plan-generations: як побажання, але `academic_year` обов'язковий (contract.md §3.7)."""
+
+    academic_year: int = Field(..., ge=2024, le=2030, examples=[2026], description="Навчальний рік")
+
+
 class GenerationNotice(BaseModel):
     code: str = Field(..., examples=["UNWANTED_INSTRUCTOR_UNAVOIDABLE"])
     message: str = Field(..., examples=["Дисципліну X викладає лише обраний вами небажаний викладач"])
@@ -68,7 +74,7 @@ class PlanGenerationResponse(BaseModel):
     },
 )
 def start_generation(
-    payload: PreferencesRequest,
+    payload: PlanGenerationRequest,
     response: Response,
     profile: StudentProfile = Depends(get_onboarded_student),
     db: Session = Depends(get_db),

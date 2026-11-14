@@ -15,6 +15,10 @@ from .common import ApiError
 from .microsoft import MicrosoftIdentity
 from .tokens import REFRESH_TOKEN_TTL_SECONDS, get_auth_settings
 
+# Скільки секунд після ротації старий refresh-токен ще вважається «щойно ротованим», а не вкраденим:
+# друга вкладка або повтор після втраченої відповіді пред'являють той самий cookie майже одночасно.
+REFRESH_REUSE_GRACE_SECONDS = 10
+
 
 def _unauthorized(code: str = "UNAUTHORIZED") -> ApiError:
     return ApiError(401, code, "Відсутній або некоректний токен авторизації")
@@ -81,12 +85,31 @@ def _revoke_family(db: Session, family_id: str) -> None:
     )
 
 
+def _rotated_just_now(db: Session, row: RefreshToken, now) -> bool:
+    """
+    Токен відкликано через ротацію щойно (в межах grace-вікна), і в «сім'ї» ще є чинний наступник.
+    Після виходу (logout) відкликається вся «сім'я», чинного наступника немає, тож таке не проходить.
+    """
+    if now - row.revoked_at > timedelta(seconds=REFRESH_REUSE_GRACE_SECONDS):
+        return False
+    successor = db.scalar(
+        select(RefreshToken.id)
+        .where(
+            RefreshToken.family_id == row.family_id,
+            RefreshToken.revoked_at.is_(None),
+            RefreshToken.expires_at > now,
+        )
+        .limit(1)
+    )
+    return successor is not None
+
+
 def rotate_refresh_token(db: Session, raw: str) -> Tuple[User, str]:
     row = db.scalar(select(RefreshToken).where(RefreshToken.token_sha256 == hash_token(raw)).with_for_update())
     if row is None:
         raise _unauthorized()
     now = utcnow()
-    if row.revoked_at is not None:
+    if row.revoked_at is not None and not _rotated_just_now(db, row, now):
         _revoke_family(db, row.family_id)
         db.commit()
         raise _unauthorized("REFRESH_TOKEN_REUSED")
@@ -95,7 +118,8 @@ def rotate_refresh_token(db: Session, raw: str) -> Tuple[User, str]:
     user = db.get(User, row.user_id)
     if user is None:
         raise _unauthorized()
-    row.revoked_at = now
+    if row.revoked_at is None:
+        row.revoked_at = now
     new_raw = create_refresh_token(db, user.id, row.family_id)
     db.commit()
     return user, new_raw

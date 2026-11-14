@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: preferences-data.test.tsx.
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { request } from "../../api/client";
@@ -43,21 +44,36 @@ interface InstructorsPage {
 export function useInstructors(q: string) {
   const term = q.trim();
   return useQuery({
-    queryKey: ["instructors", term],
+    queryKey: ["instructors", "search", term],
     queryFn: () => request<InstructorsPage>("/instructors", { query: { q: term, limit: 10 } }),
     enabled: term.length >= 2,
   });
 }
 
-/** Словник id → ПІБ для підписів збережених викладачів (перші 100 з довідника). */
-export function useInstructorNames(): Map<number, string> {
+/** Читаємо сторінки довідника, доки не знайдемо збережені імена. */
+export function useInstructorNames(ids: number[]): Map<number, string> {
+  const requested = [...new Set(ids)].sort((a, b) => a - b);
   const query = useQuery({
-    queryKey: ["instructors", "all"],
-    queryFn: () => request<InstructorsPage>("/instructors", { query: { limit: 100 } }),
+    queryKey: ["instructors", "directory", requested],
+    queryFn: async ({ signal }) => {
+      const missing = new Set(requested);
+      const found: Instructor[] = [];
+      const limit = 100;
+      for (let offset = 0; missing.size > 0; offset += limit) {
+        const page = await request<InstructorsPage>("/instructors", {
+          query: { limit, offset },
+          signal,
+        });
+        found.push(...page.instructors.filter((item) => missing.delete(item.id)));
+        if (!page.pagination.has_more || page.instructors.length === 0) break;
+      }
+      return found;
+    },
+    enabled: requested.length > 0,
     staleTime: 5 * 60 * 1000,
   });
   return useMemo(
-    () => new Map((query.data?.instructors ?? []).map((item) => [item.id, item.full_name])),
+    () => new Map((query.data ?? []).map((item) => [item.id, item.full_name])),
     [query.data],
   );
 }

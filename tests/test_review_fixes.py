@@ -2,6 +2,8 @@
 
 Пункт 4 (ліміт генерацій у UTC) лежить у tests/test_ai.py.
 Тести змінюють seed-дані й повертають їх у вихідний стан у finally/фікстурах.
+
+Використання ШІ: Codex додав регресії курсу, онбордингу та експорту. Перевірка: pytest.
 """
 
 from contextlib import contextmanager
@@ -91,8 +93,7 @@ def draft_plan(client, elective):
     with session_factory()() as db:
         course_year = db.get(StudentProfile, STUDENT_ID).course_year
     response = client.post("/api/v1/plans", json=plan_body(elective, course_year=max(course_year, 2)))
-    if response.status_code != 201:
-        pytest.skip(f"Не вдалося створити чернетку із seed-даними: {response.status_code} {response.text}")
+    assert response.status_code == 201, response.text
     plan_id = response.json()["id"]
     yield plan_id
     with session_factory()() as db:
@@ -231,24 +232,56 @@ def test_create_plan_rejects_course_above_student_course(client, elective):
     assert response.json()["code"] == "VALIDATION_ERROR"
 
 
-def test_update_and_submit_require_onboarding(client, elective):
+def test_update_and_submit_require_onboarding(client, draft_plan, elective):
     with profile_state(specialty=""):
-        assert client.put("/api/v1/plans/1", json=plan_body(elective)).status_code == 409
-        assert client.post("/api/v1/plans/1/submit").status_code == 409
+        update = client.put(f"/api/v1/plans/{draft_plan}", json=plan_body(elective))
+        submit = client.post(f"/api/v1/plans/{draft_plan}/submit")
+    for response in (update, submit):
+        assert response.status_code == 409
+        assert response.json()["code"] == "ONBOARDING_REQUIRED"
+
+
+def test_update_and_submit_reject_course_above_current_course(client, draft_plan, elective):
+    with profile_state(course_year=3):
+        response = client.put(f"/api/v1/plans/{draft_plan}", json=plan_body(elective, course_year=3))
+        assert response.status_code == 200, response.text
+    with profile_state(course_year=2):
+        update = client.put(f"/api/v1/plans/{draft_plan}", json=plan_body(elective, course_year=3))
+        submit = client.post(f"/api/v1/plans/{draft_plan}/submit")
+    for response in (update, submit):
+        assert response.status_code == 422
+        assert response.json()["code"] == "VALIDATION_ERROR"
+    with session_factory()() as db:
+        assert db.get(IndividualPlan, draft_plan).status == db_enums.PlanStatus.DRAFT
 
 
 # --- 5. Експорт не віддає заглушку ---
 
 
-def test_export_returns_501_instead_of_fake_pdf(client, draft_plan):
-    response = client.get(f"/api/v1/plans/{draft_plan}/export")
+@pytest.fixture
+def approved_plan(draft_plan):
+    with session_factory()() as db:
+        db.get(IndividualPlan, draft_plan).status = db_enums.PlanStatus.APPROVED
+        db.commit()
+    return draft_plan
+
+
+def test_export_returns_501_instead_of_fake_pdf(client, approved_plan):
+    response = client.get(f"/api/v1/plans/{approved_plan}/export")
     assert response.status_code == 501
+    assert response.json()["code"] == "EXPORT_NOT_IMPLEMENTED"
     assert response.headers["content-type"].startswith("application/json")
     assert b"%PDF" not in response.content
 
 
-def test_export_unknown_format_still_422(client, draft_plan):
-    assert client.get(f"/api/v1/plans/{draft_plan}/export?format=docx").status_code == 422
+def test_export_unknown_format_still_422(client, approved_plan):
+    assert client.get(f"/api/v1/plans/{approved_plan}/export?format=docx").status_code == 422
+
+
+def test_export_rejects_draft(client, draft_plan):
+    response = client.get(f"/api/v1/plans/{draft_plan}/export")
+    assert response.status_code == 409
+    assert response.json()["code"] == "PLAN_NOT_EXPORTABLE"
 
 
 def test_config_reports_plan_export_disabled(client):

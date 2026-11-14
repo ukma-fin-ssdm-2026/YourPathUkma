@@ -1,3 +1,5 @@
+"""Використання ШІ: Codex відокремив збій JWKS від невірного токена; перевірка: pytest і Ruff."""
+
 import hmac
 import logging
 from dataclasses import dataclass
@@ -91,6 +93,9 @@ def _verify_id_token(id_token: str, nonce: str) -> dict:
             leeway=30,
             options={"require": ["exp", "iat", "iss", "aud", "sub"]},
         )
+    except jwt.PyJWKClientConnectionError:
+        logger.warning("Microsoft JWKS недоступний")
+        raise ApiError(503, "AUTH_PROVIDER_UNAVAILABLE", "Microsoft тимчасово недоступний") from None
     except jwt.PyJWTError:
         logger.warning("Некоректний id_token від Microsoft", exc_info=True)
         raise _login_failed("INVALID_ID_TOKEN")

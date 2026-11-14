@@ -178,6 +178,24 @@
 - **Де налаштовано правила:** `[tool.semantic_release]` у `pyproject.toml` (які типи дають патч, формат тегів), шаблони журналу в `.github/changelog-templates/`. Змінюючи їх, перевір результат локально (`semantic-release --noop version --print` у клоні на гілці `main`), бо помилка тут ламає реліз для всіх.
 - **Позначка `[REFACTOR]`** у повідомленні коміту (вимога Лаб 8) додається **після** опису, наприклад: `refactor: extract shared download mock [REFACTOR]`.
 
+### 9.2 SonarCloud і залежності в CI (ЗАВЖДИ виконувати)
+
+Quality Gate SonarCloud вимагає рейтинг безпеки на новому коді не гірший за A. Правило **S8544** («Python dependencies should be locked to verified versions») вважає вразливим кожен `pip install -r requirements*.txt` без хешів. Новий або змінений рядок із таким викликом у `.github/workflows/` **валить Quality Gate PR** (так сталося на PR #212).
+
+- **У новому воркфлоу не пиши** `pip install -r requirements.txt` / `-r requirements-dev.txt`. Став залежності лише з lock-файлу з хешами:
+  `pip install --require-hashes --only-binary :all: -r requirements-ci.lock`
+- Окремі інструменти ставь із точною версією (`pip install ruff==0.17.0`), як у `ci.yaml`; версії без `==` теж спрацьовують на S8544.
+- **`requirements-ci.lock` — генерований файл, руками його не редагувати.** Він зафіксований для CI: Linux, Python 3.12. Для локальної роботи лишається `requirements*.txt`. Після **будь-якої** зміни `requirements.txt` або `requirements-dev.txt` перегенеруй lock і закоміть його в тому ж PR, інакше воркфлоу, що ставить із lock, не побачить нових залежностей:
+
+  ```bash
+  pip install uv
+  uv pip compile requirements.txt requirements-dev.txt --python-version 3.12 --python-platform linux \
+    --generate-hashes --no-build --no-header -o requirements-ci.lock
+  ```
+
+- **Відомий борг:** старі виклики `pip install -r requirements*.txt` у `ci.yaml:38`, `mutation.yml:30` і `deploy-api-docs.yml:31` уже мають відкриті алерти S8544 на `main`. Вони не є наслідком твоїх змін; але нових таких викликів не додавай, а торкаючись цих рядків, переведи їх на lock.
+- Перш ніж вважати PR готовим, перевір коментар SonarCloud і вкладку Checks: `Quality Gate failed` треба виправити, а не ігнорувати.
+
 ## 10. Нотатки для агента
 
 - Нормативні дисципліни — **read-only** дані з документа деканату, ніколи не редагуються студентом у конструкторі.
@@ -188,4 +206,6 @@
 ## Використання ШІ
 
 Розділ 9.1 (коміти, версії та релізи) додано за допомогою Claude Code (Anthropic) для бонусу «Автоматизований реліз» (Лаб 8). Перевірка: правила узгоджено з фактичною конфігурацією `[tool.semantic_release]` у `pyproject.toml` і з результатами локального прогону `semantic-release` (refactor: → patch, feat: → minor, docs: → без релізу); перегляд PR #198 разом із цим розділом виконано керівником рефакторингу до злиття.
+
+Розділ 9.2 (SonarCloud і залежності в CI) додано за допомогою Claude Code (Anthropic) за результатами падіння Quality Gate на PR #212 (Лаб 9). Перевірка: правило S8544 і перелік уражених рядків звірено з алертами code scanning; команду генерації `requirements-ci.lock` виконано локально, а хеші й наявність колес для Linux / Python 3.12 перевірено через `pip download --require-hashes` (86 пакетів).
 - Парсинг САЗ і парсинг сайту сертифікатів — окремі, незалежно запускані фонові джоби (`SyncJob`).

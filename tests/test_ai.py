@@ -2,9 +2,10 @@
 
 Використання ШІ: файл створено за допомогою Claude за ai.py і contract.md §3.7.
 Перевірка: pytest, ruff check.
+Codex додав тест межі добового вікна UTC. Перевірка: pytest.
 """
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -15,6 +16,7 @@ from sqlalchemy.exc import IntegrityError
 from src.api.common import get_current_student_id
 from src.api.main import app
 from src.api.onboarding import get_onboarded_student
+from src.api.routes import ai
 from src.db import enums as db_enums
 from src.db.base import utcnow
 from src.db.models.ai import PlanGeneration, PlanGenerationNotice
@@ -137,6 +139,16 @@ def test_start_generation_rate_limited_after_20_per_day(client, student_id):
     assert response.json()["code"] == "RATE_LIMITED"
 
 
+@pytest.mark.parametrize("offset,expected", [(timedelta(0), 429), (timedelta(microseconds=1), 202)])
+def test_daily_limit_boundary_in_utc(client, student_id, monkeypatch, offset, expected):
+    now = datetime(2026, 11, 14, 12, tzinfo=timezone.utc)
+    monkeypatch.setattr(ai, "utcnow", lambda: now)
+    boundary = now - timedelta(hours=24) - offset
+    for _ in range(20):
+        add_generation(student_id, created_at=boundary, finished_at=boundary)
+    assert client.post(URL, json=PAYLOAD).status_code == expected
+
+
 def test_old_generations_do_not_count_towards_daily_limit(client, student_id):
     old = utcnow() - timedelta(hours=48)
     for _ in range(20):
@@ -152,6 +164,13 @@ def test_other_students_generations_do_not_block(client, other_user_id):
 def test_start_generation_invalid_body_returns_422(client):
     response = client.post(URL, json={"academic_year": "not-a-year"})
     assert response.status_code == 422
+
+
+def test_start_generation_without_academic_year_returns_422_not_500(client):
+    body = {key: value for key, value in PAYLOAD.items() if key != "academic_year"}
+    response = client.post(URL, json=body)
+    assert response.status_code == 422
+    assert response.json()["code"] == "VALIDATION_ERROR"
 
 
 def test_start_generation_requires_auth():

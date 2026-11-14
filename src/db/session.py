@@ -28,7 +28,8 @@ def get_engine() -> Engine:
             cursor.close()
 
         return engine
-    return create_engine(url, pool_pre_ping=True)
+    # connect_timeout: недоступний хост БД не підвішує старт і запити; pool_recycle: без застарілих з'єднань
+    return create_engine(url, pool_pre_ping=True, pool_recycle=1800, connect_args={"connect_timeout": 10})
 
 
 @lru_cache(maxsize=None)
