@@ -1,0 +1,28 @@
+{
+  "repository": "ukma-fin-ssdm-2026/YourPathUkma",
+  "workflow": "ci.yaml",
+  "from": "2026-10-23T00:00:00+00:00",
+  "to_exclusive": "2026-11-13T00:00:00+00:00",
+  "Використання ШІ": "Codex додав автоматичний підрахунок. Результат звірено зі звітом Lab 10.",
+  "completed_runs": 90,
+  "successful_runs": 88,
+  "failed_runs": 2,
+  "deployments_per_week": 29.333333333333332,
+  "change_failure_percent": 2.2222222222222223,
+  "lead_time": {
+    "count": 88,
+    "mean_seconds": 49730.86363636364,
+    "median_seconds": 23865.5
+  },
+  "direct_commits_in_lead_time": 8,
+  "queue_seconds": 117733.0,
+  "execution_seconds": 26779.0,
+  "queue_percent_of_lead_time": 2.6902307785818027,
+  "execution_percent_of_lead_time": 0.6119073668354844,
+  "recovery_time": {
+    "count": 2,
+    "mean_seconds": 124.0,
+    "median_seconds": 124.0
+  },
+  "unrecovered_run_ids": []
+}
