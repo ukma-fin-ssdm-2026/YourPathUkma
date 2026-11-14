@@ -3,13 +3,17 @@
 """Reproduce the Lab 10 CI metrics from GitHub Actions."""
 
 import argparse
+import http.client
 import json
+import re
+import shutil
 import subprocess  # nosec B404
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
+from functools import cache
 from pathlib import Path
 from statistics import mean, median
-from urllib.parse import quote, urlencode
+from urllib.parse import quote, urlencode, urlsplit
 
 
 def timestamp(value):
@@ -19,14 +23,63 @@ def timestamp(value):
     return parsed.astimezone(timezone.utc)
 
 
+@cache
+def github_token():
+    executable = shutil.which("gh")
+    if executable is None:
+        raise RuntimeError("Install the GitHub CLI (gh)")
+    result = subprocess.run(  # nosec B603
+        [executable, "auth", "token", "--hostname", "github.com"],
+        capture_output=True,
+        encoding="utf-8",
+        timeout=30,
+    )
+    if result.returncode or not result.stdout.strip():
+        raise RuntimeError("Authenticate for github.com with gh auth login")
+    return result.stdout.strip()
+
+
 def github(endpoint, *, paginate=False):
-    command = ["gh", "api", endpoint]
-    if paginate:
-        command.extend(["--paginate", "--slurp"])
-    result = subprocess.run(command, capture_output=True, encoding="utf-8", timeout=120)  # nosec B603
-    if result.returncode:
-        raise RuntimeError(f"GitHub API {endpoint}: {result.stderr.strip()}")
-    return json.loads(result.stdout)
+    headers = {
+        "Authorization": f"Bearer {github_token()}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "YourPathUkma-Lab10",
+    }
+    pages = []
+    connection = http.client.HTTPSConnection("api.github.com", timeout=30)
+    try:
+        while endpoint:
+            connection.request("GET", "/" + endpoint, headers=headers)
+            response = connection.getresponse()
+            if response.status != 200:
+                raise RuntimeError(f"GitHub API {endpoint}: HTTP {response.status}")
+            data = json.loads(response.read())
+            if not paginate:
+                return data
+            pages.append(data)
+            link = re.search(r'<([^>]+)>; rel="next"', response.getheader("Link", ""))
+            if not link:
+                break
+            next_page = urlsplit(link.group(1))
+            if next_page.scheme != "https" or next_page.netloc != "api.github.com":
+                raise ValueError("Unexpected pagination host")
+            endpoint = f"{next_page.path.lstrip('/')}?{next_page.query}"
+    finally:
+        connection.close()
+    return pages
+
+
+def output_path(value):
+    normalized = value.replace("\\", "/")
+    match = re.fullmatch(r"(?:docs/ci-cd/)?([A-Za-z0-9_-]+\.json)", normalized)
+    if not match:
+        raise argparse.ArgumentTypeError("Use a JSON filename in docs/ci-cd/")
+    directory = (Path(__file__).resolve().parents[1] / "docs" / "ci-cd").resolve()
+    path = directory / match.group(1)
+    if not path.resolve().is_relative_to(directory):
+        raise argparse.ArgumentTypeError("Output must resolve inside docs/ci-cd/")
+    return path
 
 
 def measure(run, repo):
@@ -149,7 +202,7 @@ def main():
     parser.add_argument("--workflow", required=True, help="workflow file name or numeric ID")
     parser.add_argument("--from", dest="start", required=True, help="inclusive ISO timestamp")
     parser.add_argument("--to", dest="end", required=True, help="exclusive ISO timestamp")
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--output", type=output_path, required=True)
     args = parser.parse_args()
     try:
         owner, separator, repo = args.repo.partition("/")
