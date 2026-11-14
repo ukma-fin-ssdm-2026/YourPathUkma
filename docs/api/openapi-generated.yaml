@@ -5304,6 +5304,54 @@ components:
         limit: 20
         offset: 0
         total: 2
+    PlanAlternativeResponse:
+      properties:
+        course_id:
+          type: integer
+          exclusiveMinimum: 0.0
+          title: Course Id
+          description: ID дисципліни з каталогу
+        title:
+          type: string
+          title: Title
+          description: Назва дисципліни
+        trimester:
+          type: integer
+          maximum: 3.0
+          minimum: 1.0
+          title: Trimester
+          description: Номер триместру (1–3)
+        credits:
+          type: number
+          maximum: 30.0
+          exclusiveMinimum: 0.0
+          title: Credits
+          description: Кількість кредитів
+        is_free_elective:
+          type: boolean
+          title: Is Free Elective
+          description: Чи є дисципліна вільним вибором
+          default: false
+        rank:
+          type: integer
+          maximum: 3.0
+          minimum: 1.0
+          title: Rank
+          description: Порядок переваги від ШІ (1–3, FR-009)
+        ai_explanation:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ai Explanation
+          description: Пояснення ШІ
+      type: object
+      required:
+      - course_id
+      - title
+      - trimester
+      - credits
+      - rank
+      title: PlanAlternativeResponse
     PlanGenerationRequest:
       properties:
         academic_year:
@@ -5445,6 +5493,18 @@ components:
           title: Is Free Elective
           description: Чи є дисципліна вільним вибором (ліміт 25 кредитів)
           default: false
+        ai_explanation:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ai Explanation
+          description: Пояснення ШІ, чому дисципліна корисна
+        alternatives:
+          items:
+            $ref: '#/components/schemas/PlanAlternativeResponse'
+          type: array
+          title: Alternatives
+          description: Альтернативні варіанти дисципліни (FR-009)
       type: object
       required:
       - course_id
