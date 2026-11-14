@@ -1,0 +1,2539 @@
+{
+  "repository": "ukma-fin-ssdm-2026/YourPathUkma",
+  "branch": "main",
+  "workflow": "CI",
+  "event": "push",
+  "from": "2026-10-23T00:00:00Z",
+  "to_exclusive": "2026-11-13T00:00:00Z",
+  "Використання ШІ": "Codex експортував метадані GitHub Actions і Git. Звірено всі 90 ID з metrics-raw.md, вісім прямих комітів з Git і два збої з логами.",
+  "runs": [
+    {
+      "id": 40194049316,
+      "sha": "06b3c3ca9c0609e27219c249b960881ff8af5383",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-25T12:39:07Z",
+      "completed_at": "2026-10-25T12:41:07Z",
+      "first_commit": {
+        "pr": 132,
+        "authored_at": "2026-10-24T18:52:56Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-25T12:39:09Z",
+          "completed_at": "2026-10-25T12:41:07Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40194049316/job/121170973680"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-25T12:39:09Z",
+          "completed_at": "2026-10-25T12:40:17Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40194049316/job/121170973847"
+        }
+      ]
+    },
+    {
+      "id": 40194070235,
+      "sha": "39e9ee211865ba4ebfa467e2706ea2fe5bf799b0",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-25T12:39:24Z",
+      "completed_at": "2026-10-25T12:41:20Z",
+      "first_commit": {
+        "pr": 133,
+        "authored_at": "2026-10-24T19:40:05Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-25T12:39:26Z",
+          "completed_at": "2026-10-25T12:40:33Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40194070235/job/121171038309"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-25T12:39:26Z",
+          "completed_at": "2026-10-25T12:41:20Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40194070235/job/121171038578"
+        }
+      ]
+    },
+    {
+      "id": 40484286049,
+      "sha": "640ea75d15aa84a2f1b12729cf4e41110e96a4b3",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-27T09:53:54Z",
+      "completed_at": "2026-10-27T09:55:37Z",
+      "first_commit": {
+        "pr": 134,
+        "authored_at": "2026-10-23T07:27:30Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-27T09:53:56Z",
+          "completed_at": "2026-10-27T09:55:37Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40484286049/job/122122070799"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-27T09:53:56Z",
+          "completed_at": "2026-10-27T09:55:03Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40484286049/job/122122071189"
+        }
+      ]
+    },
+    {
+      "id": 40781665701,
+      "sha": "09329fdc71d6d0e965f96efdb5c01b81d97641b7",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-28T22:39:40Z",
+      "completed_at": "2026-10-28T22:41:23Z",
+      "first_commit": {
+        "pr": 131,
+        "authored_at": "2026-10-23T07:27:30Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-28T22:39:43Z",
+          "completed_at": "2026-10-28T22:40:43Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40781665701/job/123144609024"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-28T22:39:43Z",
+          "completed_at": "2026-10-28T22:41:23Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40781665701/job/123144609229"
+        }
+      ]
+    },
+    {
+      "id": 40793480430,
+      "sha": "9ed010bd45b9e83d7d17270dac7eff66fce3dceb",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T00:21:06Z",
+      "completed_at": "2026-10-29T00:22:48Z",
+      "first_commit": {
+        "pr": 141,
+        "authored_at": "2026-10-28T22:20:25Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T00:21:08Z",
+          "completed_at": "2026-10-29T00:22:48Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40793480430/job/123184129614"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T00:21:08Z",
+          "completed_at": "2026-10-29T00:22:09Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40793480430/job/123184129885"
+        }
+      ]
+    },
+    {
+      "id": 40840107060,
+      "sha": "e803da5e4ed0d83525ca07cca15c9f42f86a7203",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T08:09:15Z",
+      "completed_at": "2026-10-29T08:10:59Z",
+      "first_commit": {
+        "pr": 140,
+        "authored_at": "2026-10-28T22:32:51Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-29T08:09:18Z",
+          "completed_at": "2026-10-29T08:10:19Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40840107060/job/123334132350"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T08:09:18Z",
+          "completed_at": "2026-10-29T08:10:59Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40840107060/job/123334132839"
+        }
+      ]
+    },
+    {
+      "id": 40840641279,
+      "sha": "3a0c484e0aa9eb39a67b0f3558ef7c22deefab01",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T08:13:47Z",
+      "completed_at": "2026-10-29T08:15:30Z",
+      "first_commit": {
+        "pr": 142,
+        "authored_at": "2026-10-28T23:04:08Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-29T08:13:50Z",
+          "completed_at": "2026-10-29T08:14:51Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40840641279/job/123335896623"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T08:13:50Z",
+          "completed_at": "2026-10-29T08:15:30Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40840641279/job/123335896920"
+        }
+      ]
+    },
+    {
+      "id": 40842634327,
+      "sha": "c398c956b387b252e25192d61797a0d69593bec2",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T08:30:35Z",
+      "completed_at": "2026-10-29T08:32:21Z",
+      "first_commit": {
+        "pr": 145,
+        "authored_at": "2026-10-27T14:52:33Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T08:30:38Z",
+          "completed_at": "2026-10-29T08:32:21Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40842634327/job/123342453878"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T08:30:38Z",
+          "completed_at": "2026-10-29T08:31:51Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40842634327/job/123342454405"
+        }
+      ]
+    },
+    {
+      "id": 40847167703,
+      "sha": "254900ee4537582d19edef1d350d98be0d68ce25",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T09:07:29Z",
+      "completed_at": "2026-10-29T09:09:13Z",
+      "first_commit": {
+        "pr": 144,
+        "authored_at": "2026-10-29T00:08:03Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T09:07:31Z",
+          "completed_at": "2026-10-29T09:09:13Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40847167703/job/123357390724"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T09:07:31Z",
+          "completed_at": "2026-10-29T09:08:34Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40847167703/job/123357390907"
+        }
+      ]
+    },
+    {
+      "id": 40849232825,
+      "sha": "f7922ed54105e743e488f603d843dde1ab3a4445",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T09:23:21Z",
+      "completed_at": "2026-10-29T09:26:05Z",
+      "first_commit": {
+        "pr": 143,
+        "authored_at": "2026-10-28T23:46:34Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T09:23:46Z",
+          "completed_at": "2026-10-29T09:25:53Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40849232825/job/123364262564"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T09:25:00Z",
+          "completed_at": "2026-10-29T09:26:05Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40849232825/job/123364262909"
+        }
+      ]
+    },
+    {
+      "id": 40857114777,
+      "sha": "8888b726e4f3a4cd8241911fec8d14b44a1fdedb",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T10:22:59Z",
+      "completed_at": "2026-10-29T10:25:01Z",
+      "first_commit": {
+        "pr": 148,
+        "authored_at": "2026-10-29T09:13:46Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T10:23:01Z",
+          "completed_at": "2026-10-29T10:25:01Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40857114777/job/123390745052"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T10:23:03Z",
+          "completed_at": "2026-10-29T10:24:12Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40857114777/job/123390745592"
+        }
+      ]
+    },
+    {
+      "id": 40947469251,
+      "sha": "1d93e0aa5fddd0bafd8b52ebb88a76a02603e96a",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T20:15:56Z",
+      "completed_at": "2026-10-29T20:33:21Z",
+      "first_commit": {
+        "pr": 149,
+        "authored_at": "2026-10-29T10:23:43Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-29T20:26:18Z",
+          "completed_at": "2026-10-29T20:27:30Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947469251/job/123706494595"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T20:31:20Z",
+          "completed_at": "2026-10-29T20:33:21Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947469251/job/123706495261"
+        }
+      ]
+    },
+    {
+      "id": 40947587436,
+      "sha": "08322523f125b77b95b974bf41276cf4769dfd95",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T20:16:45Z",
+      "completed_at": "2026-10-29T20:34:45Z",
+      "first_commit": {
+        "pr": 151,
+        "authored_at": "2026-10-29T10:23:54Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-29T20:31:31Z",
+          "completed_at": "2026-10-29T20:32:47Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947587436/job/123706913214"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T20:32:42Z",
+          "completed_at": "2026-10-29T20:34:45Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947587436/job/123706913624"
+        }
+      ]
+    },
+    {
+      "id": 40947663340,
+      "sha": "b87f6c167b19c1c3aea6adbc99e4d657828a8b31",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T20:17:15Z",
+      "completed_at": "2026-10-29T20:36:31Z",
+      "first_commit": {
+        "pr": 153,
+        "authored_at": "2026-10-29T10:23:55Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-29T20:33:59Z",
+          "completed_at": "2026-10-29T20:35:07Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947663340/job/123707173443"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T20:34:30Z",
+          "completed_at": "2026-10-29T20:36:31Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947663340/job/123707173969"
+        }
+      ]
+    },
+    {
+      "id": 40947716626,
+      "sha": "b34f46a120766272372c3e6b7e4fdcc317d326c4",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T20:17:36Z",
+      "completed_at": "2026-10-29T20:37:01Z",
+      "first_commit": {
+        "pr": 152,
+        "authored_at": "2026-10-29T10:23:55Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-29T20:35:21Z",
+          "completed_at": "2026-10-29T20:36:32Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947716626/job/123707350493"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T20:35:02Z",
+          "completed_at": "2026-10-29T20:37:01Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947716626/job/123707350702"
+        }
+      ]
+    },
+    {
+      "id": 40947769333,
+      "sha": "8f7e85a50bf3256b0198d54df505a53e5c40157e",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T20:17:58Z",
+      "completed_at": "2026-10-29T20:39:04Z",
+      "first_commit": {
+        "pr": 154,
+        "authored_at": "2026-10-29T10:23:57Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-29T20:35:41Z",
+          "completed_at": "2026-10-29T20:36:51Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947769333/job/123707537601"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T20:36:45Z",
+          "completed_at": "2026-10-29T20:39:04Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947769333/job/123707538643"
+        }
+      ]
+    },
+    {
+      "id": 40947834118,
+      "sha": "55da7c163437de7f89b267753c82a8a6265cbd84",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T20:18:24Z",
+      "completed_at": "2026-10-29T20:38:53Z",
+      "first_commit": {
+        "pr": 156,
+        "authored_at": "2026-10-29T10:24:03Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T20:36:45Z",
+          "completed_at": "2026-10-29T20:38:53Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947834118/job/123707760732"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T20:37:14Z",
+          "completed_at": "2026-10-29T20:38:29Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947834118/job/123707761282"
+        }
+      ]
+    },
+    {
+      "id": 40947886429,
+      "sha": "804e8990b35c933781da157faa76b4f51c6e67d3",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T20:18:45Z",
+      "completed_at": "2026-10-29T20:40:13Z",
+      "first_commit": {
+        "pr": 155,
+        "authored_at": "2026-10-29T10:24:03Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-29T20:39:07Z",
+          "completed_at": "2026-10-29T20:40:13Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947886429/job/123707942276"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T20:37:53Z",
+          "completed_at": "2026-10-29T20:39:55Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947886429/job/123707942530"
+        }
+      ]
+    },
+    {
+      "id": 40948213861,
+      "sha": "d1f35944908bb3dd6a1233722eb7906abb3f8fd9",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T20:20:56Z",
+      "completed_at": "2026-10-29T20:42:02Z",
+      "first_commit": {
+        "pr": 158,
+        "authored_at": "2026-10-29T10:43:43Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T20:40:08Z",
+          "completed_at": "2026-10-29T20:42:02Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40948213861/job/123709059769"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T20:40:13Z",
+          "completed_at": "2026-10-29T20:41:21Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40948213861/job/123709060336"
+        }
+      ]
+    },
+    {
+      "id": 40955505052,
+      "sha": "cd9809ef9dc9e55bda4848aa066eeae59de69a28",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T21:10:34Z",
+      "completed_at": "2026-10-29T21:12:37Z",
+      "first_commit": {
+        "pr": 162,
+        "authored_at": "2026-10-29T19:45:50Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T21:10:36Z",
+          "completed_at": "2026-10-29T21:12:37Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955505052/job/123734439473"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T21:10:37Z",
+          "completed_at": "2026-10-29T21:11:47Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955505052/job/123734439754"
+        }
+      ]
+    },
+    {
+      "id": 40955555375,
+      "sha": "42e5c0b566b84040ce35f1cf36ad408405acfd41",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T21:10:55Z",
+      "completed_at": "2026-10-29T21:13:01Z",
+      "first_commit": {
+        "pr": 160,
+        "authored_at": "2026-10-29T13:19:42Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T21:10:57Z",
+          "completed_at": "2026-10-29T21:13:01Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955555375/job/123734613651"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T21:10:57Z",
+          "completed_at": "2026-10-29T21:12:09Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955555375/job/123734614205"
+        }
+      ]
+    },
+    {
+      "id": 40955581111,
+      "sha": "70ce8a14956c7b5ab8d1a4128561da597debdb0c",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T21:11:05Z",
+      "completed_at": "2026-10-29T21:14:37Z",
+      "first_commit": {
+        "pr": 161,
+        "authored_at": "2026-10-29T19:18:44Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T21:12:31Z",
+          "completed_at": "2026-10-29T21:14:37Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955581111/job/123734702160"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T21:13:15Z",
+          "completed_at": "2026-10-29T21:14:26Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955581111/job/123734702641"
+        }
+      ]
+    },
+    {
+      "id": 40955610127,
+      "sha": "2a0c4d92a0f61884605ab098146ee34fa7fde2e1",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T21:11:18Z",
+      "completed_at": "2026-10-29T21:15:59Z",
+      "first_commit": {
+        "pr": 159,
+        "authored_at": "2026-10-29T06:32:41Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-29T21:13:48Z",
+          "completed_at": "2026-10-29T21:15:05Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955610127/job/123734802128"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T21:13:52Z",
+          "completed_at": "2026-10-29T21:15:59Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955610127/job/123734802553"
+        }
+      ]
+    },
+    {
+      "id": 40955638679,
+      "sha": "61c7a3bc6672d5824bd8da257e46e78afab5f226",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T21:11:30Z",
+      "completed_at": "2026-10-29T21:16:42Z",
+      "first_commit": {
+        "pr": 157,
+        "authored_at": "2026-10-29T20:19:18Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T21:14:39Z",
+          "completed_at": "2026-10-29T21:16:42Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955638679/job/123734902713"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T21:15:19Z",
+          "completed_at": "2026-10-29T21:16:28Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955638679/job/123734903367"
+        }
+      ]
+    },
+    {
+      "id": 40955666239,
+      "sha": "c9efde785e4b085afa63e0437fcbef76dcbdc402",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T21:11:41Z",
+      "completed_at": "2026-10-29T21:18:10Z",
+      "first_commit": {
+        "pr": 150,
+        "authored_at": "2026-10-29T10:23:51Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T21:16:17Z",
+          "completed_at": "2026-10-29T21:18:10Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955666239/job/123734998629"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T21:16:48Z",
+          "completed_at": "2026-10-29T21:17:57Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955666239/job/123734998983"
+        }
+      ]
+    },
+    {
+      "id": 40965358405,
+      "sha": "d92684daebe6cca8f2a43c5f82fb368f28858ab4",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T22:22:23Z",
+      "completed_at": "2026-10-29T22:59:56Z",
+      "first_commit": {
+        "pr": 163,
+        "authored_at": "2026-10-29T21:24:05Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T22:45:59Z",
+          "completed_at": "2026-10-29T22:48:41Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40965358405/job/123768343816"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-29T22:58:32Z",
+          "completed_at": "2026-10-29T22:59:56Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40965358405/job/123768344384"
+        }
+      ]
+    },
+    {
+      "id": 40965382373,
+      "sha": "091e7e3ebdbefda5edfdfeabc2e747f31f15f938",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-29T22:22:35Z",
+      "completed_at": "2026-10-29T23:05:30Z",
+      "first_commit": {
+        "pr": 165,
+        "authored_at": "2026-10-29T21:46:22Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-10-29T23:02:11Z",
+          "completed_at": "2026-10-29T23:03:24Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40965382373/job/123768430457"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-10-29T23:03:01Z",
+          "completed_at": "2026-10-29T23:05:30Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40965382373/job/123768430731"
+        }
+      ]
+    },
+    {
+      "id": 41027807553,
+      "sha": "0b62882c5ea9f0ee84df7d8b96840d8c0ed58980",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-10-30T08:38:28Z",
+      "completed_at": "2026-10-30T08:40:19Z",
+      "first_commit": {
+        "pr": 167,
+        "authored_at": "2026-10-30T08:25:46Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-10-30T08:38:30Z",
+          "completed_at": "2026-10-30T08:40:19Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41027807553/job/123970002510"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-10-30T08:38:31Z",
+          "completed_at": "2026-10-30T08:39:40Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41027807553/job/123970002732"
+        }
+      ]
+    },
+    {
+      "id": 41317240847,
+      "sha": "63afae1a6a8daea151aeec38385fc9436647032c",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T14:39:01Z",
+      "completed_at": "2026-11-01T15:01:15Z",
+      "first_commit": {
+        "pr": 168,
+        "authored_at": "2026-10-30T08:41:11Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-01T14:43:51Z",
+          "completed_at": "2026-11-01T14:46:34Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41317240847/job/124879773216"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-01T15:00:04Z",
+          "completed_at": "2026-11-01T15:01:15Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41317240847/job/124879773410"
+        }
+      ]
+    },
+    {
+      "id": 41318233521,
+      "sha": "060cb79ce4ecd27504b473aef004f286347d8fd4",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T14:51:11Z",
+      "completed_at": "2026-11-01T15:13:41Z",
+      "first_commit": {
+        "pr": 174,
+        "authored_at": "2026-10-29T21:37:30Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-01T15:06:21Z",
+          "completed_at": "2026-11-01T15:07:48Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318233521/job/124882738060"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-01T15:10:43Z",
+          "completed_at": "2026-11-01T15:13:41Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318233521/job/124882738282"
+        }
+      ]
+    },
+    {
+      "id": 41318425050,
+      "sha": "2676d3f95f5ea93fa9b0a432c3be0b1b3556e593",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T14:53:36Z",
+      "completed_at": "2026-11-01T15:25:48Z",
+      "first_commit": {
+        "pr": 175,
+        "authored_at": "2026-10-31T20:21:47Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-01T15:16:18Z",
+          "completed_at": "2026-11-01T15:19:09Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318425050/job/124883316375"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-01T15:24:21Z",
+          "completed_at": "2026-11-01T15:25:48Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318425050/job/124883316536"
+        }
+      ]
+    },
+    {
+      "id": 41318694008,
+      "sha": "41be18f5f9718adf8998f8f7082a009708ae74b7",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T14:56:56Z",
+      "completed_at": "2026-11-01T15:31:23Z",
+      "first_commit": {
+        "pr": 177,
+        "authored_at": "2026-11-01T13:30:28Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-01T15:24:58Z",
+          "completed_at": "2026-11-01T15:26:21Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318694008/job/124884116954"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-01T15:28:32Z",
+          "completed_at": "2026-11-01T15:31:23Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318694008/job/124884117299"
+        }
+      ]
+    },
+    {
+      "id": 41318935310,
+      "sha": "7eea8febda895cc0380f4b40613c064e846366de",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T14:59:57Z",
+      "completed_at": "2026-11-01T15:36:39Z",
+      "first_commit": {
+        "pr": 170,
+        "authored_at": "2026-10-30T08:46:22Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-01T15:28:55Z",
+          "completed_at": "2026-11-01T15:31:43Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318935310/job/124884843577"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-01T15:35:14Z",
+          "completed_at": "2026-11-01T15:36:39Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318935310/job/124884843872"
+        }
+      ]
+    },
+    {
+      "id": 41322356952,
+      "sha": "143664e12316c1c0de0f98e9fd34f4224bdc1c90",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T15:39:49Z",
+      "completed_at": "2026-11-01T15:56:54Z",
+      "first_commit": {
+        "pr": 176,
+        "authored_at": "2026-11-01T12:36:32Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-01T15:41:02Z",
+          "completed_at": "2026-11-01T15:42:24Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41322356952/job/124895075158"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-01T15:53:46Z",
+          "completed_at": "2026-11-01T15:56:54Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41322356952/job/124895075245"
+        }
+      ]
+    },
+    {
+      "id": 41346422011,
+      "sha": "043664ddaa1794ed4b5382c8bc97db72c20548de",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T20:21:17Z",
+      "completed_at": "2026-11-01T21:25:24Z",
+      "first_commit": {
+        "pr": 178,
+        "authored_at": "2026-11-01T16:03:12Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-01T21:04:55Z",
+          "completed_at": "2026-11-01T21:08:11Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41346422011/job/124967090375"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-01T21:17:25Z",
+          "completed_at": "2026-11-01T21:25:24Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41346422011/job/124967090668"
+        }
+      ]
+    },
+    {
+      "id": 41346448889,
+      "sha": "b9112c2c7a439b4810890b51b6f1708d7e76d5e0",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T20:21:36Z",
+      "completed_at": "2026-11-01T22:15:35Z",
+      "first_commit": {
+        "pr": 171,
+        "authored_at": "2026-10-30T08:46:32Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-01T21:38:01Z",
+          "completed_at": "2026-11-01T21:41:15Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41346448889/job/124967172002"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-01T22:08:50Z",
+          "completed_at": "2026-11-01T22:15:35Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41346448889/job/124967172176"
+        }
+      ]
+    },
+    {
+      "id": 41352006795,
+      "sha": "7376c2e4466b0676c1ea2c94bed811bac9dbda04",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T21:26:21Z",
+      "completed_at": "2026-11-02T01:08:23Z",
+      "first_commit": {
+        "pr": 180,
+        "authored_at": "2026-11-01T20:46:51Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-02T00:44:27Z",
+          "completed_at": "2026-11-02T00:52:29Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352006795/job/124984034379"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-02T01:05:21Z",
+          "completed_at": "2026-11-02T01:08:23Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352006795/job/124984034672"
+        }
+      ]
+    },
+    {
+      "id": 41352023333,
+      "sha": "00055438f3ab482f74ec5628306fd45c95cb661b",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T21:26:33Z",
+      "completed_at": "2026-11-02T01:24:05Z",
+      "first_commit": {
+        "pr": 181,
+        "authored_at": "2026-11-01T20:47:50Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-02T01:14:43Z",
+          "completed_at": "2026-11-02T01:17:53Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352023333/job/124984084421"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-02T01:15:48Z",
+          "completed_at": "2026-11-02T01:24:05Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352023333/job/124984084631"
+        }
+      ]
+    },
+    {
+      "id": 41352038258,
+      "sha": "f40b6db018bec03d8901838b9b74a830dbb3550a",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T21:26:43Z",
+      "completed_at": "2026-11-02T01:37:40Z",
+      "first_commit": {
+        "pr": 182,
+        "authored_at": "2026-11-01T21:01:30Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-02T01:34:32Z",
+          "completed_at": "2026-11-02T01:37:40Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352038258/job/124984130556"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-02T01:20:28Z",
+          "completed_at": "2026-11-02T01:27:53Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352038258/job/124984130676"
+        }
+      ]
+    },
+    {
+      "id": 41352078404,
+      "sha": "bc1076368cf9736545f41956466a3de10b2ef518",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T21:27:12Z",
+      "completed_at": "2026-11-02T01:44:51Z",
+      "first_commit": {
+        "pr": 183,
+        "authored_at": "2026-11-01T21:22:58Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-02T01:41:32Z",
+          "completed_at": "2026-11-02T01:44:51Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352078404/job/124984255296"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-02T01:37:03Z",
+          "completed_at": "2026-11-02T01:44:38Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352078404/job/124984255491"
+        }
+      ]
+    },
+    {
+      "id": 41353089878,
+      "sha": "bef8409605a80873ee27bfbad755e6f4a95d7e64",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T21:38:57Z",
+      "completed_at": "2026-11-02T01:57:06Z",
+      "first_commit": {
+        "pr": 184,
+        "authored_at": "2026-11-01T21:36:46Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-02T01:48:43Z",
+          "completed_at": "2026-11-02T01:57:06Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41353089878/job/124987287392"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-02T01:45:10Z",
+          "completed_at": "2026-11-02T01:48:15Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41353089878/job/124987287435"
+        }
+      ]
+    },
+    {
+      "id": 41353235193,
+      "sha": "8bdc1152c7507ffab1eb05ae85ef3538c9530386",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-01T21:40:40Z",
+      "completed_at": "2026-11-02T02:10:32Z",
+      "first_commit": {
+        "pr": 185,
+        "authored_at": "2026-11-01T21:38:09Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-02T02:03:08Z",
+          "completed_at": "2026-11-02T02:10:32Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41353235193/job/124987727582"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-02T02:03:10Z",
+          "completed_at": "2026-11-02T02:06:15Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41353235193/job/124987727707"
+        }
+      ]
+    },
+    {
+      "id": 42012073751,
+      "sha": "38f55c213d9a5f7bd084a6dad5f7bbd7bbd6b452",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T10:36:10Z",
+      "completed_at": "2026-11-05T10:38:28Z",
+      "first_commit": {
+        "pr": 199,
+        "authored_at": "2026-11-05T08:21:59Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T10:36:12Z",
+          "completed_at": "2026-11-05T10:38:28Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42012073751/job/127193304962"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-05T10:36:12Z",
+          "completed_at": "2026-11-05T10:37:27Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42012073751/job/127193305685"
+        }
+      ]
+    },
+    {
+      "id": 42013412204,
+      "sha": "22e2b29d9a83ccf71a7275aac6ca561d7e9ce480",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T10:45:56Z",
+      "completed_at": "2026-11-05T10:48:26Z",
+      "first_commit": {
+        "pr": 198,
+        "authored_at": "2026-11-05T09:11:09Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-05T10:45:58Z",
+          "completed_at": "2026-11-05T10:47:12Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013412204/job/127197823156"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T10:45:58Z",
+          "completed_at": "2026-11-05T10:48:26Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013412204/job/127197823389"
+        }
+      ]
+    },
+    {
+      "id": 42013612463,
+      "sha": "49d52143bb403695c08fa43f43516505429b5bb2",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T10:47:23Z",
+      "completed_at": "2026-11-05T10:50:03Z",
+      "first_commit": {
+        "pr": 191,
+        "authored_at": "2026-11-05T08:35:19Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T10:47:25Z",
+          "completed_at": "2026-11-05T10:50:03Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013612463/job/127198498047"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-05T10:47:25Z",
+          "completed_at": "2026-11-05T10:48:54Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013612463/job/127198498458"
+        }
+      ]
+    },
+    {
+      "id": 42013667956,
+      "sha": "6cb4b73499b413ed2d24e1d2755047ca40f88675",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T10:47:47Z",
+      "completed_at": "2026-11-05T10:50:38Z",
+      "first_commit": {
+        "pr": 192,
+        "authored_at": "2026-11-05T08:35:23Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T10:48:03Z",
+          "completed_at": "2026-11-05T10:50:38Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013667956/job/127198685873"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-05T10:49:17Z",
+          "completed_at": "2026-11-05T10:50:35Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013667956/job/127198686287"
+        }
+      ]
+    },
+    {
+      "id": 42013842432,
+      "sha": "8ca379ba2bf5b0e3eac5fcb7d31bea644861b0b9",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T10:49:06Z",
+      "completed_at": "2026-11-05T10:54:09Z",
+      "first_commit": {
+        "pr": 194,
+        "authored_at": "2026-11-05T08:35:32Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-05T10:50:51Z",
+          "completed_at": "2026-11-05T10:52:08Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013842432/job/127199274190"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T10:51:27Z",
+          "completed_at": "2026-11-05T10:54:09Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013842432/job/127199274517"
+        }
+      ]
+    },
+    {
+      "id": 42013950183,
+      "sha": "fc4fbe0fb5f8e9d33a276e8a8baa81ec20addcf2",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T10:49:54Z",
+      "completed_at": "2026-11-05T10:56:04Z",
+      "first_commit": {
+        "pr": 196,
+        "authored_at": "2026-11-05T08:35:43Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T10:53:24Z",
+          "completed_at": "2026-11-05T10:56:04Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013950183/job/127199638898"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-05T10:54:22Z",
+          "completed_at": "2026-11-05T10:55:44Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013950183/job/127199639477"
+        }
+      ]
+    },
+    {
+      "id": 42014441467,
+      "sha": "268f61668197837ba14cba7b891c76a8d82751e8",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T10:53:32Z",
+      "completed_at": "2026-11-05T10:58:34Z",
+      "first_commit": {
+        "pr": 193,
+        "authored_at": "2026-11-05T08:35:26Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T10:55:57Z",
+          "completed_at": "2026-11-05T10:58:34Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42014441467/job/127201301847"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-05T10:56:19Z",
+          "completed_at": "2026-11-05T10:57:43Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42014441467/job/127201302574"
+        }
+      ]
+    },
+    {
+      "id": 42014538785,
+      "sha": "d95b8f5e2332ef2199c1de70a563c4d9906da251",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T10:54:16Z",
+      "completed_at": "2026-11-05T10:59:14Z",
+      "first_commit": {
+        "pr": 197,
+        "authored_at": "2026-11-04T23:07:24Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T10:56:37Z",
+          "completed_at": "2026-11-05T10:59:14Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42014538785/job/127201634040"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-05T10:57:27Z",
+          "completed_at": "2026-11-05T10:58:55Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42014538785/job/127201634233"
+        }
+      ]
+    },
+    {
+      "id": 42014996113,
+      "sha": "3b9328470a2cab48bfc9f99a9c84eb5b12f7d2c8",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T10:57:42Z",
+      "completed_at": "2026-11-05T11:01:39Z",
+      "first_commit": {
+        "pr": 195,
+        "authored_at": "2026-11-05T08:35:36Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-05T10:57:56Z",
+          "completed_at": "2026-11-05T10:59:14Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42014996113/job/127203199098"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T10:59:27Z",
+          "completed_at": "2026-11-05T11:01:39Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42014996113/job/127203199472"
+        }
+      ]
+    },
+    {
+      "id": 42025176831,
+      "sha": "339f226a9b81e9201c6ddbe6028e20566a923a8c",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T12:12:27Z",
+      "completed_at": "2026-11-05T12:14:51Z",
+      "first_commit": {
+        "pr": null,
+        "authored_at": "2026-11-05T12:12:23Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-05T12:12:30Z",
+          "completed_at": "2026-11-05T12:13:44Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42025176831/job/127237469995"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T12:12:30Z",
+          "completed_at": "2026-11-05T12:14:51Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42025176831/job/127237470438"
+        }
+      ]
+    },
+    {
+      "id": 42054737978,
+      "sha": "eb0432e2c8aa9a07dfb2f082147703a98092eb78",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T15:24:57Z",
+      "completed_at": "2026-11-05T15:27:21Z",
+      "first_commit": {
+        "pr": 201,
+        "authored_at": "2026-11-05T15:12:24Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T15:25:00Z",
+          "completed_at": "2026-11-05T15:27:21Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42054737978/job/127339916284"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-05T15:25:00Z",
+          "completed_at": "2026-11-05T15:26:18Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42054737978/job/127339916813"
+        }
+      ]
+    },
+    {
+      "id": 42074089964,
+      "sha": "a1c8565be818c8737f9881dca908be832d02ed0b",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T17:23:06Z",
+      "completed_at": "2026-11-05T17:25:42Z",
+      "first_commit": {
+        "pr": 202,
+        "authored_at": "2026-11-05T15:57:18Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-05T17:23:09Z",
+          "completed_at": "2026-11-05T17:24:29Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42074089964/job/127409505061"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T17:23:09Z",
+          "completed_at": "2026-11-05T17:25:42Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42074089964/job/127409505761"
+        }
+      ]
+    },
+    {
+      "id": 42074133498,
+      "sha": "c00fa863339614a914e84cf8c5502fb614861d7e",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T17:23:22Z",
+      "completed_at": "2026-11-05T17:26:12Z",
+      "first_commit": {
+        "pr": 200,
+        "authored_at": "2026-11-05T12:13:30Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-05T17:23:24Z",
+          "completed_at": "2026-11-05T17:24:47Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42074133498/job/127409657867"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T17:23:46Z",
+          "completed_at": "2026-11-05T17:26:12Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42074133498/job/127409658337"
+        }
+      ]
+    },
+    {
+      "id": 42110067898,
+      "sha": "9bbca539e4b63537c4f012116fe9673847b15494",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T21:09:41Z",
+      "completed_at": "2026-11-05T21:11:57Z",
+      "first_commit": {
+        "pr": 204,
+        "authored_at": "2026-11-05T19:59:57Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T21:09:43Z",
+          "completed_at": "2026-11-05T21:11:57Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42110067898/job/127534967352"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-05T21:09:43Z",
+          "completed_at": "2026-11-05T21:11:02Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42110067898/job/127534967934"
+        }
+      ]
+    },
+    {
+      "id": 42111262361,
+      "sha": "239cb39bd6dc5e84d832e866ba367b9b90a5a042",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T21:17:22Z",
+      "completed_at": "2026-11-05T21:19:38Z",
+      "first_commit": {
+        "pr": 203,
+        "authored_at": "2026-11-05T18:21:02Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-05T21:17:25Z",
+          "completed_at": "2026-11-05T21:18:39Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42111262361/job/127539119455"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T21:17:25Z",
+          "completed_at": "2026-11-05T21:19:38Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42111262361/job/127539119819"
+        }
+      ]
+    },
+    {
+      "id": 42119321896,
+      "sha": "607f9e4eed01989e210edcaad8ef1dab73957a36",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T22:11:21Z",
+      "completed_at": "2026-11-05T22:13:37Z",
+      "first_commit": {
+        "pr": 205,
+        "authored_at": "2026-11-05T21:43:08Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-05T22:11:24Z",
+          "completed_at": "2026-11-05T22:12:37Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42119321896/job/127567225699"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T22:11:24Z",
+          "completed_at": "2026-11-05T22:13:37Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42119321896/job/127567226211"
+        }
+      ]
+    },
+    {
+      "id": 42123564650,
+      "sha": "3c000b4c2093e88e2fae4e59715e940bfdbcff37",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T22:41:08Z",
+      "completed_at": "2026-11-05T22:43:46Z",
+      "first_commit": {
+        "pr": 206,
+        "authored_at": "2026-11-05T22:26:40Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T22:41:11Z",
+          "completed_at": "2026-11-05T22:43:46Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42123564650/job/127581845576"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-05T22:41:56Z",
+          "completed_at": "2026-11-05T22:43:15Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42123564650/job/127581846200"
+        }
+      ]
+    },
+    {
+      "id": 42123779915,
+      "sha": "197088fb36224381738b60e8e1766c48bb50b95d",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-05T22:42:41Z",
+      "completed_at": "2026-11-05T22:45:43Z",
+      "first_commit": {
+        "pr": 207,
+        "authored_at": "2026-11-05T22:26:40Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-05T22:44:00Z",
+          "completed_at": "2026-11-05T22:45:25Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42123779915/job/127582583846"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-05T22:42:56Z",
+          "completed_at": "2026-11-05T22:45:43Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42123779915/job/127582584000"
+        }
+      ]
+    },
+    {
+      "id": 42194030916,
+      "sha": "47f37f94b62316a63bab9a56faa0767a2881c1a3",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-06T09:18:21Z",
+      "completed_at": "2026-11-06T09:20:40Z",
+      "first_commit": {
+        "pr": 208,
+        "authored_at": "2026-11-06T08:22:35Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-06T09:18:23Z",
+          "completed_at": "2026-11-06T09:20:40Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42194030916/job/127812698250"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-06T09:18:23Z",
+          "completed_at": "2026-11-06T09:19:39Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42194030916/job/127812698371"
+        }
+      ]
+    },
+    {
+      "id": 42471622232,
+      "sha": "f1d5fa6b3900e3e5a689613bf046b852e77526be",
+      "conclusion": "failure",
+      "attempt": 1,
+      "created_at": "2026-11-08T10:29:19Z",
+      "completed_at": "2026-11-08T10:31:44Z",
+      "first_commit": {
+        "pr": 210,
+        "authored_at": "2026-11-07T11:37:43Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-08T10:29:21Z",
+          "completed_at": "2026-11-08T10:30:46Z",
+          "conclusion": "failure",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42471622232/job/128703500652"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-08T10:29:21Z",
+          "completed_at": "2026-11-08T10:31:44Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42471622232/job/128703500846"
+        }
+      ],
+      "failure": {
+        "reason": "actions/setup-python@v7: Unexpected HTTP response: 504",
+        "log_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42471622232/job/128703500652"
+      }
+    },
+    {
+      "id": 42471770242,
+      "sha": "5185fd519477871c4a818290ed829045f558fb23",
+      "conclusion": "failure",
+      "attempt": 1,
+      "created_at": "2026-11-08T10:31:19Z",
+      "completed_at": "2026-11-08T10:34:38Z",
+      "first_commit": {
+        "pr": 211,
+        "authored_at": "2026-11-07T21:40:57Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-08T10:31:21Z",
+          "completed_at": "2026-11-08T10:32:45Z",
+          "conclusion": "failure",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42471770242/job/128703962581"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-08T10:31:21Z",
+          "completed_at": "2026-11-08T10:34:38Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42471770242/job/128703962894"
+        }
+      ],
+      "failure": {
+        "reason": "actions/setup-python@v7: Unexpected HTTP response: 504",
+        "log_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42471770242/job/128703962581"
+      }
+    },
+    {
+      "id": 42471841555,
+      "sha": "8975b66c6f01d59671ec59c609e4a25b34a37dea",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-08T10:32:16Z",
+      "completed_at": "2026-11-08T10:35:15Z",
+      "first_commit": {
+        "pr": null,
+        "authored_at": "2026-11-08T10:32:13Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-08T10:32:19Z",
+          "completed_at": "2026-11-08T10:35:15Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42471841555/job/128704189933"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-08T10:32:35Z",
+          "completed_at": "2026-11-08T10:34:21Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42471841555/job/128704190099"
+        }
+      ]
+    },
+    {
+      "id": 42472329645,
+      "sha": "e61583d41c1b0629260a0aac40dfead7b35a4d52",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-08T10:39:13Z",
+      "completed_at": "2026-11-08T10:42:47Z",
+      "first_commit": {
+        "pr": 222,
+        "authored_at": "2026-11-07T23:10:53Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-08T10:40:01Z",
+          "completed_at": "2026-11-08T10:42:47Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42472329645/job/128705809721"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-08T10:40:13Z",
+          "completed_at": "2026-11-08T10:41:39Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42472329645/job/128705809908"
+        }
+      ]
+    },
+    {
+      "id": 42472546604,
+      "sha": "7285d688ecbfbdd04b9a9f732ab793d7187d34e4",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-08T10:42:20Z",
+      "completed_at": "2026-11-08T10:47:16Z",
+      "first_commit": {
+        "pr": null,
+        "authored_at": "2026-11-08T10:42:16Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-08T10:43:01Z",
+          "completed_at": "2026-11-08T10:46:16Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42472546604/job/128706502773"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-08T10:45:48Z",
+          "completed_at": "2026-11-08T10:47:16Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42472546604/job/128706503047"
+        }
+      ]
+    },
+    {
+      "id": 42474086090,
+      "sha": "05de932618d846e74826594412fff82d2997e82a",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-08T11:04:03Z",
+      "completed_at": "2026-11-08T11:06:45Z",
+      "first_commit": {
+        "pr": 223,
+        "authored_at": "2026-11-07T23:25:40Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-08T11:04:06Z",
+          "completed_at": "2026-11-08T11:06:45Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42474086090/job/128711390787"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-08T11:04:06Z",
+          "completed_at": "2026-11-08T11:05:28Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42474086090/job/128711390936"
+        }
+      ]
+    },
+    {
+      "id": 42474117369,
+      "sha": "53f66d25f8c72d9920cf45447c85989db3b294de",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-08T11:04:29Z",
+      "completed_at": "2026-11-08T11:07:34Z",
+      "first_commit": {
+        "pr": null,
+        "authored_at": "2026-11-08T11:04:25Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-08T11:04:32Z",
+          "completed_at": "2026-11-08T11:06:00Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42474117369/job/128711490731"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-08T11:04:48Z",
+          "completed_at": "2026-11-08T11:07:34Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42474117369/job/128711491045"
+        }
+      ]
+    },
+    {
+      "id": 42478560398,
+      "sha": "5a270c60c06546f636c3760f79923ce1049cae0c",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-08T12:04:54Z",
+      "completed_at": "2026-11-08T12:07:37Z",
+      "first_commit": {
+        "pr": 225,
+        "authored_at": "2026-11-08T11:22:21Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-08T12:04:56Z",
+          "completed_at": "2026-11-08T12:07:37Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42478560398/job/128725257928"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-08T12:04:56Z",
+          "completed_at": "2026-11-08T12:06:19Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42478560398/job/128725258114"
+        }
+      ]
+    },
+    {
+      "id": 42478577755,
+      "sha": "229d97c6f0da4fda746bf5a23897c8f9858362d1",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-08T12:05:06Z",
+      "completed_at": "2026-11-08T12:07:49Z",
+      "first_commit": {
+        "pr": 226,
+        "authored_at": "2026-11-07T21:53:07Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-08T12:05:09Z",
+          "completed_at": "2026-11-08T12:07:49Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42478577755/job/128725308741"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-08T12:05:33Z",
+          "completed_at": "2026-11-08T12:06:55Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42478577755/job/128725308956"
+        }
+      ]
+    },
+    {
+      "id": 42865248239,
+      "sha": "a336633c7386ec0cdd39d21bcc6f4db658055b07",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-10T17:28:06Z",
+      "completed_at": "2026-11-10T17:31:28Z",
+      "first_commit": {
+        "pr": 229,
+        "authored_at": "2026-11-08T20:00:16Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-10T17:28:09Z",
+          "completed_at": "2026-11-10T17:29:31Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42865248239/job/130001735258"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-10T17:28:49Z",
+          "completed_at": "2026-11-10T17:31:28Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42865248239/job/130001735906"
+        }
+      ]
+    },
+    {
+      "id": 42865358425,
+      "sha": "079c4411b7931883837be91747f81c53b76ddf37",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-10T17:28:46Z",
+      "completed_at": "2026-11-10T17:32:31Z",
+      "first_commit": {
+        "pr": 234,
+        "authored_at": "2026-11-09T16:37:43Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-10T17:30:04Z",
+          "completed_at": "2026-11-10T17:32:31Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42865358425/job/130002129524"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-10T17:30:21Z",
+          "completed_at": "2026-11-10T17:31:45Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42865358425/job/130002129980"
+        }
+      ]
+    },
+    {
+      "id": 43067507298,
+      "sha": "63756a62a5f0914dc65e57261520debc7b49a6c9",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-11T17:22:19Z",
+      "completed_at": "2026-11-11T17:31:13Z",
+      "first_commit": {
+        "pr": 241,
+        "authored_at": "2026-11-10T22:04:34Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-11T17:24:25Z",
+          "completed_at": "2026-11-11T17:27:17Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43067507298/job/130686277640"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-11T17:24:55Z",
+          "completed_at": "2026-11-11T17:31:13Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43067507298/job/130686278024"
+        }
+      ]
+    },
+    {
+      "id": 43067868333,
+      "sha": "ef1548572e998583cc40eba80f6d2f942828874b",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-11T17:24:30Z",
+      "completed_at": "2026-11-11T17:33:18Z",
+      "first_commit": {
+        "pr": null,
+        "authored_at": "2026-11-11T17:24:25Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-11T17:25:26Z",
+          "completed_at": "2026-11-11T17:28:28Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43067868333/job/130687538186"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-11T17:27:17Z",
+          "completed_at": "2026-11-11T17:33:18Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43067868333/job/130687538572"
+        }
+      ]
+    },
+    {
+      "id": 43111390064,
+      "sha": "c70f2a67054121c7413ab5820fdedc14a18a5a27",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-11T22:23:41Z",
+      "completed_at": "2026-11-11T22:28:28Z",
+      "first_commit": {
+        "pr": 242,
+        "authored_at": "2026-11-10T22:42:20Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-11T22:25:36Z",
+          "completed_at": "2026-11-11T22:27:00Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43111390064/job/130828032957"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-11T22:25:46Z",
+          "completed_at": "2026-11-11T22:28:28Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43111390064/job/130828033353"
+        }
+      ]
+    },
+    {
+      "id": 43111641884,
+      "sha": "3311de243e87aed7e60d8d0fa1c954c9e074f367",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-11T22:25:27Z",
+      "completed_at": "2026-11-11T22:28:56Z",
+      "first_commit": {
+        "pr": null,
+        "authored_at": "2026-11-11T22:25:23Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-11T22:26:14Z",
+          "completed_at": "2026-11-11T22:28:56Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43111641884/job/130828897279"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-11T22:26:30Z",
+          "completed_at": "2026-11-11T22:27:59Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43111641884/job/130828897820"
+        }
+      ]
+    },
+    {
+      "id": 43112062424,
+      "sha": "14bd6d051583f9e804a6862fe86056190738df1a",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-11T22:28:31Z",
+      "completed_at": "2026-11-11T22:31:30Z",
+      "first_commit": {
+        "pr": 240,
+        "authored_at": "2026-11-10T21:53:35Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-11T22:28:41Z",
+          "completed_at": "2026-11-11T22:31:30Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43112062424/job/130830403729"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-11T22:29:18Z",
+          "completed_at": "2026-11-11T22:30:44Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43112062424/job/130830404102"
+        }
+      ]
+    },
+    {
+      "id": 43112125185,
+      "sha": "7fb7b8bae6911e192cf5f82f9e51c33c707ba214",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-11T22:28:59Z",
+      "completed_at": "2026-11-11T22:32:45Z",
+      "first_commit": {
+        "pr": null,
+        "authored_at": "2026-11-11T22:28:55Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-11T22:30:20Z",
+          "completed_at": "2026-11-11T22:31:47Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43112125185/job/130830630026"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-11T22:30:06Z",
+          "completed_at": "2026-11-11T22:32:45Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43112125185/job/130830630278"
+        }
+      ]
+    },
+    {
+      "id": 43196363221,
+      "sha": "703b5c6f87429a40f81b4960561fe8fa318c6363",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T09:59:46Z",
+      "completed_at": "2026-11-12T10:02:30Z",
+      "first_commit": {
+        "pr": 238,
+        "authored_at": "2026-11-10T17:59:55Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T09:59:49Z",
+          "completed_at": "2026-11-12T10:02:30Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43196363221/job/131108267367"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-12T09:59:49Z",
+          "completed_at": "2026-11-12T10:01:14Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43196363221/job/131108267598"
+        }
+      ]
+    },
+    {
+      "id": 43282714881,
+      "sha": "d29709f2bbe4a282bcc4e2f7e1842d4ec5864cbd",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T18:42:58Z",
+      "completed_at": "2026-11-12T18:45:25Z",
+      "first_commit": {
+        "pr": 243,
+        "authored_at": "2026-11-10T17:59:55Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T18:43:01Z",
+          "completed_at": "2026-11-12T18:45:25Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43282714881/job/131407942905"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-12T18:43:01Z",
+          "completed_at": "2026-11-12T18:44:26Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43282714881/job/131407943349"
+        }
+      ]
+    },
+    {
+      "id": 43299034444,
+      "sha": "afd48fd42678c59c403312ce3beede66433ec2a1",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T20:18:46Z",
+      "completed_at": "2026-11-12T20:25:35Z",
+      "first_commit": {
+        "pr": 236,
+        "authored_at": "2026-11-10T15:39:59Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T20:19:56Z",
+          "completed_at": "2026-11-12T20:25:35Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299034444/job/131464940592"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-12T20:20:40Z",
+          "completed_at": "2026-11-12T20:23:16Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299034444/job/131464941340"
+        }
+      ]
+    },
+    {
+      "id": 43299341046,
+      "sha": "d296cc0fc2e562d463c5686819b5f2ffdabbbf37",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T20:20:35Z",
+      "completed_at": "2026-11-12T20:30:17Z",
+      "first_commit": {
+        "pr": null,
+        "authored_at": "2026-11-12T20:20:31Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-12T20:22:59Z",
+          "completed_at": "2026-11-12T20:25:36Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299341046/job/131466003514"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T20:24:32Z",
+          "completed_at": "2026-11-12T20:30:17Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299341046/job/131466004102"
+        }
+      ]
+    },
+    {
+      "id": 43299458361,
+      "sha": "d87dcb4f46e0977e5475074e13bc9143133908a0",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T20:21:16Z",
+      "completed_at": "2026-11-12T20:31:34Z",
+      "first_commit": {
+        "pr": 251,
+        "authored_at": "2026-11-12T08:35:53Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T20:25:53Z",
+          "completed_at": "2026-11-12T20:31:34Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299458361/job/131466404217"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-12T20:27:32Z",
+          "completed_at": "2026-11-12T20:30:13Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299458361/job/131466404683"
+        }
+      ]
+    },
+    {
+      "id": 43299527590,
+      "sha": "014640ed63f8129a33dc69339fc5122d639ec81f",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T20:21:41Z",
+      "completed_at": "2026-11-12T20:38:27Z",
+      "first_commit": {
+        "pr": 250,
+        "authored_at": "2026-11-12T08:35:32Z"
+      },
+      "jobs": [
+        {
+          "name": "build",
+          "started_at": "2026-11-12T20:27:51Z",
+          "completed_at": "2026-11-12T20:30:34Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299527590/job/131466646751"
+        },
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T20:31:16Z",
+          "completed_at": "2026-11-12T20:38:27Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299527590/job/131466647183"
+        }
+      ]
+    },
+    {
+      "id": 43299601495,
+      "sha": "d181473989fd1905bca29d11e9efafabd57d17ad",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T20:22:07Z",
+      "completed_at": "2026-11-12T20:37:14Z",
+      "first_commit": {
+        "pr": 249,
+        "authored_at": "2026-11-12T08:35:31Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T20:31:29Z",
+          "completed_at": "2026-11-12T20:37:14Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299601495/job/131466907533"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-12T20:33:49Z",
+          "completed_at": "2026-11-12T20:36:29Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299601495/job/131466907735"
+        }
+      ]
+    },
+    {
+      "id": 43299656880,
+      "sha": "317318b3cd1d196a974fb2fc3027f4fd16e9a3ed",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T20:22:27Z",
+      "completed_at": "2026-11-12T20:41:09Z",
+      "first_commit": {
+        "pr": 248,
+        "authored_at": "2026-11-12T08:35:24Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T20:35:17Z",
+          "completed_at": "2026-11-12T20:41:09Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299656880/job/131467099593"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-12T20:37:32Z",
+          "completed_at": "2026-11-12T20:40:20Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299656880/job/131467100132"
+        }
+      ]
+    },
+    {
+      "id": 43299717961,
+      "sha": "abfa940441886f2ecd31014e96c286a6973a5d01",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T20:22:49Z",
+      "completed_at": "2026-11-12T20:43:34Z",
+      "first_commit": {
+        "pr": 245,
+        "authored_at": "2026-11-12T08:35:05Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T20:37:37Z",
+          "completed_at": "2026-11-12T20:43:34Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299717961/job/131467311016"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-12T20:38:45Z",
+          "completed_at": "2026-11-12T20:41:25Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299717961/job/131467311898"
+        }
+      ]
+    },
+    {
+      "id": 43299777657,
+      "sha": "091343132dd64513784c61c3b0c09ad8fff8ff3c",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T20:23:10Z",
+      "completed_at": "2026-11-12T20:46:28Z",
+      "first_commit": {
+        "pr": 246,
+        "authored_at": "2026-11-12T08:35:14Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T20:40:37Z",
+          "completed_at": "2026-11-12T20:46:28Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299777657/job/131467514727"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-12T20:41:27Z",
+          "completed_at": "2026-11-12T20:44:04Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299777657/job/131467515142"
+        }
+      ]
+    },
+    {
+      "id": 43299817982,
+      "sha": "d6d9a1d8ff3fe5efc954c574e18b7eef40f26d54",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T20:23:25Z",
+      "completed_at": "2026-11-12T20:47:17Z",
+      "first_commit": {
+        "pr": 247,
+        "authored_at": "2026-11-12T08:35:19Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T20:41:44Z",
+          "completed_at": "2026-11-12T20:47:17Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299817982/job/131467659771"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-12T20:43:51Z",
+          "completed_at": "2026-11-12T20:46:27Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299817982/job/131467660344"
+        }
+      ]
+    },
+    {
+      "id": 43313636471,
+      "sha": "6b9735ad0dbd9a0b8655bd4a86c99f1f6336c874",
+      "conclusion": "success",
+      "attempt": 1,
+      "created_at": "2026-11-12T21:47:06Z",
+      "completed_at": "2026-11-12T21:57:15Z",
+      "first_commit": {
+        "pr": 252,
+        "authored_at": "2026-11-12T18:52:21Z"
+      },
+      "jobs": [
+        {
+          "name": "frontend",
+          "started_at": "2026-11-12T21:51:44Z",
+          "completed_at": "2026-11-12T21:57:15Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43313636471/job/131515858177"
+        },
+        {
+          "name": "build",
+          "started_at": "2026-11-12T21:51:49Z",
+          "completed_at": "2026-11-12T21:54:32Z",
+          "conclusion": "success",
+          "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43313636471/job/131515858632"
+        }
+      ]
+    }
+  ]
+}
