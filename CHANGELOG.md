@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.2.1] - 2026-11-14
+
+### Bug Fixes
+
+- Enforce plan and certificate rules
+  ([`e0078be`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e0078be84b7a46339ed4462e01ec6d966f61fcbe))
+
+- Retry only transient SAZ fetch failures
+  ([`319b98c`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/319b98c750294706a7d10c6b3ff118132e3e0a08))
+
+
 ## [0.2.0] - 2026-11-12
 
 ### Bug Fixes
