@@ -68,12 +68,8 @@ jobs:
         if: ${{ !cancelled() && env.LAB10_REPORTS != '' }}
         shell: bash
         run: |
-          status=0
-          python scripts/flaky_test_reports.py "$LAB10_REPORTS" "$LAB10_REPORTS/summary.md" --sha "$GITHUB_SHA" || status=$?
-          if [ -f "$LAB10_REPORTS/summary.md" ]; then
-            cat "$LAB10_REPORTS/summary.md" >> "$GITHUB_STEP_SUMMARY"
-          fi
-          exit "$status"
+          python scripts/flaky_test_reports.py "$LAB10_REPORTS" --sha "$GITHUB_SHA" |
+            tee "$LAB10_REPORTS/summary.md" >> "$GITHUB_STEP_SUMMARY"
       - name: Upload JUnit evidence
         if: ${{ !cancelled() && env.LAB10_REPORTS != '' }}
         uses: actions/upload-artifact@v7

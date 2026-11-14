@@ -60,7 +60,6 @@ def compare(directory, suite, rounds):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("reports", type=Path)
-    parser.add_argument("summary", type=Path)
     parser.add_argument("--sha", required=True)
     args = parser.parse_args()
     lines = ["# Repeated test results", "", f"Commit: `{args.sha}`", ""]
@@ -76,9 +75,7 @@ def main():
             lines.extend([f"### {label}", "", *([f"- {entry}" for entry in entries] or ["None"]), ""])
             failed |= bool(entries)
     lines += ["## Використання ШІ", "", "Codex підготував аналіз звітів. Класифікацію перевірено тестами pytest.", ""]
-    output = "\n".join(lines)
-    args.summary.write_text(output, encoding="utf-8")
-    print(output)
+    print("\n".join(lines))
     return int(failed)
 
 
