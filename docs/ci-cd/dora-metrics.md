@@ -1,6 +1,6 @@
 # Бонус №1 — автоматичний підрахунок метрик
 
-Після появи workflow в `main` відкрийте **Actions → Lab 10 DORA metrics → Run workflow**, виберіть `main` і задайте межі періоду в UTC. Значення за замовчуванням відтворюють вибірку Лаб 10. Після успішного запуску завантажте `lab10-dora-metrics` у розділі **Artifacts**. Архів містить файл `lab10-automated-metrics.json`.
+Після появи workflow в `main` відкрийте **Actions → DORA metrics → Run workflow**, виберіть `main` і задайте межі періоду в UTC. Значення за замовчуванням відтворюють вибірку Лаб 10. Після успішного запуску завантажте `dora-metrics` у розділі **Artifacts**. Архів містить файл `dora-metrics.json`.
 
 Ту саму дію можна запустити з GitHub CLI:
 
@@ -13,7 +13,7 @@ gh workflow run dora-metrics.yml --ref main -f from_utc=2026-10-23T00:00:00Z -f 
 Запустіть команду з кореня репозиторію, використовуючи Python 3.12 та авторизований GitHub CLI.
 
 ```sh
-python -X utf8 scripts/ci_metrics.py --repo ukma-fin-ssdm-2026/YourPathUkma --workflow ci.yaml --from 2026-10-23T00:00:00Z --to 2026-11-13T00:00:00Z --output - > docs/ci-cd/lab10-automated-metrics.json
+python -X utf8 scripts/ci_metrics.py --repo ukma-fin-ssdm-2026/YourPathUkma --workflow ci.yaml --from 2026-10-23T00:00:00Z --to 2026-11-13T00:00:00Z --output - > docs/ci-cd/dora-metrics.json
 ```
 
 Параметр `--output -` виводить JSON у stdout. Шлях для збереження задається перенаправленням оболонки.
@@ -28,7 +28,7 @@ python -X utf8 scripts/ci_metrics.py --repo ukma-fin-ssdm-2026/YourPathUkma --wo
 
 У `lead_time_changes` для кожного SHA наведено PR, ID вихідного запуску, ID зеленого запуску доставки та розклад часу. Поточний результат містить 90 інтервалів: до 88 змін додано PR #210 і #211; для PR #154 і #250 доставка відбулася раніше завершення власного CI.
 
-Оновлений JSON сформовано локально з `evidence/lab10-main-ci.json` і перевірок предків Git. Списки батьківських SHA збережено в доказах. Безмережеве відтворення всіх агрегатів і зіставлення із JSON виконується регресійним тестом:
+Оновлений JSON сформовано локально з `evidence/main-ci-runs.json` і перевірок предків Git. Списки батьківських SHA збережено в доказах. Безмережеве відтворення всіх агрегатів і зіставлення із JSON виконується регресійним тестом:
 
 ```sh
 python -m pytest tests/test_ci_metrics_script.py -q
@@ -43,3 +43,5 @@ Codex створив скрипт і команду відтворення. Ре
 Codex додав ручний workflow із публікацією JSON та описав запуск. Перевірено синтаксис workflow і підрахунок за даними Лаб 10.
 
 Codex описав доставку після збоїв, об’єднання інтервалів і локальне відтворення. Перевірка: pytest, Ruff і регресія за всіма 90 записами збереженої вибірки.
+
+**Використання ШІ.** Codex оновив назви файлів та посилання після перейменування метрик DORA. Перевірка: пошук застарілих назв і регресійні тести.

@@ -1,3 +1,4 @@
+# Використання ШІ: Codex оновив назви DORA; перевірка: pytest, Ruff і пошук старих назв.
 # Використання ШІ: Codex додав перевірки меж вибірки, прямих комітів і відновлення.
 # Перевірка: окремий запуск pytest для цього модуля.
 # Використання ШІ: Codex додав регресії доставки після збоїв, повторних спроб і перекриття CI.
@@ -198,8 +199,8 @@ def test_historical_evidence_reproduces_all_delivered_changes():
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1] / "docs/ci-cd"
-    evidence = json.loads((root / "evidence/lab10-main-ci.json").read_text())
-    saved = json.loads((root / "lab10-automated-metrics.json").read_text())
+    evidence = json.loads((root / "evidence/main-ci-runs.json").read_text())
+    saved = json.loads((root / "dora-metrics.json").read_text())
     parents = {run["sha"]: run["parents"] for run in evidence["runs"]}
 
     def contains(base, head):
