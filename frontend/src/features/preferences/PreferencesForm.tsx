@@ -1,10 +1,12 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: form.test.tsx, instructors.test.tsx.
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useConfig } from "../../api/config";
 import { fieldErrors } from "../../api/errors";
 import type { Instructor } from "../../api/types";
 import { formatCredits } from "../../lib/credits";
+import { useSessionDraft } from "../../lib/useSessionDraft";
 import { Button } from "../../ui/Button";
 import { Card } from "../../ui/Card";
 import { Switch } from "../../ui/Switch";
@@ -27,19 +29,22 @@ export function PreferencesForm({ year }: { year: number }) {
   const me = useMe();
   const config = useConfig();
   const save = useSavePreferences(year);
-  const directoryNames = useInstructorNames();
 
   // Чернетка з'являється після першої правки; до того показуємо збережене з сервера.
-  const [draft, setDraft] = useState<PreferencesInput | null>(null);
+  const [draft, setDraft] = useSessionDraft<PreferencesInput>(`preferences:${year}`);
   const [saved, setSaved] = useState(false);
   const [fields, setFields] = useState<Record<string, string>>({});
   const [formErrors, setFormErrors] = useState<string[]>([]);
-  // Імена викладачів, знайдених пошуком (їх може не бути в першій сотні довідника).
+  // Результати пошуку доступні одразу, поки довідник підтягує імена збережених викладачів.
   const [found, setFound] = useState<Map<number, string>>(new Map());
+  const value = draft ?? prefs.data;
+  const directoryNames = useInstructorNames(
+    [...(value?.preferred_instructor_ids ?? []), ...(value?.unwanted_instructor_ids ?? [])].filter(
+      (id) => !found.has(id),
+    ),
+  );
   const names = useMemo(() => new Map([...directoryNames, ...found]), [directoryNames, found]);
 
-  // Чернетка належить конкретному року: після зміни року показуємо дані нового року.
-  const value = draft?.academic_year === year ? draft : prefs.data;
   if (prefs.isError) {
     return (
       <p role="alert" className="text-bad">
@@ -56,6 +61,7 @@ export function PreferencesForm({ year }: { year: number }) {
   }
 
   function edit(change: (current: PreferencesInput) => PreferencesInput) {
+    if (save.isPending) return;
     setDraft(change(value!));
     setSaved(false);
   }
@@ -70,6 +76,7 @@ export function PreferencesForm({ year }: { year: number }) {
     setFormErrors([]);
     save.mutate(value!, {
       onSuccess: () => {
+        setDraft(null);
         setSaved(true);
         toast.success("Побажання збережено");
       },

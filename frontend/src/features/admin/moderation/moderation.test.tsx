@@ -1,4 +1,4 @@
-// Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Використання ШІ: Claude створив тести, Codex додав перевірку картки САЗ. Перевірка: npm test.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -22,14 +22,51 @@ beforeEach(() => setAccessToken("t"));
 const card = (id: number) => screen.getByRole("group", { name: `Запис ${id}` });
 
 describe("ModerationPage", () => {
-  it("показує картки черги: тип зміни й рядки diff/payload", async () => {
+  it("показує картки черги: тип зміни, diff і назву дисципліни", async () => {
     renderPage();
     const update = await screen.findByRole("group", { name: "Запис 501" });
     expect(within(update).getByText("Зміна")).toBeInTheDocument();
     expect(within(update).getByText("credits: 5 → 4")).toBeInTheDocument();
     expect(within(card(503)).getByText("Додавання")).toBeInTheDocument();
-    expect(within(card(503)).getByText("title: Машинне навчання")).toBeInTheDocument();
+    expect(within(card(503)).getByRole("heading", { name: "Машинне навчання" })).toBeVisible();
     expect(within(card(505)).getByText("Видалення")).toBeInTheDocument();
+  });
+
+  it("показує дані САЗ як картку дисципліни з розгортними деталями", async () => {
+    const proposal = db.admin.moderationItems.find((item) => item.id === 503)!;
+    proposal.payload = {
+      title: "Феноменологія духа",
+      description: "Курс про працю Гегеля.",
+      saz_code: "364081",
+      credits: 3,
+      trimester: 3,
+      recommended_year: 3,
+      kind: "elective",
+      instructors: [],
+      happened: false,
+      semesters: [{ number: 6, season: "Літо", credits: 3 }],
+      specialties: [{ name: "Філософія", type: "Професійно-орієнтована" }],
+      faculty: "Факультет гуманітарних наук",
+      department: "Кафедра філософії та релігієзнавства",
+      level: "Бакалавр",
+      academic_year: "2026–2027",
+      saz_internal_id: 65437,
+    };
+
+    renderPage();
+    const proposalCard = await screen.findByRole("group", { name: "Запис 503" });
+    const view = within(proposalCard);
+    expect(view.getByRole("heading", { name: "Феноменологія духа" })).toBeVisible();
+    expect(view.getByText("Вибіркова")).toBeVisible();
+    expect(view.getByText("364081")).toBeVisible();
+    expect(view.getByText("Курс про працю Гегеля.")).not.toBeVisible();
+
+    await userEvent.click(view.getByText("Деталі дисципліни"));
+    expect(view.getByText("Курс про працю Гегеля.")).toBeVisible();
+    expect(view.getByText("6 семестр · Літо · 3 кред.")).toBeVisible();
+    expect(view.getByText("Філософія · Професійно-орієнтована")).toBeVisible();
+    expect(view.getByText("65437")).toBeVisible();
+    expect(proposalCard).not.toHaveTextContent(/saz_code|"number"|\[\]/);
   });
 
   it("HTML у значенні лишається текстом і переноситься", async () => {

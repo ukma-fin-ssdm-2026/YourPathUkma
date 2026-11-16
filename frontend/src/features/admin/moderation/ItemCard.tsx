@@ -1,9 +1,10 @@
-// Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: moderation.test.tsx.
+// Використання ШІ: Claude створив картку, Codex додав перегляд пропозиції САЗ. Перевірка: moderation.test.tsx.
 import { useState } from "react";
 import type { ModerationItem } from "../../../api/types";
 import { Badge } from "../../../ui/Badge";
 import { Button } from "../../../ui/Button";
 import { Card } from "../../../ui/Card";
+import { CourseProposal } from "./CourseProposal";
 import { describeDiff } from "./useModeration";
 
 const TYPE_VIEW = {
@@ -35,7 +36,7 @@ export function ItemCard({
   const pending = item.status === "pending";
 
   return (
-    <Card role="group" aria-label={`Запис ${item.id}`} className="rise flex gap-3">
+    <Card role="group" aria-label={`Запис ${item.id}`} className="rise flex flex-wrap gap-3">
       {onSelect && (
         <input
           type="checkbox"
@@ -48,18 +49,22 @@ export function ItemCard({
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={view.tone}>{view.label}</Badge>
-          <span className="font-medium">
+          <h2 className="font-medium wrap-anywhere">
             {title ??
               (item.course_id !== null ? `Дисципліна #${item.course_id}` : "Нова дисципліна")}
-          </span>
+          </h2>
         </div>
-        <ul className="mt-2 space-y-0.5 text-ink-2">
-          {describeDiff(item).map((line) => (
-            <li key={line} className="break-words">
-              {line}
-            </li>
-          ))}
-        </ul>
+        {item.change_type === "add" ? (
+          <CourseProposal payload={item.payload} />
+        ) : (
+          <ul className="mt-2 space-y-0.5 text-ink-2">
+            {describeDiff(item).map((line) => (
+              <li key={line} className="break-words">
+                {line}
+              </li>
+            ))}
+          </ul>
+        )}
         {!pending && item.reviewed_by && (
           <p className="mt-2 text-sm text-ink-2">Розглянув: {item.reviewed_by.full_name}</p>
         )}
@@ -88,7 +93,11 @@ export function ItemCard({
         )}
       </div>
       {pending && !rejecting && (
-        <div className="flex shrink-0 flex-col gap-2 self-start sm:flex-row">
+        <div
+          className={`flex w-full shrink-0 flex-wrap gap-2 self-start ${
+            item.change_type === "add" ? "justify-end" : "sm:w-auto"
+          }`}
+        >
           <Button size="sm" disabled={busy} onClick={onApprove}>
             Схвалити
           </Button>

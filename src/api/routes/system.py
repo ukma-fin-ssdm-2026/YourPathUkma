@@ -1,4 +1,6 @@
 """
+Використання ШІ: Codex виправив джерело client_id; перевірка: pytest і Ruff.
+
 Ресурс «Система» (System): публічна конфігурація для фронтенду (GET /api/v1/config).
 
 Використання ШІ: прапорці парсингу і віддаленого входу САЗ додано Codex. Перевірка: pytest.
@@ -14,6 +16,8 @@ from fastapi import APIRouter, Response
 from pydantic import BaseModel, Field
 
 from ...parser.config import autorun_enabled, remote_login_enabled
+from ..common import ApiError
+from ..tokens import get_auth_settings
 
 router = APIRouter(prefix="/api/v1", tags=["System"])
 
@@ -44,7 +48,7 @@ class Features(BaseModel):
     saz_catalog_live: bool = Field(False, description="Серверний парсинг каталогу САЗ")
     saz_remote_login: bool = Field(False, description="Віддалений вхід адміністратора до САЗ")
     saz_sync: bool = Field(False, description="Синхронізація з САЗ (заблоковано, R14)")
-    plan_export: bool = Field(True, description="Експорт плану в PDF")
+    plan_export: bool = Field(False, description="Експорт плану в PDF (поки не реалізовано: 501)")
 
 
 class ConfigResponse(BaseModel):
@@ -65,9 +69,12 @@ class ConfigResponse(BaseModel):
     responses={200: {"description": "Конфігурацію отримано"}},
 )
 async def get_config(response: Response):
+    client_id = get_auth_settings().client_id
+    if not client_id and os.getenv("APP_ENV", "development") == "production":
+        raise ApiError(503, "AUTH_NOT_CONFIGURED", "Вхід через Microsoft не налаштовано")
     response.headers["Cache-Control"] = "max-age=300"
     return ConfigResponse(
-        google_client_id=os.getenv("GOOGLE_CLIENT_ID", "dev-client-id.apps.googleusercontent.com"),
+        google_client_id=client_id,
         reviews_url=os.getenv("REVIEWS_URL", "https://example.ukma.edu.ua/reviews"),
         limits=Limits(),
         load_levels={

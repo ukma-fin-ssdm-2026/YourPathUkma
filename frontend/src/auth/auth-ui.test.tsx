@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { StrictMode } from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { RouterProvider, createMemoryRouter, type RouteObject } from "react-router";
@@ -82,6 +83,19 @@ describe("LoginPage", () => {
     renderRoutes(loginRoutes(onLogin), "/login");
     await userEvent.click(screen.getByRole("button", { name: /Увійти через Microsoft/ }));
     expect(onLogin).toHaveBeenCalledTimes(1);
+  });
+
+  it("після повернення з bfcache дозволяє повторити вхід", async () => {
+    useSession.setState({ status: "anonymous", user: null });
+    const onLogin = vi.fn().mockResolvedValue(undefined);
+    renderRoutes(loginRoutes(onLogin), "/login");
+    const button = screen.getByRole("button", { name: /Увійти через Microsoft/ });
+    await userEvent.click(button);
+    expect(button).toBeDisabled();
+    fireEvent(window, new PageTransitionEvent("pageshow", { persisted: true }));
+    expect(button).toBeEnabled();
+    await userEvent.click(button);
+    expect(onLogin).toHaveBeenCalledTimes(2);
   });
 
   it("показує повідомлення про домен і код помилки", () => {

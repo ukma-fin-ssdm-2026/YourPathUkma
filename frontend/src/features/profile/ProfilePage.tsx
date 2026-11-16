@@ -1,7 +1,9 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: profile.test.tsx.
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import type { CSSProperties } from "react";
 import { Link } from "react-router";
 import { useConfig } from "../../api/config";
+import { defaultPlanYear } from "../../lib/planParams";
 import { Button } from "../../ui/Button";
 import { Card } from "../../ui/Card";
 import { linkButtonClass } from "../../ui/linkButton";
@@ -9,10 +11,7 @@ import { CreditsLedger } from "./CreditsLedger";
 import { LimitsStrip } from "./LimitsStrip";
 import { useAcademicHistory, useMe } from "./useMe";
 
-/** Рік плану за замовчуванням: поточний календарний, у межах навчальних років з /config. */
-export function defaultPlanYear(now: Date, min: number, max: number): number {
-  return Math.min(max, Math.max(min, now.getFullYear()));
-}
+export { defaultPlanYear } from "../../lib/planParams";
 
 export function ProfilePage() {
   const me = useMe();

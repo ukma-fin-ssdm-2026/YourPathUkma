@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -118,6 +119,7 @@ function renderPage(entry = "/path/create?year=2026") {
   const router = createMemoryRouter(
     [
       { path: "/path/create", element: <BuilderPage /> },
+      { path: "/path/create/document", element: <p>документ</p> },
       { path: "/path/plan", element: <p>список планів</p> },
       { path: "/path/saved", element: <p>збережені</p> },
     ],
@@ -162,6 +164,45 @@ beforeEach(() => {
 });
 
 describe("збереження чернетки", () => {
+  it("повертає чернетку після переходу до документа і повторного входу того самого студента", async () => {
+    const router = renderPage();
+    await add("Машинне навчання");
+    await userEvent.click(screen.getByRole("link", { name: "Документ деканату" }));
+    await screen.findByText("документ");
+    const auth = authResponse();
+    act(() => useSession.getState().setAnonymous());
+    act(() => useSession.getState().setAuthenticated({ ...auth, user: { ...auth.user, id: 999 } }));
+    await act(() => router.navigate(-1));
+    expect(await screen.findByRole("button", { name: "Додати Машинне навчання" })).toBeEnabled();
+    expect(saveButton()).toBeDisabled();
+    act(() => useSession.getState().setAuthenticated(auth));
+    await waitFor(() => expect(saveButton()).toBeEnabled());
+    expect(
+      within(screen.getByRole("region", { name: "Весна" })).getByText("Машинне навчання"),
+    ).toBeVisible();
+  });
+
+  it.each(["-5", "2026.5", "1e9", "9007199254740992"])(
+    "підставляє допустимий рік та ігнорує некоректний ID %s",
+    async (invalid) => {
+      const requested: string[] = [];
+      server.use(
+        http.get("*/api/v1/plans/:id", ({ params }) => {
+          requested.push(String(params.id));
+          return HttpResponse.json(null, { status: 404 });
+        }),
+      );
+      renderPage(`/path/create?year=${invalid}&plan=${invalid}`);
+      await screen.findByRole("region", { name: "Осінь" });
+      const fallback = Math.max(2024, Math.min(2030, new Date().getFullYear()));
+      expect(screen.getByRole("link", { name: "Документ деканату" })).toHaveAttribute(
+        "href",
+        `/path/create/document?year=${fallback}`,
+      );
+      expect(requested).toEqual([]);
+    },
+  );
+
   it("порожній план: обидві кнопки недоступні", async () => {
     renderPage();
     await screen.findByRole("region", { name: "Осінь" });

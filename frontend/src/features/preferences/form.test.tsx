@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -21,7 +22,7 @@ function renderForm(year = 2026) {
     </QueryClientProvider>
   );
   const view = render(ui(year));
-  return { switchYear: (y: number) => view.rerender(ui(y)) };
+  return { switchYear: (y: number) => view.rerender(ui(y)), unmount: view.unmount };
 }
 
 function asStudent(course: 1 | 2 | 3 | 4) {
@@ -48,6 +49,18 @@ beforeEach(() => {
 });
 
 describe("напрямки", () => {
+  it("відновлює незбережені побажання після виходу з форми", async () => {
+    const view = renderForm();
+    await userEvent.click(await chip("Data Science"));
+    view.unmount();
+    const otherYear = renderForm(2025);
+    expect(await chip("Data Science")).toHaveAttribute("aria-pressed", "false");
+    // Інший рік не замінює чернетку 2026 року.
+    otherYear.unmount();
+    renderForm();
+    expect(await chip("Data Science")).toHaveAttribute("aria-pressed", "true");
+  });
+
   it("показує напрямки й позначає збережені", async () => {
     db.preferences[2026] = { ...defaultPreferences(2026), direction_ids: [1, 2] };
     renderForm();

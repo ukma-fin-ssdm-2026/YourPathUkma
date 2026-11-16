@@ -7,6 +7,7 @@ Playwright імпортується лише всередині `PlaywrightFetch
 Використання ШІ: атомарне збереження, шифрування сесії та бюджет часу додано Codex. Перевірка: pytest.
 Файл створено за допомогою Claude (Claude Code). Перевірка: tests/test_saz_fetcher.py
 (на підставних відповідях, без мережі).
+Codex уточнив класифікацію повторів запиту. Перевірка: тести ін'єкції збоїв без браузера.
 """
 
 import contextlib
@@ -42,6 +43,24 @@ class FetchError(Exception):
 
 class TransientFetchError(Exception):
     """Тимчасовий збій одного запиту (тайм-аут, обрив з'єднання): його можна повторити."""
+
+
+def _is_transient_request_error(error: Exception) -> bool:
+    if isinstance(error, (TimeoutError, ConnectionResetError, ConnectionAbortedError, BrokenPipeError)):
+        return True
+    try:
+        from playwright.sync_api import Error
+        from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+    except ModuleNotFoundError as exc:
+        if exc.name != "playwright":
+            raise
+        return False
+    if isinstance(error, PlaywrightTimeoutError):
+        return True
+    # APIRequestContext reports Node socket errors in the first line.
+    return isinstance(error, Error) and bool(
+        re.search(r"\b(?:ECONNRESET|ETIMEDOUT|EPIPE|EAI_AGAIN)\b", str(error).partition("\n")[0])
+    )
 
 
 class PageFetcher(Protocol):
@@ -169,15 +188,26 @@ def _write_session_cookies(browser_cookies, settings: SazSettings) -> None:
 
 
 def read_catalog_response(request, url: str, timeout_ms: float) -> RawResponse:
-    response = request.get(url, timeout=timeout_ms, max_redirects=0)
+    # Використання ШІ: Codex поєднав класифікацію з #259 із безпечними редиректами.
+    # Перевірка: тести ін’єкції збоїв і сканування.
+    try:
+        response = request.get(url, timeout=timeout_ms, max_redirects=0)
+    except Exception as exc:
+        message = f"{type(exc).__name__} під час запиту до САЗ"
+        if _is_transient_request_error(exc):
+            raise TransientFetchError(message) from None
+        raise FetchError(message) from None
     try:
         status = response.status
         if 300 <= status < 400:
             target = response.headers.get("location", "")
             return status, urljoin(url, target), ""
-        return status, response.url, response.text() if status == 200 else ""
+        return status, response.url, response.text() if status == 200 and not looks_like_login(response.url) else ""
+    except Exception as exc:
+        raise FetchError(f"{type(exc).__name__} під час читання відповіді САЗ") from None
     finally:
-        response.dispose()
+        with contextlib.suppress(Exception):
+            response.dispose()
 
 
 class PlaywrightFetcher:
@@ -269,11 +299,7 @@ class PlaywrightFetcher:
         def get() -> RawResponse:
             self._pause()
             timeout_ms = min(self._settings.timeout_s, self._remaining()) * 1000
-            try:
-                return read_catalog_response(self._context.request, url, timeout_ms)
-            except Exception as exc:
-                logger.warning("Запит до САЗ не вдався (сторінка %s): %s", page, type(exc).__name__)
-                raise TransientFetchError(f"Тимчасовий збій запиту сторінки {page}") from exc
+            return read_catalog_response(self._context.request, url, timeout_ms)
 
         return fetch_with_retry(
             get, retries=self._settings.max_retries, delay_s=self._settings.delay_s, sleep=self._sleep
