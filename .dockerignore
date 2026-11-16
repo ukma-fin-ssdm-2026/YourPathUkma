@@ -1,0 +1,42 @@
+# Що не потрапляє в Docker-образ. Образ може бути публічним на Docker Hub, тож секрети й дані сюди не копіюємо.
+
+# Секрети й локальні дані
+.env
+.env.*
+frontend/.env*
+*.sqlite
+*.saz_state.json
+saz_raw/
+
+# Git, CI, редактори, агенти
+.git
+.github
+.claude
+.idea
+.vscode
+
+# Залежності й збірки, які робляться всередині образу
+.venv
+venv
+node_modules
+frontend/node_modules
+frontend/dist
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+.coverage
+htmlcov
+coverage.xml
+
+# Не потрібне для запуску
+tests
+Labs
+mcp
+scripts
+
+# Документація: потрібна лише специфікація для генерації типів фронтенду
+docs/*
+!docs/api
+docs/api/*
+!docs/api/openapi-generated.json

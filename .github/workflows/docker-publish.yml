@@ -1,0 +1,48 @@
+# Збірка Docker-образу (фронтенд + API в одному контейнері) і публікація на Docker Hub.
+# Запускається вручну (Actions → Run workflow) або при тегу v*. Потрібні налаштування репозиторію:
+#   secrets: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN (access token з правом Read & Write)
+#   variables: VITE_MS_CLIENT_ID, VITE_MS_TENANT (публічні ідентифікатори Entra, вшиваються у збірку фронтенду)
+# Інструкція з розгортання на Azure: docs/deployment/azure.md
+#
+# Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: збірка образу локально;
+# сам workflow виконується лише після додавання секретів Docker Hub.
+name: Publish Docker image
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    # Потрібен Docker: на self-hosted раннері його може не бути, тож використовуємо хмарний раннер GitHub
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/yourpath
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=
+            type=ref,event=tag
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VITE_MS_CLIENT_ID=${{ vars.VITE_MS_CLIENT_ID }}
+            VITE_MS_TENANT=${{ vars.VITE_MS_TENANT }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
