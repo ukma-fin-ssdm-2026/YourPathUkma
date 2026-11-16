@@ -1,0 +1,2571 @@
+{
+  "repository": "ukma-fin-ssdm-2026/YourPathUkma",
+  "collected_on": "2026-11-16",
+  "selection": "Five PRs with the longest first-human-review-to-merge interval in evidence/pr-timings.json",
+  "selection_count": 5,
+  "after_first_review_seconds_total": 1271259.0,
+  "share_of_all_post_review_seconds": 45.74410971168011,
+  "limitations": [
+    "Commit timestamps are not push timestamps or active work duration; pushedDate is null in collected commits.",
+    "Checks are associated with commit SHA and can also be triggered by another PR sharing that SHA.",
+    "Historical branch protection and required checks were not reconstructed; green core CI does not establish merge readiness.",
+    "The selected five outliers do not represent all PRs."
+  ],
+  "Використання ШІ": "Codex зібрав історію п’яти PR через GitHub GraphQL API й витяги з чотирьох журналів Actions через REST API. Перевірка: SHA і мітки злиття звірено з попередньою вибіркою; пагінація комітів, рев’ю, обговорень, подій і checks повна; інтервали перераховано. Тексти джерел збережено як дані, керувальні ANSI-послідовності у витягах журналів видалено.",
+  "pull_requests": [
+    {
+      "analysis": {
+        "first_human_review_at": "2026-10-23T07:28:38+00:00",
+        "after_first_review_seconds": 486659.0,
+        "final_head_sha": "ac4f227c82fe525b8a466e760bb7d012f60054ad",
+        "commits_after_first_review_by_committed_date": 2,
+        "final_head_core_ci_completed_at": "2026-10-23T07:35:37+00:00",
+        "core_ci_completion_to_merge_seconds": 486240.0,
+        "observed_draft_seconds_after_first_review": 355720.0,
+        "last_ready_to_merge_seconds": 315.0
+      },
+      "pull_request": {
+        "number": 131,
+        "title": "Add test Plan",
+        "body": "",
+        "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/131",
+        "createdAt": "2026-10-23T07:28:17Z",
+        "mergedAt": "2026-10-28T22:39:37Z",
+        "mergeCommit": {
+          "oid": "09329fdc71d6d0e965f96efdb5c01b81d97641b7"
+        },
+        "commits": {
+          "totalCount": 3,
+          "nodes": [
+            {
+              "commit": {
+                "oid": "544b465df4b48474d8ef1a5ebe98b510ff1265f4",
+                "authoredDate": "2026-10-23T07:27:30Z",
+                "committedDate": "2026-10-23T07:27:30Z",
+                "pushedDate": null,
+                "messageHeadline": "docs: add test plan (lab 7)",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-23T07:28:24Z",
+                        "completedAt": "2026-10-23T07:29:24Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/39917969742/job/120296006230"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-23T07:28:24Z",
+                        "completedAt": "2026-10-23T07:30:05Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/39917969742/job/120296006471"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Mg"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "28d553d798ad062ffde4eadbb6e16411869bcf70",
+                "authoredDate": "2026-10-23T07:29:28Z",
+                "committedDate": "2026-10-23T07:29:28Z",
+                "pushedDate": null,
+                "messageHeadline": "docs: format test plan header as list",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-23T07:29:39Z",
+                        "completedAt": "2026-10-23T07:30:43Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/39918108828/job/120296463686"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-23T07:29:39Z",
+                        "completedAt": "2026-10-23T07:31:22Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/39918108828/job/120296463907"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Mg"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "ac4f227c82fe525b8a466e760bb7d012f60054ad",
+                "authoredDate": "2026-10-23T07:33:42Z",
+                "committedDate": "2026-10-23T07:33:42Z",
+                "pushedDate": null,
+                "messageHeadline": "docs: drop auth cases from test plan (not implemented)",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-23T07:33:56Z",
+                        "completedAt": "2026-10-23T07:34:57Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/39918597376/job/120298047859"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-23T07:33:56Z",
+                        "completedAt": "2026-10-23T07:35:37Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/39918597376/job/120298047504"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-25T18:47:12Z",
+                        "completedAt": "2026-10-25T18:47:15Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/121258118608"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-25T18:46:44Z",
+                        "completedAt": "2026-10-25T18:47:11Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=131"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Mw"
+          }
+        },
+        "reviews": {
+          "nodes": [
+            {
+              "submittedAt": "2026-10-23T07:28:38Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/131#pullrequestreview-5625210557",
+              "author": {
+                "__typename": "User"
+              }
+            },
+            {
+              "submittedAt": "2026-10-23T07:28:41Z",
+              "state": "COMMENTED",
+              "body": "The job was not started because recent GitHub Actions payments have failed or your spending limit needs to be increased.",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/131#pullrequestreview-5625210976",
+              "author": {
+                "__typename": "Bot"
+              }
+            },
+            {
+              "submittedAt": "2026-10-24T19:51:38Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/131#pullrequestreview-5639706273",
+              "author": {
+                "__typename": "User"
+              }
+            },
+            {
+              "submittedAt": "2026-10-28T22:39:26Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/131#pullrequestreview-5690638613",
+              "author": {
+                "__typename": "User"
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMC0yOFQyMjozOToyNlq0MjAyNi0xMC0yOFQyMjozOToyNlrPAAAAAVMwQRU="
+          }
+        },
+        "comments": {
+          "nodes": [
+            {
+              "createdAt": "2026-10-23T07:50:14Z",
+              "body": "**[Blocking] Не всі тест-кейси готові до виконання в CI**\r\n\r\nУ розділі «Поточний стан кейсів» зазначено, що тест-кейс №12 (`GET /api/v1/disciplines/{id}` для неіснуючого ID) ще не автоматизований.\r\n\r\nПропонуємо додати відповідний тест, який перевірятиме повернення HTTP 404 з кодом `DISCIPLINE_NOT_FOUND`, та запустити повний набір тестів у CI.\r\n\r\nЦе дозволить підтвердити виконання критерію виходу «Усі тести плану зелені в CI».\r\n\r\n**[Blocking] Потрібно уточнити структуру тест-кейсів та рівні тестування**\r\n\r\nЗгідно з вимогами активності, для кожного з трьох модулів необхідно описати два тест-кейси різних рівнів.\r\n\r\nУ поточному плані `plan_rules` перевіряється лише на модульному рівні, а API планів і дисциплін — лише на інтеграційному.\r\n\r\nТакож кейси №10 та №11 об'єднують кілька різних сценаріїв в одному рядку, хоча один рядок має відповідати одному тест-кейсу.\r\n\r\nПропонуємо додати тести іншого рівня для кожного модуля або перегрупувати функціональність так, щоб виконати вимогу, а комбіновані сценарії розділити на окремі рядки.",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/131#issuecomment-6360161390",
+              "author": {
+                "__typename": "User"
+              }
+            },
+            {
+              "createdAt": "2026-10-23T07:56:57Z",
+              "body": "# Взаємний огляд тест-плану — YourPathUkma\r\n\r\n**Лабораторна робота:** Lab 07 — Обмін тест-планами між командами  \r\n**Команда-рецензент:** Rehab  \r\n**Команда, що проходить рецензування:** SOLIDni  \r\n**Проєкт:** YourPathUkma  \r\n**Дата:** 23.10.2026  \r\n**Об'єкт огляду:** `docs/validation/test-plan.md`\r\n\r\n## 1. Мета рецензування\r\n\r\nМетою взаємного огляду є оцінювання повноти, зрозумілості, простежуваності та реалістичності тест-плану команди SOLIDni.\r\n\r\nПід час рецензування перевірено охоплення ключових функціональних і нефункціональних вимог, наявність позитивних і негативних сценаріїв, критерії прийняття, зв'язок із вимогами Лаб 2 та готовність тест-кейсів до автоматизованого виконання в CI.\r\n\r\nОгляд виконано на основі наданого командою тексту тест-плану. Фактичні результати CI, вихідний код і RTM незалежно не перевірялися.\r\n\r\n## 2. Чек-лист рецензування\r\n\r\n| № | Критерій | Так/Ні | Коментар |\r\n|:---:|---|:---:|---|\r\n| 1 | Охоплені ключові вимоги та критичні шляхи | **Так** | План охоплює перевірку лімітів кредитів, обмежень навантаження, CRUD-операцій із планами, прав доступу й каталогу дисциплін. Критичні ризики визначені на початку документа. Функціональність, яка ще не реалізована, явно винесена за межі плану. |\r\n| 2 | Чітко сформульовані критерії прийняття | **Так** | Для більшості кейсів зазначено конкретні результати: HTTP 201, 401, 403, 409, 422, коди помилок і граничні значення. Водночас кейси №10 та №11 поєднують декілька сценаріїв, які бажано розділити. |\r\n| 3 | Є тести для негативних сценаріїв | **Так** | Передбачено перевірки перевищення кредитних лімітів, забороненого навантаження, доступу до чужого плану, редагування недоступних планів та запитів із неіснуючим ID. |\r\n| 4 | Простежується зв'язок із вимогами (Лаб 2) | **Так** | Усі тест-кейси містять посилання на ID вимог, зокрема FR-001, FR-003, FR-004, FR-010, FR-013 та SEC-001. План також містить посилання на RTM і документ вимог. |\r\n| 5 | План реалістичний і виконуваний у CI | **Ні** | Кейс №12 ще не автоматизовано. У документі зазначено, що тести повторно не запускалися. Тому виконання всіх кейсів у CI наразі не підтверджено. |\r\n\r\n**Результат:** 4 із 5 критеріїв оцінено позитивно; один потребує доопрацювання.\r\n\r\n## 3. Зауваження до тест-плану\r\n\r\n### Зауваження №1 — [Blocking]\r\n\r\n**Проблема:** не всі заплановані тест-кейси автоматизовані та підтверджені результатами CI.\r\n\r\n**Де виявлено:** розділи «Поточний стан кейсів» і «Критерії виходу», тест-кейс №12.\r\n\r\nУ тест-плані зазначено, що перевірка `GET /api/v1/disciplines/{id}` для неіснуючої дисципліни ще не автоматизована.\r\n\r\nВодночас одним із критеріїв виходу є успішне виконання всіх тестів плану в CI. Наразі документ не підтверджує виконання цього критерію.\r\n\r\n**Пропозиція щодо виправлення:**\r\n\r\n1. Додати автоматизований тест для неіснуючого ID дисципліни.\r\n2. Перевірити очікуваний HTTP 404 та код `DISCIPLINE_NOT_FOUND`.\r\n3. Запустити повний набір тестів у GitHub Actions.\r\n4. Оновити статус тест-кейсу в документі після успішного запуску.\r\n\r\n**Пріоритет:** Blocking — необхідно для підтвердження критеріїв виходу.\r\n\r\n### Зауваження №2 — [Blocking]\r\n\r\n**Проблема:** не для всіх обраних модулів представлено два різні рівні тестування.\r\n\r\n**Де виявлено:** таблиця тест-кейсів.\r\n\r\nЗа умовами активності необхідно охопити щонайменше три модулі або функції, для кожної передбачивши два тест-кейси різних рівнів.\r\n\r\nУ наданому плані:\r\n\r\n- `plan_rules` перевіряється переважно модульними тестами.\r\n- API планів перевіряється переважно інтеграційними тестами.\r\n- API каталогу дисциплін перевіряється інтеграційними тестами.\r\n\r\nКрім того, тест-кейси №10 та №11 містять кілька окремих сценаріїв в одному рядку, що ускладнює незалежне оцінювання результатів.\r\n\r\n**Пропозиція щодо виправлення:**\r\n\r\n1. Визначити три конкретні функції або компоненти, для яких можна провести тестування на двох різних рівнях.\r\n2. Додати відсутні модульні або інтеграційні кейси.\r\n3. Розділити комбіновані сценарії №10 та №11 на окремі рядки.\r\n4. Для кожного нового тест-кейсу вказати власника, очікуваний результат і відповідний ID вимоги.\r\n\r\n**Пріоритет:** Blocking — необхідно для повної відповідності структурним вимогам активності.\r\n\r\n## 4. Сильні сторони тест-плану\r\n\r\n### 1. Ризик-орієнтований підхід\r\n\r\nКоманда правильно визначила критичні ризики на початку документа: обхід кредитних лімітів, доступ до чужих планів, порушення правил навчального навантаження та редагування планів поза статусом `draft`.\r\n\r\nЦе допомагає пріоритезувати тестування найбільш важливих сценаріїв.\r\n\r\n### 2. Конкретні та вимірювані критерії прийняття\r\n\r\nДля більшості тестів визначені перевірювані результати: HTTP-статуси, коди помилок, числові граничні значення та очікувані зміни стану плану.\r\n\r\nНаприклад, перевірка рівно 25 кредитів і перевищення цього ліміту допомагає виявляти помилки на межових значеннях.\r\n\r\n### 3. Простежуваність і прозорість поточного стану\r\n\r\nТест-кейси пов'язані з ID функціональних і нефункціональних вимог. Документ містить посилання на стратегію тестування, RTM, вимоги та модель загроз.\r\n\r\nТакож позитивним є те, що команда відкрито зазначила, які компоненти ще не реалізовані та які тести поки не автоматизовано.\r\n\r\n## 5. Пропозиції щодо покращення\r\n\r\n### Пропозиція 1. Покращити структуру тест-кейсів\r\n\r\nРекомендуємо забезпечити наявність двох різних рівнів тестування для кожної з трьох обраних функцій або модулів.\r\n\r\nТакож варто розділити складні тест-кейси, які одночасно перевіряють успішний запит, відсутність авторизації та помилки валідації.\r\n\r\nЦе зробить тест-план простішим для виконання, підтримки та аналізу результатів.\r\n\r\n### Пропозиція 2. Підтвердити виконуваність плану через CI\r\n\r\nРекомендуємо автоматизувати відсутній тест-кейс №12, повторно виконати повний набір перевірок і зафіксувати актуальні результати CI.\r\n\r\nБажано також додати до документа посилання на успішний запуск GitHub Actions. Це дасть змогу підтвердити, що заявлені критерії виходу справді виконані.\r\n\r\n## 6. Загальний висновок\r\n\r\nТест-план команди SOLIDni для проєкту YourPathUkma є добре структурованим і демонструє відповідальний підхід до планування тестування.\r\n\r\nОсобливо позитивно оцінюємо ризик-орієнтоване планування, конкретні критерії прийняття та зв'язок тест-кейсів із вимогами.\r\n\r\nВодночас виявлено два аспекти, які потребують доопрацювання: повнота автоматизації тест-кейсів і відповідність вимозі щодо різних рівнів тестування.\r\n\r\n**Підсумкова рекомендація команди Rehab:**\r\n\r\n**Request changes — рекомендуємо внести зазначені виправлення перед остаточним схваленням тест-плану.**\r\n\r\nПісля усунення блокувальних зауважень план можна повторно перевірити та рекомендувати до прийняття.\r\n\r\n---\r\n\r\n## 7. Використання ШІ\r\n\r\n**Що створено за допомогою ШІ:** початкову структуру відгуку, формулювання критеріїв оцінювання, зауважень і рекомендацій.\r\n\r\n**На основі чого виконано аналіз:** наданого тексту тест-плану команди SOLIDni (YourPathUkma).\r\n\r\n**Обмеження перевірки:** фактичний код, повний RTM і результати GitHub Actions незалежно не перевірялися. Висновки щодо поточного стану тестів базуються на інформації, зазначеній у тест-плані. Остаточний відгук має бути погоджений учасниками команди Rehab.\r\n",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/131#issuecomment-6360268668",
+              "author": {
+                "__typename": "User"
+              }
+            },
+            {
+              "createdAt": "2026-10-25T18:47:13Z",
+              "body": "## [![Quality Gate Passed](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/checks/QualityGateBadge/qg-passed-20px.png 'Quality Gate Passed')](https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=131) **Quality Gate passed**  \nIssues  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0 New issues](https://sonarcloud.io/project/issues?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=131&issueStatuses=OPEN,CONFIRMED&sinceLeakPeriod=true)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/accepted-16px.png '') [0 Accepted issues](https://sonarcloud.io/project/issues?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=131&issueStatuses=ACCEPTED)\n\nMeasures  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0 Security Hotspots](https://sonarcloud.io/project/security_hotspots?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=131&issueStatuses=OPEN,CONFIRMED&sinceLeakPeriod=true)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0.0% Coverage on New Code](https://sonarcloud.io/component_measures?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=131&metric=new_coverage&view=list)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0.0% Duplication on New Code](https://sonarcloud.io/component_measures?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=131&metric=new_duplicated_lines_density&view=list)  \n  \n<!-- sqra-placement-anchor -->\n[See analysis details on SonarQube Cloud](https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=131)\n\n",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/131#issuecomment-6401679088",
+              "author": {
+                "__typename": "Bot"
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpHPAAAAAX2R3vA="
+          }
+        },
+        "timelineItems": {
+          "nodes": [
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "ReviewRequestedEvent",
+              "createdAt": "2026-10-23T07:28:22Z"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "IssueComment"
+            },
+            {
+              "__typename": "IssueComment"
+            },
+            {
+              "__typename": "ConvertToDraftEvent",
+              "createdAt": "2026-10-24T19:45:42Z"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "IssueComment"
+            },
+            {
+              "__typename": "ReadyForReviewEvent",
+              "createdAt": "2026-10-28T22:34:22Z"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "MergedEvent",
+              "createdAt": "2026-10-28T22:39:37Z"
+            },
+            {
+              "__typename": "ClosedEvent"
+            },
+            {
+              "__typename": "CrossReferencedEvent"
+            },
+            {
+              "__typename": "CrossReferencedEvent"
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoY04DBgCqzE4ODIwMjEyNDU1"
+          }
+        },
+        "reviewThreads": {
+          "nodes": [],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          }
+        }
+      }
+    },
+    {
+      "analysis": {
+        "first_human_review_at": "2026-10-30T08:55:31+00:00",
+        "after_first_review_seconds": 213962.0,
+        "final_head_sha": "270eb63d6a00568416d486e29a4e13bd6fab9989",
+        "commits_after_first_review_by_committed_date": 6,
+        "final_head_core_ci_completed_at": "2026-11-01T18:40:30+00:00",
+        "core_ci_completion_to_merge_seconds": 6063.0,
+        "observed_draft_seconds_after_first_review": 0,
+        "last_ready_to_merge_seconds": null
+      },
+      "pull_request": {
+        "number": 171,
+        "title": "(lab08) fix preferences.py L59 and main.py L113",
+        "body": "",
+        "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/171",
+        "createdAt": "2026-10-30T08:48:30Z",
+        "mergedAt": "2026-11-01T20:21:33Z",
+        "mergeCommit": {
+          "oid": "b9112c2c7a439b4810890b51b6f1708d7e76d5e0"
+        },
+        "commits": {
+          "totalCount": 7,
+          "nodes": [
+            {
+              "commit": {
+                "oid": "b35dcac4348f2525a2b65cebb2144e24560c68b3",
+                "authoredDate": "2026-10-30T08:46:32Z",
+                "committedDate": "2026-10-30T08:46:32Z",
+                "pushedDate": null,
+                "messageHeadline": "(lab08) fix preferences.py L59",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:48:37Z",
+                        "completedAt": "2026-10-30T08:49:47Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41028951577/job/123973765623"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:48:37Z",
+                        "completedAt": "2026-10-30T08:50:27Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41028951577/job/123973765247"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:48:59Z",
+                        "completedAt": "2026-10-30T08:49:01Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/123973908558"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:48:37Z",
+                        "completedAt": "2026-10-30T08:48:58Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "d263e9a38336bd6052c366ad4fee81a8d061c6d6",
+                "authoredDate": "2026-10-30T08:57:32Z",
+                "committedDate": "2026-10-30T08:57:32Z",
+                "pushedDate": null,
+                "messageHeadline": "(lab08) fix main.py L113 reliability",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:58:52Z",
+                        "completedAt": "2026-10-30T08:59:59Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41029962063/job/123977062819"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:58:57Z",
+                        "completedAt": "2026-10-30T09:00:51Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41029962063/job/123977063155"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:58:08Z",
+                        "completedAt": "2026-10-30T08:58:11Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/123977225965"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:57:44Z",
+                        "completedAt": "2026-10-30T08:58:06Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "65f6edb9600044883f8c01d82caf9bf5f2b8d542",
+                "authoredDate": "2026-10-30T09:01:49Z",
+                "committedDate": "2026-10-30T09:01:49Z",
+                "pushedDate": null,
+                "messageHeadline": "(lab08) update sonarcloud-report.md",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T09:02:01Z",
+                        "completedAt": "2026-10-30T09:03:14Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41030462561/job/123978704463"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T09:02:44Z",
+                        "completedAt": "2026-10-30T09:04:48Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41030462561/job/123978704773"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T09:02:37Z",
+                        "completedAt": "2026-10-30T09:02:39Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/123978941686"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T09:02:03Z",
+                        "completedAt": "2026-10-30T09:02:35Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "3475200d72c168dde8d84b206c5dbd0f0fbba7d2",
+                "authoredDate": "2026-11-01T14:49:53Z",
+                "committedDate": "2026-11-01T14:49:53Z",
+                "pushedDate": null,
+                "messageHeadline": "Merge branch 'main' into fix-preferences-L59-reliability-issues",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T15:15:06Z",
+                        "completedAt": "2026-11-01T15:16:22Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318133905/job/124882444649"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T14:50:55Z",
+                        "completedAt": "2026-11-01T14:53:56Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318133905/job/124882444560"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T14:50:27Z",
+                        "completedAt": "2026-11-01T14:50:29Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/124882554849"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T14:50:02Z",
+                        "completedAt": "2026-11-01T14:50:26Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "afb1ec7ea869f3660eac068815b4c7690abf6209",
+                "authoredDate": "2026-11-01T15:08:35Z",
+                "committedDate": "2026-11-01T15:08:35Z",
+                "pushedDate": null,
+                "messageHeadline": "Merge branch 'main' into fix-preferences-L59-reliability-issues",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T15:17:24Z",
+                        "completedAt": "2026-11-01T15:18:47Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41319703043/job/124887090707"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T15:40:09Z",
+                        "completedAt": "2026-11-01T15:42:53Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41319703043/job/124887090916"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T15:09:07Z",
+                        "completedAt": "2026-11-01T15:09:10Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/124887199593"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T15:08:45Z",
+                        "completedAt": "2026-11-01T15:09:05Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "958df02b0fde6a175c2b20069c78292e1130d373",
+                "authoredDate": "2026-11-01T17:46:56Z",
+                "committedDate": "2026-11-01T17:46:56Z",
+                "pushedDate": null,
+                "messageHeadline": "Merge branch 'main' into fix-preferences-L59-reliability-issues",
+                "statusCheckRollup": {
+                  "state": "FAILURE",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "FAILURE",
+                        "startedAt": "2026-11-01T18:05:12Z",
+                        "completedAt": "2026-11-01T18:06:06Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41333227105/job/124927532762"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T18:08:26Z",
+                        "completedAt": "2026-11-01T18:11:06Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41333227105/job/124927534475"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T17:47:32Z",
+                        "completedAt": "2026-11-01T17:47:35Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/124927653182"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T17:47:05Z",
+                        "completedAt": "2026-11-01T17:47:31Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "270eb63d6a00568416d486e29a4e13bd6fab9989",
+                "authoredDate": "2026-11-01T18:23:55Z",
+                "committedDate": "2026-11-01T18:23:55Z",
+                "pushedDate": null,
+                "messageHeadline": "fix(api): close the main.py module docstring broken by the merge",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T18:26:46Z",
+                        "completedAt": "2026-11-01T18:28:13Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41336430794/job/124937130392"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T18:37:08Z",
+                        "completedAt": "2026-11-01T18:40:30Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41336430794/job/124937130604"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T18:24:49Z",
+                        "completedAt": "2026-11-01T18:24:50Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/124937301934"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T18:24:14Z",
+                        "completedAt": "2026-11-01T18:24:47Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Nw"
+          }
+        },
+        "reviews": {
+          "nodes": [
+            {
+              "submittedAt": "2026-10-30T08:55:31Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/171#pullrequestreview-5710063727",
+              "author": {
+                "__typename": "User"
+              }
+            },
+            {
+              "submittedAt": "2026-10-30T09:06:10Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/171#pullrequestreview-5710164491",
+              "author": {
+                "__typename": "User"
+              }
+            },
+            {
+              "submittedAt": "2026-11-01T20:21:25Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/171#pullrequestreview-5730054774",
+              "author": {
+                "__typename": "User"
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMS0wMVQyMDoyMToyNVq0MjAyNi0xMS0wMVQyMDoyMToyNVrPAAAAAVWJsnY="
+          }
+        },
+        "comments": {
+          "nodes": [
+            {
+              "createdAt": "2026-11-01T18:24:50Z",
+              "body": "## [![Quality Gate Passed](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/checks/QualityGateBadge/qg-passed-20px.png 'Quality Gate Passed')](https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171) **Quality Gate passed**  \nIssues  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0 New issues](https://sonarcloud.io/project/issues?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171&issueStatuses=OPEN,CONFIRMED&sinceLeakPeriod=true)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/accepted-16px.png '') [0 Accepted issues](https://sonarcloud.io/project/issues?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171&issueStatuses=ACCEPTED)\n\nMeasures  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0 Security Hotspots](https://sonarcloud.io/project/security_hotspots?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171&issueStatuses=OPEN,CONFIRMED&sinceLeakPeriod=true)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0.0% Coverage on New Code](https://sonarcloud.io/component_measures?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171&metric=new_coverage&view=list)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0.0% Duplication on New Code](https://sonarcloud.io/component_measures?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171&metric=new_duplicated_lines_density&view=list)  \n  \n<!-- sqra-placement-anchor -->\n[See analysis details on SonarQube Cloud](https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=171)\n\n",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/171#issuecomment-6562032488",
+              "author": {
+                "__typename": "Bot"
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpHPAAAAAYcgq2g="
+          }
+        },
+        "timelineItems": {
+          "nodes": [
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "RenamedTitleEvent"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "IssueComment"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "MergedEvent",
+              "createdAt": "2026-11-01T20:21:33Z"
+            },
+            {
+              "__typename": "ClosedEvent"
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoZjGRMgBqzM0ODUyMjM4Njgw"
+          }
+        },
+        "reviewThreads": {
+          "nodes": [],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          }
+        }
+      }
+    },
+    {
+      "analysis": {
+        "first_human_review_at": "2026-10-30T09:06:13+00:00",
+        "after_first_review_seconds": 194021.0,
+        "final_head_sha": "6b8ba3b109a17c10c7484b77ecaaf082d3b9c2ea",
+        "commits_after_first_review_by_committed_date": 1,
+        "final_head_core_ci_completed_at": "2026-11-01T14:58:34+00:00",
+        "core_ci_completion_to_merge_seconds": 80.0,
+        "observed_draft_seconds_after_first_review": 0,
+        "last_ready_to_merge_seconds": null
+      },
+      "pull_request": {
+        "number": 170,
+        "title": "fix(deanery): add default None for optional parse_error field",
+        "body": "",
+        "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/170",
+        "createdAt": "2026-10-30T08:46:41Z",
+        "mergedAt": "2026-11-01T14:59:54Z",
+        "mergeCommit": {
+          "oid": "7eea8febda895cc0380f4b40613c064e846366de"
+        },
+        "commits": {
+          "totalCount": 3,
+          "nodes": [
+            {
+              "commit": {
+                "oid": "1411d8694896a576824286eb2e1fa4a3baa508b2",
+                "authoredDate": "2026-10-30T08:46:22Z",
+                "committedDate": "2026-10-30T08:46:22Z",
+                "pushedDate": null,
+                "messageHeadline": "fix(deanery): add default None for optional parse_error field",
+                "statusCheckRollup": {
+                  "state": "FAILURE",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "FAILURE",
+                        "startedAt": "2026-10-30T08:47:25Z",
+                        "completedAt": "2026-10-30T08:48:17Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41028748593/job/123973105900"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:47:18Z",
+                        "completedAt": "2026-10-30T08:49:11Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41028748593/job/123973105513"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:47:15Z",
+                        "completedAt": "2026-10-30T08:47:18Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/123973279928"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:46:49Z",
+                        "completedAt": "2026-10-30T08:47:13Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=170"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "31e7b9ec35607c14e577a52153ffcb9b4421b9a3",
+                "authoredDate": "2026-10-30T09:01:13Z",
+                "committedDate": "2026-10-30T09:01:13Z",
+                "pushedDate": null,
+                "messageHeadline": "docs(refactoring): mark deanery.py parse_error default as fixed in So…",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T09:01:44Z",
+                        "completedAt": "2026-10-30T09:02:58Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41030403185/job/123978503509"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T09:01:29Z",
+                        "completedAt": "2026-10-30T09:03:30Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41030403185/job/123978503078"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T09:01:50Z",
+                        "completedAt": "2026-10-30T09:01:52Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/123978649534"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T09:01:28Z",
+                        "completedAt": "2026-10-30T09:01:49Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=170"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "6b8ba3b109a17c10c7484b77ecaaf082d3b9c2ea",
+                "authoredDate": "2026-11-01T14:40:06Z",
+                "committedDate": "2026-11-01T14:40:06Z",
+                "pushedDate": null,
+                "messageHeadline": "Merge branch 'main' into fix/deanery-parse-error-default",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T14:54:06Z",
+                        "completedAt": "2026-11-01T14:55:22Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41317336361/job/124880060950"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T14:55:22Z",
+                        "completedAt": "2026-11-01T14:58:34Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41317336361/job/124880061189"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T14:40:39Z",
+                        "completedAt": "2026-11-01T14:40:41Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/124880166432"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-01T14:40:15Z",
+                        "completedAt": "2026-11-01T14:40:37Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=170"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Mw"
+          }
+        },
+        "reviews": {
+          "nodes": [
+            {
+              "submittedAt": "2026-10-30T09:06:13Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/170#pullrequestreview-5710165059",
+              "author": {
+                "__typename": "User"
+              }
+            },
+            {
+              "submittedAt": "2026-10-31T21:10:00Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/170#pullrequestreview-5724940444",
+              "author": {
+                "__typename": "User"
+              }
+            },
+            {
+              "submittedAt": "2026-11-01T14:38:43Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/170#pullrequestreview-5728649959",
+              "author": {
+                "__typename": "User"
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMS0wMVQxNDozODo0M1q0MjAyNi0xMS0wMVQxNDozODo0M1rPAAAAAVV0Quc="
+          }
+        },
+        "comments": {
+          "nodes": [
+            {
+              "createdAt": "2026-11-01T14:40:40Z",
+              "body": "## [![Quality Gate Passed](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/checks/QualityGateBadge/qg-passed-20px.png 'Quality Gate Passed')](https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=170) **Quality Gate passed**  \nIssues  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0 New issues](https://sonarcloud.io/project/issues?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=170&issueStatuses=OPEN,CONFIRMED&sinceLeakPeriod=true)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/accepted-16px.png '') [0 Accepted issues](https://sonarcloud.io/project/issues?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=170&issueStatuses=ACCEPTED)\n\nMeasures  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0 Security Hotspots](https://sonarcloud.io/project/security_hotspots?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=170&issueStatuses=OPEN,CONFIRMED&sinceLeakPeriod=true)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0.0% Coverage on New Code](https://sonarcloud.io/component_measures?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=170&metric=new_coverage&view=list)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0.0% Duplication on New Code](https://sonarcloud.io/component_measures?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=170&metric=new_duplicated_lines_density&view=list)  \n  \n<!-- sqra-placement-anchor -->\n[See analysis details on SonarQube Cloud](https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=170)\n\n",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/170#issuecomment-6559429007",
+              "author": {
+                "__typename": "Bot"
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpHPAAAAAYb48Y8="
+          }
+        },
+        "timelineItems": {
+          "nodes": [
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "IssueComment"
+            },
+            {
+              "__typename": "MergedEvent",
+              "createdAt": "2026-11-01T14:59:54Z"
+            },
+            {
+              "__typename": "ClosedEvent"
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoZefyhABqzM0ODM3NDY2NDM3"
+          }
+        },
+        "reviewThreads": {
+          "nodes": [],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          }
+        }
+      }
+    },
+    {
+      "analysis": {
+        "first_human_review_at": "2026-10-30T09:05:41+00:00",
+        "after_first_review_seconds": 192798.0,
+        "final_head_sha": "d5b84c78321ce6544214b3aceecc23479680c5a3",
+        "commits_after_first_review_by_committed_date": 0,
+        "final_head_core_ci_completed_at": "2026-10-30T08:57:45+00:00",
+        "core_ci_completion_to_merge_seconds": 193274.0,
+        "observed_draft_seconds_after_first_review": 0,
+        "last_ready_to_merge_seconds": null
+      },
+      "pull_request": {
+        "number": 168,
+        "title": "fix(ci): script injection у mutation.yml (inputs.paths через env)",
+        "body": "## Що зроблено\nSonarQube (Blocker, CWE script injection) у `.github/workflows/mutation.yml`: `${{ inputs.paths }}` підставлявся прямо в `run`, тож значення, яке задає той, хто запускає workflow, могло виконатися як shell-код.\n\nТепер значення передається через змінну середовища `MUTATE_PATHS` (`env:`), а в `run` використовується `\"$MUTATE_PATHS\"`. Поведінка для звичайних шляхів не змінюється. Крок «Mutation score» уже користувався `env: MIN_SCORE`, тож тепер обидва inputs передаються однаково.\n\n## Перевірка\n- Зміна лише в одному кроці workflow, код застосунку й `docs/api/` не чіпано.\n- Після злиття варто запустити workflow вручну (`workflow_dispatch`) зі шляхом за замовчуванням і переконатися, що mutmut стартує.\n\n## Використання ШІ\nПравку підготовлено за допомогою Claude Code за описом знахідки SonarQube. Перевірено переглядом диффу; прогін у GitHub Actions ще не виконувався.\n",
+        "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/168",
+        "createdAt": "2026-10-30T08:41:22Z",
+        "mergedAt": "2026-11-01T14:38:59Z",
+        "mergeCommit": {
+          "oid": "63afae1a6a8daea151aeec38385fc9436647032c"
+        },
+        "commits": {
+          "totalCount": 2,
+          "nodes": [
+            {
+              "commit": {
+                "oid": "04919e8ea3b7cdb1cd37e8676a7d56e4f629bd5f",
+                "authoredDate": "2026-10-30T08:41:11Z",
+                "committedDate": "2026-10-30T08:41:11Z",
+                "pushedDate": null,
+                "messageHeadline": "fix(ci): pass workflow input to mutmut via env to avoid script injection",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:41:28Z",
+                        "completedAt": "2026-10-30T08:42:34Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41028143590/job/123971102390"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:41:28Z",
+                        "completedAt": "2026-10-30T08:43:06Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41028143590/job/123971102779"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:41:48Z",
+                        "completedAt": "2026-10-30T08:41:50Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/123971238458"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:41:30Z",
+                        "completedAt": "2026-10-30T08:41:46Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=168"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "d5b84c78321ce6544214b3aceecc23479680c5a3",
+                "authoredDate": "2026-10-30T08:55:26Z",
+                "committedDate": "2026-10-30T08:55:26Z",
+                "pushedDate": null,
+                "messageHeadline": "docs(refactoring): mark mutation.yml script injection as fixed in Son…",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:55:50Z",
+                        "completedAt": "2026-10-30T08:57:02Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41029731328/job/123976251460"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:55:50Z",
+                        "completedAt": "2026-10-30T08:57:45Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41029731328/job/123976251714"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:55:59Z",
+                        "completedAt": "2026-10-30T08:56:02Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/123976350318"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-10-30T08:55:41Z",
+                        "completedAt": "2026-10-30T08:55:57Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=168"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "NA"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Mg"
+          }
+        },
+        "reviews": {
+          "nodes": [
+            {
+              "submittedAt": "2026-10-30T09:05:41Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/168#pullrequestreview-5710159946",
+              "author": {
+                "__typename": "User"
+              }
+            },
+            {
+              "submittedAt": "2026-10-30T09:05:53Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/168#pullrequestreview-5710161796",
+              "author": {
+                "__typename": "User"
+              }
+            },
+            {
+              "submittedAt": "2026-11-01T12:19:28Z",
+              "state": "COMMENTED",
+              "body": "<!-- ccr-overview-v2 -->\n\n### 🟢 Approval recommended\n\nNo active review issues remain, and the workflow now safely passes the mutation paths through a quoted environment-variable expansion.\n\n**No open issues** 🎉\n\n<details>\n<summary><strong>What changed in this PR</strong></summary>\n\nThis pull request fixes a shell-injection vulnerability in the mutation-testing workflow by passing `inputs.paths` through an environment variable before invoking `mutmut`.\n\n**Changes:**\n- Added `MUTATE_PATHS` to safely transport the workflow input.\n- Replaced direct interpolation with quoted `\"$MUTATE_PATHS\"` expansion.\n- Updated the SonarCloud report to record the finding as fixed.\n\n| File | Description |\r\n|---|---|\r\n| `docs/​refactoring/​sonarcloud-report.md` | Records the script-injection finding as fixed and documents the verification status. |\r\n| `.github/​workflows/​mutation.yml` | Safely passes the workflow input to `mutmut` through a quoted environment-variable expansion. |\n</details>\n\n<sub>Review effort: Lite</sub>",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/168#pullrequestreview-5727992740",
+              "author": {
+                "__typename": "Bot"
+              }
+            },
+            {
+              "submittedAt": "2026-11-01T14:38:09Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/168#pullrequestreview-5728647987",
+              "author": {
+                "__typename": "User"
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMS0wMVQxNDozODowOVq0MjAyNi0xMS0wMVQxNDozODowOVrPAAAAAVV0OzM="
+          }
+        },
+        "comments": {
+          "nodes": [
+            {
+              "createdAt": "2026-10-30T08:56:00Z",
+              "body": "## [![Quality Gate Passed](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/checks/QualityGateBadge/qg-passed-20px.png 'Quality Gate Passed')](https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=168) **Quality Gate passed**  \nIssues  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0 New issues](https://sonarcloud.io/project/issues?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=168&issueStatuses=OPEN,CONFIRMED&sinceLeakPeriod=true)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/accepted-16px.png '') [0 Accepted issues](https://sonarcloud.io/project/issues?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=168&issueStatuses=ACCEPTED)\n\nMeasures  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0 Security Hotspots](https://sonarcloud.io/project/security_hotspots?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=168&issueStatuses=OPEN,CONFIRMED&sinceLeakPeriod=true)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0.0% Coverage on New Code](https://sonarcloud.io/component_measures?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=168&metric=new_coverage&view=list)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0.0% Duplication on New Code](https://sonarcloud.io/component_measures?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=168&metric=new_duplicated_lines_density&view=list)  \n  \n<!-- sqra-placement-anchor -->\n[See analysis details on SonarQube Cloud](https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=168)\n\n",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/168#issuecomment-6518930302",
+              "author": {
+                "__typename": "Bot"
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpHPAAAAAYSO-34="
+          }
+        },
+        "timelineItems": {
+          "nodes": [
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "IssueComment"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "AutoMergeEnabledEvent"
+            },
+            {
+              "__typename": "ReviewRequestedEvent",
+              "createdAt": "2026-11-01T12:18:11Z"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "MergedEvent",
+              "createdAt": "2026-11-01T14:38:59Z"
+            },
+            {
+              "__typename": "ClosedEvent"
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoZeMo7gBqzM0ODM2NTIxNDYw"
+          }
+        },
+        "reviewThreads": {
+          "nodes": [],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          }
+        }
+      }
+    },
+    {
+      "analysis": {
+        "first_human_review_at": "2026-11-10T17:15:04+00:00",
+        "after_first_review_seconds": 183819.0,
+        "final_head_sha": "6de285b4bd0517f06237e7a6ef7d3d762b9e7e44",
+        "commits_after_first_review_by_committed_date": 9,
+        "final_head_core_ci_completed_at": "2026-11-12T10:10:32+00:00",
+        "core_ci_completion_to_merge_seconds": 36491.0,
+        "observed_draft_seconds_after_first_review": 0,
+        "last_ready_to_merge_seconds": null
+      },
+      "pull_request": {
+        "number": 236,
+        "title": "fix: observability #217",
+        "body": "## Що змінено\n\n- `/health' і '/health/ready' використовують спільну перевірку БД та Microsoft і повертають 503 при збої.\n- `/config` використовує `MS_CLIENT_ID`; за відсутньої конфігурації у production повертає 503.\n- Заборонені адмінзапити фіксуються у звичайному журналі без додаткових записів і транзакцій у БД.\n- Додано логування помилок 5xx та CORS-заголовки для дозволених адрес на відповідях 500.\n- Недоступність JWKS Microsoft повертає 503 `AUTH_PROVIDER_UNAVAILABLE` замість помилки авторизації 401.\n- MCP використовує `MCP_API_TOKEN` без обходу перевірки JWT та ролей; без чинного токена запуск зупиняється.\n- Оновлено OpenAPI, приклад конфігурації та інструкцію запуску MCP.\n\n## Як перевірено\n\n- Основний набір: **427 тестів пройшли**, покриття **84,15%** за порогу 80%.\n- Тести надійності: **31 тест пройшов**.\n- Перевірки спостережуваності та MCP із FastMCP 4.1.5: **15 тестів пройшли**, включно зі справжнім викликом захищеного інструмента.\n- Відсутність CORS-заголовка на відповіді 500 відтворено на попередньому коді; після виправлення регресійний тест проходить.\n- Ruff, Bandit 1.9.4 і `git diff --check` — без помилок.\n\n## Використання ШІ\n\nЗміни коду, регресійні тести й оновлення інструкцій підготовлено за допомогою Codex. Результат перевірено автоматизованими тестами, ручним відтворенням проблеми CORS, перевіркою MCP та статичним аналізом.\n\nCloses #217",
+        "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/236",
+        "createdAt": "2026-11-10T17:05:08Z",
+        "mergedAt": "2026-11-12T20:18:43Z",
+        "mergeCommit": {
+          "oid": "afd48fd42678c59c403312ce3beede66433ec2a1"
+        },
+        "commits": {
+          "totalCount": 20,
+          "nodes": [
+            {
+              "commit": {
+                "oid": "8b21e11256d8fe20997f8e2bd072636157c8fc70",
+                "authoredDate": "2026-11-10T15:39:59Z",
+                "committedDate": "2026-11-10T15:39:59Z",
+                "pushedDate": null,
+                "messageHeadline": "feat: add healthcheck",
+                "statusCheckRollup": null
+              }
+            },
+            {
+              "commit": {
+                "oid": "a5272137179cd66d7064b68c250142c347743c13",
+                "authoredDate": "2026-11-10T15:42:35Z",
+                "committedDate": "2026-11-10T15:42:35Z",
+                "pushedDate": null,
+                "messageHeadline": "test: add healthcheck test",
+                "statusCheckRollup": {
+                  "state": "FAILURE",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "FAILURE",
+                        "startedAt": "2026-11-10T15:54:01Z",
+                        "completedAt": "2026-11-10T15:54:53Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42849173723/job/129944767699"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "FAILURE",
+                        "startedAt": "2026-11-10T15:54:00Z",
+                        "completedAt": "2026-11-10T15:54:07Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42849173591/job/129944765960"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T15:54:38Z",
+                        "completedAt": "2026-11-10T15:54:45Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42849284557/job/129945162120"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "reliability-tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T15:54:02Z",
+                        "completedAt": "2026-11-10T15:54:44Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42849173283/job/129944773848"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T15:54:00Z",
+                        "completedAt": "2026-11-10T15:56:15Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42849173723/job/129944767359"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T15:54:44Z",
+                        "completedAt": "2026-11-10T15:54:54Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/129945245872"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T15:54:00Z",
+                        "completedAt": "2026-11-10T15:54:42Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=235"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Nw"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "5b57e62b03a0a5cc5c3e8364b976e578b88e8923",
+                "authoredDate": "2026-11-10T16:01:01Z",
+                "committedDate": "2026-11-10T16:01:01Z",
+                "pushedDate": null,
+                "messageHeadline": "fix: add b404 and b603 exceptions to pass ci",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:03:16Z",
+                        "completedAt": "2026-11-10T16:04:33Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42850689406/job/129950215985"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:03:16Z",
+                        "completedAt": "2026-11-10T16:03:23Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42850689598/job/129950217179"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "reliability-tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:03:16Z",
+                        "completedAt": "2026-11-10T16:03:59Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42850689055/job/129950215189"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:03:16Z",
+                        "completedAt": "2026-11-10T16:05:31Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42850689406/job/129950215293"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:01:56Z",
+                        "completedAt": "2026-11-10T16:02:05Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/129949483949"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:01:22Z",
+                        "completedAt": "2026-11-10T16:01:54Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=235"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Ng"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "17d2f365287cbadd81470d6b62fca5142fc7e4cd",
+                "authoredDate": "2026-11-10T16:21:48Z",
+                "committedDate": "2026-11-10T16:21:48Z",
+                "pushedDate": null,
+                "messageHeadline": "refactor: extract check_health() to return the database status indepe…",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:29:34Z",
+                        "completedAt": "2026-11-10T16:30:58Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42855051520/job/129965699707"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:29:34Z",
+                        "completedAt": "2026-11-10T16:29:41Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42855051334/job/129965699029"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "reliability-tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:29:35Z",
+                        "completedAt": "2026-11-10T16:30:23Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42855051492/job/129965699130"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:29:35Z",
+                        "completedAt": "2026-11-10T16:31:52Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42855051520/job/129965699836"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:22:32Z",
+                        "completedAt": "2026-11-10T16:22:36Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/129961565050"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T16:22:05Z",
+                        "completedAt": "2026-11-10T16:22:29Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=235"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Ng"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "4345b28dd306562bcc0d25468fbc111ce982dd57",
+                "authoredDate": "2026-11-10T16:58:31Z",
+                "committedDate": "2026-11-10T16:58:31Z",
+                "pushedDate": null,
+                "messageHeadline": "fix: report database failures in health endpoint",
+                "statusCheckRollup": null
+              }
+            },
+            {
+              "commit": {
+                "oid": "35a520e49774967ac49feb0c6e2a74ecb3dbdf22",
+                "authoredDate": "2026-11-10T16:58:56Z",
+                "committedDate": "2026-11-10T16:58:56Z",
+                "pushedDate": null,
+                "messageHeadline": "fix: use Microsoft client ID in public configuration",
+                "statusCheckRollup": null
+              }
+            },
+            {
+              "commit": {
+                "oid": "357cc3bd6112c079b742818b2624313bad38d6c5",
+                "authoredDate": "2026-11-10T16:59:37Z",
+                "committedDate": "2026-11-10T16:59:37Z",
+                "pushedDate": null,
+                "messageHeadline": "fix: avoid database writes for denied admin requests",
+                "statusCheckRollup": null
+              }
+            },
+            {
+              "commit": {
+                "oid": "9dd49ce7b6aebb1b9cdede07c47d4ba5b2cd682f",
+                "authoredDate": "2026-11-10T16:59:56Z",
+                "committedDate": "2026-11-10T16:59:56Z",
+                "pushedDate": null,
+                "messageHeadline": "fix: log server errors and preserve CORS headers",
+                "statusCheckRollup": null
+              }
+            },
+            {
+              "commit": {
+                "oid": "6ea5dba9af670ecb393f954e84cdc8e6c25abb55",
+                "authoredDate": "2026-11-10T17:00:56Z",
+                "committedDate": "2026-11-10T17:00:56Z",
+                "pushedDate": null,
+                "messageHeadline": "fix: handle Microsoft outages and authenticate MCP requests",
+                "statusCheckRollup": null
+              }
+            },
+            {
+              "commit": {
+                "oid": "e1ac1119a3bb8f7d617e4871056f5414d2dbb067",
+                "authoredDate": "2026-11-10T17:01:28Z",
+                "committedDate": "2026-11-10T17:01:28Z",
+                "pushedDate": null,
+                "messageHeadline": "docs: Update openapi files",
+                "statusCheckRollup": null
+              }
+            },
+            {
+              "commit": {
+                "oid": "26cbbb11be885a3d562c2055435ac9c13ec8ebeb",
+                "authoredDate": "2026-11-10T17:02:00Z",
+                "committedDate": "2026-11-10T17:02:00Z",
+                "pushedDate": null,
+                "messageHeadline": "test: Add observability regression tests",
+                "statusCheckRollup": {
+                  "state": "FAILURE",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "FAILURE",
+                        "startedAt": "2026-11-10T17:05:24Z",
+                        "completedAt": "2026-11-10T17:06:18Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42861276698/job/129987737938"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "reliability-tests",
+                        "status": "COMPLETED",
+                        "conclusion": "FAILURE",
+                        "startedAt": "2026-11-10T17:05:25Z",
+                        "completedAt": "2026-11-10T17:06:02Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42861277021/job/129987749865"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T17:05:23Z",
+                        "completedAt": "2026-11-10T17:05:30Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42861276679/job/129987736904"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T17:05:24Z",
+                        "completedAt": "2026-11-10T17:07:38Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42861276698/job/129987738532"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T17:05:52Z",
+                        "completedAt": "2026-11-10T17:05:58Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/129988051077"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T17:05:18Z",
+                        "completedAt": "2026-11-10T17:05:50Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Ng"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "96839a589f2b9a27bd9168a9b0c5313626abc207",
+                "authoredDate": "2026-11-10T17:17:44Z",
+                "committedDate": "2026-11-10T17:17:44Z",
+                "pushedDate": null,
+                "messageHeadline": "Merge branch 'feat/healthcheck' into fix/observability-217",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T17:18:49Z",
+                        "completedAt": "2026-11-10T17:20:06Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42863583476/job/129995871560"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T17:18:29Z",
+                        "completedAt": "2026-11-10T17:18:36Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42863583574/job/129995871457"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "reliability-tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T17:18:29Z",
+                        "completedAt": "2026-11-10T17:19:10Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42863583343/job/129995871071"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T17:18:29Z",
+                        "completedAt": "2026-11-10T17:20:42Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42863583476/job/129995871004"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T17:19:05Z",
+                        "completedAt": "2026-11-10T17:19:09Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/129996267078"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T17:18:30Z",
+                        "completedAt": "2026-11-10T17:19:03Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Ng"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "5688ba5eab7f231a0806d998c45898855a52cabc",
+                "authoredDate": "2026-11-10T17:59:55Z",
+                "committedDate": "2026-11-10T17:59:55Z",
+                "pushedDate": null,
+                "messageHeadline": "docs(reliability): add risk classification and criticality assessment…",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T18:00:45Z",
+                        "completedAt": "2026-11-10T18:02:03Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42870755208/job/130021082428"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T18:00:45Z",
+                        "completedAt": "2026-11-10T18:00:51Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42870755255/job/130021082370"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "reliability-tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T18:00:45Z",
+                        "completedAt": "2026-11-10T18:01:24Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42870755479/job/130021083133"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T18:00:45Z",
+                        "completedAt": "2026-11-10T18:03:00Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42870755208/job/130021082805"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T18:01:06Z",
+                        "completedAt": "2026-11-10T18:01:12Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/130021316960"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-10T18:00:44Z",
+                        "completedAt": "2026-11-10T18:01:03Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=238"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Ng"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "94d17cc4b7847381a84b87ee3916fd9df36b2efa",
+                "authoredDate": "2026-11-11T17:08:22Z",
+                "committedDate": "2026-11-11T17:08:22Z",
+                "pushedDate": null,
+                "messageHeadline": "Lab 9 bonus: /health/ready readiness check with fault-injection tests",
+                "statusCheckRollup": {
+                  "state": "FAILURE",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "FAILURE",
+                        "startedAt": "2026-11-11T17:08:53Z",
+                        "completedAt": "2026-11-11T17:10:40Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43065268728/job/130678427503"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "FAILURE",
+                        "startedAt": "2026-11-11T17:08:53Z",
+                        "completedAt": "2026-11-11T17:09:01Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43065269036/job/130678428697"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-11T17:10:56Z",
+                        "completedAt": "2026-11-11T17:11:05Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43065617233/job/130679650083"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "reliability-tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-11T17:08:53Z",
+                        "completedAt": "2026-11-11T17:10:14Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43065268717/job/130678427976"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-11T17:08:53Z",
+                        "completedAt": "2026-11-11T17:13:58Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43065268728/job/130678428141"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-11T17:09:20Z",
+                        "completedAt": "2026-11-11T17:09:25Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/130678717022"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-11T17:08:53Z",
+                        "completedAt": "2026-11-11T17:09:17Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=243"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Nw"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "02dde486254031d2811f3bee59b942b763260d46",
+                "authoredDate": "2026-11-11T17:15:18Z",
+                "committedDate": "2026-11-11T17:15:18Z",
+                "pushedDate": null,
+                "messageHeadline": "docs: regenerate OpenAPI spec with /health/ready",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-11T17:15:47Z",
+                        "completedAt": "2026-11-11T17:18:36Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43066399482/job/130682382012"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-11T17:16:02Z",
+                        "completedAt": "2026-11-11T17:16:11Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43066399344/job/130682381884"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "reliability-tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-11T17:16:28Z",
+                        "completedAt": "2026-11-11T17:17:46Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43066399350/job/130682382318"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-11T17:16:21Z",
+                        "completedAt": "2026-11-11T17:21:54Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43066399482/job/130682382593"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-11T17:16:12Z",
+                        "completedAt": "2026-11-11T17:16:16Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/130682735999"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-11T17:15:36Z",
+                        "completedAt": "2026-11-11T17:16:10Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=243"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Ng"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "4f6770dea5b0f910986d2852c85912ba82f3cd50",
+                "authoredDate": "2026-11-12T09:51:31Z",
+                "committedDate": "2026-11-12T09:51:31Z",
+                "pushedDate": null,
+                "messageHeadline": "Merge remote-tracking branch 'origin/lab09/health-bonus' into fix/obs…",
+                "statusCheckRollup": null
+              }
+            },
+            {
+              "commit": {
+                "oid": "5f5341d3aa65eceb83d2cac16e43fdba9f852d8b",
+                "authoredDate": "2026-11-12T09:54:04Z",
+                "committedDate": "2026-11-12T09:54:04Z",
+                "pushedDate": null,
+                "messageHeadline": "Update health bonus implementation",
+                "statusCheckRollup": null
+              }
+            },
+            {
+              "commit": {
+                "oid": "c69e4f849f2dcd940398f7eb361b7a87fe78b325",
+                "authoredDate": "2026-11-12T10:00:29Z",
+                "committedDate": "2026-11-12T10:00:29Z",
+                "pushedDate": null,
+                "messageHeadline": "Merge remote-tracking branch 'origin/fix/observability-217' into fix/…",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:01:27Z",
+                        "completedAt": "2026-11-12T10:02:50Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43196499705/job/131108714116"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:00:41Z",
+                        "completedAt": "2026-11-12T10:00:48Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43196499565/job/131108711822"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "reliability-tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:01:01Z",
+                        "completedAt": "2026-11-12T10:01:44Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43196499715/job/131108712401"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:00:43Z",
+                        "completedAt": "2026-11-12T10:03:26Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43196499705/job/131108713743"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:01:15Z",
+                        "completedAt": "2026-11-12T10:01:20Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/131109028100"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:00:42Z",
+                        "completedAt": "2026-11-12T10:01:13Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Ng"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "bbfb76904ef3e60ffe0b07d3af493931c1a81277",
+                "authoredDate": "2026-11-12T10:04:05Z",
+                "committedDate": "2026-11-12T10:04:05Z",
+                "pushedDate": null,
+                "messageHeadline": "Remove old implementation",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:04:20Z",
+                        "completedAt": "2026-11-12T10:05:40Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43197058091/job/131110593530"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:04:20Z",
+                        "completedAt": "2026-11-12T10:04:27Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43197058201/job/131110593990"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:06:24Z",
+                        "completedAt": "2026-11-12T10:06:30Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43197373700/job/131111663803"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "reliability-tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:04:27Z",
+                        "completedAt": "2026-11-12T10:05:07Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43197058359/job/131110594794"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:04:20Z",
+                        "completedAt": "2026-11-12T10:06:46Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43197058091/job/131110593812"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:05:03Z",
+                        "completedAt": "2026-11-12T10:05:07Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/131110977414"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:04:22Z",
+                        "completedAt": "2026-11-12T10:05:01Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Nw"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "commit": {
+                "oid": "6de285b4bd0517f06237e7a6ef7d3d762b9e7e44",
+                "authoredDate": "2026-11-12T10:07:59Z",
+                "committedDate": "2026-11-12T10:07:59Z",
+                "pushedDate": null,
+                "messageHeadline": "docs: Update reliability-report.md",
+                "statusCheckRollup": {
+                  "state": "SUCCESS",
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "build",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:08:12Z",
+                        "completedAt": "2026-11-12T10:09:36Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43197644362/job/131112591775"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "conventional-title",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:08:12Z",
+                        "completedAt": "2026-11-12T10:08:19Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43197644169/job/131112591481"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "reliability-tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:08:12Z",
+                        "completedAt": "2026-11-12T10:09:07Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43197644138/job/131112592619"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "frontend",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:08:12Z",
+                        "completedAt": "2026-11-12T10:10:32Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43197644362/job/131112592594"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:08:44Z",
+                        "completedAt": "2026-11-12T10:08:48Z",
+                        "detailsUrl": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/runs/131112883465"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "SonarCloud Code Analysis",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "startedAt": "2026-11-12T10:08:14Z",
+                        "completedAt": "2026-11-12T10:08:42Z",
+                        "detailsUrl": "https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236"
+                      }
+                    ],
+                    "pageInfo": {
+                      "hasNextPage": false,
+                      "endCursor": "Ng"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "MjA"
+          }
+        },
+        "reviews": {
+          "nodes": [
+            {
+              "submittedAt": "2026-11-10T17:15:04Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/236#pullrequestreview-5846176226",
+              "author": {
+                "__typename": "User"
+              }
+            },
+            {
+              "submittedAt": "2026-11-10T17:19:31Z",
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/236#pullrequestreview-5846237968",
+              "author": {
+                "__typename": "User"
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMS0xMFQxNzoxOTozMVq0MjAyNi0xMS0xMFQxNzoxOTozMVrPAAAAAVx2gxA="
+          }
+        },
+        "comments": {
+          "nodes": [
+            {
+              "createdAt": "2026-11-12T10:08:45Z",
+              "body": "## [![Quality Gate Passed](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/checks/QualityGateBadge/qg-passed-20px.png 'Quality Gate Passed')](https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236) **Quality Gate passed**  \nIssues  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0 New issues](https://sonarcloud.io/project/issues?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236&issueStatuses=OPEN,CONFIRMED&sinceLeakPeriod=true)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/accepted-16px.png '') [0 Accepted issues](https://sonarcloud.io/project/issues?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236&issueStatuses=ACCEPTED)\n\nMeasures  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0 Security Hotspots](https://sonarcloud.io/project/security_hotspots?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236&issueStatuses=OPEN,CONFIRMED&sinceLeakPeriod=true)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0.0% Coverage on New Code](https://sonarcloud.io/component_measures?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236&metric=new_coverage&view=list)  \n![](https://sonarsource.github.io/sonarcloud-github-static-resources/v2/common/passed-16px.png '') [0.0% Duplication on New Code](https://sonarcloud.io/component_measures?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236&metric=new_duplicated_lines_density&view=list)  \n  \n<!-- sqra-placement-anchor -->\n[See analysis details on SonarQube Cloud](https://sonarcloud.io/dashboard?id=ukma-fin-ssdm-2026_YourPathUkma&pullRequest=236)\n\n",
+              "url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/236#issuecomment-6820707837",
+              "author": {
+                "__typename": "Bot"
+              }
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpHPAAAAAZaLvf0="
+          }
+        },
+        "timelineItems": {
+          "nodes": [
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestReview"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "PullRequestCommit"
+            },
+            {
+              "__typename": "IssueComment"
+            },
+            {
+              "__typename": "MergedEvent",
+              "createdAt": "2026-11-12T20:18:43Z"
+            },
+            {
+              "__typename": "ClosedEvent"
+            },
+            {
+              "__typename": "CrossReferencedEvent"
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABodZOOMgCqzIxOTU5MjkyNTA5"
+          }
+        },
+        "reviewThreads": {
+          "nodes": [],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          }
+        }
+      }
+    }
+  ],
+  "failed_job_log_excerpts": [
+    {
+      "job_id": 124927532762,
+      "source": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41333227105/job/124927532762",
+      "excerpts": [
+        "2026-11-01T18:06:01.5011898Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5014287Z   --> src/api/main.py:59:8",
+        "2026-11-01T18:06:01.5024955Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5025374Z   --> src/api/main.py:59:17",
+        "2026-11-01T18:06:01.5028129Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5028522Z   --> src/api/main.py:59:29",
+        "2026-11-01T18:06:01.5031284Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5031872Z   --> src/api/main.py:59:41",
+        "2026-11-01T18:06:01.5034552Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5034947Z   --> src/api/main.py:59:54",
+        "2026-11-01T18:06:01.5037810Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5038198Z   --> src/api/main.py:59:62",
+        "2026-11-01T18:06:01.5040825Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5041208Z   --> src/api/main.py:59:64",
+        "2026-11-01T18:06:01.5045870Z invalid-syntax: Expected an identifier",
+        "2026-11-01T18:06:01.5046281Z    --> src/api/main.py:59:70",
+        "2026-11-01T18:06:01.5084969Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5085427Z    --> src/api/main.py:150:8",
+        "2026-11-01T18:06:01.5098029Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5098492Z    --> src/api/main.py:150:17",
+        "2026-11-01T18:06:01.5101902Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5102350Z    --> src/api/main.py:150:22",
+        "2026-11-01T18:06:01.5105660Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5106071Z    --> src/api/main.py:150:30",
+        "2026-11-01T18:06:01.5109642Z invalid-syntax: Simple statements must be separated by newlines or semicolons",
+        "2026-11-01T18:06:01.5110179Z    --> src/api/main.py:150:34",
+        "2026-11-01T18:06:01.5122611Z invalid-syntax: missing closing quote in string literal",
+        "2026-11-01T18:06:01.5123069Z    --> src/api/main.py:150:46",
+        "2026-11-01T18:06:01.5129050Z Found 14 errors."
+      ]
+    },
+    {
+      "job_id": 129944767699,
+      "source": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42849173723/job/129944767699",
+      "excerpts": [
+        "2026-11-10T15:54:48.7875641Z >> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.",
+        "2026-11-10T15:54:48.7878030Z    Location: tests/reliability/test_healthcheck.py:9:0",
+        "2026-11-10T15:54:48.7879374Z >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.",
+        "2026-11-10T15:54:48.7880963Z    Location: tests/reliability/test_healthcheck.py:22:15"
+      ]
+    },
+    {
+      "job_id": 129987737938,
+      "source": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42861276698/job/129987737938",
+      "excerpts": [
+        "2026-11-10T17:06:12.8738464Z ModuleNotFoundError: No module named 'src.healthcheck'"
+      ]
+    },
+    {
+      "job_id": 130678427503,
+      "source": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43065268728/job/130678427503",
+      "excerpts": [
+        "2026-11-11T17:10:33.4093358Z ##[group]Run git diff --exit-code docs/api/",
+        "2026-11-11T17:10:33.4332239Z +    \"/health/ready\": {",
+        "2026-11-11T17:10:33.4353738Z +  /health/ready:",
+        "2026-11-11T17:10:33.4916941Z ##[error]Process completed with exit code 1."
+      ]
+    }
+  ]
+}
