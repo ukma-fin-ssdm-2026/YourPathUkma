@@ -29,11 +29,13 @@ Workflow отримує саме `workflow_run.head_sha`, збирає обра�
 python -m scripts.container_metrics \
   --repo ukma-fin-ssdm-2026/YourPathUkma \
   --from 2026-11-17T00:00:00Z --to 2026-11-24T00:00:00Z \
-  --markdown docs/ci-cd/container-comparison.md \
+  --markdown \
   > docs/ci-cd/evidence/container-comparison.json
 ```
 
 Дати наведено як приклад, їх потрібно замінити фактичним періодом.
+Перемикач `--markdown` записує таблицю лише в `docs/ci-cd/container-comparison.md`
+цього репозиторію; довільний шлях із командного рядка не приймається.
 Потрібен доступ до GitHub API через `gh auth login` або `GH_TOKEN`.
 Скрипт збирає ту саму когорту push-запусків `CI` на `main` для обох визначень:
 
@@ -76,3 +78,5 @@ Codex підготував контейнеризацію, workflow, скрип�
 Python-код — Ruff, YAML і Bash — перевіркою синтаксису. Linux/amd64 образ
 зібрано локально, міграції виконано, `/openapi.json` повернув HTTP 200.
 Фактичні докази GHCR додаються після злиття.
+Codex обмежив місце запису Markdown після зауваження SonarCloud S8707;
+перевірка: регресійний тест CLI та повторний аналіз PR.

@@ -1,7 +1,23 @@
 # Використання ШІ: Codex додав тести зіставлення джерела й публікації. Перевірка: pytest.
+import sys
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from scripts import container_metrics as module
+
+
+def test_markdown_does_not_accept_an_arbitrary_destination(monkeypatch, tmp_path):
+    destination = tmp_path / "outside-report.md"
+    monkeypatch.setattr(sys, "argv", [
+        "container_metrics", "--repo", "owner/repo",
+        "--from", "2026-11-16T00:00:00Z", "--to", "2026-11-17T00:00:00Z",
+        "--markdown", str(destination),
+    ])
+    with pytest.raises(SystemExit) as error:
+        module.main()
+    assert error.value.code == 2
+    assert not destination.exists()
 
 
 def test_publication_joins_source_id_instead_of_workflow_head_sha():

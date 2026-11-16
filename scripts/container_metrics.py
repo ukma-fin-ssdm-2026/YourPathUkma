@@ -1,4 +1,5 @@
 # Використання ШІ: Codex додав порівняння CI та GHCR. Перевірка: pytest і Ruff.
+# Codex прибрав довільний шлях --markdown (S8707). Перевірка: регресійний тест CLI та SonarCloud у PR.
 """Compare Lab 10 deployment definitions over the same CI cohort."""
 
 import argparse
@@ -84,7 +85,7 @@ def main():
     parser.add_argument("--repo", required=True)
     parser.add_argument("--from", dest="start", required=True)
     parser.add_argument("--to", dest="end", required=True)
-    parser.add_argument("--markdown", type=Path, help="also write the comparison table")
+    parser.add_argument("--markdown", action="store_true", help="also write docs/ci-cd/container-comparison.md")
     args = parser.parse_args()
     start, end = timestamp(args.start), timestamp(args.end)
     if start >= end:
@@ -121,7 +122,8 @@ def main():
         for key in ("queue_seconds", "execution_seconds", "other_seconds"):
             change.pop(key)
     if args.markdown:
-        args.markdown.write_text(comparison_table(report), encoding="utf-8")
+        destination = Path(__file__).resolve().parents[1] / "docs/ci-cd/container-comparison.md"
+        destination.write_text(comparison_table(report), encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
 
