@@ -1,20 +1,15 @@
 """
-Життєвий цикл SyncJob для джерела `saz_catalog`: queued -> running -> succeeded | failed.
+Життєвий цикл синхронізації каталогу САЗ та формування пропозицій модерації.
 
-Парсер нічого не пише в `courses` напряму (ADR-002): результат — елементи `moderation_items` (add/update/remove),
-які схвалює адміністратор. REMOVE створюються лише після повного й безпомилкового обходу каталогу.
-Попередження (картки, що не розібрались; неповний обхід) потрапляють у `error_message` задачі, але не валять її.
-
-Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: tests/test_saz_sync.py
-(SQLite, підставний fetcher без мережі).
+Використання ШІ: початкову реалізацію створено Claude Code. Спільну обробку імпорту
+та захист завершення задачі додано Codex. Перевірка: pytest.
 """
 
 import hashlib
 import logging
-import time
 from contextlib import AbstractContextManager
 from datetime import timedelta
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -24,32 +19,17 @@ from ..db.base import utcnow
 from ..db.models.admin import AuditLog, ModerationItem, SyncJob
 from ..db.models.catalog import Course
 from ..db.session import session_factory
-from .config import load_settings
+from .bundle import CatalogBundle
+from .catalog_scan import SyncFailure, scan_catalog
+from .config import load_settings, remote_login_enabled
 from .diff import ExistingCourse, build_changes, item_key
 from .fetcher import FetchError, PageFetcher, PlaywrightFetcher, SessionExpired
-from .mapper import MappingError, course_to_payload
-from .models import CatalogPage
-from .parsers.catalog import CatalogParser
 
 logger = logging.getLogger(__name__)
 
 ERROR_MAX = 2000
-MAX_PAGES = 200  # верхня межа обходу каталогу (захист від хибного last_page)
-SCAN_DEADLINE_S = 30 * 60  # PERF-002: повне оновлення до 30 хв (менше за STALE_AFTER)
 STALE_AFTER = timedelta(minutes=35)  # PERF-002: повне оновлення до 30 хв
 FetcherFactory = Callable[[], AbstractContextManager[PageFetcher]]
-
-
-class SyncFailure(Exception):
-    """Задачу треба завершити зі статусом failed; `snapshot` — сирий HTML для розбору збою (R13)."""
-
-    def __init__(self, message: str, snapshot: Optional[str] = None):
-        super().__init__(message)
-        self.snapshot = snapshot
-
-
-def _default_fetcher() -> AbstractContextManager[PageFetcher]:
-    return PlaywrightFetcher(load_settings())
 
 
 def fail_stale_jobs(db: Session, max_age: timedelta = STALE_AFTER) -> int:
@@ -89,44 +69,11 @@ def _fail(db: Session, job_id: int, message: str, snapshot: Optional[str] = None
         "error_message": message[:ERROR_MAX],
     }
     if snapshot is not None:
-        values["raw_snapshot"] = snapshot
         values["raw_snapshot_sha256"] = hashlib.sha256(snapshot.encode("utf-8")).hexdigest()
-    db.execute(update(SyncJob).where(SyncJob.id == job_id).values(**values))
+    db.execute(
+        update(SyncJob).where(SyncJob.id == job_id, SyncJob.status == db_enums.SyncJobStatus.RUNNING).values(**values)
+    )
     db.commit()
-
-
-def _scan(
-    fetcher: PageFetcher,
-    parser: CatalogParser,
-    deadline_s: float = SCAN_DEADLINE_S,
-    clock: Callable[[], float] = time.monotonic,
-) -> Tuple[List[CatalogPage], int, str]:
-    """
-    Усі сторінки каталогу. Повертає сторінки, `total` із першої й HTML першої сторінки.
-    Обхід обмежено кількістю сторінок (`MAX_PAGES`) і загальним часом (`deadline_s`).
-    """
-    started = clock()
-    first_html = fetcher.fetch(1)
-    first = parser.parse(first_html)
-    if first.total is None:
-        raise SyncFailure("Не знайдено загальної кількості записів: імовірно, змінилась розмітка САЗ", first_html)
-    last_page = first.last_page or 1
-    if last_page > MAX_PAGES:
-        # Швидка відмова: обрізаний обхід дав би хибні REMOVE, а нескінченний цикл заблокував би запуски
-        logger.error("САЗ повернув %s сторінок (ліміт %s): обхід скасовано", last_page, MAX_PAGES)
-        raise SyncFailure(
-            f"Забагато сторінок каталогу ({last_page} > {MAX_PAGES}): імовірно, змінилась розмітка САЗ", first_html
-        )
-    pages = [first]
-    for number in range(2, last_page + 1):
-        if clock() - started > deadline_s:
-            logger.error("Обхід каталогу перевищив %s с на сторінці %s із %s", deadline_s, number, last_page)
-            raise SyncFailure(
-                f"Перевищено ліміт часу обходу каталогу ({deadline_s:.0f} с): оброблено {number - 1} із {last_page}",
-                first_html,
-            )
-        pages.append(parser.parse(fetcher.fetch(number)))
-    return pages, first.total, first_html
 
 
 def _existing_courses(db: Session) -> List[ExistingCourse]:
@@ -159,46 +106,40 @@ def _pending_keys(db: Session, code_by_id: Dict[int, str]) -> set:
     return keys
 
 
-def _execute(db: Session, job: SyncJob, fetcher_factory: FetcherFactory) -> None:
-    parser = CatalogParser()
-    try:
-        with fetcher_factory() as fetcher:
-            pages, total, first_html = _scan(fetcher, parser)
-    except (SessionExpired, FetchError) as exc:
-        raise SyncFailure(str(exc)) from exc
-
-    cards = [course for page in pages for course in page.courses]
-    card_errors = [error for page in pages for error in page.errors]
-    if not cards:
-        raise SyncFailure("Жодної картки не розібрано: імовірно, змінилась розмітка САЗ", first_html)
-
-    scanned: Dict[str, Dict[str, Any]] = {}
-    mapping_errors: List[str] = []
-    for course in cards:
-        try:
-            scanned[course.saz_code] = course_to_payload(course)
-        except MappingError as exc:
-            mapping_errors.append(str(exc))
-
-    seen = len(cards) + len(card_errors)
-    warnings: List[str] = []
-    if seen != total:
-        warnings.append(f"неповний обхід: зібрано {seen} із {total} записів, REMOVE не створено")
-    skipped = len(card_errors) + len(mapping_errors)
-    if skipped:
-        first_error = card_errors[0].message if card_errors else mapping_errors[0]
-        warnings.append(f"пропущено {skipped} карток (перша: {first_error}), REMOVE не створено")
-    complete = not warnings
-
+def stage_catalog(db: Session, job: SyncJob, bundle: CatalogBundle) -> bool:
+    """Finalize a running job and stage proposals in the caller's transaction."""
+    scanned = {course.saz_code: course.model_dump(mode="json", exclude_unset=True) for course in bundle.courses}
     existing = _existing_courses(db)
     result = build_changes(
         scanned,
         existing,
-        complete=complete,
-        pending_keys=_pending_keys(db, {c.id: c.saz_code for c in existing}),
+        complete=False,
+        pending_keys=_pending_keys(db, {course.id: course.saz_code for course in existing}),
     )
-    if result.held_removals:
-        warnings.append(f"{result.held_removals} дисциплін зникло з САЗ, REMOVE утримано: перевірте фільтри й розмітку")
+    unverified = sum(course.published and course.synced and course.saz_code not in scanned for course in existing)
+    warnings = []
+    if bundle.seen != bundle.expected or bundle.pagination_changed:
+        warnings.append(f"неповний обхід: зібрано {bundle.seen} із {bundle.expected} записів або змінилася пагінація")
+    if bundle.skipped:
+        warnings.append(f"пропущено {bundle.skipped} карток")
+    if unverified:
+        warnings.append(f"{unverified} наявних дисциплін не підтверджено цим обходом; архівація лише вручну")
+
+    added = result.count(db_enums.ModerationChangeType.ADD)
+    updated = result.count(db_enums.ModerationChangeType.UPDATE)
+    finalized = db.execute(
+        update(SyncJob)
+        .where(SyncJob.id == job.id, SyncJob.status == db_enums.SyncJobStatus.RUNNING)
+        .values(
+            status=db_enums.SyncJobStatus.SUCCEEDED,
+            finished_at=utcnow(),
+            added_count=added,
+            updated_count=updated,
+            error_message=("Попередження: " + "; ".join(warnings))[:ERROR_MAX] if warnings else None,
+        )
+    )
+    if finalized.rowcount != 1:
+        return False
 
     for change in result.changes:
         db.add(
@@ -210,9 +151,6 @@ def _execute(db: Session, job: SyncJob, fetcher_factory: FetcherFactory) -> None
                 diff=change.diff,
             )
         )
-    added = result.count(db_enums.ModerationChangeType.ADD)
-    updated = result.count(db_enums.ModerationChangeType.UPDATE)
-    removed = result.count(db_enums.ModerationChangeType.REMOVE)
     db.add(
         AuditLog(
             actor_id=job.initiated_by,
@@ -220,32 +158,43 @@ def _execute(db: Session, job: SyncJob, fetcher_factory: FetcherFactory) -> None
             object_type="SyncJob",
             object_id=job.id,
             outcome=db_enums.AuditOutcome.ALLOWED,
-            new_value={"added": added, "updated": updated, "removed": removed, "total": total},
+            new_value={
+                "added": added,
+                "updated": updated,
+                "removed": 0,
+                "total": bundle.expected,
+                "seen": bundle.seen,
+                "skipped": bundle.skipped,
+                "unverified": unverified,
+                "academic_year": bundle.academic_year,
+                "level": bundle.level,
+                "pagination_changed": bundle.pagination_changed,
+            },
         )
     )
-    db.execute(
-        update(SyncJob)
-        .where(SyncJob.id == job.id)
-        .values(
-            status=db_enums.SyncJobStatus.SUCCEEDED,
-            finished_at=utcnow(),
-            added_count=added,
-            updated_count=updated,
-            error_message=("Попередження: " + "; ".join(warnings))[:ERROR_MAX] if warnings else None,
-        )
-    )
-    db.commit()
+    return True
 
 
 def run_sync_job(job_id: int, fetcher_factory: Optional[FetcherFactory] = None) -> None:
-    """Виконує задачу `queued`. Викликається у фоні (BackgroundTasks); не кидає винятків назовні."""
+    """Виконує задачу САЗ у фоні після атомарного переходу з queued до running."""
     with session_factory()() as db:
         if not _claim(db, job_id):
             return
-        job = db.get(SyncJob, job_id)
         try:
-            _execute(db, job, fetcher_factory or _default_fetcher)
+            settings = load_settings()
+            factory = fetcher_factory or (lambda: PlaywrightFetcher(settings))
+            with factory() as fetcher:
+                bundle = scan_catalog(fetcher, settings)
+            job = db.get(SyncJob, job_id)
+            if job is not None and stage_catalog(db, job, bundle):
+                db.commit()
+        except SessionExpired as exc:
+            message = "SAZ_SESSION_EXPIRED: підключіть САЗ повторно в адмінці" if remote_login_enabled() else str(exc)
+            _fail(db, job_id, message)
+        except FetchError as exc:
+            _fail(db, job_id, str(exc))
         except SyncFailure as exc:
             _fail(db, job_id, str(exc), exc.snapshot)
-        except Exception as exc:  # фонова задача не має залишити SyncJob у статусі running
-            _fail(db, job_id, f"{type(exc).__name__}: {exc}")
+        except Exception as exc:
+            logger.error("Помилка синхронізації САЗ %s: %s", job_id, type(exc).__name__)
+            _fail(db, job_id, f"Внутрішня помилка синхронізації САЗ ({type(exc).__name__})")

@@ -4,6 +4,7 @@
 Завантаження документа деканату (порожній файл, рівно ліміт, ліміт + 1 байт, регістр розширення, магічні байти,
 межі `academic_year`), кількість сторінок і загальний час обходу каталогу САЗ, межі терміну дії JWT.
 
+Використання ШІ: перевірки меж спільного обходу адаптовано Codex. Перевірка: pytest.
 Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: запуск `pytest tests/reliability`.
 """
 
@@ -17,7 +18,7 @@ from fastapi.testclient import TestClient
 from src.api.main import app
 from src.api.routes.deanery import MAX_UPLOAD_BYTES
 from src.api.tokens import JWT_AUDIENCE, JWT_ISSUER, decode_access_token, get_auth_settings
-from src.parser.sync import MAX_PAGES, SyncFailure, _scan
+from src.parser.catalog_scan import MAX_PAGES, SyncFailure, _scan
 
 client = TestClient(app)
 AUTH = {"Authorization": "Bearer test"}
@@ -104,7 +105,7 @@ class _FakeParser:
         self._last_page = last_page
 
     def parse(self, _html):
-        return SimpleNamespace(total=1, last_page=self._last_page)
+        return SimpleNamespace(total=1, last_page=self._last_page, courses=[object()])
 
 
 def test_scan_visits_every_page_up_to_the_limit():

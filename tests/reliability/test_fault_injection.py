@@ -4,6 +4,7 @@
 Тестові дублери імітують тайм-аут і обрив з'єднання. Перевіряємо обрану реакцію: тайм-аут передається у виклик,
 повтори обмежені, після останньої спроби — швидка відмова `FetchError`; Microsoft недоступний — 503.
 
+Використання ШІ: підставну HTTP-відповідь оновлено Codex. Перевірка: pytest.
 Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: запуск `pytest tests/reliability`
 (без мережі, `sleep` підмінено).
 """
@@ -59,7 +60,7 @@ def test_request_timeout_is_passed_to_playwright_in_milliseconds():
 
     def fake_get(url, **kwargs):
         seen.update(kwargs)
-        return SimpleNamespace(status=200, url=url, text=lambda: "<html></html>")
+        return SimpleNamespace(status=200, url=url, text=lambda: "<html></html>", dispose=lambda: None)
 
     body = _fetcher_with_context(fake_get, timeout_s=5.0).fetch(1)
 
@@ -92,13 +93,10 @@ def test_fetch_retries_only_transient_request_errors(error, expected_attempts, m
         calls.append(1)
         raise error
 
-    from src.parser import fetcher as module
-
-    retry = module.fetch_with_retry
-    monkeypatch.setattr(module, "fetch_with_retry", lambda get, **kw: retry(get, sleep=sleeps.append, **kw))
     with pytest.raises(FetchError, match=type(error).__name__):
         fetcher = _fetcher_with_context(request, max_retries=2, delay_s=1.0)
         monkeypatch.setattr(fetcher, "_pause", lambda: None)
+        monkeypatch.setattr(fetcher, "_sleep", sleeps.append)
         fetcher.fetch(1)
     assert len(calls) == expected_attempts
     assert sleeps == ([1.0, 2.0] if expected_attempts == 3 else [])

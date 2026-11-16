@@ -1,3 +1,4 @@
+// Використання ШІ: прапорець парсера додано Codex. Перевірка: typecheck.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm run typecheck.
 // Типи 🟡-ендпоінтів вручну за docs/api/contract.md (§3.0-§3.2). Типи ✅-ендпоінтів генеруються
 // скриптом `npm run gen:api` у src/api/generated/ (у .gitignore).
@@ -27,6 +28,8 @@ export interface LoadLevelHours {
 export interface Features {
   ai_generation: boolean;
   certificate_programs: boolean;
+  saz_catalog_live: boolean;
+  saz_remote_login?: boolean;
   saz_sync: boolean;
   plan_export: boolean;
 }
