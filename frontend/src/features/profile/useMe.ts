@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: onboarding.test.tsx.
+// Codex узгодив дії з доступністю конструктора. Перевірка — фронтенд-тести.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../../api/client";
 import type { ApiError } from "../../api/errors";
@@ -6,6 +7,10 @@ import type { AcademicYear, Me } from "../../api/types";
 import { useSession } from "../../auth/session";
 
 export const ME_KEY = ["me"] as const;
+export const PLAN_PROFILE_REQUIRED =
+  "Для створення плану потрібні курс і спеціальність у студентському профілі.";
+export const FIRST_YEAR_PLAN_NOTICE =
+  "Для 1 курсу план формує деканат, тож у застосунку його не створити.";
 
 export function useMe() {
   const authenticated = useSession((s) => s.status === "authenticated");

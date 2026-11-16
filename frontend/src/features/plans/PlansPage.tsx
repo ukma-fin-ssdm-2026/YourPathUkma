@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: plans.test.tsx.
+// Codex узгодив дії з доступністю конструктора. Перевірка — фронтенд-тести.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useMemo, useState, type CSSProperties } from "react";
 import { Link } from "react-router";
@@ -11,6 +12,7 @@ import { Card } from "../../ui/Card";
 import { StatusBadge } from "../../ui/Badge";
 import { linkButtonClass, linkButtonSmClass, linkGhostClass } from "../../ui/linkButton";
 import { Pagination } from "../catalog/Pagination";
+import { FIRST_YEAR_PLAN_NOTICE, PLAN_PROFILE_REQUIRED, useMe } from "../profile/useMe";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { courseHeading, groupPlansByCourse } from "./groupPlans";
 import { PLANS_PAGE_SIZE, useDeletePlan, usePlans } from "./usePlans";
@@ -53,6 +55,9 @@ export function PlansPage({ mode }: { mode: "all" | "saved" }) {
 }
 
 function PlansList({ mode }: { mode: "all" | "saved" }) {
+  const me = useMe();
+  const student = me.data?.student;
+  const canCreate = student?.can_create_plan === true;
   const [page, setPage] = useState(1);
   const plans = usePlans(mode === "saved" ? "draft" : undefined, page);
   const remove = useDeletePlan();
@@ -100,10 +105,20 @@ function PlansList({ mode }: { mode: "all" | "saved" }) {
     content = (
       <div className="grid justify-items-center gap-3 rounded-2xl border-2 border-dashed border-rule p-10 text-center">
         <p className="font-display text-base">У вас ще немає планів</p>
-        <p className="text-ink-2">Створіть перший план вибіркових дисциплін на рік.</p>
-        <Link to="/path/create" className={linkButtonClass}>
-          Створити план
-        </Link>
+        {canCreate ? (
+          <>
+            <p className="text-ink-2">Створіть перший план вибіркових дисциплін на рік.</p>
+            <Link to="/path/create" className={linkButtonClass}>
+              Створити план
+            </Link>
+          </>
+        ) : (
+          me.data && (
+            <p className="text-ink-2">
+              {student?.course_year === 1 ? FIRST_YEAR_PLAN_NOTICE : PLAN_PROFILE_REQUIRED}
+            </p>
+          )
+        )}
       </div>
     );
   } else {
@@ -160,7 +175,7 @@ function PlansList({ mode }: { mode: "all" | "saved" }) {
                   </td>
                   <td className="px-3.5 py-3">
                     <div className="flex justify-end gap-2">
-                      {plan.status === "draft" ? (
+                      {plan.status === "draft" && canCreate ? (
                         <>
                           <Link to={`/path/create?plan=${plan.id}`} className={linkButtonSmClass}>
                             Редагувати
@@ -204,9 +219,11 @@ function PlansList({ mode }: { mode: "all" | "saved" }) {
               Оновити з САЗ
             </Button>
           )}
-          <Link to="/path/create" className={linkButtonClass}>
-            Новий план
-          </Link>
+          {canCreate && (
+            <Link to="/path/create" className={linkButtonClass}>
+              Новий план
+            </Link>
+          )}
         </div>
       </div>
       {notice && (

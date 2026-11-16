@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex додав перевірку адміністратора з незаповненим профілем. Перевірка — npm test.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -50,15 +51,16 @@ describe("RequireOnboarded", () => {
     expect(await screen.findByText("головна")).toBeInTheDocument();
   });
 
-  it("адміністратора без профілю студента пускає далі", async () => {
-    server.use(
-      http.get("*/api/v1/me", () =>
-        HttpResponse.json({ ...emptyMe(), role: "admin", student: null }),
-      ),
-    );
-    renderAt("/", routes);
-    expect(await screen.findByText("головна")).toBeInTheDocument();
-  });
+  it.each([null, emptyMe().student])(
+    "пускає адміністратора без завершеного онбордингу (%j)",
+    async (student) => {
+      server.use(
+        http.get("*/api/v1/me", () => HttpResponse.json({ ...emptyMe(), role: "admin", student })),
+      );
+      renderAt("/", routes);
+      expect(await screen.findByText("головна")).toBeInTheDocument();
+    },
+  );
 });
 
 describe("OnboardingPage", () => {

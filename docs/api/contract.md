@@ -337,7 +337,7 @@ Query-параметри:
   "api_version": "1.0.0",
   "google_client_id": "1234567890-abc.apps.googleusercontent.com",
   "allowed_email_domain": "ukma.edu.ua",
-  "reviews_url": "https://example.ukma.edu.ua/reviews",
+  "reviews_url": null,
   "limits": {
     "total_credits": 240,
     "free_choice_credits": 25,
@@ -754,7 +754,7 @@ Query-параметри (усі необов'язкові, комбінують
 | `year_total_credits` | number | `total_credits` + кредити нормативних |
 | `credits_by_trimester` | `{ "1": number, "2": number, "3": number }` | Вибіркові + нормативні по триместрах, для індикатора навантаження |
 | `warnings` | `Warning[]` | Попередження (§2.4) |
-| `reviews_url` | string | Посилання «Почитати відгуки» на зовнішню платформу (`AGENTS.md` §4) |
+| `reviews_url` | string або null | HTTPS-посилання на зовнішню платформу відгуків із `REVIEWS_URL`. Якщо адресу не налаштовано, повертається null |
 
 #### `POST /plans` ✅
 
@@ -823,6 +823,8 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 #### `POST /plans/validate` ✅
 
 Перевіряє план **без збереження**: для живих попереджень у конструкторі (індикатор кредитів, попередження про низьке навантаження) без створення чернетки на кожну дію. Тіло: `CreatePlanRequest`.
+
+`free_elective_used_all_years` включає кредити вільного вибору з академічної історії авторизованого студента та з поточного плану. `free_elective_remaining` дорівнює різниці між лімітом і цією сумою, щонайменше 0.
 
 Відповідь `200` (завжди 200, якщо тіло синтаксично коректне; порушення правил повертаються в `errors`):
 
@@ -1418,7 +1420,7 @@ export interface AppConfig {
   api_version: string;
   google_client_id: string;
   allowed_email_domain: string;
-  reviews_url: string;
+  reviews_url: string | null;
   limits: {
     total_credits: number; free_choice_credits: number; professional_credits: number;
     min_year_credits: number; max_directions: number; max_plan_items: number; max_item_credits: number;
@@ -1618,8 +1620,9 @@ User stories US-001…US-010 відповідають тим самим FR і п
 
 ## Використання ШІ
 
+- Codex уточнив підсумок вільного вибору в контракті. Перевірка — тести API та згенерована OpenAPI.
+- Codex описав необов’язкове посилання на відгуки. Перевірка — тести конфігурації та згенерована OpenAPI.
 - Codex описав валідацію ідентифікаторів і цілісність посилань для #215. Поведінку перевірено регресіями на PostgreSQL і звірено з OpenAPI.
-
 - Codex уточнив контракт подання й експорту для #214. Поведінку звірено з регресійними тестами та згенерованою специфікацією OpenAPI.
 
 - **Що створено:** весь документ підготовлено за допомогою Claude (Claude Code, модель Opus 5.5) за запитом команди. Розділи про ✅-кінцеві точки описують поточний код; форми 🟡/🔵-кінцевих точок, коди помилок і попереджень, типи TypeScript і рекомендації в §6 — **пропозиції ШІ**, виведені з `requirements.md`, `user-stories.md`, `data-model.md`, `threat-model.md`, `quality-attributes.md`, `api-design.md`, `AGENTS.md` і `Project-Description.md`. Вони потребують узгодження командою.
