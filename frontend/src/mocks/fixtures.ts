@@ -1,3 +1,4 @@
+// Використання ШІ: налаштування парсера додано Codex. Перевірка: Vitest.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: handlers.test.ts.
 // Codex уточнив конфігурацію відгуків. Перевірка — фронтенд-тести.
 // Рефакторинг (Replace Magic Literal with Constant, S1313): винесено DEFAULT_MOCK_AUDIT_IP (127.0.0.1) за допомогою Gemini.
@@ -46,6 +47,7 @@ export function configFixture(features: Partial<ConfigResponse["features"]> = {}
     features: {
       ai_generation: false,
       certificate_programs: false,
+      saz_catalog_live: true,
       saz_sync: false,
       plan_export: true,
       ...features,

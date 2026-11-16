@@ -37,7 +37,7 @@ from ...db.models.history import AcademicRecord
 from ...db.models.users import StudentProfile, User
 from ...db.session import get_db
 from ...services import plan_rules
-from ..common import ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
+from ..common import MAX_DATABASE_ID, ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
 from ..onboarding import get_onboarded_student
 from ..plan_checks import enforce_plan_rules, enforce_submit_rules
 
@@ -70,7 +70,9 @@ class LoadLevels(BaseModel):
 
 
 class PlanItem(BaseModel):
-    course_id: int = Field(..., gt=0, description="Унікальний ID дисципліни з каталогу САЗ", examples=[101])
+    course_id: int = Field(
+        ..., gt=0, le=MAX_DATABASE_ID, description="Унікальний ID дисципліни з каталогу САЗ", examples=[101]
+    )
     title: str = Field(
         ...,
         min_length=2,
@@ -432,7 +434,7 @@ def list_plans(
     },
 )
 def get_plan(
-    plan_id: int = Path(..., gt=0, description="Унікальний ідентифікатор плану", examples=[1]),
+    plan_id: int = Path(..., gt=0, le=MAX_DATABASE_ID, description="Унікальний ідентифікатор плану", examples=[1]),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
@@ -458,7 +460,7 @@ def get_plan(
 )
 def update_plan(
     payload: CreatePlanRequest,
-    plan_id: int = Path(..., gt=0, description="Унікальний ідентифікатор плану", examples=[1]),
+    plan_id: int = Path(..., gt=0, le=MAX_DATABASE_ID, description="Унікальний ідентифікатор плану", examples=[1]),
     profile: StudentProfile = Depends(get_onboarded_student),
     db: Session = Depends(get_db),
 ):
@@ -494,7 +496,7 @@ def update_plan(
     },
 )
 def delete_plan(
-    plan_id: int = Path(..., gt=0, description="Унікальний ідентифікатор плану", examples=[1]),
+    plan_id: int = Path(..., gt=0, le=MAX_DATABASE_ID, description="Унікальний ідентифікатор плану", examples=[1]),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
@@ -574,7 +576,7 @@ def validate_plan(
     },
 )
 def submit_plan(
-    plan_id: int = Path(..., gt=0, examples=[1]),
+    plan_id: int = Path(..., gt=0, le=MAX_DATABASE_ID, examples=[1]),
     profile: StudentProfile = Depends(get_onboarded_student),
     db: Session = Depends(get_db),
 ):
@@ -616,7 +618,7 @@ def submit_plan(
     },
 )
 def export_plan(
-    plan_id: int = Path(..., gt=0, examples=[1]),
+    plan_id: int = Path(..., gt=0, le=MAX_DATABASE_ID, examples=[1]),
     export_format: str = Query("pdf", alias="format", description="Формат експорту (поки лише pdf)"),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),

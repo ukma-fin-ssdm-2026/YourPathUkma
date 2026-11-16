@@ -2,11 +2,11 @@
 Підключення парсера до POST /admin/sync-jobs: фоновий запуск для saz_catalog, очищення завислих задач,
 оновлення файлу сесії після успішного обходу.
 
-Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: pytest.
+Використання ШІ: тести очищення стану сесії оновлено Codex. Перевірка: pytest.
+ файл створено за допомогою Claude (Claude Code). Перевірка: pytest.
 """
 
 from datetime import timedelta
-from pathlib import Path
 
 import pytest
 from sqlalchemy import select
@@ -52,10 +52,11 @@ def test_certificates_job_is_not_started(admin_client, started):
     assert started == []
 
 
-def test_autorun_can_be_disabled(admin_client, started, monkeypatch):
+def test_disabled_autorun_does_not_queue_jobs(admin_client, started, monkeypatch):
     monkeypatch.setenv("SAZ_AUTORUN", "0")
     response = admin_client.post("/api/v1/admin/sync-jobs", json={"source": "saz_catalog"})
-    assert response.status_code == 202
+    assert response.status_code == 503
+    assert response.json()["code"] == "SAZ_LIVE_SYNC_DISABLED"
     assert started == []
 
 
@@ -97,8 +98,14 @@ class _FakeContext:
     def __init__(self):
         self.closed = False
 
-    def storage_state(self, path):
-        Path(path).write_text('{"cookies": ["new"]}', encoding="utf-8")
+    def storage_state(self):
+        return {
+            "cookies": [
+                {"domain": "my.ukma.edu.ua", "value": "new"},
+                {"domain": "login.microsoftonline.com", "value": "identity-provider-secret"},
+            ],
+            "origins": [{"origin": "https://my.ukma.edu.ua", "localStorage": ["private"]}],
+        }
 
     def close(self):
         self.closed = True
@@ -116,9 +123,12 @@ def test_session_file_is_refreshed_after_successful_run(tmp_path):
     state.write_text('{"cookies": ["old"]}', encoding="utf-8")
     fetcher = _fetcher(tmp_path)
     fetcher.__exit__(None, None, None)
-    assert "new" in state.read_text(encoding="utf-8")
+    content = state.read_text(encoding="utf-8")
+    assert "new" in content
+    assert "identity-provider-secret" not in content
+    assert "private" not in content
     assert not (tmp_path / "saz_state.json.tmp").exists()
-    assert fetcher._context.closed
+    assert fetcher._context is None
 
 
 def test_session_file_is_kept_when_run_failed(tmp_path):
@@ -127,4 +137,4 @@ def test_session_file_is_kept_when_run_failed(tmp_path):
     fetcher = _fetcher(tmp_path)
     fetcher.__exit__(RuntimeError, RuntimeError("boom"), None)
     assert "old" in state.read_text(encoding="utf-8")
-    assert fetcher._context.closed
+    assert fetcher._context is None

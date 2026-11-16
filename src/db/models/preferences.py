@@ -69,8 +69,9 @@ class PlanPreferences(Base):
     academic_year: Mapped[int] = mapped_column(SmallInteger)  # рік початку: 2026 = 2026/2027
     include_free_electives: Mapped[bool] = mapped_column(Boolean, default=True)
     wants_certificate: Mapped[bool] = mapped_column(Boolean, default=False)
-    # FK на certificate_programs з'явиться разом із таблицею на етапі 2
-    certificate_program_id: Mapped[Optional[int]] = mapped_column(BigIntId)
+    certificate_program_id: Mapped[Optional[int]] = mapped_column(
+        BigIntId, ForeignKey("certificate_programs.id", ondelete="SET NULL")
+    )
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)
 

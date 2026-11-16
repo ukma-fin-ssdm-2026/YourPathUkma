@@ -23,7 +23,7 @@ from ...db.models.deanery import DeaneryPlanDocument, NormativeCourseEntry
 from ...db.models.history import AcademicRecord
 from ...db.models.users import StudentProfile
 from ...db.session import get_db, session_factory
-from ..common import ApiError, error_responses, get_current_student_id
+from ..common import MAX_DATABASE_ID, ApiError, error_responses, get_current_student_id
 
 logger = logging.getLogger(__name__)
 
@@ -305,10 +305,10 @@ def list_documents(
     "/{document_id}",
     response_model=DeaneryDocumentResponse,
     summary="Отримати документ та розпізнані дисципліни",
-    responses={200: {"description": "Документ знайдено"}, **error_responses(401, 404)},
+    responses={200: {"description": "Документ знайдено"}, **error_responses(401, 404, 422)},
 )
 def get_document(
-    document_id: int = Path(...),
+    document_id: int = Path(..., gt=0, le=MAX_DATABASE_ID),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
@@ -321,10 +321,10 @@ def get_document(
 @router.get(
     "/{document_id}/file",
     summary="Завантажити оригінальний файл",
-    responses={200: {"description": "Файл"}, **error_responses(401, 404)},
+    responses={200: {"description": "Файл"}, **error_responses(401, 404, 422)},
 )
 def download_document_file(
-    document_id: int = Path(...),
+    document_id: int = Path(..., gt=0, le=MAX_DATABASE_ID),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
@@ -349,10 +349,10 @@ def download_document_file(
     "/{document_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Видалити документ",
-    responses={204: {"description": "Документ видалено"}, **error_responses(401, 404, 409)},
+    responses={204: {"description": "Документ видалено"}, **error_responses(401, 404, 409, 422)},
 )
 def delete_document(
-    document_id: int = Path(...),
+    document_id: int = Path(..., gt=0, le=MAX_DATABASE_ID),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):

@@ -3,20 +3,24 @@
 Пункт 4 (ліміт генерацій у UTC) лежить у tests/test_ai.py.
 Тести змінюють seed-дані й повертають їх у вихідний стан у finally/фікстурах.
 
-Використання ШІ: Codex додав регресії курсу, онбордингу та експорту. Перевірка: pytest.
+Використання ШІ: Codex додав регресії курсу, онбордингу, експорту та цілісності ID.
+Перевірка: pytest на PostgreSQL.
 """
 
 from contextlib import contextmanager
 
 import pytest
+from alembic import command
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
 from src.api.common import get_current_student_id
 from src.api.main import app
 from src.db import enums as db_enums
+from src.db.migrate import alembic_config
 from src.db.models import Course, IndividualPlan
 from src.db.models.catalog import CertificateProgram, CertificateProgramCourse
+from src.db.models.preferences import PlanPreferences
 from src.db.models.users import StudentProfile
 from src.db.session import session_factory
 
@@ -184,6 +188,98 @@ def put_match(client, data, entry_id, course_id):
 def availability(program_id):
     with session_factory()() as db:
         return db.get(CertificateProgram, program_id).availability
+
+
+@pytest.mark.parametrize("course_id", [0, -1, 2**63, 2**63 - 1])
+def test_match_rejects_invalid_course(admin_client, program_with_entries, course_id):
+    data = program_with_entries
+    response = put_match(admin_client, data, data["entry_ids"][0], course_id)
+    assert response.status_code == 422
+
+
+def test_match_rejects_archived_course(admin_client, program_with_entries):
+    data = program_with_entries
+    with course_changed(102, publication_status=db_enums.PublicationStatus.ARCHIVED):
+        assert put_match(admin_client, data, data["entry_ids"][0], 102).status_code == 422
+    with session_factory()() as db:
+        assert db.get(CertificateProgramCourse, data["entry_ids"][0]).course_id == 101
+
+
+@pytest.mark.parametrize("ids", [[], [1, 1], [0], [-1], [2**63], [2**63 - 1], list(range(1, 52))])
+def test_certificate_directions_reject_invalid_ids(admin_client, program_with_entries, ids):
+    program_id = program_with_entries["program_id"]
+    response = admin_client.patch(f"/api/v1/admin/certificate-programs/{program_id}", json={"direction_ids": ids})
+    assert response.status_code == 422
+    with session_factory()() as db:
+        assert db.get(CertificateProgram, program_id).direction_ids == []
+
+
+def test_certificate_directions_preserve_order(admin_client, program_with_entries):
+    program_id = program_with_entries["program_id"]
+    response = admin_client.patch(f"/api/v1/admin/certificate-programs/{program_id}", json={"direction_ids": [2, 1]})
+    assert response.status_code == 200
+    with session_factory()() as db:
+        assert db.get(CertificateProgram, program_id).direction_ids == [2, 1]
+
+
+def test_preferences_certificate_reference(client, program_with_entries):
+    program_id = program_with_entries["program_id"]
+    url = "/api/v1/preferences/2029"
+    response = client.put(url, json={"certificate_program_id": program_id})
+    assert response.status_code == 200
+    assert response.json()["certificate_program_id"] == program_id
+
+    for invalid_id in (0, -1, 2**63, 2**63 - 1):
+        assert client.put(url, json={"certificate_program_id": invalid_id}).status_code == 422
+    assert client.get(url).json()["certificate_program_id"] == program_id
+
+    with session_factory()() as db:
+        db.delete(db.get(CertificateProgram, program_id))
+        db.commit()
+    assert client.get(url).json()["certificate_program_id"] is None
+
+
+def test_preferences_certificate_migration(test_database, program_with_entries):
+    config = alembic_config(test_database)
+    program_id = program_with_entries["program_id"]
+    command.downgrade(config, "0004")
+    try:
+        with session_factory()() as db:
+            valid = PlanPreferences(student_id=42, academic_year=2024, certificate_program_id=program_id)
+            orphan = PlanPreferences(student_id=7, academic_year=2024, certificate_program_id=2**63 - 1)
+            db.add_all([valid, orphan])
+            db.flush()
+            valid_id, orphan_id = valid.id, orphan.id
+            db.commit()
+        command.upgrade(config, "head")
+        with session_factory()() as db:
+            assert db.get(PlanPreferences, valid_id).certificate_program_id == program_id
+            assert db.get(PlanPreferences, orphan_id).certificate_program_id is None
+        command.downgrade(config, "0004")
+        with session_factory()() as db:
+            assert db.get(PlanPreferences, valid_id).certificate_program_id == program_id
+            orphan = db.get(PlanPreferences, orphan_id)
+            assert orphan.certificate_program_id is None
+            orphan.certificate_program_id = 2**63 - 1
+            db.commit()
+    finally:
+        command.upgrade(config, "head")
+        with session_factory()() as db:
+            for student_id in (7, 42):
+                prefs = db.scalar(
+                    select(PlanPreferences).where(
+                        PlanPreferences.student_id == student_id, PlanPreferences.academic_year == 2024
+                    )
+                )
+                if prefs is not None:
+                    db.delete(prefs)
+            db.commit()
+
+
+@pytest.mark.parametrize("item_id,status", [(0, 422), (-1, 422), (2**63, 422), (2**63 - 1, 404)])
+@pytest.mark.parametrize("resource", ["plans", "deanery-documents", "plan-generations", "certificate-programs"])
+def test_resource_id_bounds(client, resource, item_id, status):
+    assert client.get(f"/api/v1/{resource}/{item_id}").status_code == status
 
 
 def test_unmatching_entry_makes_program_unavailable(admin_client, program_with_entries):

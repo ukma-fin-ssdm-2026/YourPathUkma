@@ -1,3 +1,4 @@
+// Використання ШІ: завантаження каталогу САЗ додано Codex. Перевірка: Vitest.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: sync.test.tsx.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../../../api/client";
@@ -41,6 +42,15 @@ export function useRunSync() {
   return useMutation<SyncJob, ApiError, SyncSource>({
     mutationFn: (source) =>
       request<SyncJob>("/admin/sync-jobs", { method: "POST", body: { source } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin", "sync-jobs"] }),
+  });
+}
+
+export function useImportSaz() {
+  const queryClient = useQueryClient();
+  return useMutation<SyncJob, ApiError, File>({
+    mutationFn: (file) =>
+      request<SyncJob>("/admin/sync-jobs/saz-import", { method: "POST", body: file }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin", "sync-jobs"] }),
   });
 }

@@ -3,6 +3,8 @@
 
 Ресурс «Система» (System): публічна конфігурація для фронтенду (GET /api/v1/config).
 
+Використання ШІ: прапорці парсингу і віддаленого входу САЗ додано Codex. Перевірка: pytest.
+
 Без автентифікації. Ліміти тут мають збігатися з контрактом (docs/api/contract.md, §2.2 і §3.0),
 щоб фронтенд брав їх звідси, а не дублював у власному коді.
 """
@@ -13,6 +15,7 @@ from typing import Dict, Optional
 from fastapi import APIRouter, Response
 from pydantic import BaseModel, Field, HttpUrl, TypeAdapter, ValidationError
 
+from ...parser.config import autorun_enabled, remote_login_enabled
 from ..common import ApiError
 from ..tokens import get_auth_settings
 
@@ -56,6 +59,8 @@ class LoadLevelHours(BaseModel):
 class Features(BaseModel):
     ai_generation: bool = Field(False, description="AI-генерація плану (етап 2)")
     certificate_programs: bool = Field(False, description="Сертифікатні програми (етап 2)")
+    saz_catalog_live: bool = Field(False, description="Серверний парсинг каталогу САЗ")
+    saz_remote_login: bool = Field(False, description="Віддалений вхід адміністратора до САЗ")
     saz_sync: bool = Field(False, description="Синхронізація з САЗ (заблоковано, R14)")
     plan_export: bool = Field(False, description="Експорт плану в PDF (поки не реалізовано: 501)")
 
@@ -91,5 +96,5 @@ async def get_config(response: Response):
             "medium": LoadLevelHours(min_hours_per_week=20, max_hours_per_week=23),
             "high": LoadLevelHours(min_hours_per_week=23, max_hours_per_week=25),
         },
-        features=Features(),
+        features=Features(saz_catalog_live=autorun_enabled(), saz_remote_login=remote_login_enabled()),
     )

@@ -1,7 +1,8 @@
 """
 Тести завантажувача САЗ: повтори на 429/5xx, протухла сесія, URL каталогу. Без мережі й без Playwright.
 
-Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: pytest.
+Використання ШІ: перевірку безпечної діагностики додано Codex. Перевірка: pytest.
+ файл створено за допомогою Claude (Claude Code). Перевірка: pytest.
 """
 
 from pathlib import Path
@@ -105,4 +106,4 @@ def test_start_gives_clear_message_after_retries():
     with pytest.raises(FetchError) as info:
         start_with_retry(start, retries=1, delay_s=1, sleep=lambda _s: None)
     assert "Не вдалося запустити браузер Playwright" in str(info.value)
-    assert "Connection closed while reading from the driver" in str(info.value)
+    assert "Connection closed while reading from the driver" not in str(info.value)
