@@ -31,6 +31,7 @@ from .tokens import decode_access_token, validate_auth_settings
 
 logger = logging.getLogger("yourpath.api")
 
+MAX_DATABASE_ID = 2**63 - 1
 REQUEST_ID_HEADER = "X-Request-ID"
 _REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 _EXAMPLE_REQUEST_ID = "req_3f9a1c7e2b4d4a6e"

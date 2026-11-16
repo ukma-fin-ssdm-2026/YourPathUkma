@@ -20,7 +20,7 @@ from ...db.base import utcnow
 from ...db.models.ai import PlanGeneration
 from ...db.models.users import StudentProfile
 from ...db.session import get_db
-from ..common import ApiError, error_responses, get_current_student_id
+from ..common import MAX_DATABASE_ID, ApiError, error_responses, get_current_student_id
 from ..onboarding import get_onboarded_student
 from .preferences import PreferencesRequest
 
@@ -131,7 +131,7 @@ def start_generation(
     },
 )
 def get_generation_status(
-    generation_id: int = Path(..., gt=0, examples=[77]),
+    generation_id: int = Path(..., gt=0, le=MAX_DATABASE_ID, examples=[77]),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):

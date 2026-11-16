@@ -273,6 +273,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "description": "Унікальний ідентифікатор плану",
               "examples": [
@@ -384,6 +385,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "description": "Унікальний ідентифікатор плану",
               "examples": [
@@ -521,6 +523,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "description": "Унікальний ідентифікатор плану",
               "examples": [
@@ -717,6 +720,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 1
@@ -844,6 +848,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 1
@@ -2487,6 +2492,8 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
+              "exclusiveMinimum": 0,
               "title": "Document Id"
             }
           }
@@ -2535,11 +2542,22 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Помилка валідації вхідних даних",
             "content": {
               "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2564,6 +2582,8 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
+              "exclusiveMinimum": 0,
               "title": "Document Id"
             }
           }
@@ -2621,11 +2641,22 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Помилка валідації вхідних даних",
             "content": {
               "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2652,6 +2683,8 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
+              "exclusiveMinimum": 0,
               "title": "Document Id"
             }
           }
@@ -2698,11 +2731,22 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Помилка валідації вхідних даних",
             "content": {
               "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5208,6 +5252,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 77
@@ -5305,6 +5350,7 @@
               "anyOf": [
                 {
                   "type": "integer",
+                  "maximum": 9223372036854775807,
                   "exclusiveMinimum": 0
                 },
                 {
@@ -5392,6 +5438,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 3
@@ -5487,6 +5534,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 3
@@ -5606,6 +5654,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 3
@@ -5619,6 +5668,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 501
@@ -6607,6 +6657,7 @@
             "anyOf": [
               {
                 "type": "integer",
+                "maximum": 9.223372036854776e+18,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -6697,17 +6748,21 @@
             "anyOf": [
               {
                 "items": {
-                  "type": "integer"
+                  "type": "integer",
+                  "maximum": 9.223372036854776e+18,
+                  "exclusiveMinimum": 0.0
                 },
                 "type": "array",
+                "maxItems": 50,
                 "minItems": 1
               },
               {
                 "type": "null"
               }
             ],
+            "uniqueItems": true,
             "title": "Direction Ids",
-            "description": "Повна заміна переліку напрямків"
+            "description": "Повна заміна переліку унікальних напрямків"
           },
           "hidden": {
             "anyOf": [
@@ -8081,7 +8136,9 @@
           },
           "direction_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 3,
@@ -8096,7 +8153,9 @@
           },
           "preferred_instructor_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 50,
@@ -8104,7 +8163,9 @@
           },
           "unwanted_instructor_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 50,
@@ -8119,6 +8180,7 @@
             "anyOf": [
               {
                 "type": "integer",
+                "maximum": 9.223372036854776e+18,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -8126,7 +8188,7 @@
               }
             ],
             "title": "Certificate Program Id",
-            "description": "Етап 2: поки лише зберігається"
+            "description": "ID наявної сертифікатної програми"
           }
         },
         "type": "object",
@@ -8220,6 +8282,7 @@
         "properties": {
           "course_id": {
             "type": "integer",
+            "maximum": 9.223372036854776e+18,
             "exclusiveMinimum": 0.0,
             "title": "Course Id",
             "description": "Унікальний ID дисципліни з каталогу САЗ",
@@ -8564,7 +8627,9 @@
           },
           "direction_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 3,
@@ -8579,7 +8644,9 @@
           },
           "preferred_instructor_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 50,
@@ -8587,7 +8654,9 @@
           },
           "unwanted_instructor_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 50,
@@ -8602,6 +8671,7 @@
             "anyOf": [
               {
                 "type": "integer",
+                "maximum": 9.223372036854776e+18,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -8609,7 +8679,7 @@
               }
             ],
             "title": "Certificate Program Id",
-            "description": "Етап 2: поки лише зберігається"
+            "description": "ID наявної сертифікатної програми"
           }
         },
         "type": "object",
