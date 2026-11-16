@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.3.0] - 2026-11-16
+
+### Bug Fixes
+
+- Validate API identifiers and references
+  ([`0f3b099`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/0f3b09983b5ffda5a78d5dba3d4b0554d164cc62))
+
+### Features
+
+- Add remote SAZ sign-in and encrypted session storage
+  ([`1f4ba08`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/1f4ba0847e1b7caee6f6ae2fc317c3ece8372e13))
+
+- Add SAZ catalog upload to the admin screen
+  ([`f51856e`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/f51856e4c70c9e5e5ec44b28b2eb6deb1a77fc13))
+
+- Connect SAZ sessions from the admin screen
+  ([`e149167`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e149167e5006552d0df48303da967691be7302cf))
+
+- Harden SAZ scans and export catalog bundles
+  ([`bf4f531`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/bf4f531a9b88cfe0a4567168a177d96f057b2f28))
+
+- Import SAZ bundles through the admin API
+  ([`c1c7092`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/c1c7092cc812f121cad520a2582a88336cea5b48))
+
+
 ## [0.2.1] - 2026-11-14
 
 ### Bug Fixes
