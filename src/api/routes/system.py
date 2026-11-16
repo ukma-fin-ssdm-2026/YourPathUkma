@@ -1,4 +1,6 @@
 """
+Використання ШІ: Codex виправив джерело client_id; перевірка: pytest і Ruff.
+
 Ресурс «Система» (System): публічна конфігурація для фронтенду (GET /api/v1/config).
 
 Без автентифікації. Ліміти тут мають збігатися з контрактом (docs/api/contract.md, §2.2 і §3.0),
@@ -10,6 +12,9 @@ from typing import Dict, Optional
 
 from fastapi import APIRouter, Response
 from pydantic import BaseModel, Field, HttpUrl, TypeAdapter, ValidationError
+
+from ..common import ApiError
+from ..tokens import get_auth_settings
 
 router = APIRouter(prefix="/api/v1", tags=["System"])
 
@@ -52,7 +57,7 @@ class Features(BaseModel):
     ai_generation: bool = Field(False, description="AI-генерація плану (етап 2)")
     certificate_programs: bool = Field(False, description="Сертифікатні програми (етап 2)")
     saz_sync: bool = Field(False, description="Синхронізація з САЗ (заблоковано, R14)")
-    plan_export: bool = Field(True, description="Експорт плану в PDF")
+    plan_export: bool = Field(False, description="Експорт плану в PDF (поки не реалізовано: 501)")
 
 
 class ConfigResponse(BaseModel):
@@ -73,9 +78,12 @@ class ConfigResponse(BaseModel):
     responses={200: {"description": "Конфігурацію отримано"}},
 )
 async def get_config(response: Response):
+    client_id = get_auth_settings().client_id
+    if not client_id and os.getenv("APP_ENV", "development") == "production":
+        raise ApiError(503, "AUTH_NOT_CONFIGURED", "Вхід через Microsoft не налаштовано")
     response.headers["Cache-Control"] = "max-age=300"
     return ConfigResponse(
-        google_client_id=os.getenv("GOOGLE_CLIENT_ID", "dev-client-id.apps.googleusercontent.com"),
+        google_client_id=client_id,
         reviews_url=_reviews_url(),
         limits=Limits(),
         load_levels={

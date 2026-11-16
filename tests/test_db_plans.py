@@ -2,6 +2,7 @@
 Тести планів і каталогу, що працюють з БД: збереження між запитами, звірка з каталогом, права доступу.
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: pytest на SQLite і PostgreSQL.
+Codex узгодив курс у запитах із тестовим профілем. Перевірка: pytest на PostgreSQL.
 """
 
 from fastapi.testclient import TestClient
@@ -17,12 +18,12 @@ SECURITY = {"course_id": 102, "title": "Основи кібербезпеки", 
 
 
 def _create(items, **extra):
-    body = {"academic_year": 2027, "course": 3, "items": items, **extra}
+    body = {"academic_year": 2027, "course": 2, "items": items, **extra}
     return client.post("/api/v1/plans", json=body, headers=AUTH)
 
 
 def test_create_plan_is_persisted():
-    response = _create([FP, {**PRODUCT, "is_free_elective": True}], load_levels={"autumn": "low"})
+    response = _create([FP, {**PRODUCT, "is_free_elective": True}], load_levels={"autumn": "low"}, course=2)
     assert response.status_code == 201
     plan = response.json()
     assert response.headers["location"] == f"/api/v1/plans/{plan['id']}"
@@ -40,7 +41,7 @@ def test_create_plan_is_persisted():
 
 def test_update_replaces_items_and_recalculates_credits():
     plan_id = _create([FP]).json()["id"]
-    body = {"academic_year": 2027, "course": 3, "items": [FP, SECURITY]}
+    body = {"academic_year": 2027, "course": 2, "items": [FP, SECURITY]}
     response = client.put(f"/api/v1/plans/{plan_id}", json=body, headers=AUTH)
     assert response.status_code == 200
     assert [i["course_id"] for i in response.json()["items"]] == [101, 102]

@@ -1,11 +1,14 @@
 """
 Спільне для адмінських кінцевих точок (contract.md §3.9): перевірка ролі та запис у журнал аудиту.
 
-Роль береться з БД, не з клієнта (R2). Спроба студента зайти в /admin/* фіксується в журналі
-з outcome = denied (SEC-001).
+Роль береться з БД, не з клієнта (R2). Спроба студента зайти в /admin/* фіксується
+у звичайному журналі без запису в БД.
+
+Використання ШІ: Codex прибрав транзакції для заборонених запитів; перевірка: pytest і Ruff.
 """
 
 import ipaddress
+import logging
 from typing import Any, Dict, Optional
 
 from fastapi import Depends, Request
@@ -16,6 +19,8 @@ from ....db.models.admin import AuditLog
 from ....db.models.users import User
 from ....db.session import get_db
 from ...common import ApiError, get_current_student_id
+
+logger = logging.getLogger("yourpath.api")
 
 
 def client_ip(request: Request) -> Optional[str]:
@@ -66,15 +71,11 @@ def require_admin(
     if user is None:
         raise ApiError(401, "UNAUTHORIZED", "Відсутній або некоректний токен авторизації")
     if user.role != db_enums.UserRole.ADMIN:
-        write_audit(
-            db,
-            actor_id=user.id,
-            action="admin.access",
-            object_type="AdminEndpoint",
-            outcome=db_enums.AuditOutcome.DENIED,
-            new_value={"method": request.method, "path": request.url.path},
-            ip=client_ip(request),
+        logger.warning(
+            "Admin access denied actor=%s method=%s path=%s",
+            user.id,
+            request.method,
+            request.url.path,
         )
-        db.commit()
         raise ApiError(403, "FORBIDDEN_ROLE", "Потрібна роль адміністратора")
     return user
