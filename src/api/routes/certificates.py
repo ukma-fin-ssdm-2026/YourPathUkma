@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from ...db import enums as db_enums
 from ...db.models.catalog import CertificateProgram
 from ...db.session import get_db
-from ..common import ApiError, error_responses, get_current_student_id
+from ..common import MAX_DATABASE_ID, ApiError, error_responses, get_current_student_id
 
 router = APIRouter(prefix="/api/v1", tags=["Certificate programs"])
 
@@ -50,7 +50,7 @@ class CertificateProgramDetail(CertificateProgramResponse):
     responses={200: {"description": "Список отримано"}, **error_responses(401, 422)},
 )
 def list_certificate_programs(
-    direction_id: Optional[int] = Query(None, gt=0, description="Фільтр за ID напрямку"),
+    direction_id: Optional[int] = Query(None, gt=0, le=MAX_DATABASE_ID, description="Фільтр за ID напрямку"),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
@@ -85,7 +85,7 @@ def list_certificate_programs(
     },
 )
 def get_certificate_program(
-    program_id: int = Path(..., gt=0, examples=[3]),
+    program_id: int = Path(..., gt=0, le=MAX_DATABASE_ID, examples=[3]),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):

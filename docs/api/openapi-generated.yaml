@@ -187,6 +187,7 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
           exclusiveMinimum: 0
           description: Унікальний ідентифікатор плану
           examples:
@@ -261,6 +262,7 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
           exclusiveMinimum: 0
           description: Унікальний ідентифікатор плану
           examples:
@@ -351,6 +353,7 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
           exclusiveMinimum: 0
           description: Унікальний ідентифікатор плану
           examples:
@@ -481,6 +484,7 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
           exclusiveMinimum: 0
           examples:
           - 1
@@ -564,6 +568,7 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
           exclusiveMinimum: 0
           examples:
           - 1
@@ -1626,6 +1631,8 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
+          exclusiveMinimum: 0
           title: Document Id
       responses:
         '200':
@@ -1657,11 +1664,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
-          description: Validation Error
+          description: Помилка валідації вхідних даних
           content:
             application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       tags:
       - Deanery documents
@@ -1675,6 +1689,8 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
+          exclusiveMinimum: 0
           title: Document Id
       responses:
         '204':
@@ -1713,11 +1729,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
-          description: Validation Error
+          description: Помилка валідації вхідних даних
           content:
             application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/deanery-documents/{document_id}/file:
     get:
       tags:
@@ -1732,6 +1755,8 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
+          exclusiveMinimum: 0
           title: Document Id
       responses:
         '200':
@@ -1762,11 +1787,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
-          description: Validation Error
+          description: Помилка валідації вхідних даних
           content:
             application/json:
+              example:
+                code: VALIDATION_ERROR
+                message: Невалідні вхідні дані
+                details:
+                - field: items.0.credits
+                  message: Input should be greater than 0
+                request_id: req_3f9a1c7e2b4d4a6e
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/admin/users:
     get:
       tags:
@@ -3377,6 +3409,7 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
           exclusiveMinimum: 0
           examples:
           - 77
@@ -3439,6 +3472,7 @@ paths:
         schema:
           anyOf:
           - type: integer
+            maximum: 9223372036854775807
             exclusiveMinimum: 0
           - type: 'null'
           description: Фільтр за ID напрямку
@@ -3494,6 +3528,7 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
           exclusiveMinimum: 0
           examples:
           - 3
@@ -3555,6 +3590,7 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
           exclusiveMinimum: 0
           examples:
           - 3
@@ -3633,6 +3669,7 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
           exclusiveMinimum: 0
           examples:
           - 3
@@ -3642,6 +3679,7 @@ paths:
         required: true
         schema:
           type: integer
+          maximum: 9223372036854775807
           exclusiveMinimum: 0
           examples:
           - 501
@@ -4296,6 +4334,7 @@ components:
         course_id:
           anyOf:
           - type: integer
+            maximum: 9.223372036854776e+18
             exclusiveMinimum: 0.0
           - type: 'null'
           title: Course Id
@@ -4360,11 +4399,15 @@ components:
           anyOf:
           - items:
               type: integer
+              maximum: 9.223372036854776e+18
+              exclusiveMinimum: 0.0
             type: array
+            maxItems: 50
             minItems: 1
           - type: 'null'
+          uniqueItems: true
           title: Direction Ids
-          description: Повна заміна переліку напрямків
+          description: Повна заміна переліку унікальних напрямків
         hidden:
           anyOf:
           - type: boolean
@@ -5352,6 +5395,8 @@ components:
         direction_ids:
           items:
             type: integer
+            maximum: 9.223372036854776e+18
+            exclusiveMinimum: 0.0
           type: array
           maxItems: 3
           title: Direction Ids
@@ -5364,12 +5409,16 @@ components:
         preferred_instructor_ids:
           items:
             type: integer
+            maximum: 9.223372036854776e+18
+            exclusiveMinimum: 0.0
           type: array
           maxItems: 50
           title: Preferred Instructor Ids
         unwanted_instructor_ids:
           items:
             type: integer
+            maximum: 9.223372036854776e+18
+            exclusiveMinimum: 0.0
           type: array
           maxItems: 50
           title: Unwanted Instructor Ids
@@ -5380,10 +5429,11 @@ components:
         certificate_program_id:
           anyOf:
           - type: integer
+            maximum: 9.223372036854776e+18
             exclusiveMinimum: 0.0
           - type: 'null'
           title: Certificate Program Id
-          description: 'Етап 2: поки лише зберігається'
+          description: ID наявної сертифікатної програми
       type: object
       required:
       - academic_year
@@ -5443,6 +5493,7 @@ components:
       properties:
         course_id:
           type: integer
+          maximum: 9.223372036854776e+18
           exclusiveMinimum: 0.0
           title: Course Id
           description: Унікальний ID дисципліни з каталогу САЗ
@@ -5707,6 +5758,8 @@ components:
         direction_ids:
           items:
             type: integer
+            maximum: 9.223372036854776e+18
+            exclusiveMinimum: 0.0
           type: array
           maxItems: 3
           title: Direction Ids
@@ -5719,12 +5772,16 @@ components:
         preferred_instructor_ids:
           items:
             type: integer
+            maximum: 9.223372036854776e+18
+            exclusiveMinimum: 0.0
           type: array
           maxItems: 50
           title: Preferred Instructor Ids
         unwanted_instructor_ids:
           items:
             type: integer
+            maximum: 9.223372036854776e+18
+            exclusiveMinimum: 0.0
           type: array
           maxItems: 50
           title: Unwanted Instructor Ids
@@ -5735,10 +5792,11 @@ components:
         certificate_program_id:
           anyOf:
           - type: integer
+            maximum: 9.223372036854776e+18
             exclusiveMinimum: 0.0
           - type: 'null'
           title: Certificate Program Id
-          description: 'Етап 2: поки лише зберігається'
+          description: ID наявної сертифікатної програми
       type: object
       title: PreferencesRequest
     PreferencesResponse:

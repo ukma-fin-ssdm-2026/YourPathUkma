@@ -9,7 +9,7 @@ Claude (Claude Code) за звітом SonarCloud. Перевірено: pytest 
 """
 
 from datetime import datetime
-from typing import List, Optional, Type
+from typing import Annotated, List, Optional, Type
 
 from fastapi import APIRouter, Depends, Path
 from pydantic import BaseModel, Field
@@ -19,11 +19,11 @@ from sqlalchemy.orm import Session
 
 from ...db import enums as db_enums
 from ...db.base import utcnow
-from ...db.models.catalog import Direction, Instructor
+from ...db.models.catalog import CertificateProgram, Direction, Instructor
 from ...db.models.preferences import InstructorPreference, PlanPreferences, PreferenceDirection, TrimesterLoad
 from ...db.models.users import StudentProfile
 from ...db.session import get_db
-from ..common import ApiError, ErrorDetail, error_responses
+from ..common import MAX_DATABASE_ID, ApiError, ErrorDetail, error_responses
 from ..onboarding import get_onboarded_student
 from .plans import LoadLevels
 
@@ -43,12 +43,20 @@ class PreferencesRequest(BaseModel):
     load_levels: LoadLevels = Field(
         default_factory=LoadLevels, description="Для 4 курсу ігнорується: рівні розраховує сервер (FR-003)"
     )
-    direction_ids: List[int] = Field(default_factory=list, max_length=MAX_DIRECTIONS, description="0–3 напрямки")
+    direction_ids: List[Annotated[int, Field(gt=0, le=MAX_DATABASE_ID)]] = Field(
+        default_factory=list, max_length=MAX_DIRECTIONS, description="0–3 напрямки"
+    )
     include_free_electives: bool = Field(True, description="false — лише профорієнтовні")
-    preferred_instructor_ids: List[int] = Field(default_factory=list, max_length=MAX_INSTRUCTOR_IDS)
-    unwanted_instructor_ids: List[int] = Field(default_factory=list, max_length=MAX_INSTRUCTOR_IDS)
+    preferred_instructor_ids: List[Annotated[int, Field(gt=0, le=MAX_DATABASE_ID)]] = Field(
+        default_factory=list, max_length=MAX_INSTRUCTOR_IDS
+    )
+    unwanted_instructor_ids: List[Annotated[int, Field(gt=0, le=MAX_DATABASE_ID)]] = Field(
+        default_factory=list, max_length=MAX_INSTRUCTOR_IDS
+    )
     wants_certificate: bool = False
-    certificate_program_id: Optional[int] = Field(None, gt=0, description="Етап 2: поки лише зберігається")
+    certificate_program_id: Optional[int] = Field(
+        None, gt=0, le=MAX_DATABASE_ID, description="ID наявної сертифікатної програми"
+    )
 
 
 class PreferencesResponse(BaseModel):
@@ -171,6 +179,10 @@ def save_preferences(
     details += _missing_ids(db, Direction, direction_ids, "direction_ids", "DIRECTION_NOT_FOUND")
     details += _missing_ids(db, Instructor, preferred, "preferred_instructor_ids", "INSTRUCTOR_NOT_FOUND")
     details += _missing_ids(db, Instructor, unwanted, "unwanted_instructor_ids", "INSTRUCTOR_NOT_FOUND")
+    if payload.certificate_program_id is not None:
+        program = db.get(CertificateProgram, payload.certificate_program_id, with_for_update={"read": True})
+        if program is None:
+            details.append(ErrorDetail(field="certificate_program_id", message="Сертифікатна програма не існує"))
     if details:
         raise ApiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details)
 
