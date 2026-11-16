@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.3.1] - 2026-11-16
+
+### Bug Fixes
+
+- Add mobile navigation between catalog and trimesters
+  ([#244](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/244),
+  [`568e120`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/568e120a39cb5181bb2ad0e5c3ccbb052ab1a04f))
+
+- Correct planner totals and improve plan navigation
+  ([#244](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/244),
+  [`568e120`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/568e120a39cb5181bb2ad0e5c3ccbb052ab1a04f))
+
+- Include academic history in free choice totals
+  ([#244](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/244),
+  [`568e120`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/568e120a39cb5181bb2ad0e5c3ccbb052ab1a04f))
+
+- Show plan actions based on student eligibility
+  ([#244](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/244),
+  [`568e120`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/568e120a39cb5181bb2ad0e5c3ccbb052ab1a04f))
+
+- Show review links only for configured HTTPS URLs
+  ([#244](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/244),
+  [`568e120`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/568e120a39cb5181bb2ad0e5c3ccbb052ab1a04f))
+
+
 ## [0.3.0] - 2026-11-16
 
 ### Bug Fixes
