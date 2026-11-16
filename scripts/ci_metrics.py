@@ -1,5 +1,7 @@
 # Використання ШІ: Codex додав підрахунок і підтримку GH_TOKEN для GitHub Actions.
 # Перевірка: pytest і відтворення історичної вибірки GitHub Actions.
+# Використання ШІ: Codex врахував доставлені пізніше зміни й перекриття інтервалів CI.
+# Перевірка: pytest, Ruff і локальне відтворення JSON-доказів з перевіркою предків Git.
 # Codex додав обмежені повтори GET-запитів. Перевірка: ін’єкція збоїв і запуск workflow.
 """Reproduce the Lab 10 CI metrics from GitHub Actions."""
 
@@ -109,29 +111,30 @@ def measure(run, repo):
             "sha": sha,
             "attempt": attempt,
             "conclusion": run["conclusion"],
+            "created_at": created,
+            "started_at": started,
             "completed_at": completed,
             "queue_seconds": (started - created).total_seconds(),
             "execution_seconds": (completed - started).total_seconds(),
         }
-        if run["conclusion"] == "success":
-            pages = github(f"{base}/commits/{sha}/pulls?per_page=100", paginate=True)
-            matching = [
-                pr["number"]
-                for page in pages
-                for pr in page
-                if pr["merged_at"] and pr["merge_commit_sha"] == sha and pr["base"]["ref"] == "main"
-            ]
-            if len(matching) > 1:
-                raise ValueError("multiple PRs match the merge SHA")
-            pr = matching[0] if matching else None
-            if pr is None:
-                commit = github(f"{base}/commits/{sha}")
-            else:
-                commit = github(f"{base}/pulls/{pr}/commits?per_page=1")[0]
-            authored = timestamp(commit["commit"]["author"]["date"])
-            if authored > created:
-                raise ValueError("first commit timestamp is later than run creation")
-            row.update(pr=pr, lead_seconds=(completed - authored).total_seconds())
+        pages = github(f"{base}/commits/{sha}/pulls?per_page=100", paginate=True)
+        matching = [
+            pr["number"]
+            for page in pages
+            for pr in page
+            if pr["merged_at"] and pr["merge_commit_sha"] == sha and pr["base"]["ref"] == "main"
+        ]
+        if len(matching) > 1:
+            raise ValueError("multiple PRs match the merge SHA")
+        pr = matching[0] if matching else None
+        if pr is None:
+            commit = github(f"{base}/commits/{sha}")
+        else:
+            commit = github(f"{base}/pulls/{pr}/commits?per_page=1")[0]
+        authored = timestamp(commit["commit"]["author"]["date"])
+        if authored > created:
+            raise ValueError("first commit timestamp is later than run creation")
+        row.update(pr=pr, authored_at=authored)
         return row
     except (KeyError, IndexError, TypeError, ValueError) as error:
         raise ValueError(f"Run {run_id}: missing or invalid timing data ({error})") from error
@@ -145,10 +148,42 @@ def stats(values):
     }
 
 
-def calculate(runs, start, end):
+@cache
+def contains_commit(repo, base, head):
+    if base == head:
+        return True
+    comparison = github(f"repos/{repo}/compare/{base}...{head}?per_page=1")
+    return comparison["status"] in {"ahead", "identical"}
+
+
+def interval_seconds(intervals):
+    """Measure the union of wall-clock intervals, without double-counting overlaps."""
+    total, last = 0, None
+    for start, end in sorted(intervals):
+        if end > start:
+            total += max(0, (end - max(start, last or start)).total_seconds())
+            last = max(end, last or end)
+    return total
+
+
+def delivery_timing(attempts, delivery, authored):
+    # Count this SHA's attempts and its delivering run; clip at delivery completion.
+    # Execution takes precedence over queue time during overlapping runs.
+    relevant = {run["id"]: run for run in [*attempts, delivery]}
+    finish = delivery["completed_at"]
+    queue, execution = [], []
+    for run in relevant.values():
+        queue.append((max(authored, run["created_at"]), min(finish, run["started_at"])))
+        execution.append((max(authored, run["started_at"]), min(finish, run["completed_at"])))
+    executing = interval_seconds(execution)
+    return interval_seconds(queue + execution) - executing, executing
+
+
+def calculate(runs, start, end, contains=None):
+    contains = contains or (lambda base, head: base == head)
     successful = sorted(
         (run for run in runs if run["conclusion"] == "success"),
-        key=lambda run: run["completed_at"],
+        key=lambda run: (run["completed_at"], run["id"]),
     )
     failed = [run for run in runs if run["conclusion"] == "failure"]
     recovery, missing = [], []
@@ -160,10 +195,41 @@ def calculate(runs, start, end):
         else:
             recovery.append((next_green["completed_at"] - last).total_seconds())
 
-    lead = [run["lead_seconds"] for run in successful]
+    by_sha = {}
+    for run in sorted(runs, key=lambda run: (run["created_at"], run["id"])):
+        by_sha.setdefault(run["sha"], []).append(run)
+    changes, undelivered = [], []
+    for sha, attempts in by_sha.items():
+        source = attempts[0]
+        delivery = next(
+            (
+                green
+                for green in successful
+                if green["completed_at"] >= source["created_at"] and contains(sha, green["sha"])
+            ),
+            None,
+        )
+        if delivery is None:
+            undelivered.append(sha)
+            continue
+        queue, execution = delivery_timing(attempts, delivery, source["authored_at"])
+        lead = (delivery["completed_at"] - source["authored_at"]).total_seconds()
+        changes.append(
+            {
+                "sha": sha,
+                "pr": source["pr"],
+                "source_run_id": source["id"],
+                "delivery_run_id": delivery["id"],
+                "lead_seconds": lead,
+                "queue_seconds": queue,
+                "execution_seconds": execution,
+                "other_seconds": lead - queue - execution,
+            }
+        )
+    lead = [change["lead_seconds"] for change in changes]
     total_lead = sum(lead)
-    queue = sum(run["queue_seconds"] for run in successful)
-    execution = sum(run["execution_seconds"] for run in successful)
+    queue = sum(change["queue_seconds"] for change in changes)
+    execution = sum(change["execution_seconds"] for change in changes)
     weeks = (end - start) / timedelta(weeks=1)
     return {
         "completed_runs": len(runs),
@@ -172,13 +238,16 @@ def calculate(runs, start, end):
         "deployments_per_week": len(successful) / weeks,
         "change_failure_percent": len(failed) / len(runs) * 100 if runs else None,
         "lead_time": stats(lead),
-        "direct_commits_in_lead_time": sum(run["pr"] is None for run in successful),
+        "direct_commits_in_lead_time": sum(change["pr"] is None for change in changes),
         "queue_seconds": queue,
         "execution_seconds": execution,
+        "other_seconds": total_lead - queue - execution,
         "queue_percent_of_lead_time": queue / total_lead * 100 if total_lead else None,
         "execution_percent_of_lead_time": execution / total_lead * 100 if total_lead else None,
         "recovery_time": stats(recovery),
         "unrecovered_run_ids": missing,
+        "undelivered_change_shas": undelivered,
+        "lead_time_changes": changes,
     }
 
 
@@ -236,7 +305,7 @@ def main():
             "from": start.isoformat(),
             "to_exclusive": end.isoformat(),
             "Використання ШІ": "Codex додав автоматичний підрахунок. Результат звірено зі звітом Lab 10.",
-            **calculate(rows, start, end),
+            **calculate(rows, start, end, lambda base, head: contains_commit(args.repo, base, head)),
         }
         print(json.dumps(report, ensure_ascii=False, indent=2))
     except (OSError, KeyError, IndexError, TypeError, ValueError, RuntimeError, subprocess.TimeoutExpired) as error:
