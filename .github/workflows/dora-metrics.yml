@@ -1,6 +1,7 @@
+# Використання ШІ: Codex оновив назви DORA; перевірка: pytest, Ruff і пошук старих назв.
 # Використання ШІ: Codex додав ручний запуск підрахунку DORA й публікацію JSON.
 # Перевірка: синтаксис workflow, тести скрипта та звірка з історичним звітом.
-name: Lab 10 DORA metrics
+name: DORA metrics
 
 on:
   workflow_dispatch:
@@ -42,10 +43,10 @@ jobs:
           python -X utf8 scripts/ci_metrics.py \
             --repo "$GITHUB_REPOSITORY" --workflow ci.yaml \
             --from "$METRICS_FROM_UTC" --to "$METRICS_TO_UTC" \
-            --output - > lab10-automated-metrics.json
+            --output - > dora-metrics.json
       - name: Upload metrics report
         uses: actions/upload-artifact@v7
         with:
-          name: lab10-dora-metrics
-          path: lab10-automated-metrics.json
+          name: dora-metrics
+          path: dora-metrics.json
           if-no-files-found: error

@@ -5,7 +5,7 @@
   "event": "push",
   "from": "2026-10-23T00:00:00Z",
   "to_exclusive": "2026-11-13T00:00:00Z",
-  "Використання ШІ": "Codex експортував метадані GitHub Actions і Git. Звірено всі 90 ID з metrics-raw.md, вісім прямих комітів з Git і два збої з логами.",
+  "Використання ШІ": "Codex експортував метадані GitHub Actions і Git. Звірено всі 90 ID з metrics-raw.md, вісім прямих комітів з Git і два збої з логами. Codex додав батьківські SHA з локального Git для відтворюваної перевірки доставки змін; усі 90 списків перевірено через git show. Codex перейменував файли метрик за призначенням; посилання перевірено пошуком і регресійними тестами.",
   "runs": [
     {
       "id": 40194049316,
@@ -33,6 +33,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40194049316/job/121170973847"
         }
+      ],
+      "parents": [
+        "8fd3d231d85a29c90dede3f45e52833bf0bac836",
+        "a7656580895d7137e809d5c3bfb29de7479eff5b"
       ]
     },
     {
@@ -61,6 +65,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40194070235/job/121171038578"
         }
+      ],
+      "parents": [
+        "06b3c3ca9c0609e27219c249b960881ff8af5383",
+        "ed0103707e7f75e1c4a0d9ef0da4b67cb38d6863"
       ]
     },
     {
@@ -89,6 +97,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40484286049/job/122122071189"
         }
+      ],
+      "parents": [
+        "39e9ee211865ba4ebfa467e2706ea2fe5bf799b0",
+        "82742026241b8d959d03269d033883a9eb0b1f84"
       ]
     },
     {
@@ -117,6 +129,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40781665701/job/123144609229"
         }
+      ],
+      "parents": [
+        "640ea75d15aa84a2f1b12729cf4e41110e96a4b3",
+        "ac4f227c82fe525b8a466e760bb7d012f60054ad"
       ]
     },
     {
@@ -145,6 +161,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40793480430/job/123184129885"
         }
+      ],
+      "parents": [
+        "09329fdc71d6d0e965f96efdb5c01b81d97641b7",
+        "ea61327e344ff9719fe00fe2292042f19ef9ffd0"
       ]
     },
     {
@@ -173,6 +193,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40840107060/job/123334132839"
         }
+      ],
+      "parents": [
+        "9ed010bd45b9e83d7d17270dac7eff66fce3dceb",
+        "a5660bdfc23209eafc559f43f0562838ac100732"
       ]
     },
     {
@@ -201,6 +225,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40840641279/job/123335896920"
         }
+      ],
+      "parents": [
+        "e803da5e4ed0d83525ca07cca15c9f42f86a7203",
+        "1b927ca338774dd6501a9106a6d8fa20fc17cf7e"
       ]
     },
     {
@@ -229,6 +257,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40842634327/job/123342454405"
         }
+      ],
+      "parents": [
+        "3a0c484e0aa9eb39a67b0f3558ef7c22deefab01",
+        "8e2a406abd6d667a7fe7639f24a532c8bc6984b2"
       ]
     },
     {
@@ -257,6 +289,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40847167703/job/123357390907"
         }
+      ],
+      "parents": [
+        "c398c956b387b252e25192d61797a0d69593bec2",
+        "b7782ced81375c50c7502378d48a232973c5fdb0"
       ]
     },
     {
@@ -285,6 +321,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40849232825/job/123364262909"
         }
+      ],
+      "parents": [
+        "254900ee4537582d19edef1d350d98be0d68ce25",
+        "e9ce4c5ef39c889fd76b0b8e86c4c217eb10ad48"
       ]
     },
     {
@@ -313,6 +353,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40857114777/job/123390745592"
         }
+      ],
+      "parents": [
+        "f7922ed54105e743e488f603d843dde1ab3a4445",
+        "52d85393e789a7ffbff056a4beeffcb997291738"
       ]
     },
     {
@@ -341,6 +385,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947469251/job/123706495261"
         }
+      ],
+      "parents": [
+        "8888b726e4f3a4cd8241911fec8d14b44a1fdedb",
+        "3451d684f9a0209b4f45a6bb264c716f539e517a"
       ]
     },
     {
@@ -369,6 +417,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947587436/job/123706913624"
         }
+      ],
+      "parents": [
+        "1d93e0aa5fddd0bafd8b52ebb88a76a02603e96a",
+        "ac1b3bd0bba52c21853d9f89b7947bd99ab0ef8a"
       ]
     },
     {
@@ -397,6 +449,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947663340/job/123707173969"
         }
+      ],
+      "parents": [
+        "08322523f125b77b95b974bf41276cf4769dfd95",
+        "87f096aae45e8da0fcc06b33254b91eb86c1698b"
       ]
     },
     {
@@ -425,6 +481,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947716626/job/123707350702"
         }
+      ],
+      "parents": [
+        "b87f6c167b19c1c3aea6adbc99e4d657828a8b31",
+        "53fab1e21b2dca3c85ae097adbedd88f4f5fe16c"
       ]
     },
     {
@@ -453,6 +513,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947769333/job/123707538643"
         }
+      ],
+      "parents": [
+        "b34f46a120766272372c3e6b7e4fdcc317d326c4",
+        "53d8bbfd12e0b81c799366d0af80f44f01a9a8a6"
       ]
     },
     {
@@ -481,6 +545,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947834118/job/123707761282"
         }
+      ],
+      "parents": [
+        "8f7e85a50bf3256b0198d54df505a53e5c40157e",
+        "a51800f55c14c8e5bfa0c71eea2a715c9173e639"
       ]
     },
     {
@@ -509,6 +577,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40947886429/job/123707942530"
         }
+      ],
+      "parents": [
+        "55da7c163437de7f89b267753c82a8a6265cbd84",
+        "e80269aae7f78892dfa063642cb96e4d03d751b2"
       ]
     },
     {
@@ -537,6 +609,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40948213861/job/123709060336"
         }
+      ],
+      "parents": [
+        "804e8990b35c933781da157faa76b4f51c6e67d3",
+        "8c1670cc101c217e769e756b4afd1d745df7ff03"
       ]
     },
     {
@@ -565,6 +641,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955505052/job/123734439754"
         }
+      ],
+      "parents": [
+        "d1f35944908bb3dd6a1233722eb7906abb3f8fd9",
+        "7bda23e08c75638d36fbc5254d4e9473c58cb6c3"
       ]
     },
     {
@@ -593,6 +673,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955555375/job/123734614205"
         }
+      ],
+      "parents": [
+        "cd9809ef9dc9e55bda4848aa066eeae59de69a28",
+        "2fbcc894a37e36c1feeb563887f4da295579b05d"
       ]
     },
     {
@@ -621,6 +705,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955581111/job/123734702641"
         }
+      ],
+      "parents": [
+        "42e5c0b566b84040ce35f1cf36ad408405acfd41",
+        "0e05bf2ad876bac6ab1f3105cbe358a1dcd88ad4"
       ]
     },
     {
@@ -649,6 +737,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955610127/job/123734802553"
         }
+      ],
+      "parents": [
+        "70ce8a14956c7b5ab8d1a4128561da597debdb0c",
+        "227167011768e68f4bc425db7eb58c66a4deb2e8"
       ]
     },
     {
@@ -677,6 +769,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955638679/job/123734903367"
         }
+      ],
+      "parents": [
+        "2a0c4d92a0f61884605ab098146ee34fa7fde2e1",
+        "1f76ff8c1612dca2e02abe68cde0ec60a2778bcd"
       ]
     },
     {
@@ -705,6 +801,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40955666239/job/123734998983"
         }
+      ],
+      "parents": [
+        "61c7a3bc6672d5824bd8da257e46e78afab5f226",
+        "d6122660d585a50058bf903fc2f1fddebcd04d8c"
       ]
     },
     {
@@ -733,6 +833,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40965358405/job/123768344384"
         }
+      ],
+      "parents": [
+        "c9efde785e4b085afa63e0437fcbef76dcbdc402",
+        "14c5a0914de73df85ad9186672efa06089a69258"
       ]
     },
     {
@@ -761,6 +865,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/40965382373/job/123768430731"
         }
+      ],
+      "parents": [
+        "d92684daebe6cca8f2a43c5f82fb368f28858ab4",
+        "3a2b6f7682754070fe521995566e7e792565e369"
       ]
     },
     {
@@ -789,6 +897,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41027807553/job/123970002732"
         }
+      ],
+      "parents": [
+        "091e7e3ebdbefda5edfdfeabc2e747f31f15f938",
+        "59496cd317779fc82e6e7b1fcba4f8d44ddc430c"
       ]
     },
     {
@@ -817,6 +929,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41317240847/job/124879773410"
         }
+      ],
+      "parents": [
+        "0b62882c5ea9f0ee84df7d8b96840d8c0ed58980",
+        "d5b84c78321ce6544214b3aceecc23479680c5a3"
       ]
     },
     {
@@ -845,6 +961,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318233521/job/124882738282"
         }
+      ],
+      "parents": [
+        "63afae1a6a8daea151aeec38385fc9436647032c",
+        "f4cf57d52644cc2b15a52a199f1d6fd97a4a9972"
       ]
     },
     {
@@ -873,6 +993,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318425050/job/124883316536"
         }
+      ],
+      "parents": [
+        "060cb79ce4ecd27504b473aef004f286347d8fd4",
+        "aef2ee4824ffa1ef1caf167b4ebe79e129439a81"
       ]
     },
     {
@@ -901,6 +1025,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318694008/job/124884117299"
         }
+      ],
+      "parents": [
+        "2676d3f95f5ea93fa9b0a432c3be0b1b3556e593",
+        "a59026b2e619ce83e431956357628b181c00ba9a"
       ]
     },
     {
@@ -929,6 +1057,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41318935310/job/124884843872"
         }
+      ],
+      "parents": [
+        "41be18f5f9718adf8998f8f7082a009708ae74b7",
+        "6b8ba3b109a17c10c7484b77ecaaf082d3b9c2ea"
       ]
     },
     {
@@ -957,6 +1089,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41322356952/job/124895075245"
         }
+      ],
+      "parents": [
+        "7eea8febda895cc0380f4b40613c064e846366de",
+        "e9dd35dbb3d5d9b6d524e6dbfd92c8e4bb27e03c"
       ]
     },
     {
@@ -985,6 +1121,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41346422011/job/124967090668"
         }
+      ],
+      "parents": [
+        "143664e12316c1c0de0f98e9fd34f4224bdc1c90",
+        "de0482af8eac0408a85a32c2d1718f107f0232c1"
       ]
     },
     {
@@ -1013,6 +1153,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41346448889/job/124967172176"
         }
+      ],
+      "parents": [
+        "043664ddaa1794ed4b5382c8bc97db72c20548de",
+        "270eb63d6a00568416d486e29a4e13bd6fab9989"
       ]
     },
     {
@@ -1041,6 +1185,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352006795/job/124984034672"
         }
+      ],
+      "parents": [
+        "b9112c2c7a439b4810890b51b6f1708d7e76d5e0",
+        "3376e36d80d0367d74da1ff7f5ac8d006bb0f5c0"
       ]
     },
     {
@@ -1069,6 +1217,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352023333/job/124984084631"
         }
+      ],
+      "parents": [
+        "7376c2e4466b0676c1ea2c94bed811bac9dbda04",
+        "50bb601e3b6ec7828851e27bb2d0a3a3a220ee10"
       ]
     },
     {
@@ -1097,6 +1249,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352038258/job/124984130676"
         }
+      ],
+      "parents": [
+        "00055438f3ab482f74ec5628306fd45c95cb661b",
+        "1fa811a51030e5a0a0489ccd9fe0f17fa45d13ad"
       ]
     },
     {
@@ -1125,6 +1281,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41352078404/job/124984255491"
         }
+      ],
+      "parents": [
+        "f40b6db018bec03d8901838b9b74a830dbb3550a",
+        "844c3cf363cfa9e2c8585595dd4bab6e054f7ae9"
       ]
     },
     {
@@ -1153,6 +1313,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41353089878/job/124987287435"
         }
+      ],
+      "parents": [
+        "bc1076368cf9736545f41956466a3de10b2ef518",
+        "dec96b3b47cb67719c1ade7c30aa348e9769b302"
       ]
     },
     {
@@ -1181,6 +1345,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/41353235193/job/124987727707"
         }
+      ],
+      "parents": [
+        "bef8409605a80873ee27bfbad755e6f4a95d7e64",
+        "4725c510ace5cbd1c54b88176e5c8a7c379c8ceb"
       ]
     },
     {
@@ -1209,6 +1377,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42012073751/job/127193305685"
         }
+      ],
+      "parents": [
+        "8bdc1152c7507ffab1eb05ae85ef3538c9530386",
+        "21c3a2cb6509981437dbfcf2eb32bd0020bc6ff2"
       ]
     },
     {
@@ -1237,6 +1409,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013412204/job/127197823389"
         }
+      ],
+      "parents": [
+        "38f55c213d9a5f7bd084a6dad5f7bbd7bbd6b452",
+        "5d00094b3a868fb92a6e38913cac0447820b635d"
       ]
     },
     {
@@ -1265,6 +1441,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013612463/job/127198498458"
         }
+      ],
+      "parents": [
+        "22e2b29d9a83ccf71a7275aac6ca561d7e9ce480",
+        "797c6b53273cc45ff14542377963d771aadb3dba"
       ]
     },
     {
@@ -1293,6 +1473,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013667956/job/127198686287"
         }
+      ],
+      "parents": [
+        "49d52143bb403695c08fa43f43516505429b5bb2",
+        "661a25de8c7101f8e18942131b4d2125298806a6"
       ]
     },
     {
@@ -1321,6 +1505,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013842432/job/127199274517"
         }
+      ],
+      "parents": [
+        "6cb4b73499b413ed2d24e1d2755047ca40f88675",
+        "5e7b3857f0baf6cdd87ec5c4420964ab71ed861d"
       ]
     },
     {
@@ -1349,6 +1537,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42013950183/job/127199639477"
         }
+      ],
+      "parents": [
+        "8ca379ba2bf5b0e3eac5fcb7d31bea644861b0b9",
+        "11fedd46f30af191dc39ca2502692aba8fd4a80b"
       ]
     },
     {
@@ -1377,6 +1569,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42014441467/job/127201302574"
         }
+      ],
+      "parents": [
+        "fc4fbe0fb5f8e9d33a276e8a8baa81ec20addcf2",
+        "1264627b2a998c0e9e27bc2b9479499c12de01e9"
       ]
     },
     {
@@ -1405,6 +1601,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42014538785/job/127201634233"
         }
+      ],
+      "parents": [
+        "268f61668197837ba14cba7b891c76a8d82751e8",
+        "f42554ca9ffefe5e50b0a05efc437b370bc34d75"
       ]
     },
     {
@@ -1433,6 +1633,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42014996113/job/127203199472"
         }
+      ],
+      "parents": [
+        "d95b8f5e2332ef2199c1de70a563c4d9906da251",
+        "9949159fc6aec942d0827f9dfebb59c3ab442acc"
       ]
     },
     {
@@ -1461,6 +1665,9 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42025176831/job/127237470438"
         }
+      ],
+      "parents": [
+        "3b9328470a2cab48bfc9f99a9c84eb5b12f7d2c8"
       ]
     },
     {
@@ -1489,6 +1696,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42054737978/job/127339916813"
         }
+      ],
+      "parents": [
+        "339f226a9b81e9201c6ddbe6028e20566a923a8c",
+        "755db1a29f60a81a91b65736b10677f7634e42eb"
       ]
     },
     {
@@ -1517,6 +1728,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42074089964/job/127409505761"
         }
+      ],
+      "parents": [
+        "eb0432e2c8aa9a07dfb2f082147703a98092eb78",
+        "e5cbe9a6f011de1c5d49f649d3100d74e4b8518c"
       ]
     },
     {
@@ -1545,6 +1760,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42074133498/job/127409658337"
         }
+      ],
+      "parents": [
+        "a1c8565be818c8737f9881dca908be832d02ed0b",
+        "a3214353a764d159ecafba6724cc87d08197dc32"
       ]
     },
     {
@@ -1573,6 +1792,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42110067898/job/127534967934"
         }
+      ],
+      "parents": [
+        "c00fa863339614a914e84cf8c5502fb614861d7e",
+        "3d6386ec6c86c2713b35fa232f0e71dade1025e5"
       ]
     },
     {
@@ -1601,6 +1824,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42111262361/job/127539119819"
         }
+      ],
+      "parents": [
+        "9bbca539e4b63537c4f012116fe9673847b15494",
+        "840dd29070b8fe768187791a5626c14abad0b9fd"
       ]
     },
     {
@@ -1629,6 +1856,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42119321896/job/127567226211"
         }
+      ],
+      "parents": [
+        "239cb39bd6dc5e84d832e866ba367b9b90a5a042",
+        "d0c5bb35d4ba277980ea3599ed03546225f46c1b"
       ]
     },
     {
@@ -1657,6 +1888,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42123564650/job/127581846200"
         }
+      ],
+      "parents": [
+        "607f9e4eed01989e210edcaad8ef1dab73957a36",
+        "de2b35d7e23b31da5358669f7749e56792952a14"
       ]
     },
     {
@@ -1685,6 +1920,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42123779915/job/127582584000"
         }
+      ],
+      "parents": [
+        "3c000b4c2093e88e2fae4e59715e940bfdbcff37",
+        "adb69ee62396bef485d7c97c82b95c8c8cea95a9"
       ]
     },
     {
@@ -1713,6 +1952,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42194030916/job/127812698371"
         }
+      ],
+      "parents": [
+        "197088fb36224381738b60e8e1766c48bb50b95d",
+        "f508f6aaabb57e5c78255dc31a0df396a0064308"
       ]
     },
     {
@@ -1745,7 +1988,11 @@
       "failure": {
         "reason": "actions/setup-python@v7: Unexpected HTTP response: 504",
         "log_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42471622232/job/128703500652"
-      }
+      },
+      "parents": [
+        "47f37f94b62316a63bab9a56faa0767a2881c1a3",
+        "7f59ab1a9d36455970a96b8ea0284831460a1977"
+      ]
     },
     {
       "id": 42471770242,
@@ -1777,7 +2024,11 @@
       "failure": {
         "reason": "actions/setup-python@v7: Unexpected HTTP response: 504",
         "log_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42471770242/job/128703962581"
-      }
+      },
+      "parents": [
+        "f1d5fa6b3900e3e5a689613bf046b852e77526be",
+        "c8bf8cd4c1a95e2feeb567bbbb6c0b0609bd08ce"
+      ]
     },
     {
       "id": 42471841555,
@@ -1805,6 +2056,9 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42471841555/job/128704190099"
         }
+      ],
+      "parents": [
+        "5185fd519477871c4a818290ed829045f558fb23"
       ]
     },
     {
@@ -1833,6 +2087,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42472329645/job/128705809908"
         }
+      ],
+      "parents": [
+        "8975b66c6f01d59671ec59c609e4a25b34a37dea",
+        "970a0e8910e481bba98d5e35ed8c81ba570d3287"
       ]
     },
     {
@@ -1861,6 +2119,9 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42472546604/job/128706503047"
         }
+      ],
+      "parents": [
+        "e61583d41c1b0629260a0aac40dfead7b35a4d52"
       ]
     },
     {
@@ -1889,6 +2150,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42474086090/job/128711390936"
         }
+      ],
+      "parents": [
+        "7285d688ecbfbdd04b9a9f732ab793d7187d34e4",
+        "8bacf2ee8e1eda993f3bb1b48a015ba44d1316cf"
       ]
     },
     {
@@ -1917,6 +2182,9 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42474117369/job/128711491045"
         }
+      ],
+      "parents": [
+        "05de932618d846e74826594412fff82d2997e82a"
       ]
     },
     {
@@ -1945,6 +2213,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42478560398/job/128725258114"
         }
+      ],
+      "parents": [
+        "53f66d25f8c72d9920cf45447c85989db3b294de",
+        "a1bd0ebffce9ba9ddecbd3ba02174f65ae7c97b6"
       ]
     },
     {
@@ -1973,6 +2245,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42478577755/job/128725308956"
         }
+      ],
+      "parents": [
+        "5a270c60c06546f636c3760f79923ce1049cae0c",
+        "350a873fc2e2028feebc6443472a11402fa9d174"
       ]
     },
     {
@@ -2001,6 +2277,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42865248239/job/130001735906"
         }
+      ],
+      "parents": [
+        "229d97c6f0da4fda746bf5a23897c8f9858362d1",
+        "fc1de3189a76ba7492f9a6ffed5ec736c1a12146"
       ]
     },
     {
@@ -2029,6 +2309,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/42865358425/job/130002129980"
         }
+      ],
+      "parents": [
+        "a336633c7386ec0cdd39d21bcc6f4db658055b07",
+        "4cc022457ba681d91cf90fee8652eb4e92386ad3"
       ]
     },
     {
@@ -2057,6 +2341,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43067507298/job/130686278024"
         }
+      ],
+      "parents": [
+        "079c4411b7931883837be91747f81c53b76ddf37",
+        "7722e73405bc0306eae7a7e5c78dab3c43928d5f"
       ]
     },
     {
@@ -2085,6 +2373,9 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43067868333/job/130687538572"
         }
+      ],
+      "parents": [
+        "63756a62a5f0914dc65e57261520debc7b49a6c9"
       ]
     },
     {
@@ -2113,6 +2404,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43111390064/job/130828033353"
         }
+      ],
+      "parents": [
+        "ef1548572e998583cc40eba80f6d2f942828874b",
+        "40515af1ffbace8d1a8e6c796a052484cae2863e"
       ]
     },
     {
@@ -2141,6 +2436,9 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43111641884/job/130828897820"
         }
+      ],
+      "parents": [
+        "c70f2a67054121c7413ab5820fdedc14a18a5a27"
       ]
     },
     {
@@ -2169,6 +2467,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43112062424/job/130830404102"
         }
+      ],
+      "parents": [
+        "3311de243e87aed7e60d8d0fa1c954c9e074f367",
+        "e7cb814eb75ae79b519dc7a5451b522baedace5b"
       ]
     },
     {
@@ -2197,6 +2499,9 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43112125185/job/130830630278"
         }
+      ],
+      "parents": [
+        "14bd6d051583f9e804a6862fe86056190738df1a"
       ]
     },
     {
@@ -2225,6 +2530,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43196363221/job/131108267598"
         }
+      ],
+      "parents": [
+        "7fb7b8bae6911e192cf5f82f9e51c33c707ba214",
+        "5688ba5eab7f231a0806d998c45898855a52cabc"
       ]
     },
     {
@@ -2253,6 +2562,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43282714881/job/131407943349"
         }
+      ],
+      "parents": [
+        "703b5c6f87429a40f81b4960561fe8fa318c6363",
+        "02dde486254031d2811f3bee59b942b763260d46"
       ]
     },
     {
@@ -2281,6 +2594,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299034444/job/131464941340"
         }
+      ],
+      "parents": [
+        "d29709f2bbe4a282bcc4e2f7e1842d4ec5864cbd",
+        "6de285b4bd0517f06237e7a6ef7d3d762b9e7e44"
       ]
     },
     {
@@ -2309,6 +2626,9 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299341046/job/131466004102"
         }
+      ],
+      "parents": [
+        "afd48fd42678c59c403312ce3beede66433ec2a1"
       ]
     },
     {
@@ -2337,6 +2657,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299458361/job/131466404683"
         }
+      ],
+      "parents": [
+        "d296cc0fc2e562d463c5686819b5f2ffdabbbf37",
+        "f21b26388d22dcdba81d62b0c4ffde9a4c4892c6"
       ]
     },
     {
@@ -2365,6 +2689,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299527590/job/131466647183"
         }
+      ],
+      "parents": [
+        "d87dcb4f46e0977e5475074e13bc9143133908a0",
+        "13506e51b8c162e39a109e5f288414987592338a"
       ]
     },
     {
@@ -2393,6 +2721,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299601495/job/131466907735"
         }
+      ],
+      "parents": [
+        "014640ed63f8129a33dc69339fc5122d639ec81f",
+        "fc3e57e97d28ce45c38cfdfd0b4e53aa63c2997b"
       ]
     },
     {
@@ -2421,6 +2753,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299656880/job/131467100132"
         }
+      ],
+      "parents": [
+        "d181473989fd1905bca29d11e9efafabd57d17ad",
+        "7be5f940391ce6980499e74de2947c79347479a8"
       ]
     },
     {
@@ -2449,6 +2785,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299717961/job/131467311898"
         }
+      ],
+      "parents": [
+        "317318b3cd1d196a974fb2fc3027f4fd16e9a3ed",
+        "fc574702b6aa8448b242658c26361e7ff8a4b387"
       ]
     },
     {
@@ -2477,6 +2817,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299777657/job/131467515142"
         }
+      ],
+      "parents": [
+        "abfa940441886f2ecd31014e96c286a6973a5d01",
+        "f5df06fb84008ac008401488fb2ad6e104f9c81f"
       ]
     },
     {
@@ -2505,6 +2849,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43299817982/job/131467660344"
         }
+      ],
+      "parents": [
+        "091343132dd64513784c61c3b0c09ad8fff8ff3c",
+        "6930c6fac211c5fa99f325a585af4970aab84283"
       ]
     },
     {
@@ -2533,6 +2881,10 @@
           "conclusion": "success",
           "html_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/43313636471/job/131515858632"
         }
+      ],
+      "parents": [
+        "d6d9a1d8ff3fe5efc954c574e18b7eef40f26d54",
+        "53da47dbc8e84487ffab899d08dd2853175fa07e"
       ]
     }
   ]

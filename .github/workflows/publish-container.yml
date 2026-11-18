@@ -1,0 +1,62 @@
+# Використання ШІ: Codex додав публікацію після зеленого CI.
+# Перевірка: локальний огляд YAML; build і smoke test виконуються до docker push.
+name: Publish container
+run-name: Publish ${{ github.event.workflow_run.head_sha }} CI ${{ github.event.workflow_run.id }}
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - name: Build, smoke test and publish SHA image
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          export DOCKER_CONFIG
+          DOCKER_CONFIG=$(mktemp -d)
+          container=""
+          cleanup() {
+            if [[ -n "$container" ]]; then docker rm -f "$container"; fi
+            rm -rf "$DOCKER_CONFIG"
+          }
+          trap cleanup EXIT
+          image="ghcr.io/${GITHUB_REPOSITORY,,}:$SOURCE_SHA"
+          docker build --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
+            --label "org.opencontainers.image.revision=$SOURCE_SHA" -t "$image" .
+          smoke_secret=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
+          container=$(docker run -d -e APP_ENV=development -e SEED_DEMO_DATA=0 \
+            -e JWT_SECRET="$smoke_secret" "$image")
+          ready=false
+          for attempt in {1..30}; do
+            if docker exec "$container" python -c \
+              'import urllib.request; urllib.request.urlopen("http://127.0.0.1:3000/openapi.json", timeout=2)' \
+              >/dev/null 2>&1; then ready=true; break; fi
+            sleep 2
+          done
+          if [[ "$ready" != true ]]; then docker logs "$container"; exit 1; fi
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker push "$image"
+          printf 'Published `%s`\n\nSource CI: %s\n' "$image" \
+            '${{ github.event.workflow_run.html_url }}' >> "$GITHUB_STEP_SUMMARY"
