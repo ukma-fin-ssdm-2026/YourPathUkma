@@ -21,10 +21,13 @@ from src.db.models import AcademicRecord, IndividualPlan, User
 from src.db.models.users import StudentProfile
 from src.db.session import get_engine, session_factory
 
-pytestmark = pytest.mark.skipif(
-    not database_url().startswith("postgresql"),
-    reason="Потрібні блокування рядків і pg_blocking_pids у PostgreSQL",
-)
+pytestmark = [
+    pytest.mark.slow,
+    pytest.mark.skipif(
+        not database_url().startswith("postgresql"),
+        reason="Потрібні блокування рядків і pg_blocking_pids у PostgreSQL",
+    ),
+]
 
 WAIT_SECONDS = 15
 PLAN_URL = "/api/v1/plans"

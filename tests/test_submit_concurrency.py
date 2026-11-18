@@ -23,10 +23,13 @@ from src.db.config import database_url
 from src.db.models import Course, IndividualPlan, PlanItem
 from src.db.session import session_factory
 
-pytestmark = pytest.mark.skipif(
-    not database_url().startswith("postgresql"),
-    reason="Потрібні справжні блокування рядків PostgreSQL (на SQLite FOR UPDATE ігнорується)",
-)
+pytestmark = [
+    pytest.mark.slow,
+    pytest.mark.skipif(
+        not database_url().startswith("postgresql"),
+        reason="Потрібні справжні блокування рядків PostgreSQL (на SQLite FOR UPDATE ігнорується)",
+    ),
+]
 
 STUDENT = 42
 YEAR = 2027
