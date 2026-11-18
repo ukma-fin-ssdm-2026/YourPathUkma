@@ -4,6 +4,25 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.3.2] - 2026-11-18
+
+### Bug Fixes
+
+- Align CI and GHCR comparison cohorts
+  ([`41a18fa`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/41a18faf89a6feacbbc2276f27a88b68549a0791))
+
+- Include recovered changes in DORA lead time
+  ([`35e1ca2`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/35e1ca2c6baa25a874ad1b65fa58b665f8343aba))
+
+- Restrict container metrics report to a fixed destination
+  ([`c65f227`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/c65f2273d30b85f2187fe72c459af09e73d45bc8))
+
+### Refactoring
+
+- Rename DORA metrics artifacts by purpose [REFACTOR]
+  ([`227c13c`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/227c13cd8478b1da5071a76a187c300e22eb9f45))
+
+
 ## [0.3.1] - 2026-11-16
 
 ### Bug Fixes
