@@ -1,5 +1,6 @@
 # Використання ШІ: Codex додав порівняння CI та GHCR. Перевірка: pytest і Ruff.
 # Codex прибрав довільний шлях --markdown (S8707). Перевірка: регресійний тест CLI та SonarCloud у PR.
+# Використання ШІ: Codex узгодив виключення CI в обох вибірках; перевірка: pytest і Ruff.
 """Compare Lab 10 deployment definitions over the same CI cohort."""
 
 import argparse
@@ -27,6 +28,7 @@ def comparison_table(report):
         f"\nПеріод: {report['from']} — {report['to_exclusive']} (верхня межа виключна).",
         f"\nПовна вибірка: {report['complete_comparison']}. "
         f"Без завершеної публікації: {report['pending_publication_ci_ids']}.",
+        f"\nВиключені з обох вибірок CI (ID та результат): {report['excluded_ci_runs']}.",
         "\n| Метрика | Зелений CI | Публікація GHCR |",
         "| --- | --- | --- |",
         f"| Розгортань / тиждень | {ci['deployments_per_week']:.2f} | {ghcr['deployments_per_week']:.2f} |",
@@ -55,7 +57,7 @@ def publication_rows(ci_rows, publications, end):
             rows.append(dict(source))
             continue
         if source["conclusion"] != "success":
-            continue
+            raise ValueError("Filter CI conclusions to success/failure before joining publications")
         candidates = indexed.get(source["id"], [])
         candidates = [
             run for sha, run in candidates
@@ -91,6 +93,12 @@ def main():
     if start >= end:
         parser.error("--from must precede --to")
     runs = collect(args.repo, "ci.yaml", start, end)
+    excluded = [
+        {"id": run["id"], "conclusion": run["conclusion"]}
+        for run in runs if run["conclusion"] not in {"success", "failure"}
+    ]
+    # Filter before measure(): cancelled runs can have no started jobs or timings.
+    runs = [run for run in runs if run["conclusion"] in {"success", "failure"}]
     with ThreadPoolExecutor(max_workers=5) as pool:
         rows = list(pool.map(lambda run: measure(run, args.repo), runs))
     query = urlencode({"event": "workflow_run", "per_page": 100})
@@ -108,6 +116,7 @@ def main():
         "ci": calculate(rows, start, end, contains),
         "ghcr": calculate(delivered, start, end, contains),
         "pending_publication_ci_ids": pending,
+        "excluded_ci_runs": excluded,
         "publication_evidence": publications,
         "complete_comparison": bool(rows) and not pending,
         "Використання ШІ": "Codex підготував підрахунок; алгоритм перевірено pytest.",
