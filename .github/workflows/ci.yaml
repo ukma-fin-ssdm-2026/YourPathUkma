@@ -1,5 +1,8 @@
 # Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: ті самі кроки
 # (генерація, git diff, pytest) запущено локально; перший прогін у GitHub Actions після пушу.
+# Лаб 10, бонус 3 (Claude): тести розділено на швидкий набір (на кожному PR і push) та повільний (`-m slow`, лише
+# після злиття в main або вручну). Перевірка: YAML розібрано PyYAML, логіку умов звірено з документацією Actions;
+# перший прогін відбувається в GitHub Actions.
 name: CI
 on:
   push:
@@ -52,8 +55,30 @@ jobs:
         run: python scripts/generate_openapi.py
       - name: Fail if committed spec is out of date
         run: git diff --exit-code docs/api/
-      - name: Tests with coverage report
-        run: pytest -q --ignore=tests/reliability --cov=src --cov-branch --cov-report=term-missing --cov-report=html --cov-report=xml --cov-fail-under=80
+      - name: Fast suite (unit and API tests, every PR and push)
+        shell: bash
+        run: |
+          start=$SECONDS
+          status=0
+          pytest -q -m "not slow" --ignore=tests/reliability --cov=src --cov-branch --cov-report=term-missing --cov-report=html --cov-report=xml --cov-fail-under=80 || status=$?
+          {
+            echo "### Test suite durations"
+            echo "| Suite | Runs on | Seconds | Exit code |"
+            echo "| --- | --- | ---: | ---: |"
+            echo "| Fast (not slow) | every PR and push | $((SECONDS - start)) | $status |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+      - name: Slow suite (real PostgreSQL integration, after merge to main)
+        if: ${{ github.event_name != 'pull_request' }}
+        shell: bash
+        env:
+          REQUIRE_POSTGRES: "1"
+        run: |
+          start=$SECONDS
+          status=0
+          pytest -q -m slow -rs --cov=src --cov-branch --cov-append --cov-report=xml --cov-report=html || status=$?
+          echo "| Slow (slow) | push to main, manual run | $((SECONDS - start)) | $status |" >> "$GITHUB_STEP_SUMMARY"
+          exit $status
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v7
@@ -83,3 +108,4 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      
