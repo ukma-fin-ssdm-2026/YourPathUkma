@@ -1,0 +1,23 @@
+{
+  "repository": "ukma-fin-ssdm-2026/YourPathUkma",
+  "package_url": "https://github.com/orgs/ukma-fin-ssdm-2026/packages/container/package/yourpathukma",
+  "publications": [
+    {
+      "workflow_run_id": 44358258233,
+      "source_ci_run_id": 44357591982,
+      "workflow_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/44358258233",
+      "image": "ghcr.io/ukma-fin-ssdm-2026/yourpathukma:7dd3fc8436d17ef781cb166dc63a4fd5564c0615",
+      "digest": "sha256:593d91dcf7d666d6e5e940ee63b1f3905094131f4cecec821503c3580b5ee019",
+      "push_log_line": "publish\tBuild, smoke test and publish SHA image\t2026-11-18T17:25:04.3272404Z 7dd3fc8436d17ef781cb166dc63a4fd5564c0615: digest: sha256:593d91dcf7d666d6e5e940ee63b1f3905094131f4cecec821503c3580b5ee019 size: 856"
+    },
+    {
+      "workflow_run_id": 44358653518,
+      "source_ci_run_id": 44357679559,
+      "workflow_url": "https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/44358653518",
+      "image": "ghcr.io/ukma-fin-ssdm-2026/yourpathukma:e67ebef685a375387b478a720954d70250a6c01b",
+      "digest": "sha256:8b26452b81d6c9791c8a510343aa046cf36b736dbf0a452ed7d2ba82b9a99edd",
+      "push_log_line": "publish\tBuild, smoke test and publish SHA image\t2026-11-18T17:26:59.4008978Z e67ebef685a375387b478a720954d70250a6c01b: digest: sha256:8b26452b81d6c9791c8a510343aa046cf36b736dbf0a452ed7d2ba82b9a99edd size: 856"
+    }
+  ],
+  "Використання ШІ": "Codex витягнув SHA й digest із журналів успішних docker push. Перевірка: зіставлення SHA та CI ID з назвами запусків і JSON метрик."
+}
