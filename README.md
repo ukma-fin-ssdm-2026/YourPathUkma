@@ -62,7 +62,7 @@ Students sign in via their corporate NaUKMA email.
 ## Командний процес
 - [Командний статут (Team Charter)](TeamCharter.md), розділ 8 «Використання ШІ»
 - [Процеси та мітки (Process Labels)](docs/process/labels.md)
-- CI: [`ci.yaml`](.github/workflows/ci.yaml) (ruff, bandit, перевірка OpenAPI, pytest з порогом покриття 80%; frontend: npm audit, lint, typecheck, test, build), [`deploy-api-docs.yml`](.github/workflows/deploy-api-docs.yml) (публікація `docs/api` на GitHub Pages), [`label-sync.yml`](.github/workflows/label-sync.yml) (синхронізація міток), [`mutation.yml`](.github/workflows/mutation.yml) (мутаційне тестування, ручний запуск)
+- CI: [`ci.yaml`](.github/workflows/ci.yaml) (ruff, bandit, перевірка OpenAPI, швидкий pytest з порогом покриття 80% на кожному PR, повільний набір `-m slow` з PostgreSQL після злиття в main; frontend: npm audit, lint, typecheck, test, build), [`deploy-api-docs.yml`](.github/workflows/deploy-api-docs.yml) (публікація `docs/api` на GitHub Pages), [`label-sync.yml`](.github/workflows/label-sync.yml) (синхронізація міток), [`mutation.yml`](.github/workflows/mutation.yml) (мутаційне тестування, ручний запуск)
 
 ## Артефакти вимог
 Документація за результатами Лабораторної роботи №2:
@@ -126,7 +126,7 @@ cp .env.example .env                            # Windows (cmd): copy .env.examp
 # Секрет підпису токенів (мінімум 32 символи) записується в .env; без нього API не стартує
 python -c "import re,secrets,pathlib; p=pathlib.Path('.env'); p.write_text(re.sub(r'(?m)^JWT_SECRET=.*$', 'JWT_SECRET='+secrets.token_urlsafe(48), p.read_text()))"
 pip install -r requirements.txt -r requirements-dev.txt
-uvicorn src.api.main:app --reload --port 3000   # Swagger UI: http://127.0.0.1:3000/api-docs
+uvicorn src.api.main:app --reload --port 3000   # Swagger UI: [http://127.0.0.1:3000/api-docs](http://127.0.0.1:3000/api-docs)
 pytest -q
 ```
 
@@ -243,8 +243,11 @@ python scripts/saz_export.py --bundle
 ## Тести
 
 ```bash
-# backend (з кореня), команда як у CI з порогом покриття 80%
-pytest -q --cov=src --cov-branch --cov-report=term-missing --cov-fail-under=80
+# backend, швидкий набір (як на кожному pull request у CI) з порогом покриття 80%
+pytest -q -m "not slow" --ignore=tests/reliability --cov=src --cov-branch --cov-report=term-missing --cov-fail-under=80
+
+# backend, повільний набір (CI запускає його після злиття в main): потрібен PostgreSQL, інакше тести пропускаються
+TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/yourpath_test pytest -q -m slow -rs
 
 # frontend (з frontend/)
 npm test
@@ -309,3 +312,5 @@ npm run typecheck
 **Використання ШІ.** Codex описав локальний запуск, поновлення сесії та імпорт САЗ в Azure. Перевірка: тести обходу, імпорту й адмінського екрана.
 
 **Використання ШІ.** Codex описав віддалений вхід і налаштування Azure. Перевірка: pytest, Vitest та звірка з конфігурацією сервера.
+
+**Використання ШІ (Лаб 10, бонус 3).** Описи швидкого й повільного наборів тестів у розділі «Тести» та в переліку CI додано за допомогою Claude. Перевірка: команди звірено з `.github/workflows/ci.yaml` і `pytest.ini`; обидві команди виконано локально (швидкий набір — 540 passed, повільний набір на PostgreSQL 16 у Docker — 9 passed) і в CI на `main` (запуск 44419656294).
