@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.3.3] - 2026-11-20
+
+### Bug Fixes
+
+- Handle Unicode and long deanery filenames
+  ([`91b052a`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/91b052a6540437f881ac06f553a43a7752c74923))
+
+
 ## [0.3.2] - 2026-11-18
 
 ### Bug Fixes
