@@ -2319,7 +2319,7 @@
           "Deanery documents"
         ],
         "summary": "Завантажити документ деканату",
-        "description": "Приймає PDF або DOCX до 10 МБ. Відповідь 202, розпізнавання асинхронне.",
+        "description": "Приймає PDF або DOCX до 10 МБ з назвою до 255 символів. Розпізнавання асинхронне.",
         "operationId": "upload_document_api_v1_deanery_documents_post",
         "security": [
           {
@@ -2670,6 +2670,7 @@
           "Deanery documents"
         ],
         "summary": "Завантажити оригінальний файл",
+        "description": "Передає назву файлу в UTF-8 та запасну ASCII-назву в Content-Disposition.",
         "operationId": "download_document_file_api_v1_deanery_documents__document_id__file_get",
         "security": [
           {
