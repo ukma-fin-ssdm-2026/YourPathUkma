@@ -908,8 +908,10 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 
 | Частина | Тип | Обов'язкова | Обмеження |
 |---|---|---|---|
-| `file` | файл | так | PDF або DOCX (перевірка за вмістом), ≤ 10 МБ |
+| `file` | файл | так | PDF або DOCX (перевірка за вмістом), ≤ 10 МБ, назва до 255 символів |
 | `academic_year` | integer | так | 2024–2030 |
+
+Назва довша за 255 символів повертає `422 FILENAME_TOO_LONG`.
 
 Відповідь `202` (розпізнавання асинхронне) + `Location: /api/v1/deanery-documents/{id}`:
 
@@ -960,7 +962,7 @@ Query: `academic_year` (необов'язковий). Відповідь `200`: 
 
 #### `GET /deanery-documents/{document_id}/file`
 
-Повертає завантажений файл власнику: `200`, `Content-Type` = `application/pdf` або `application/vnd.openxmlformats-officedocument.wordprocessingml.document`, `Content-Disposition: attachment`. Помилки: `401`, `404 DOCUMENT_NOT_FOUND`. Чужий документ → 404 (R3).
+Повертає завантажений файл власнику зі статусом `200`. Заголовок `Content-Type` відповідає формату PDF або DOCX. Заголовок `Content-Disposition: attachment` містить назву в параметрі `filename*` (UTF-8 із percent-encoding) та запасну ASCII-назву в `filename`. Помилки: `401`, `404 DOCUMENT_NOT_FOUND`. Чужий документ → 404 (R3).
 
 #### `DELETE /deanery-documents/{document_id}`
 
@@ -1619,6 +1621,8 @@ User stories US-001…US-010 відповідають тим самим FR і п
 ---
 
 ## Використання ШІ
+
+- Codex задокументував обмеження довжини та кодування назв документів деканату для #216. Перевірено регресіями на PostgreSQL і генерацією OpenAPI.
 
 - Codex уточнив підсумок вільного вибору в контракті. Перевірка — тести API та згенерована OpenAPI.
 - Codex описав необов’язкове посилання на відгуки. Перевірка — тести конфігурації та згенерована OpenAPI.
