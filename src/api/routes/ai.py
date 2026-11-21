@@ -12,9 +12,11 @@ POST /plan-generations, GET /plan-generations/{generation_id}.
 Перевірено: pytest tests/test_ai.py tests/test_ai_worker.py tests/reliability, ruff check src/api/routes/ai.py.
 """
 
+
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
+
 from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Response, status
@@ -24,10 +26,11 @@ from sqlalchemy.orm import Session
 
 from ...ai.worker import run_generation_task
 from ...db import enums as db_enums
+from ...db.base import utcnow
 from ...db.models.ai import PlanGeneration
 from ...db.models.users import StudentProfile
 from ...db.session import get_db
-from ..common import ApiError, error_responses, get_current_student_id
+from ..common import MAX_DATABASE_ID, ApiError, error_responses, get_current_student_id
 from ..onboarding import get_onboarded_student
 from .preferences import PreferencesRequest
 
@@ -103,11 +106,11 @@ def start_generation(
         raise ApiError(409, *_GENERATION_IN_PROGRESS)
 
     # Перевірка ліміту 20/добу
-    since = int(time.time()) - 24 * 3600
+    since = utcnow() - timedelta(hours=24)
     recent = db.scalar(
         select(func.count()).where(
             PlanGeneration.student_id == profile.user_id,
-            PlanGeneration.created_at >= datetime.fromtimestamp(since),
+            PlanGeneration.created_at >= since,
         )
     )
     if recent >= 20:
@@ -148,7 +151,7 @@ def start_generation(
     },
 )
 def get_generation_status(
-    generation_id: int = Path(..., gt=0, examples=[77]),
+    generation_id: int = Path(..., gt=0, le=MAX_DATABASE_ID, examples=[77]),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):

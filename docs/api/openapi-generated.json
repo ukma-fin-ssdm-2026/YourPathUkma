@@ -84,6 +84,22 @@
               }
             }
           },
+          "409": {
+            "description": "Конфлікт: дія неможлива в поточному стані ресурсу",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "ONBOARDING_REQUIRED",
+                  "message": "Спершу вкажіть курс і спеціальність",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Помилка валідації вхідних даних",
             "content": {
@@ -257,6 +273,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "description": "Унікальний ідентифікатор плану",
               "examples": [
@@ -368,6 +385,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "description": "Унікальний ідентифікатор плану",
               "examples": [
@@ -505,6 +523,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "description": "Унікальний ідентифікатор плану",
               "examples": [
@@ -613,7 +632,7 @@
           "Plans"
         ],
         "summary": "Перевірити план без збереження",
-        "description": "Для живих підказок у конструкторі. Завжди 200, якщо тіло відповідає схемі; порушення правил повертаються в `errors`. Поки без БД: не перевіряються каталог, нормативні дисципліни, документ деканату, вільний вибір попередніх років і попередження про навантаження.",
+        "description": "Для живих підказок у конструкторі. Завжди 200, якщо тіло відповідає схемі; порушення правил повертаються в `errors`. Підсумок вільного вибору враховує академічну історію. Перевірка каталогу, документа деканату та інших поданих планів виконується під час збереження й подання.",
         "operationId": "validate_plan_api_v1_plans_validate_post",
         "requestBody": {
           "content": {
@@ -701,6 +720,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 1
@@ -828,6 +848,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 1
@@ -850,12 +871,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Файл PDF",
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {}
-              },
-              "application/pdf": {}
+              }
             }
           },
           "401": {
@@ -906,6 +926,22 @@
               }
             }
           },
+          "409": {
+            "description": "Конфлікт: дія неможлива в поточному стані ресурсу",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "PLAN_NOT_EXPORTABLE",
+                  "message": "Експортувати можна лише план у статусі approved",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Помилка валідації вхідних даних",
             "content": {
@@ -919,6 +955,22 @@
                       "message": "Input should be greater than 0"
                     }
                   ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Операцію ще не реалізовано",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "EXPORT_NOT_IMPLEMENTED",
+                  "message": "Експорт плану в PDF ще не реалізовано",
+                  "details": [],
                   "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
@@ -2267,7 +2319,7 @@
           "Deanery documents"
         ],
         "summary": "Завантажити документ деканату",
-        "description": "Приймає PDF або DOCX до 10 МБ. Відповідь 202, розпізнавання асинхронне.",
+        "description": "Приймає PDF або DOCX до 10 МБ з назвою до 255 символів. Розпізнавання асинхронне.",
         "operationId": "upload_document_api_v1_deanery_documents_post",
         "security": [
           {
@@ -2440,6 +2492,8 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
+              "exclusiveMinimum": 0,
               "title": "Document Id"
             }
           }
@@ -2488,11 +2542,22 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Помилка валідації вхідних даних",
             "content": {
               "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2517,6 +2582,8 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
+              "exclusiveMinimum": 0,
               "title": "Document Id"
             }
           }
@@ -2574,11 +2641,22 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Помилка валідації вхідних даних",
             "content": {
               "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2592,6 +2670,7 @@
           "Deanery documents"
         ],
         "summary": "Завантажити оригінальний файл",
+        "description": "Передає назву файлу в UTF-8 та запасну ASCII-назву в Content-Disposition.",
         "operationId": "download_document_file_api_v1_deanery_documents__document_id__file_get",
         "security": [
           {
@@ -2605,6 +2684,8 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
+              "exclusiveMinimum": 0,
               "title": "Document Id"
             }
           }
@@ -2651,11 +2732,22 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Помилка валідації вхідних даних",
             "content": {
               "application/json": {
+                "example": {
+                  "code": "VALIDATION_ERROR",
+                  "message": "Невалідні вхідні дані",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3868,6 +3960,16 @@
               }
             }
           },
+          "503": {
+            "description": "Серверний парсинг САЗ вимкнено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Неавторизований доступ: відсутній або некоректний JWT-токен",
             "content": {
@@ -4073,6 +4175,145 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/admin/sync-jobs/saz-import": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Імпортувати каталог САЗ",
+        "operationId": "import_saz_catalog_api_v1_admin_sync_jobs_saz_import_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Файл експорту САЗ v1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncJobResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неавторизований доступ: відсутній або некоректний JWT-токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Відсутній або некоректний токен авторизації",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Доступ заборонено: ресурс належить іншому студенту",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN_ROLE",
+                  "message": "Потрібна роль адміністратора",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфлікт: дія неможлива в поточному стані ресурсу",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "SYNC_JOB_ALREADY_RUNNING",
+                  "message": "Для цього джерела вже виконується синхронізація",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Файл завеликий",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FILE_TOO_LARGE",
+                  "message": "Файл більший за 25 МіБ",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Непідтримуваний тип файлу",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNSUPPORTED_FILE_TYPE",
+                  "message": "Потрібен файл JSON",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Помилка валідації вхідних даних",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "SAZ_BUNDLE_INVALID",
+                  "message": "Некоректний файл каталогу САЗ",
+                  "details": [
+                    {
+                      "field": "items.0.credits",
+                      "message": "Input should be greater than 0"
+                    }
+                  ],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "x-ai-usage": "Використання ШІ: Codex додав імпорт САЗ. Перевірка: pytest та генерація OpenAPI."
       }
     },
     "/api/v1/admin/sync-jobs/{job_id}": {
@@ -4694,6 +4935,242 @@
         }
       }
     },
+    "/api/v1/admin/saz-session": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Стан серверної сесії САЗ",
+        "operationId": "session_status_api_v1_admin_saz_session_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionStatus"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Відключити серверну сесію САЗ",
+        "operationId": "disconnect_session_api_v1_admin_saz_session_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/saz-session/login": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Відкрити браузер для входу до САЗ",
+        "operationId": "start_login_api_v1_admin_saz_session_login_post",
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginStarted"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "x-ai-usage": "Використання ШІ: Codex додав віддалений вхід. Перевірка: pytest."
+      }
+    },
+    "/api/v1/admin/saz-session/login/{login_id}/frame": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Кадр браузера САЗ",
+        "operationId": "login_frame_api_v1_admin_saz_session_login__login_id__frame_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "login_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Login Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Кадр браузера",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "image/jpeg": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/saz-session/login/{login_id}/input": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Керувати браузером САЗ",
+        "operationId": "login_input_api_v1_admin_saz_session_login__login_id__input_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "login_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Login Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/saz-session/login/{login_id}/complete": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Зберегти перевірену сесію САЗ",
+        "operationId": "complete_login_api_v1_admin_saz_session_login__login_id__complete_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "login_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Login Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/saz-session/login/{login_id}": {
+      "delete": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Закрити браузер САЗ",
+        "operationId": "cancel_login_api_v1_admin_saz_session_login__login_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "login_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Login Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/audit-log": {
       "get": {
         "tags": [
@@ -5161,6 +5638,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 77
@@ -5258,6 +5736,7 @@
               "anyOf": [
                 {
                   "type": "integer",
+                  "maximum": 9223372036854775807,
                   "exclusiveMinimum": 0
                 },
                 {
@@ -5345,6 +5824,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 3
@@ -5440,6 +5920,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 3
@@ -5559,6 +6040,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 3
@@ -5572,6 +6054,7 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "maximum": 9223372036854775807,
               "exclusiveMinimum": 0,
               "examples": [
                 501
@@ -6560,6 +7043,7 @@
             "anyOf": [
               {
                 "type": "integer",
+                "maximum": 9.223372036854776e+18,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -6650,17 +7134,21 @@
             "anyOf": [
               {
                 "items": {
-                  "type": "integer"
+                  "type": "integer",
+                  "maximum": 9.223372036854776e+18,
+                  "exclusiveMinimum": 0.0
                 },
                 "type": "array",
+                "maxItems": 50,
                 "minItems": 1
               },
               {
                 "type": "null"
               }
             ],
+            "uniqueItems": true,
             "title": "Direction Ids",
-            "description": "Повна заміна переліку напрямків"
+            "description": "Повна заміна переліку унікальних напрямків"
           },
           "hidden": {
             "anyOf": [
@@ -6748,9 +7236,16 @@
             "default": "ukma.edu.ua"
           },
           "reviews_url": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Reviews Url",
-            "description": "Посилання «Почитати відгуки»"
+            "description": "HTTPS-посилання на відгуки або null"
           },
           "limits": {
             "$ref": "#/components/schemas/Limits"
@@ -7347,6 +7842,18 @@
             "description": "Сертифікатні програми (етап 2)",
             "default": false
           },
+          "saz_catalog_live": {
+            "type": "boolean",
+            "title": "Saz Catalog Live",
+            "description": "Серверний парсинг каталогу САЗ",
+            "default": false
+          },
+          "saz_remote_login": {
+            "type": "boolean",
+            "title": "Saz Remote Login",
+            "description": "Віддалений вхід адміністратора до САЗ",
+            "default": false
+          },
           "saz_sync": {
             "type": "boolean",
             "title": "Saz Sync",
@@ -7356,8 +7863,8 @@
           "plan_export": {
             "type": "boolean",
             "title": "Plan Export",
-            "description": "Експорт плану в PDF",
-            "default": true
+            "description": "Експорт плану в PDF (поки не реалізовано: 501)",
+            "default": false
           }
         },
         "type": "object",
@@ -7570,6 +8077,19 @@
         },
         "type": "object",
         "title": "LoadLevels"
+      },
+      "LoginStarted": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "LoginStarted"
       },
       "MeResponse": {
         "properties": {
@@ -8097,7 +8617,9 @@
           },
           "direction_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 3,
@@ -8112,7 +8634,9 @@
           },
           "preferred_instructor_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 50,
@@ -8120,7 +8644,9 @@
           },
           "unwanted_instructor_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 50,
@@ -8135,6 +8661,7 @@
             "anyOf": [
               {
                 "type": "integer",
+                "maximum": 9.223372036854776e+18,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -8142,7 +8669,7 @@
               }
             ],
             "title": "Certificate Program Id",
-            "description": "Етап 2: поки лише зберігається"
+            "description": "ID наявної сертифікатної програми"
           }
         },
         "type": "object",
@@ -8236,6 +8763,7 @@
         "properties": {
           "course_id": {
             "type": "integer",
+            "maximum": 9.223372036854776e+18,
             "exclusiveMinimum": 0.0,
             "title": "Course Id",
             "description": "Унікальний ID дисципліни з каталогу САЗ",
@@ -8600,7 +9128,9 @@
           },
           "direction_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 3,
@@ -8615,7 +9145,9 @@
           },
           "preferred_instructor_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 50,
@@ -8623,7 +9155,9 @@
           },
           "unwanted_instructor_ids": {
             "items": {
-              "type": "integer"
+              "type": "integer",
+              "maximum": 9.223372036854776e+18,
+              "exclusiveMinimum": 0.0
             },
             "type": "array",
             "maxItems": 50,
@@ -8638,6 +9172,7 @@
             "anyOf": [
               {
                 "type": "integer",
+                "maximum": 9.223372036854776e+18,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -8645,7 +9180,7 @@
               }
             ],
             "title": "Certificate Program Id",
-            "description": "Етап 2: поки лише зберігається"
+            "description": "ID наявної сертифікатної програми"
           }
         },
         "type": "object",
@@ -8786,6 +9321,19 @@
           "message"
         ],
         "title": "RuleIssue"
+      },
+      "SessionStatus": {
+        "properties": {
+          "connected": {
+            "type": "boolean",
+            "title": "Connected"
+          }
+        },
+        "type": "object",
+        "required": [
+          "connected"
+        ],
+        "title": "SessionStatus"
       },
       "SkippedItem": {
         "properties": {

@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: catalog.test.tsx.
+// Codex додав мобільну навігацію. Перевірка — браузер.
 import { useMemo, useState } from "react";
 import { ApiError } from "../../api/errors";
 import type { Discipline } from "../../api/types";
@@ -175,7 +176,19 @@ export function CatalogPanel({
       aria-label="Каталог вибіркових"
       className="grid content-start gap-3 rounded-2xl border border-rule bg-surface p-4"
     >
-      <h2 className="font-display text-[15px]">Каталог вибіркових</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="builder-catalog" tabIndex={-1} className="scroll-mt-20 font-display text-[15px]">
+          Каталог вибіркових
+        </h2>
+        {draggable && (
+          <a
+            href="#builder-trimesters"
+            className="text-sm font-medium text-cobalt underline lg:hidden"
+          >
+            До триместрів
+          </a>
+        )}
+      </div>
       <Segmented
         value={trimester}
         options={TRIMESTERS}

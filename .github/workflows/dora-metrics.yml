@@ -1,0 +1,52 @@
+# Використання ШІ: Codex оновив назви DORA; перевірка: pytest, Ruff і пошук старих назв.
+# Використання ШІ: Codex додав ручний запуск підрахунку DORA й публікацію JSON.
+# Перевірка: синтаксис workflow, тести скрипта та звірка з історичним звітом.
+name: DORA metrics
+
+on:
+  workflow_dispatch:
+    inputs:
+      from_utc:
+        description: "Початок періоду UTC включно"
+        required: true
+        default: "2026-10-23T00:00:00Z"
+        type: string
+      to_utc:
+        description: "Кінець періоду UTC виключно"
+        required: true
+        default: "2026-11-13T00:00:00Z"
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
+jobs:
+  calculate-metrics:
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Calculate metrics
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          METRICS_FROM_UTC: ${{ inputs.from_utc }}
+          METRICS_TO_UTC: ${{ inputs.to_utc }}
+        run: |
+          python -X utf8 scripts/ci_metrics.py \
+            --repo "$GITHUB_REPOSITORY" --workflow ci.yaml \
+            --from "$METRICS_FROM_UTC" --to "$METRICS_TO_UTC" \
+            --output - > dora-metrics.json
+      - name: Upload metrics report
+        uses: actions/upload-artifact@v7
+        with:
+          name: dora-metrics
+          path: dora-metrics.json
+          if-no-files-found: error

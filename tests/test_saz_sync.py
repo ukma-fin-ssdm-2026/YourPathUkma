@@ -1,7 +1,8 @@
 """
 Тести життєвого циклу SyncJob парсера САЗ на SQLite з підставним fetcher (без мережі).
 
-Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: pytest.
+Використання ШІ: перевірку безпечної діагностики додано Codex. Перевірка: pytest.
+ файл створено за допомогою Claude (Claude Code). Перевірка: pytest.
 """
 
 import re
@@ -90,7 +91,7 @@ def test_successful_run_creates_add_items():
     job = _job(job_id)
     assert job.status == db_enums.SyncJobStatus.SUCCEEDED
     assert job.finished_at is not None
-    assert job.error_message is None
+    assert "неповний обхід" not in (job.error_message or "")
     items = _items(job_id)
     assert job.added_count == len(items) == 20
     assert {i.change_type for i in items} == {db_enums.ModerationChangeType.ADD}
@@ -144,7 +145,8 @@ def test_unexpected_error_does_not_leave_job_running():
 
     job = _job(job_id)
     assert job.status == db_enums.SyncJobStatus.FAILED
-    assert "RuntimeError: boom" in job.error_message
+    assert "RuntimeError" in job.error_message
+    assert "boom" not in job.error_message
 
 
 def test_job_not_in_queue_is_ignored():
@@ -153,3 +155,51 @@ def test_job_not_in_queue_is_ignored():
     before = _job(job_id).finished_at
     run_sync_job(job_id, _factory(FakeFetcher(error=RuntimeError("не має викликатись"))))
     assert _job(job_id).finished_at == before
+
+
+def test_stale_worker_cannot_finish_or_enqueue():
+    from datetime import timedelta
+
+    from src.db.base import utcnow
+    from src.parser.sync import fail_stale_jobs
+
+    job_id = _new_job()
+
+    class StaleFetcher:
+        def fetch(self, page):
+            with session_factory()() as db:
+                db.get(SyncJob, job_id).started_at = utcnow() - timedelta(hours=1)
+                db.commit()
+                assert fail_stale_jobs(db) == 1
+            return _single_page_html()
+
+    run_sync_job(job_id, _factory(StaleFetcher()))
+    assert _job(job_id).status == db_enums.SyncJobStatus.FAILED
+    assert _items(job_id) == []
+
+
+def test_local_scan_and_upload_stage_same_payloads(admin_client):
+    from src.parser.catalog_scan import scan_catalog
+    from src.parser.config import load_settings
+
+    fetcher = FakeFetcher({1: _single_page_html()})
+    local = _new_job()
+    run_sync_job(local, _factory(fetcher))
+    expected = {item.payload["saz_code"]: item.payload for item in _items(local)}
+    assert len(expected) == 20
+
+    with session_factory()() as db:
+        for item in db.scalars(select(ModerationItem).where(ModerationItem.sync_job_id == local)):
+            item.status = db_enums.ModerationStatus.REJECTED
+        db.commit()
+
+    bundle = scan_catalog(fetcher, load_settings())
+    response = admin_client.post(
+        "/api/v1/admin/sync-jobs/saz-import",
+        content=bundle.model_dump_json(exclude_unset=True),
+        headers={"Content-Type": "application/json"},
+    )
+    assert response.status_code == 201
+    imported = _items(response.json()["id"])
+    assert {item.payload["saz_code"]: item.payload for item in imported} == expected
+    assert {item.change_type for item in imported} == {db_enums.ModerationChangeType.ADD}

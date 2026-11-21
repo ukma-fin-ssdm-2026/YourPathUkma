@@ -31,6 +31,7 @@ from .tokens import decode_access_token, validate_auth_settings
 
 logger = logging.getLogger("yourpath.api")
 
+MAX_DATABASE_ID = 2**63 - 1
 REQUEST_ID_HEADER = "X-Request-ID"
 _REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 _EXAMPLE_REQUEST_ID = "req_3f9a1c7e2b4d4a6e"
@@ -105,6 +106,8 @@ _ERROR_DESCRIPTIONS: Dict[int, str] = {
     415: "Непідтримуваний тип файлу",
     422: "Помилка валідації вхідних даних",
     429: "Забагато запитів",
+    # Використання ШІ: Codex додав схему 501. Перевірка: генерація OpenAPI та pytest.
+    501: "Операцію ще не реалізовано",
 }
 _DEFAULT_EXAMPLES: Dict[int, Tuple[str, str]] = {
     400: ("BAD_REQUEST", "Некоректний запит"),

@@ -4,6 +4,94 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.3.3] - 2026-11-20
+
+### Bug Fixes
+
+- Handle Unicode and long deanery filenames
+  ([`91b052a`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/91b052a6540437f881ac06f553a43a7752c74923))
+
+
+## [0.3.2] - 2026-11-18
+
+### Bug Fixes
+
+- Align CI and GHCR comparison cohorts
+  ([`41a18fa`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/41a18faf89a6feacbbc2276f27a88b68549a0791))
+
+- Include recovered changes in DORA lead time
+  ([`35e1ca2`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/35e1ca2c6baa25a874ad1b65fa58b665f8343aba))
+
+- Restrict container metrics report to a fixed destination
+  ([`c65f227`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/c65f2273d30b85f2187fe72c459af09e73d45bc8))
+
+### Refactoring
+
+- Rename DORA metrics artifacts by purpose [REFACTOR]
+  ([`227c13c`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/227c13cd8478b1da5071a76a187c300e22eb9f45))
+
+
+## [0.3.1] - 2026-11-16
+
+### Bug Fixes
+
+- Add mobile navigation between catalog and trimesters
+  ([#244](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/244),
+  [`568e120`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/568e120a39cb5181bb2ad0e5c3ccbb052ab1a04f))
+
+- Correct planner totals and improve plan navigation
+  ([#244](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/244),
+  [`568e120`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/568e120a39cb5181bb2ad0e5c3ccbb052ab1a04f))
+
+- Include academic history in free choice totals
+  ([#244](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/244),
+  [`568e120`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/568e120a39cb5181bb2ad0e5c3ccbb052ab1a04f))
+
+- Show plan actions based on student eligibility
+  ([#244](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/244),
+  [`568e120`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/568e120a39cb5181bb2ad0e5c3ccbb052ab1a04f))
+
+- Show review links only for configured HTTPS URLs
+  ([#244](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/244),
+  [`568e120`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/568e120a39cb5181bb2ad0e5c3ccbb052ab1a04f))
+
+
+## [0.3.0] - 2026-11-16
+
+### Bug Fixes
+
+- Validate API identifiers and references
+  ([`0f3b099`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/0f3b09983b5ffda5a78d5dba3d4b0554d164cc62))
+
+### Features
+
+- Add remote SAZ sign-in and encrypted session storage
+  ([`1f4ba08`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/1f4ba0847e1b7caee6f6ae2fc317c3ece8372e13))
+
+- Add SAZ catalog upload to the admin screen
+  ([`f51856e`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/f51856e4c70c9e5e5ec44b28b2eb6deb1a77fc13))
+
+- Connect SAZ sessions from the admin screen
+  ([`e149167`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e149167e5006552d0df48303da967691be7302cf))
+
+- Harden SAZ scans and export catalog bundles
+  ([`bf4f531`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/bf4f531a9b88cfe0a4567168a177d96f057b2f28))
+
+- Import SAZ bundles through the admin API
+  ([`c1c7092`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/c1c7092cc812f121cad520a2582a88336cea5b48))
+
+
+## [0.2.1] - 2026-11-14
+
+### Bug Fixes
+
+- Enforce plan and certificate rules
+  ([`e0078be`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e0078be84b7a46339ed4462e01ec6d966f61fcbe))
+
+- Retry only transient SAZ fetch failures
+  ([`319b98c`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/319b98c750294706a7d10c6b3ff118132e3e0a08))
+
+
 ## [0.2.0] - 2026-11-12
 
 ### Bug Fixes

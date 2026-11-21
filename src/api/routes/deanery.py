@@ -2,13 +2,18 @@
 Ресурс «Документи деканату» (Deanery documents): завантаження та перегляд (contract.md §3.6).
 
 Запускається після відповіді 202 на POST /deanery-documents фоновий парсинг.
+
+Використання ШІ: Codex додав перевірку довжини й безпечну видачу назви файлу.
+Перевірка: регресії pytest на PostgreSQL та генерація OpenAPI.
 """
 
 import hashlib
 import logging
+import re
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import List, Optional
+from urllib.parse import quote
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Path, Query, Response, UploadFile, status
 from pydantic import BaseModel, Field
@@ -23,13 +28,21 @@ from ...db.models.deanery import DeaneryPlanDocument, NormativeCourseEntry
 from ...db.models.history import AcademicRecord
 from ...db.models.users import StudentProfile
 from ...db.session import get_db, session_factory
-from ..common import ApiError, error_responses, get_current_student_id
+from ..common import MAX_DATABASE_ID, ApiError, error_responses, get_current_student_id
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/deanery-documents", tags=["Deanery documents"])
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+MAX_FILENAME_LENGTH = 255
+
+
+def _safe_filename(filename: str) -> str:
+    basename = filename.replace("\\", "/").rsplit("/", 1)[-1]
+    name = re.sub(r'[\x00-\x1f\x7f-\x9f"]', "", basename).strip()
+    return name if name not in {"", ".", ".."} else "document"
+
 
 # Магічні байти: PDF, DOCX (zip-контейнер) і старий DOC (OLE), який приходить з MIME application/msword
 _PDF_SIGNATURE = b"%PDF"
@@ -211,7 +224,7 @@ def _to_response(doc: DeaneryPlanDocument) -> DeaneryDocumentResponse:
     response_model=DeaneryDocumentResponse,
     status_code=status.HTTP_202_ACCEPTED,
     summary="Завантажити документ деканату",
-    description="Приймає PDF або DOCX до 10 МБ. Відповідь 202, розпізнавання асинхронне.",
+    description="Приймає PDF або DOCX до 10 МБ з назвою до 255 символів. Розпізнавання асинхронне.",
     responses={
         202: {"description": "Документ прийнято на обробку"},
         **error_responses(
@@ -234,6 +247,11 @@ async def upload_document(
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
+    filename = file.filename or "document"
+    if len(filename) > MAX_FILENAME_LENGTH:
+        raise ApiError(422, "FILENAME_TOO_LONG", f"Назва файлу має містити не більше {MAX_FILENAME_LENGTH} символів")
+    filename = _safe_filename(filename)
+
     # Читаємо не більше ліміту + 1 байт: великий файл не завантажується в пам'ять повністю
     content = await file.read(MAX_UPLOAD_BYTES + 1)
     size = len(content)
@@ -251,10 +269,9 @@ async def upload_document(
 
     doc_mime = mime_map.get(file.content_type)
     if not doc_mime:
-        filename = (file.filename or "").lower()
-        if filename.endswith(".pdf"):
+        if filename.lower().endswith(".pdf"):
             doc_mime = db_enums.DocumentMimeType.PDF
-        elif filename.endswith(".docx"):
+        elif filename.lower().endswith(".docx"):
             doc_mime = db_enums.DocumentMimeType.DOCX
         else:
             raise ApiError(415, "UNSUPPORTED_FILE_TYPE", "Дозволені лише файли PDF та DOCX")
@@ -265,7 +282,7 @@ async def upload_document(
     doc = DeaneryPlanDocument(
         student_id=student_id,
         academic_year=academic_year,
-        original_filename=file.filename or "document",
+        original_filename=filename,
         mime_type=doc_mime,
         size_bytes=size,
         content=content,
@@ -305,10 +322,10 @@ def list_documents(
     "/{document_id}",
     response_model=DeaneryDocumentResponse,
     summary="Отримати документ та розпізнані дисципліни",
-    responses={200: {"description": "Документ знайдено"}, **error_responses(401, 404)},
+    responses={200: {"description": "Документ знайдено"}, **error_responses(401, 404, 422)},
 )
 def get_document(
-    document_id: int = Path(...),
+    document_id: int = Path(..., gt=0, le=MAX_DATABASE_ID),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
@@ -321,10 +338,11 @@ def get_document(
 @router.get(
     "/{document_id}/file",
     summary="Завантажити оригінальний файл",
-    responses={200: {"description": "Файл"}, **error_responses(401, 404)},
+    description="Передає назву файлу в UTF-8 та запасну ASCII-назву в Content-Disposition.",
+    responses={200: {"description": "Файл"}, **error_responses(401, 404, 422)},
 )
 def download_document_file(
-    document_id: int = Path(...),
+    document_id: int = Path(..., gt=0, le=MAX_DATABASE_ID),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
@@ -332,16 +350,20 @@ def download_document_file(
     if not doc or doc.student_id != student_id:
         raise ApiError(404, "DOCUMENT_NOT_FOUND", "Документ не знайдено")
 
+    is_pdf = doc.mime_type == db_enums.DocumentMimeType.PDF
     media_type = (
-        "application/pdf"
-        if doc.mime_type == db_enums.DocumentMimeType.PDF
-        else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        "application/pdf" if is_pdf else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+    filename = _safe_filename(doc.original_filename)
+    fallback = (
+        filename if filename.isascii() and "%" not in filename else ("document.pdf" if is_pdf else "document.docx")
+    )
+    disposition = f"attachment; filename=\"{fallback}\"; filename*=UTF-8''{quote(filename, safe='')}"
 
     return Response(
         content=doc.content,
         media_type=media_type,
-        headers={"Content-Disposition": f'attachment; filename="{doc.original_filename}"'},
+        headers={"Content-Disposition": disposition},
     )
 
 
@@ -349,10 +371,10 @@ def download_document_file(
     "/{document_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Видалити документ",
-    responses={204: {"description": "Документ видалено"}, **error_responses(401, 404, 409)},
+    responses={204: {"description": "Документ видалено"}, **error_responses(401, 404, 409, 422)},
 )
 def delete_document(
-    document_id: int = Path(...),
+    document_id: int = Path(..., gt=0, le=MAX_DATABASE_ID),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):

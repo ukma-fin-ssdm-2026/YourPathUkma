@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: summary.test.tsx.
+// Codex уточнив підсумок кредитів і живу валідацію. Перевірка — фронтенд-тести.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import type { Credits, PlanValidationResponse, RuleIssue } from "../../api/types";
 import { creditsPercent } from "../../lib/credits";
@@ -82,9 +83,7 @@ export function SummaryStrip({
   const currentValidation = plan.items.length > 0 ? validation : undefined;
   const selected = currentValidation?.summary.total_credits ?? local.total;
   const yearTotal = selected + normativeCredits;
-  const freeUsed =
-    currentValidation?.summary.free_elective_used_all_years ??
-    (credits?.free_choice_used ?? 0) + local.free;
+  const freeUsed = (credits?.free_choice_used ?? 0) + local.free;
   const professional = (credits?.professional_used ?? 0) + (local.total - local.free);
 
   // Сервер не бачить нормативних з документа деканату, тож це попередження рахуємо самі.

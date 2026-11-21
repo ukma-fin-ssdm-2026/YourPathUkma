@@ -4,6 +4,7 @@
 Тестові дублери імітують тайм-аут і обрив з'єднання. Перевіряємо обрану реакцію: тайм-аут передається у виклик,
 повтори обмежені, після останньої спроби — швидка відмова `FetchError`; Microsoft недоступний — 503.
 
+Використання ШІ: підставну HTTP-відповідь оновлено Codex. Перевірка: pytest.
 Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: запуск `pytest tests/reliability`
 (без мережі, `sleep` підмінено).
 """
@@ -47,8 +48,8 @@ def test_transient_failure_recovers_on_next_attempt():
     assert fetch_with_retry(flaky, retries=2, delay_s=0.0, sleep=lambda _s: None) == "<html>ok</html>"
 
 
-def _fetcher_with_context(request_get, *, timeout_s=5.0, max_retries=1):
-    settings = SazSettings("https://my.ukma.edu.ua", Path("state.json"), 2026, 1, 0.0, max_retries, timeout_s)
+def _fetcher_with_context(request_get, *, timeout_s=5.0, max_retries=1, delay_s=0.0):
+    settings = SazSettings("https://my.ukma.edu.ua", Path("state.json"), 2026, 1, delay_s, max_retries, timeout_s)
     fetcher = PlaywrightFetcher(settings)
     fetcher._context = SimpleNamespace(request=SimpleNamespace(get=request_get))
     return fetcher
@@ -59,7 +60,7 @@ def test_request_timeout_is_passed_to_playwright_in_milliseconds():
 
     def fake_get(url, **kwargs):
         seen.update(kwargs)
-        return SimpleNamespace(status=200, url=url, text=lambda: "<html></html>")
+        return SimpleNamespace(status=200, url=url, text=lambda: "<html></html>", dispose=lambda: None)
 
     body = _fetcher_with_context(fake_get, timeout_s=5.0).fetch(1)
 
@@ -78,6 +79,60 @@ def test_network_timeout_is_retried_then_raises_fetch_error():
         _fetcher_with_context(hanging_get, max_retries=1).fetch(1)
 
     assert calls == [5000.0, 5000.0]  # max_retries=1 → дві спроби, кожна з тайм-аутом
+
+
+# Використання ШІ: Codex додав сценарії класифікації помилок САЗ. Перевірка: pytest.
+@pytest.mark.parametrize(
+    ("error", "expected_attempts"),
+    [(ConnectionResetError("reset"), 3), (RuntimeError("target closed"), 1)],
+)
+def test_fetch_retries_only_transient_request_errors(error, expected_attempts, monkeypatch):
+    calls, sleeps = [], []
+
+    def request(*args, **kwargs):
+        calls.append(1)
+        raise error
+
+    with pytest.raises(FetchError, match=type(error).__name__):
+        fetcher = _fetcher_with_context(request, max_retries=2, delay_s=1.0)
+        monkeypatch.setattr(fetcher, "_pause", lambda: None)
+        monkeypatch.setattr(fetcher, "_sleep", sleeps.append)
+        fetcher.fetch(1)
+    assert len(calls) == expected_attempts
+    assert sleeps == ([1.0, 2.0] if expected_attempts == 3 else [])
+
+
+@pytest.mark.parametrize("status", [429, 503, 200])
+def test_fetch_checks_http_status_and_login_before_reading_body(status):
+    from src.parser.fetcher import SessionExpired
+
+    calls = []
+
+    def request(url, **kwargs):
+        calls.append(1)
+        final_url = "https://my.ukma.edu.ua/auth/login" if status == 200 else url
+        return SimpleNamespace(status=status, url=final_url, text=lambda: pytest.fail("Unexpected body read"))
+
+    error = SessionExpired if status == 200 else FetchError
+    with pytest.raises(error):
+        _fetcher_with_context(request).fetch(1)
+    assert len(calls) == (1 if status == 200 else 2)
+
+
+def test_fetch_does_not_retry_body_read_failure():
+    calls = []
+
+    def read():
+        raise TimeoutError("internal response detail")
+
+    def request(url, **kwargs):
+        calls.append(1)
+        return SimpleNamespace(status=200, url=url, text=read)
+
+    with pytest.raises(FetchError, match="TimeoutError") as caught:
+        _fetcher_with_context(request).fetch(1)
+    assert len(calls) == 1
+    assert "internal response detail" not in str(caught.value)
 
 
 def test_microsoft_unavailable_returns_503_not_a_crash(monkeypatch):

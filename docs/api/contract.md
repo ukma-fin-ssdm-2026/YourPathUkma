@@ -337,7 +337,7 @@ Query-параметри:
   "api_version": "1.0.0",
   "google_client_id": "1234567890-abc.apps.googleusercontent.com",
   "allowed_email_domain": "ukma.edu.ua",
-  "reviews_url": "https://example.ukma.edu.ua/reviews",
+  "reviews_url": null,
   "limits": {
     "total_credits": 240,
     "free_choice_credits": 25,
@@ -359,7 +359,7 @@ Query-параметри:
     "ai_generation": false,
     "certificate_programs": false,
     "saz_sync": false,
-    "plan_export": true
+    "plan_export": false
   }
 }
 ```
@@ -566,6 +566,7 @@ Access-токен: живе 15 хв, фронтенд тримає його **л
 |---|---|
 | `direction_ids` | 0–3 (FR-007); 4 → 422 з `details[0].field = "direction_ids"` |
 | `preferred_instructor_ids`, `unwanted_instructor_ids` | Не перетинаються; id мають існувати |
+| `certificate_program_id` | ID наявної програми або `null`. Після видалення програми збережене посилання стає `null` |
 | `load_levels` | Для 4 курсу ігнорується, у відповіді повертається розраховане значення |
 
 Помилки: `401`, `409 ONBOARDING_REQUIRED`, `422`. Список небажаних викладачів чутливий (R1): він доступний лише власнику і ніколи не передається в LLM.
@@ -753,7 +754,7 @@ Query-параметри (усі необов'язкові, комбінують
 | `year_total_credits` | number | `total_credits` + кредити нормативних |
 | `credits_by_trimester` | `{ "1": number, "2": number, "3": number }` | Вибіркові + нормативні по триместрах, для індикатора навантаження |
 | `warnings` | `Warning[]` | Попередження (§2.4) |
-| `reviews_url` | string | Посилання «Почитати відгуки» на зовнішню платформу (`AGENTS.md` §4) |
+| `reviews_url` | string або null | HTTPS-посилання на зовнішню платформу відгуків із `REVIEWS_URL`. Якщо адресу не налаштовано, повертається null |
 
 #### `POST /plans` ✅
 
@@ -823,6 +824,8 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 
 Перевіряє план **без збереження**: для живих попереджень у конструкторі (індикатор кредитів, попередження про низьке навантаження) без створення чернетки на кожну дію. Тіло: `CreatePlanRequest`.
 
+`free_elective_used_all_years` включає кредити вільного вибору з академічної історії авторизованого студента та з поточного плану. `free_elective_remaining` дорівнює різниці між лімітом і цією сумою, щонайменше 0.
+
 Відповідь `200` (завжди 200, якщо тіло синтаксично коректне; порушення правил повертаються в `errors`):
 
 ```json
@@ -851,17 +854,13 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 
 Перехід `draft` → `submitted` (описаний у `api-design.md`). Без тіла. Перевіряє всі правила з колонки «Подання» §2.4.
 
-Відповідь `200`: `PlanResponse` зі `status: "submitted"`. Помилки: `401`, `403`/`404`, `409 PLAN_NOT_SUBMITTABLE`, `422 PLAN_VALIDATION_FAILED` (порушення в `details`).
+Успішна відповідь `200` містить `PlanResponse` зі статусом `submitted`. Під час подання сервер повторно перевіряє курс студента, каталог і кредити. Якщо сума кредитів у каталозі змінилася, сервер повертає `409 PLAN_CATALOG_CHANGED` і студент має оновити чернетку. Без онбордингу сервер повертає `409 ONBOARDING_REQUIRED`. Для плану в іншому статусі повертає `409 PLAN_NOT_SUBMITTABLE`. Помилки каталогу й нормативів повертаються як `422` з деталями в `details`. Також можливі `401`, `403` та `404`.
 
 Подальші переходи `submitted` → `awaiting_deanery` → `approved` робить не студент: їх ставить синхронізація з САЗ (⛔, див. нижче). Фронтенд лише відображає ці статуси.
 
-#### `GET /plans/{plan_id}/export` ✅
+#### `GET /plans/{plan_id}/export` ⛔
 
-Фіксація і експорт плану (use-case 16). Query: `format=pdf` (поки єдине значення). Відповідь `200`, `Content-Type: application/pdf`, `Content-Disposition: attachment; filename="plan-2026.pdf"`. PDF містить вибіркові й нормативні дисципліни по триместрах, кредити, рівні навантаження і посилання «Почитати відгуки» (`reviews_url`). Фронтенд завантажує файл через `fetch` з `Authorization` і зберігає як blob (простий `<a href>` не надішле Bearer-токен).
-
-Помилки: `401`, `403`/`404`, `422` (невідомий `format`). Доступний для плану в будь-якому статусі.
-
-Якщо команда вирішить, що достатньо друку зі сторінки браузера, кінцеву точку не реалізовують, а `features.plan_export = false` (§3.0).
+Поки генерація PDF очікує реалізації, `features.plan_export` має значення `false`. Для власного затвердженого плану запит із `format=pdf` повертає `501 EXPORT_NOT_IMPLEMENTED`. Інший формат дає `422`, а план поза статусом `approved` — `409 PLAN_NOT_EXPORTABLE`. Також можливі `401`, `403` та `404`.
 
 #### `POST /plans/sync-saz` ⛔
 
@@ -909,8 +908,10 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 
 | Частина | Тип | Обов'язкова | Обмеження |
 |---|---|---|---|
-| `file` | файл | так | PDF або DOCX (перевірка за вмістом), ≤ 10 МБ |
+| `file` | файл | так | PDF або DOCX (перевірка за вмістом), ≤ 10 МБ, назва до 255 символів |
 | `academic_year` | integer | так | 2024–2030 |
+
+Назва довша за 255 символів повертає `422 FILENAME_TOO_LONG`.
 
 Відповідь `202` (розпізнавання асинхронне) + `Location: /api/v1/deanery-documents/{id}`:
 
@@ -961,7 +962,7 @@ Query: `academic_year` (необов'язковий). Відповідь `200`: 
 
 #### `GET /deanery-documents/{document_id}/file`
 
-Повертає завантажений файл власнику: `200`, `Content-Type` = `application/pdf` або `application/vnd.openxmlformats-officedocument.wordprocessingml.document`, `Content-Disposition: attachment`. Помилки: `401`, `404 DOCUMENT_NOT_FOUND`. Чужий документ → 404 (R3).
+Повертає завантажений файл власнику зі статусом `200`. Заголовок `Content-Type` відповідає формату PDF або DOCX. Заголовок `Content-Disposition: attachment` містить назву в параметрі `filename*` (UTF-8 із percent-encoding) та запасну ASCII-назву в `filename`. Помилки: `401`, `404 DOCUMENT_NOT_FOUND`. Чужий документ → 404 (R3).
 
 #### `DELETE /deanery-documents/{document_id}`
 
@@ -1084,6 +1085,30 @@ Query: `direction_id`, `availability` (необов'язкові). Програ�
 ```
 
 Відповідь `202` + `Location`: об'єкт `SyncJob` зі `status: "queued"`. Помилки: `401`, `403`, `409 SYNC_JOB_ALREADY_RUNNING`, `422`.
+
+#### `POST /admin/sync-jobs/saz-import`
+
+Лише для адміністратора. Тіло запиту — вміст файлу `saz_export.json` з типом
+`application/json`. Формат v1 містить `version`, `academic_year`, `level`,
+`expected`, `seen`, `skipped`, `pagination_changed` і `courses`.
+Ліміти — 25 МіБ та 4 000 дисциплін. Імпорт повертає `201`, об'єкт завершеної задачі
+та заголовок `Location`. Помилки: `409 SYNC_JOB_ALREADY_RUNNING`, `413 FILE_TOO_LARGE`,
+`415 UNSUPPORTED_FILE_TYPE`, `422 SAZ_BUNDLE_INVALID`. Повторний імпорт ідентичних даних
+не дублює пропозиції, що очікують модерації.
+
+`features.saz_catalog_live` у `GET /config` визначає доступність серверного обходу.
+При вимкненому обході запуск із `source: "saz_catalog"` повертає `503 SAZ_LIVE_SYNC_DISABLED`.
+Імпорт файлу працює незалежно від цього прапорця.
+
+#### `/admin/saz-session`
+
+Доступ лише для адміністратора за ввімкненого серверного входу до САЗ.
+`GET` показує наявність збереженої сесії, `DELETE` видаляє її. `POST /login`
+відкриває окремий браузер на п’ять хвилин. Маршрути `/login/{id}/frame` і
+`/login/{id}/input` доступні адміністратору, який відкрив браузер. `POST /login/{id}/complete`
+перевіряє доступ до каталогу й зберігає зашифровану сесію. `DELETE /login/{id}`
+закриває браузер без збереження сесії. Прапорець доступності інтерфейсу — `features.saz_remote_login`.
+Поки сесію не збережено, запуск серверного парсингу повертає `409 SAZ_SESSION_REQUIRED`.
 
 #### `GET /admin/sync-jobs`
 
@@ -1223,7 +1248,7 @@ Query: `limit`, `offset`, `status` (за замовчуванням `pending`), 
 
 #### Сертифікатні програми 🔵
 
-**`PATCH /admin/certificate-programs/{program_id}`** — тіло `{ "direction_ids": [1], "hidden": false }`. `hidden: true` приховує програму від студентів. Відповідь `200`: `CertificateProgram`.
+**`PATCH /admin/certificate-programs/{program_id}`** приймає тіло `{ "direction_ids": [1], "hidden": false }`. Якщо передано перелік, він має містити від 1 до 50 унікальних ID наявних напрямків. `hidden: true` приховує програму від студентів. Відповідь `200` містить `{"status":"ok"}`.
 
 **`PUT /admin/certificate-programs/{program_id}/courses/{entry_id}`** — ручна звірка, коли автоматичне порівняння назв не знайшло збіг:
 
@@ -1231,7 +1256,9 @@ Query: `limit`, `offset`, `status` (за замовчуванням `pending`), 
 { "course_id": 120 }
 ```
 
-`course_id: null` скасовує ручну звірку. Сервер перераховує `availability` програми. Відповідь `200`: програма з `courses`. Помилки: `401`, `403`, `404`, `422`.
+`course_id: null` скасовує ручну звірку. Переданий ID має належати опублікованій дисципліні. Сервер перераховує `availability` програми й записує аудит у тій самій транзакції. Відповідь `200` містить `{"status":"ok"}`.
+
+Для цих операцій, маршрутів планів, генерацій та документів деканату ID ресурсів мають бути в діапазоні від 1 до 9 223 372 036 854 775 807. Порушення діапазону та невалідні посилання в тілі запиту дають `422`. Запит на відсутній ресурс за допустимим ID дає `404`.
 
 #### Журнал аудиту: `GET /admin/audit-log`
 
@@ -1395,14 +1422,14 @@ export interface AppConfig {
   api_version: string;
   google_client_id: string;
   allowed_email_domain: string;
-  reviews_url: string;
+  reviews_url: string | null;
   limits: {
     total_credits: number; free_choice_credits: number; professional_credits: number;
     min_year_credits: number; max_directions: number; max_plan_items: number; max_item_credits: number;
     academic_year_min: number; academic_year_max: number; max_upload_bytes: number;
   };
   load_levels: Record<LoadLevel, { min_hours_per_week?: number; max_hours_per_week?: number }>;
-  features: { ai_generation: boolean; certificate_programs: boolean; saz_sync: boolean; plan_export: boolean };
+  features: { ai_generation: boolean; certificate_programs: boolean; saz_catalog_live: boolean; saz_sync: boolean; plan_export: boolean };
 }
 
 // ---------- Академічна історія і побажання (✅) ----------
@@ -1595,7 +1622,18 @@ User stories US-001…US-010 відповідають тим самим FR і п
 
 ## Використання ШІ
 
+- Codex задокументував обмеження довжини та кодування назв документів деканату для #216. Перевірено регресіями на PostgreSQL і генерацією OpenAPI.
+
+- Codex уточнив підсумок вільного вибору в контракті. Перевірка — тести API та згенерована OpenAPI.
+- Codex описав необов’язкове посилання на відгуки. Перевірка — тести конфігурації та згенерована OpenAPI.
+- Codex описав валідацію ідентифікаторів і цілісність посилань для #215. Поведінку перевірено регресіями на PostgreSQL і звірено з OpenAPI.
+- Codex уточнив контракт подання й експорту для #214. Поведінку звірено з регресійними тестами та згенерованою специфікацією OpenAPI.
+
 - **Що створено:** весь документ підготовлено за допомогою Claude (Claude Code, модель Opus 5.5) за запитом команди. Розділи про ✅-кінцеві точки описують поточний код; форми 🟡/🔵-кінцевих точок, коди помилок і попереджень, типи TypeScript і рекомендації в §6 — **пропозиції ШІ**, виведені з `requirements.md`, `user-stories.md`, `data-model.md`, `threat-model.md`, `quality-attributes.md`, `api-design.md`, `AGENTS.md` і `Project-Description.md`. Вони потребують узгодження командою.
 - **Як перевірено:** форми, обмеження, коди помилок і статус-коди ✅-кінцевих точок звірено вручну з `src/api/common.py`, `src/api/routes/plans.py`, `src/api/routes/disciplines.py` і `src/api/main.py`. Поведінку заглушки (id планів, власник, id нового плану) звірено з кодом. Приклади помилок перевірено запитами через `TestClient` до реального застосунку: 422 для ліміту вільного вибору (`field: "body"`, `28.0 > 25`), 403 для чужого плану, `HTTP_404` для неіснуючого шляху, 422 для `limit=500`. Кінцеві точки 🟡/🔵 не існують у коді й не перевірялись; TypeScript-типи не компілювались.
 - **Друга ітерація (також Claude):** додано контракти, яких бракувало для повного покриття: `/config`, онбординг і академічна історія, побажання, експорт плану, файл і видалення документа деканату, адмінські кінцеві точки для користувачів, напрямків, профорієнтовності дисциплін, сертифікатних програм і журналу аудиту; розбіжності 10–14 у §6; матриця покриття §7. Покриття перевірено вручну: кожен use-case з `AGENTS.md` §6, кожна FR з `requirements.md` і кожна сутність з `data-model.md`, яку бачить фронтенд, зіставлені з кінцевими точками в §7.
 - **Виправлення після проміжного оцінювання (01.11.2026, Claude):** `POST /auth/google` замінено на `POST /auth/microsoft` (зведена таблиця, §3.1, приклад `code`, §7.1, §7.2); позначку 🟡 знято з кінцевих точок і заголовків розділів, для яких у `src/api/routes/` є обробники; прибрано опис заглушки автентифікації («будь-який непорожній токен», `Bearer test`) і додано пояснення про `scripts/issue_token.py`. **Як перевірено:** відповідність кінцевих точок обробникам зіставлено за виводом `grep "@router\.\|@app\." src/api` (кількість і порядок декораторів по файлах); шляхи в самих декораторах напряму не звірялись, а специфікацію `openapi-generated.yaml` з документом не порівнювали; тести не запускались. Поле `google_client_id` у `GET /config` лишено без змін, бо в `src/api/routes/system.py` воно ще мало таку назву; якщо його перейменують, оновити приклад у §3.0 і відповідне поле TypeScript-типу конфігурації.
+
+**Використання ШІ.** Codex описав API імпорту САЗ і прапорець серверного обходу. Перевірка: pytest і згенерована специфікація OpenAPI.
+
+**Використання ШІ.** Codex описав API віддаленого входу до САЗ. Перевірка: pytest і OpenAPI.

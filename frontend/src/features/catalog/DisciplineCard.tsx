@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: catalog-ui.test.tsx.
+// Codex уточнив конфігурацію відгуків. Перевірка — фронтенд-тести.
 import type { CSSProperties } from "react";
 import type { Discipline } from "../../api/types";
 import { creditsWord, formatCredits } from "../../lib/credits";
@@ -13,7 +14,7 @@ export function DisciplineCard({
   index = 0,
 }: {
   discipline: Discipline;
-  reviewsUrl?: string;
+  reviewsUrl?: string | null;
   index?: number;
 }) {
   const directions = discipline.directions ?? [];

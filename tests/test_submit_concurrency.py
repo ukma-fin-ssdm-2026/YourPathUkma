@@ -6,6 +6,7 @@
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: запуск на PostgreSQL 16
 (з блокуванням проходить, без нього обидва плани стають submitted і тест падає).
+Codex узгодив курс і кредити тестових планів із профілем та каталогом. Перевірка: pytest на PostgreSQL.
 """
 
 import threading
@@ -19,13 +20,16 @@ from src.api.plan_checks import free_elective_used_in_other_plans
 from src.api.routes import plans as plans_routes
 from src.db import enums as db_enums
 from src.db.config import database_url
-from src.db.models import IndividualPlan, PlanItem
+from src.db.models import Course, IndividualPlan, PlanItem
 from src.db.session import session_factory
 
-pytestmark = pytest.mark.skipif(
-    not database_url().startswith("postgresql"),
-    reason="Потрібні справжні блокування рядків PostgreSQL (на SQLite FOR UPDATE ігнорується)",
-)
+pytestmark = [
+    pytest.mark.slow,
+    pytest.mark.skipif(
+        not database_url().startswith("postgresql"),
+        reason="Потрібні справжні блокування рядків PostgreSQL (на SQLite FOR UPDATE ігнорується)",
+    ),
+]
 
 STUDENT = 42
 YEAR = 2027
@@ -34,8 +38,13 @@ PROFESSIONAL_A, PROFESSIONAL_B, FREE_COURSE = 101, 102, 205  # seed: 205 без 
 
 def _create_plan(professional_id: int) -> int:
     with session_factory()() as db:
+        total_credits = sum(db.get(Course, course_id).credits for course_id in (professional_id, FREE_COURSE))
         plan = IndividualPlan(
-            student_id=STUDENT, academic_year=YEAR, course_year=3, status=db_enums.PlanStatus.DRAFT, total_credits=0
+            student_id=STUDENT,
+            academic_year=YEAR,
+            course_year=2,
+            status=db_enums.PlanStatus.DRAFT,
+            total_credits=total_credits,
         )
         plan.items = [
             PlanItem(

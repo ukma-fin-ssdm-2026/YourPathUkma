@@ -1,5 +1,6 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: data.test.tsx.
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+// Codex уточнив підсумок кредитів і живу валідацію. Перевірка — фронтенд-тести.
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../../api/client";
 import type { ApiError } from "../../api/errors";
 import type { PlanResponse, PlanValidationResponse } from "../../api/types";
@@ -25,17 +26,18 @@ export function planPayload(plan: BuilderPlan) {
  * не перезаписує свіжу. Порожній план бекенд відхиляє (items від 1), тому для нього запиту немає.
  */
 export function useValidatePlan(plan: BuilderPlan, options: { debounceMs?: number } = {}) {
-  const settled = useDebouncedValue(plan, options.debounceMs ?? 400);
+  const payload = planPayload(plan);
+  const key = JSON.stringify(payload);
+  const settled = useDebouncedValue(key, options.debounceMs ?? 400);
   return useQuery({
-    queryKey: ["validate", JSON.stringify(planPayload(settled))],
+    queryKey: ["validate", key],
     queryFn: ({ signal }) =>
       request<PlanValidationResponse>("/plans/validate", {
         method: "POST",
-        body: planPayload(settled),
+        body: payload,
         signal,
       }),
-    enabled: settled.items.length > 0,
-    placeholderData: keepPreviousData,
+    enabled: payload.items.length > 0 && key === settled,
   });
 }
 

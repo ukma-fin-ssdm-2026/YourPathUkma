@@ -1,4 +1,5 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
+// Codex уточнив конфігурацію відгуків. Перевірка — фронтенд-тести.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor } from "@testing-library/react";
@@ -28,7 +29,7 @@ describe("creditsWord", () => {
 });
 
 describe("DisciplineCard", () => {
-  const reviews = "https://example.ukma.edu.ua/reviews";
+  const reviews = "https://reviews.ukma.edu.ua/reviews";
 
   it("показує назву, викладача, курс, триместр і кредити", () => {
     render(<DisciplineCard discipline={disciplineFixture()} reviewsUrl={reviews} />);
@@ -105,6 +106,19 @@ function renderCatalog(entry = "/catalog") {
 describe("CatalogPage", () => {
   beforeEach(() => {
     server.use(configHandler(), directionsHandler(["Data Science", "Cybersecurity"]));
+  });
+
+  it("показує відгуки лише для налаштованої адреси", async () => {
+    server.use(disciplinesHandler([disciplineFixture()]));
+    const { unmount } = render(
+      <DisciplineCard discipline={disciplineFixture()} reviewsUrl={null} />,
+    );
+    expect(screen.queryByRole("link", { name: /Відгуки/ })).not.toBeInTheDocument();
+    unmount();
+    const url = "https://reviews.ukma.edu.ua/reviews";
+    server.use(configHandler({ reviews_url: url }));
+    renderCatalog();
+    expect(await screen.findByRole("link", { name: /Відгуки/ })).toHaveAttribute("href", url);
   });
 
   it("під час завантаження показує skeleton", () => {

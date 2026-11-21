@@ -3,6 +3,8 @@
 
 Ресурс «Система» (System): публічна конфігурація для фронтенду (GET /api/v1/config).
 
+Використання ШІ: прапорці парсингу і віддаленого входу САЗ додано Codex. Перевірка: pytest.
+
 Без автентифікації. Ліміти тут мають збігатися з контрактом (docs/api/contract.md, §2.2 і §3.0),
 щоб фронтенд брав їх звідси, а не дублював у власному коді.
 """
@@ -11,14 +13,29 @@ import os
 from typing import Dict, Optional
 
 from fastapi import APIRouter, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl, TypeAdapter, ValidationError
 
+from ...parser.config import autorun_enabled, remote_login_enabled
 from ..common import ApiError
 from ..tokens import get_auth_settings
 
 router = APIRouter(prefix="/api/v1", tags=["System"])
 
 API_VERSION = "1.0.0"
+_HTTP_URL = TypeAdapter(HttpUrl)
+
+
+def _reviews_url() -> Optional[str]:
+    value = os.getenv("REVIEWS_URL", "").strip()
+    if not value.lower().startswith("https://") or any(character.isspace() for character in value):
+        return None
+    try:
+        url = _HTTP_URL.validate_python(value)
+    except ValidationError:
+        return None
+    if (url.host or "").rstrip(".") == "example.ukma.edu.ua" or url.username is not None or url.password is not None:
+        return None
+    return str(url)
 
 
 class Limits(BaseModel):
@@ -42,15 +59,17 @@ class LoadLevelHours(BaseModel):
 class Features(BaseModel):
     ai_generation: bool = Field(False, description="AI-генерація плану (етап 2)")
     certificate_programs: bool = Field(False, description="Сертифікатні програми (етап 2)")
+    saz_catalog_live: bool = Field(False, description="Серверний парсинг каталогу САЗ")
+    saz_remote_login: bool = Field(False, description="Віддалений вхід адміністратора до САЗ")
     saz_sync: bool = Field(False, description="Синхронізація з САЗ (заблоковано, R14)")
-    plan_export: bool = Field(True, description="Експорт плану в PDF")
+    plan_export: bool = Field(False, description="Експорт плану в PDF (поки не реалізовано: 501)")
 
 
 class ConfigResponse(BaseModel):
     api_version: str = Field(API_VERSION, description="Версія API")
     google_client_id: str = Field(..., description="Публічний client_id для входу через Microsoft")
     allowed_email_domain: str = Field("ukma.edu.ua", description="Дозволений домен пошти")
-    reviews_url: str = Field(..., description="Посилання «Почитати відгуки»")
+    reviews_url: Optional[str] = Field(..., description="HTTPS-посилання на відгуки або null")
     limits: Limits
     load_levels: Dict[str, LoadLevelHours] = Field(..., description="Межі годин на тиждень для рівнів навантаження")
     features: Features
@@ -70,12 +89,12 @@ async def get_config(response: Response):
     response.headers["Cache-Control"] = "max-age=300"
     return ConfigResponse(
         google_client_id=client_id,
-        reviews_url=os.getenv("REVIEWS_URL", "https://example.ukma.edu.ua/reviews"),
+        reviews_url=_reviews_url(),
         limits=Limits(),
         load_levels={
             "low": LoadLevelHours(max_hours_per_week=20),
             "medium": LoadLevelHours(min_hours_per_week=20, max_hours_per_week=23),
             "high": LoadLevelHours(min_hours_per_week=23, max_hours_per_week=25),
         },
-        features=Features(),
+        features=Features(saz_catalog_live=autorun_enabled(), saz_remote_login=remote_login_enabled()),
     )

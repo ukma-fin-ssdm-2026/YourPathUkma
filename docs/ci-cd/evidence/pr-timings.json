@@ -1,0 +1,3092 @@
+{
+  "repository": "ukma-fin-ssdm-2026/YourPathUkma",
+  "collected_on": "2026-11-16",
+  "source": "GitHub GraphQL API: pullRequest createdAt, mergedAt, mergeCommit, reviews(first:100)",
+  "reviews_pagination_complete": true,
+  "definition": "First submitted non-pending review by author of GraphQL type User, on or before merge. Events clipped at first_commit_authored_at; comments outside formal reviews are not included.",
+  "Використання ШІ": "Codex зібрав часові мітки 82 PR через GitHub GraphQL API й обчислив етапи. Перевірка: усі merge SHA зіставлено з метриками, пагінація повна, тривалості невід’ємні, сума етапів кожного PR дорівнює часу зміни; нотатки для PR без рев’ю й ранніх подій наведено окремо.",
+  "pr_count": 82,
+  "lead_seconds_total": 4502961.0,
+  "stage_seconds": {
+    "before_open_seconds": 737206.0,
+    "before_first_human_review_seconds": 839115.0,
+    "after_first_human_review_seconds": 2779066.0,
+    "without_human_review_seconds": 4663.0,
+    "after_merge_seconds": 142911.0
+  },
+  "no_human_review_prs": [
+    225,
+    226
+  ],
+  "clipped_prs": [
+    157
+  ],
+  "pull_requests": [
+    {
+      "number": 131,
+      "sha": "09329fdc71d6d0e965f96efdb5c01b81d97641b7",
+      "first_commit_authored_at": "2026-10-23T07:27:30Z",
+      "created_at": "2026-10-23T07:28:17Z",
+      "first_human_review_at": "2026-10-23T07:28:38+00:00",
+      "merged_at": "2026-10-28T22:39:37Z",
+      "delivery_completed_at": "2026-10-28T22:41:23Z",
+      "delivery_run_id": 40781665701,
+      "lead_seconds": 486833.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-23T07:28:38Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-23T07:28:41Z",
+          "state": "COMMENTED",
+          "author": {
+            "__typename": "Bot"
+          }
+        },
+        {
+          "submittedAt": "2026-10-24T19:51:38Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-28T22:39:26Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 47.0,
+      "before_first_human_review_seconds": 21.0,
+      "after_first_human_review_seconds": 486659.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 106.0
+    },
+    {
+      "number": 132,
+      "sha": "06b3c3ca9c0609e27219c249b960881ff8af5383",
+      "first_commit_authored_at": "2026-10-24T18:52:56Z",
+      "created_at": "2026-10-24T19:12:00Z",
+      "first_human_review_at": "2026-10-24T19:51:54+00:00",
+      "merged_at": "2026-10-25T12:39:04Z",
+      "delivery_completed_at": "2026-10-25T12:41:07Z",
+      "delivery_run_id": 40194049316,
+      "lead_seconds": 64091.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-24T19:12:21Z",
+          "state": "COMMENTED",
+          "author": {
+            "__typename": "Bot"
+          }
+        },
+        {
+          "submittedAt": "2026-10-24T19:51:54Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-24T19:52:25Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-25T12:38:32Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 1144.0,
+      "before_first_human_review_seconds": 2394.0,
+      "after_first_human_review_seconds": 60430.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 123.0
+    },
+    {
+      "number": 133,
+      "sha": "39e9ee211865ba4ebfa467e2706ea2fe5bf799b0",
+      "first_commit_authored_at": "2026-10-24T19:40:05Z",
+      "created_at": "2026-10-24T19:42:50Z",
+      "first_human_review_at": "2026-10-24T19:52:09+00:00",
+      "merged_at": "2026-10-25T12:39:21Z",
+      "delivery_completed_at": "2026-10-25T12:41:20Z",
+      "delivery_run_id": 40194070235,
+      "lead_seconds": 61275.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-24T19:43:11Z",
+          "state": "COMMENTED",
+          "author": {
+            "__typename": "Bot"
+          }
+        },
+        {
+          "submittedAt": "2026-10-24T19:52:09Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-24T19:52:46Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-25T12:38:48Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 165.0,
+      "before_first_human_review_seconds": 559.0,
+      "after_first_human_review_seconds": 60432.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 119.0
+    },
+    {
+      "number": 134,
+      "sha": "640ea75d15aa84a2f1b12729cf4e41110e96a4b3",
+      "first_commit_authored_at": "2026-10-23T07:27:30Z",
+      "created_at": "2026-10-25T17:00:47Z",
+      "first_human_review_at": "2026-10-26T19:24:37+00:00",
+      "merged_at": "2026-10-27T09:53:51Z",
+      "delivery_completed_at": "2026-10-27T09:55:37Z",
+      "delivery_run_id": 40484286049,
+      "lead_seconds": 354487.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-26T19:24:37Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-27T08:34:41Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-27T09:53:43Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 207197.0,
+      "before_first_human_review_seconds": 95030.0,
+      "after_first_human_review_seconds": 52154.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 106.0
+    },
+    {
+      "number": 140,
+      "sha": "e803da5e4ed0d83525ca07cca15c9f42f86a7203",
+      "first_commit_authored_at": "2026-10-28T22:32:51Z",
+      "created_at": "2026-10-28T22:41:09Z",
+      "first_human_review_at": "2026-10-28T23:31:57+00:00",
+      "merged_at": "2026-10-29T08:09:11Z",
+      "delivery_completed_at": "2026-10-29T08:10:59Z",
+      "delivery_run_id": 40840107060,
+      "lead_seconds": 34688.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-28T23:31:57Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-28T23:34:31Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-28T23:50:13Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T08:08:49Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 498.0,
+      "before_first_human_review_seconds": 3048.0,
+      "after_first_human_review_seconds": 31034.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 108.0
+    },
+    {
+      "number": 141,
+      "sha": "9ed010bd45b9e83d7d17270dac7eff66fce3dceb",
+      "first_commit_authored_at": "2026-10-28T22:20:25Z",
+      "created_at": "2026-10-28T22:46:54Z",
+      "first_human_review_at": "2026-10-28T22:49:20+00:00",
+      "merged_at": "2026-10-29T00:21:03Z",
+      "delivery_completed_at": "2026-10-29T00:22:48Z",
+      "delivery_run_id": 40793480430,
+      "lead_seconds": 7343.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-28T22:49:20Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-28T23:32:13Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-28T23:34:45Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 1589.0,
+      "before_first_human_review_seconds": 146.0,
+      "after_first_human_review_seconds": 5503.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 105.0
+    },
+    {
+      "number": 142,
+      "sha": "3a0c484e0aa9eb39a67b0f3558ef7c22deefab01",
+      "first_commit_authored_at": "2026-10-28T23:04:08Z",
+      "created_at": "2026-10-28T23:04:36Z",
+      "first_human_review_at": "2026-10-28T23:32:26+00:00",
+      "merged_at": "2026-10-29T08:13:45Z",
+      "delivery_completed_at": "2026-10-29T08:15:30Z",
+      "delivery_run_id": 40840641279,
+      "lead_seconds": 33082.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-28T23:32:26Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-28T23:34:57Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T08:08:30Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 28.0,
+      "before_first_human_review_seconds": 1670.0,
+      "after_first_human_review_seconds": 31279.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 105.0
+    },
+    {
+      "number": 143,
+      "sha": "f7922ed54105e743e488f603d843dde1ab3a4445",
+      "first_commit_authored_at": "2026-10-28T23:46:34Z",
+      "created_at": "2026-10-28T23:51:37Z",
+      "first_human_review_at": "2026-10-29T08:14:10+00:00",
+      "merged_at": "2026-10-29T09:23:18Z",
+      "delivery_completed_at": "2026-10-29T09:26:05Z",
+      "delivery_run_id": 40849232825,
+      "lead_seconds": 34771.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T08:14:10Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T08:47:57Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 303.0,
+      "before_first_human_review_seconds": 30153.0,
+      "after_first_human_review_seconds": 4148.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 167.0
+    },
+    {
+      "number": 144,
+      "sha": "254900ee4537582d19edef1d350d98be0d68ce25",
+      "first_commit_authored_at": "2026-10-29T00:08:03Z",
+      "created_at": "2026-10-29T00:08:20Z",
+      "first_human_review_at": "2026-10-29T00:21:57+00:00",
+      "merged_at": "2026-10-29T09:07:26Z",
+      "delivery_completed_at": "2026-10-29T09:09:13Z",
+      "delivery_run_id": 40847167703,
+      "lead_seconds": 32470.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T00:21:57Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T08:07:37Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T08:09:10Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 17.0,
+      "before_first_human_review_seconds": 817.0,
+      "after_first_human_review_seconds": 31529.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 107.0
+    },
+    {
+      "number": 145,
+      "sha": "c398c956b387b252e25192d61797a0d69593bec2",
+      "first_commit_authored_at": "2026-10-27T14:52:33Z",
+      "created_at": "2026-10-29T06:46:45Z",
+      "first_human_review_at": "2026-10-29T07:03:27+00:00",
+      "merged_at": "2026-10-29T08:30:32Z",
+      "delivery_completed_at": "2026-10-29T08:32:21Z",
+      "delivery_run_id": 40842634327,
+      "lead_seconds": 149988.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T07:03:27Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T08:14:39Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T08:14:53Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 143652.0,
+      "before_first_human_review_seconds": 1002.0,
+      "after_first_human_review_seconds": 5225.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 109.0
+    },
+    {
+      "number": 148,
+      "sha": "8888b726e4f3a4cd8241911fec8d14b44a1fdedb",
+      "first_commit_authored_at": "2026-10-29T09:13:46Z",
+      "created_at": "2026-10-29T09:48:35Z",
+      "first_human_review_at": "2026-10-29T09:49:10+00:00",
+      "merged_at": "2026-10-29T10:22:56Z",
+      "delivery_completed_at": "2026-10-29T10:25:01Z",
+      "delivery_run_id": 40857114777,
+      "lead_seconds": 4275.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T09:49:10Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T10:01:19Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T10:01:35Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T10:17:00Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2089.0,
+      "before_first_human_review_seconds": 35.0,
+      "after_first_human_review_seconds": 2026.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 125.0
+    },
+    {
+      "number": 149,
+      "sha": "1d93e0aa5fddd0bafd8b52ebb88a76a02603e96a",
+      "first_commit_authored_at": "2026-10-29T10:23:43Z",
+      "created_at": "2026-10-29T10:23:45Z",
+      "first_human_review_at": "2026-10-29T12:29:52+00:00",
+      "merged_at": "2026-10-29T20:15:53Z",
+      "delivery_completed_at": "2026-10-29T20:33:21Z",
+      "delivery_run_id": 40947469251,
+      "lead_seconds": 36578.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T12:29:52Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T18:57:43Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T18:57:59Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:15:44Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2.0,
+      "before_first_human_review_seconds": 7567.0,
+      "after_first_human_review_seconds": 27961.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1048.0
+    },
+    {
+      "number": 150,
+      "sha": "c9efde785e4b085afa63e0437fcbef76dcbdc402",
+      "first_commit_authored_at": "2026-10-29T10:23:51Z",
+      "created_at": "2026-10-29T10:23:53Z",
+      "first_human_review_at": "2026-10-29T12:30:07+00:00",
+      "merged_at": "2026-10-29T21:11:38Z",
+      "delivery_completed_at": "2026-10-29T21:18:10Z",
+      "delivery_run_id": 40955666239,
+      "lead_seconds": 39259.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T12:30:07Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:16:10Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:36:41Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2.0,
+      "before_first_human_review_seconds": 7574.0,
+      "after_first_human_review_seconds": 31291.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 392.0
+    },
+    {
+      "number": 151,
+      "sha": "08322523f125b77b95b974bf41276cf4769dfd95",
+      "first_commit_authored_at": "2026-10-29T10:23:54Z",
+      "created_at": "2026-10-29T10:23:57Z",
+      "first_human_review_at": "2026-10-29T12:30:21+00:00",
+      "merged_at": "2026-10-29T20:16:42Z",
+      "delivery_completed_at": "2026-10-29T20:34:45Z",
+      "delivery_run_id": 40947587436,
+      "lead_seconds": 36651.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T12:30:21Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T18:58:20Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:16:34Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 7584.0,
+      "after_first_human_review_seconds": 27981.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1083.0
+    },
+    {
+      "number": 152,
+      "sha": "b34f46a120766272372c3e6b7e4fdcc317d326c4",
+      "first_commit_authored_at": "2026-10-29T10:23:55Z",
+      "created_at": "2026-10-29T10:23:58Z",
+      "first_human_review_at": "2026-10-29T12:30:35+00:00",
+      "merged_at": "2026-10-29T20:17:33Z",
+      "delivery_completed_at": "2026-10-29T20:37:01Z",
+      "delivery_run_id": 40947716626,
+      "lead_seconds": 36786.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T12:30:35Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T18:59:07Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:17:25Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 7597.0,
+      "after_first_human_review_seconds": 28018.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1168.0
+    },
+    {
+      "number": 153,
+      "sha": "b87f6c167b19c1c3aea6adbc99e4d657828a8b31",
+      "first_commit_authored_at": "2026-10-29T10:23:55Z",
+      "created_at": "2026-10-29T10:23:58Z",
+      "first_human_review_at": "2026-10-29T12:30:49+00:00",
+      "merged_at": "2026-10-29T20:17:12Z",
+      "delivery_completed_at": "2026-10-29T20:36:31Z",
+      "delivery_run_id": 40947663340,
+      "lead_seconds": 36756.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T12:30:49Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T18:58:54Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:16:57Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 7611.0,
+      "after_first_human_review_seconds": 27983.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1159.0
+    },
+    {
+      "number": 154,
+      "sha": "8f7e85a50bf3256b0198d54df505a53e5c40157e",
+      "first_commit_authored_at": "2026-10-29T10:23:57Z",
+      "created_at": "2026-10-29T10:24:00Z",
+      "first_human_review_at": "2026-10-29T12:31:36+00:00",
+      "merged_at": "2026-10-29T20:17:55Z",
+      "delivery_completed_at": "2026-10-29T20:38:53Z",
+      "delivery_run_id": 40947834118,
+      "lead_seconds": 36896.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T12:31:36Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T18:59:17Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:17:46Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 7656.0,
+      "after_first_human_review_seconds": 27979.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1258.0
+    },
+    {
+      "number": 155,
+      "sha": "804e8990b35c933781da157faa76b4f51c6e67d3",
+      "first_commit_authored_at": "2026-10-29T10:24:03Z",
+      "created_at": "2026-10-29T10:24:06Z",
+      "first_human_review_at": "2026-10-29T12:35:20+00:00",
+      "merged_at": "2026-10-29T20:18:42Z",
+      "delivery_completed_at": "2026-10-29T20:40:13Z",
+      "delivery_run_id": 40947886429,
+      "lead_seconds": 36970.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T12:35:20Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T18:59:31Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:18:35Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 7874.0,
+      "after_first_human_review_seconds": 27802.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1291.0
+    },
+    {
+      "number": 156,
+      "sha": "55da7c163437de7f89b267753c82a8a6265cbd84",
+      "first_commit_authored_at": "2026-10-29T10:24:03Z",
+      "created_at": "2026-10-29T10:24:06Z",
+      "first_human_review_at": "2026-10-29T12:31:05+00:00",
+      "merged_at": "2026-10-29T20:18:21Z",
+      "delivery_completed_at": "2026-10-29T20:38:53Z",
+      "delivery_run_id": 40947834118,
+      "lead_seconds": 36890.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T12:31:05Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T18:59:43Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:18:14Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 7619.0,
+      "after_first_human_review_seconds": 28036.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1232.0
+    },
+    {
+      "number": 157,
+      "sha": "61c7a3bc6672d5824bd8da257e46e78afab5f226",
+      "first_commit_authored_at": "2026-10-29T20:19:18Z",
+      "created_at": "2026-10-29T10:24:10Z",
+      "first_human_review_at": "2026-10-29T12:35:43+00:00",
+      "merged_at": "2026-10-29T21:11:27Z",
+      "delivery_completed_at": "2026-10-29T21:16:42Z",
+      "delivery_run_id": 40955638679,
+      "lead_seconds": 3444.0,
+      "opened_before_first_commit": true,
+      "reviewed_before_first_commit": true,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T12:35:43Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T18:59:56Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:18:53Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:19:09Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:19:57Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 0.0,
+      "before_first_human_review_seconds": 0.0,
+      "after_first_human_review_seconds": 3129.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 315.0
+    },
+    {
+      "number": 158,
+      "sha": "d1f35944908bb3dd6a1233722eb7906abb3f8fd9",
+      "first_commit_authored_at": "2026-10-29T10:43:43Z",
+      "created_at": "2026-10-29T10:44:55Z",
+      "first_human_review_at": "2026-10-29T11:37:32+00:00",
+      "merged_at": "2026-10-29T20:20:53Z",
+      "delivery_completed_at": "2026-10-29T20:42:02Z",
+      "delivery_run_id": 40948213861,
+      "lead_seconds": 35899.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T11:37:32Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T19:00:08Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:20:44Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 72.0,
+      "before_first_human_review_seconds": 3157.0,
+      "after_first_human_review_seconds": 31401.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1269.0
+    },
+    {
+      "number": 159,
+      "sha": "2a0c4d92a0f61884605ab098146ee34fa7fde2e1",
+      "first_commit_authored_at": "2026-10-29T06:32:41Z",
+      "created_at": "2026-10-29T12:29:04Z",
+      "first_human_review_at": "2026-10-29T19:00:20+00:00",
+      "merged_at": "2026-10-29T21:11:14Z",
+      "delivery_completed_at": "2026-10-29T21:15:59Z",
+      "delivery_run_id": 40955610127,
+      "lead_seconds": 52998.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T19:00:20Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:21:04Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:21:18Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:36:22Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 21383.0,
+      "before_first_human_review_seconds": 23476.0,
+      "after_first_human_review_seconds": 7854.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 285.0
+    },
+    {
+      "number": 160,
+      "sha": "42e5c0b566b84040ce35f1cf36ad408405acfd41",
+      "first_commit_authored_at": "2026-10-29T13:19:42Z",
+      "created_at": "2026-10-29T13:19:51Z",
+      "first_human_review_at": "2026-10-29T19:00:31+00:00",
+      "merged_at": "2026-10-29T21:10:52Z",
+      "delivery_completed_at": "2026-10-29T21:13:01Z",
+      "delivery_run_id": 40955555375,
+      "lead_seconds": 28399.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T19:00:31Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:21:40Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:35:58Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 9.0,
+      "before_first_human_review_seconds": 20440.0,
+      "after_first_human_review_seconds": 7821.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 129.0
+    },
+    {
+      "number": 161,
+      "sha": "70ce8a14956c7b5ab8d1a4128561da597debdb0c",
+      "first_commit_authored_at": "2026-10-29T19:18:44Z",
+      "created_at": "2026-10-29T19:19:22Z",
+      "first_human_review_at": "2026-10-29T19:56:16+00:00",
+      "merged_at": "2026-10-29T21:11:03Z",
+      "delivery_completed_at": "2026-10-29T21:14:37Z",
+      "delivery_run_id": 40955581111,
+      "lead_seconds": 6953.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T19:56:16Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:21:53Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:35:39Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 38.0,
+      "before_first_human_review_seconds": 2214.0,
+      "after_first_human_review_seconds": 4487.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 214.0
+    },
+    {
+      "number": 162,
+      "sha": "cd9809ef9dc9e55bda4848aa066eeae59de69a28",
+      "first_commit_authored_at": "2026-10-29T19:45:50Z",
+      "created_at": "2026-10-29T19:46:30Z",
+      "first_human_review_at": "2026-10-29T19:55:39+00:00",
+      "merged_at": "2026-10-29T21:10:31Z",
+      "delivery_completed_at": "2026-10-29T21:12:37Z",
+      "delivery_run_id": 40955505052,
+      "lead_seconds": 5207.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T19:55:39Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:22:10Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T20:35:22Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 40.0,
+      "before_first_human_review_seconds": 549.0,
+      "after_first_human_review_seconds": 4492.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 126.0
+    },
+    {
+      "number": 163,
+      "sha": "d92684daebe6cca8f2a43c5f82fb368f28858ab4",
+      "first_commit_authored_at": "2026-10-29T21:24:05Z",
+      "created_at": "2026-10-29T21:25:55Z",
+      "first_human_review_at": "2026-10-29T21:27:24+00:00",
+      "merged_at": "2026-10-29T22:22:20Z",
+      "delivery_completed_at": "2026-10-29T22:59:56Z",
+      "delivery_run_id": 40965358405,
+      "lead_seconds": 5751.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T21:27:24Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T21:27:26Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 110.0,
+      "before_first_human_review_seconds": 89.0,
+      "after_first_human_review_seconds": 3296.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 2256.0
+    },
+    {
+      "number": 165,
+      "sha": "091e7e3ebdbefda5edfdfeabc2e747f31f15f938",
+      "first_commit_authored_at": "2026-10-29T21:46:22Z",
+      "created_at": "2026-10-29T21:46:31Z",
+      "first_human_review_at": "2026-10-29T21:47:34+00:00",
+      "merged_at": "2026-10-29T22:22:32Z",
+      "delivery_completed_at": "2026-10-29T23:05:30Z",
+      "delivery_run_id": 40965382373,
+      "lead_seconds": 4748.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-29T21:47:34Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-29T21:49:34Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 9.0,
+      "before_first_human_review_seconds": 63.0,
+      "after_first_human_review_seconds": 2098.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 2578.0
+    },
+    {
+      "number": 167,
+      "sha": "0b62882c5ea9f0ee84df7d8b96840d8c0ed58980",
+      "first_commit_authored_at": "2026-10-30T08:25:46Z",
+      "created_at": "2026-10-30T08:27:45Z",
+      "first_human_review_at": "2026-10-30T08:31:09+00:00",
+      "merged_at": "2026-10-30T08:38:25Z",
+      "delivery_completed_at": "2026-10-30T08:40:19Z",
+      "delivery_run_id": 41027807553,
+      "lead_seconds": 873.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-30T08:31:09Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-30T08:33:52Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-30T08:36:03Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-30T08:36:23Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 119.0,
+      "before_first_human_review_seconds": 204.0,
+      "after_first_human_review_seconds": 436.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 114.0
+    },
+    {
+      "number": 168,
+      "sha": "63afae1a6a8daea151aeec38385fc9436647032c",
+      "first_commit_authored_at": "2026-10-30T08:41:11Z",
+      "created_at": "2026-10-30T08:41:22Z",
+      "first_human_review_at": "2026-10-30T09:05:41+00:00",
+      "merged_at": "2026-11-01T14:38:59Z",
+      "delivery_completed_at": "2026-11-01T15:01:15Z",
+      "delivery_run_id": 41317240847,
+      "lead_seconds": 195604.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-30T09:05:41Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-30T09:05:53Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T12:19:28Z",
+          "state": "COMMENTED",
+          "author": {
+            "__typename": "Bot"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T14:38:09Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 11.0,
+      "before_first_human_review_seconds": 1459.0,
+      "after_first_human_review_seconds": 192798.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1336.0
+    },
+    {
+      "number": 170,
+      "sha": "7eea8febda895cc0380f4b40613c064e846366de",
+      "first_commit_authored_at": "2026-10-30T08:46:22Z",
+      "created_at": "2026-10-30T08:46:41Z",
+      "first_human_review_at": "2026-10-30T09:06:13+00:00",
+      "merged_at": "2026-11-01T14:59:54Z",
+      "delivery_completed_at": "2026-11-01T15:36:39Z",
+      "delivery_run_id": 41318935310,
+      "lead_seconds": 197417.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-30T09:06:13Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-31T21:10:00Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T14:38:43Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 19.0,
+      "before_first_human_review_seconds": 1172.0,
+      "after_first_human_review_seconds": 194021.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 2205.0
+    },
+    {
+      "number": 171,
+      "sha": "b9112c2c7a439b4810890b51b6f1708d7e76d5e0",
+      "first_commit_authored_at": "2026-10-30T08:46:32Z",
+      "created_at": "2026-10-30T08:48:30Z",
+      "first_human_review_at": "2026-10-30T08:55:31+00:00",
+      "merged_at": "2026-11-01T20:21:33Z",
+      "delivery_completed_at": "2026-11-01T22:15:35Z",
+      "delivery_run_id": 41346448889,
+      "lead_seconds": 221343.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-30T08:55:31Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-10-30T09:06:10Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T20:21:25Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 118.0,
+      "before_first_human_review_seconds": 421.0,
+      "after_first_human_review_seconds": 213962.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 6842.0
+    },
+    {
+      "number": 174,
+      "sha": "060cb79ce4ecd27504b473aef004f286347d8fd4",
+      "first_commit_authored_at": "2026-10-29T21:37:30Z",
+      "created_at": "2026-10-31T21:05:48Z",
+      "first_human_review_at": "2026-11-01T12:06:41+00:00",
+      "merged_at": "2026-11-01T14:51:08Z",
+      "delivery_completed_at": "2026-11-01T15:13:41Z",
+      "delivery_run_id": 41318233521,
+      "lead_seconds": 236171.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-10-31T21:06:28Z",
+          "state": "COMMENTED",
+          "author": {
+            "__typename": "Bot"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T12:06:41Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T12:39:23Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T14:23:10Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T14:50:34Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 170898.0,
+      "before_first_human_review_seconds": 54053.0,
+      "after_first_human_review_seconds": 9867.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1353.0
+    },
+    {
+      "number": 175,
+      "sha": "2676d3f95f5ea93fa9b0a432c3be0b1b3556e593",
+      "first_commit_authored_at": "2026-10-31T20:21:47Z",
+      "created_at": "2026-10-31T21:05:51Z",
+      "first_human_review_at": "2026-11-01T12:06:11+00:00",
+      "merged_at": "2026-11-01T14:53:33Z",
+      "delivery_completed_at": "2026-11-01T15:25:48Z",
+      "delivery_run_id": 41318425050,
+      "lead_seconds": 68641.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-01T12:06:11Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T14:23:32Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T14:52:51Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2644.0,
+      "before_first_human_review_seconds": 54020.0,
+      "after_first_human_review_seconds": 10042.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1935.0
+    },
+    {
+      "number": 176,
+      "sha": "143664e12316c1c0de0f98e9fd34f4224bdc1c90",
+      "first_commit_authored_at": "2026-11-01T12:36:32Z",
+      "created_at": "2026-11-01T12:37:20Z",
+      "first_human_review_at": "2026-11-01T14:24:01+00:00",
+      "merged_at": "2026-11-01T15:39:46Z",
+      "delivery_completed_at": "2026-11-01T15:56:54Z",
+      "delivery_run_id": 41322356952,
+      "lead_seconds": 12022.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-01T14:24:01Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T14:54:58Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T15:36:09Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 48.0,
+      "before_first_human_review_seconds": 6401.0,
+      "after_first_human_review_seconds": 4545.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1028.0
+    },
+    {
+      "number": 177,
+      "sha": "41be18f5f9718adf8998f8f7082a009708ae74b7",
+      "first_commit_authored_at": "2026-11-01T13:30:28Z",
+      "created_at": "2026-11-01T13:31:50Z",
+      "first_human_review_at": "2026-11-01T13:42:30+00:00",
+      "merged_at": "2026-11-01T14:56:54Z",
+      "delivery_completed_at": "2026-11-01T15:31:23Z",
+      "delivery_run_id": 41318694008,
+      "lead_seconds": 7255.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-01T13:42:30Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T14:24:19Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T14:56:25Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 82.0,
+      "before_first_human_review_seconds": 640.0,
+      "after_first_human_review_seconds": 4464.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 2069.0
+    },
+    {
+      "number": 178,
+      "sha": "043664ddaa1794ed4b5382c8bc97db72c20548de",
+      "first_commit_authored_at": "2026-11-01T16:03:12Z",
+      "created_at": "2026-11-01T16:03:44Z",
+      "first_human_review_at": "2026-11-01T18:46:24+00:00",
+      "merged_at": "2026-11-01T20:21:14Z",
+      "delivery_completed_at": "2026-11-01T21:25:24Z",
+      "delivery_run_id": 41346422011,
+      "lead_seconds": 19332.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-01T18:46:24Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T19:07:28Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T20:21:05Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 32.0,
+      "before_first_human_review_seconds": 9760.0,
+      "after_first_human_review_seconds": 5690.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 3850.0
+    },
+    {
+      "number": 180,
+      "sha": "7376c2e4466b0676c1ea2c94bed811bac9dbda04",
+      "first_commit_authored_at": "2026-11-01T20:46:51Z",
+      "created_at": "2026-11-01T20:47:27Z",
+      "first_human_review_at": "2026-11-01T20:54:07+00:00",
+      "merged_at": "2026-11-01T21:26:18Z",
+      "delivery_completed_at": "2026-11-02T01:08:23Z",
+      "delivery_run_id": 41352006795,
+      "lead_seconds": 15692.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-01T20:54:07Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T20:59:07Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T21:06:56Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 36.0,
+      "before_first_human_review_seconds": 400.0,
+      "after_first_human_review_seconds": 1931.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 13325.0
+    },
+    {
+      "number": 181,
+      "sha": "00055438f3ab482f74ec5628306fd45c95cb661b",
+      "first_commit_authored_at": "2026-11-01T20:47:50Z",
+      "created_at": "2026-11-01T20:48:14Z",
+      "first_human_review_at": "2026-11-01T20:55:59+00:00",
+      "merged_at": "2026-11-01T21:26:30Z",
+      "delivery_completed_at": "2026-11-02T01:24:05Z",
+      "delivery_run_id": 41352023333,
+      "lead_seconds": 16575.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-01T20:55:59Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 24.0,
+      "before_first_human_review_seconds": 465.0,
+      "after_first_human_review_seconds": 1831.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 14255.0
+    },
+    {
+      "number": 182,
+      "sha": "f40b6db018bec03d8901838b9b74a830dbb3550a",
+      "first_commit_authored_at": "2026-11-01T21:01:30Z",
+      "created_at": "2026-11-01T21:02:03Z",
+      "first_human_review_at": "2026-11-01T21:02:30+00:00",
+      "merged_at": "2026-11-01T21:26:40Z",
+      "delivery_completed_at": "2026-11-02T01:37:40Z",
+      "delivery_run_id": 41352038258,
+      "lead_seconds": 16570.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-01T21:02:30Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T21:03:00Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 33.0,
+      "before_first_human_review_seconds": 27.0,
+      "after_first_human_review_seconds": 1450.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 15060.0
+    },
+    {
+      "number": 183,
+      "sha": "bc1076368cf9736545f41956466a3de10b2ef518",
+      "first_commit_authored_at": "2026-11-01T21:22:58Z",
+      "created_at": "2026-11-01T21:23:14Z",
+      "first_human_review_at": "2026-11-01T21:27:01+00:00",
+      "merged_at": "2026-11-01T21:27:09Z",
+      "delivery_completed_at": "2026-11-02T01:44:51Z",
+      "delivery_run_id": 41352078404,
+      "lead_seconds": 15713.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-01T21:27:01Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 16.0,
+      "before_first_human_review_seconds": 227.0,
+      "after_first_human_review_seconds": 8.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 15462.0
+    },
+    {
+      "number": 184,
+      "sha": "bef8409605a80873ee27bfbad755e6f4a95d7e64",
+      "first_commit_authored_at": "2026-11-01T21:36:46Z",
+      "created_at": "2026-11-01T21:36:59Z",
+      "first_human_review_at": "2026-11-01T21:37:22+00:00",
+      "merged_at": "2026-11-01T21:38:54Z",
+      "delivery_completed_at": "2026-11-02T01:57:06Z",
+      "delivery_run_id": 41353089878,
+      "lead_seconds": 15620.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-01T21:37:22Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-01T21:38:46Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 13.0,
+      "before_first_human_review_seconds": 23.0,
+      "after_first_human_review_seconds": 92.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 15492.0
+    },
+    {
+      "number": 185,
+      "sha": "8bdc1152c7507ffab1eb05ae85ef3538c9530386",
+      "first_commit_authored_at": "2026-11-01T21:38:09Z",
+      "created_at": "2026-11-01T21:39:45Z",
+      "first_human_review_at": "2026-11-01T21:40:29+00:00",
+      "merged_at": "2026-11-01T21:40:38Z",
+      "delivery_completed_at": "2026-11-02T02:10:32Z",
+      "delivery_run_id": 41353235193,
+      "lead_seconds": 16343.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-01T21:40:29Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 96.0,
+      "before_first_human_review_seconds": 44.0,
+      "after_first_human_review_seconds": 9.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 16194.0
+    },
+    {
+      "number": 191,
+      "sha": "49d52143bb403695c08fa43f43516505429b5bb2",
+      "first_commit_authored_at": "2026-11-05T08:35:19Z",
+      "created_at": "2026-11-05T08:35:22Z",
+      "first_human_review_at": "2026-11-05T10:21:04+00:00",
+      "merged_at": "2026-11-05T10:47:20Z",
+      "delivery_completed_at": "2026-11-05T10:50:03Z",
+      "delivery_run_id": 42013612463,
+      "lead_seconds": 8084.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T10:21:04Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:21:59Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:47:12Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 6342.0,
+      "after_first_human_review_seconds": 1576.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 163.0
+    },
+    {
+      "number": 192,
+      "sha": "6cb4b73499b413ed2d24e1d2755047ca40f88675",
+      "first_commit_authored_at": "2026-11-05T08:35:23Z",
+      "created_at": "2026-11-05T08:35:25Z",
+      "first_human_review_at": "2026-11-05T10:21:15+00:00",
+      "merged_at": "2026-11-05T10:47:45Z",
+      "delivery_completed_at": "2026-11-05T10:50:38Z",
+      "delivery_run_id": 42013667956,
+      "lead_seconds": 8115.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T10:21:15Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:22:01Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:47:33Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2.0,
+      "before_first_human_review_seconds": 6350.0,
+      "after_first_human_review_seconds": 1590.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 173.0
+    },
+    {
+      "number": 193,
+      "sha": "268f61668197837ba14cba7b891c76a8d82751e8",
+      "first_commit_authored_at": "2026-11-05T08:35:26Z",
+      "created_at": "2026-11-05T08:35:28Z",
+      "first_human_review_at": "2026-11-05T10:21:31+00:00",
+      "merged_at": "2026-11-05T10:53:29Z",
+      "delivery_completed_at": "2026-11-05T10:58:34Z",
+      "delivery_run_id": 42014441467,
+      "lead_seconds": 8588.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T10:21:31Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:22:03Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:47:56Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2.0,
+      "before_first_human_review_seconds": 6363.0,
+      "after_first_human_review_seconds": 1918.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 305.0
+    },
+    {
+      "number": 194,
+      "sha": "8ca379ba2bf5b0e3eac5fcb7d31bea644861b0b9",
+      "first_commit_authored_at": "2026-11-05T08:35:32Z",
+      "created_at": "2026-11-05T08:35:35Z",
+      "first_human_review_at": "2026-11-05T10:21:44+00:00",
+      "merged_at": "2026-11-05T10:49:03Z",
+      "delivery_completed_at": "2026-11-05T10:54:09Z",
+      "delivery_run_id": 42013842432,
+      "lead_seconds": 8317.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T10:21:44Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:22:06Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:48:56Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 6369.0,
+      "after_first_human_review_seconds": 1639.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 306.0
+    },
+    {
+      "number": 195,
+      "sha": "3b9328470a2cab48bfc9f99a9c84eb5b12f7d2c8",
+      "first_commit_authored_at": "2026-11-05T08:35:36Z",
+      "created_at": "2026-11-05T08:35:39Z",
+      "first_human_review_at": "2026-11-05T10:21:55+00:00",
+      "merged_at": "2026-11-05T10:57:39Z",
+      "delivery_completed_at": "2026-11-05T11:01:39Z",
+      "delivery_run_id": 42014996113,
+      "lead_seconds": 8763.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T10:21:55Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:22:08Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:49:14Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 6376.0,
+      "after_first_human_review_seconds": 2144.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 240.0
+    },
+    {
+      "number": 196,
+      "sha": "fc4fbe0fb5f8e9d33a276e8a8baa81ec20addcf2",
+      "first_commit_authored_at": "2026-11-05T08:35:43Z",
+      "created_at": "2026-11-05T08:35:46Z",
+      "first_human_review_at": "2026-11-05T10:22:09+00:00",
+      "merged_at": "2026-11-05T10:49:51Z",
+      "delivery_completed_at": "2026-11-05T10:56:04Z",
+      "delivery_run_id": 42013950183,
+      "lead_seconds": 8421.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T10:22:09Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:22:10Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:49:44Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 6383.0,
+      "after_first_human_review_seconds": 1662.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 373.0
+    },
+    {
+      "number": 197,
+      "sha": "d95b8f5e2332ef2199c1de70a563c4d9906da251",
+      "first_commit_authored_at": "2026-11-04T23:07:24Z",
+      "created_at": "2026-11-05T08:44:45Z",
+      "first_human_review_at": "2026-11-05T10:23:11+00:00",
+      "merged_at": "2026-11-05T10:54:13Z",
+      "delivery_completed_at": "2026-11-05T10:59:14Z",
+      "delivery_run_id": 42014538785,
+      "lead_seconds": 42710.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T10:23:11Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:51:54Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 34641.0,
+      "before_first_human_review_seconds": 5906.0,
+      "after_first_human_review_seconds": 1862.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 301.0
+    },
+    {
+      "number": 198,
+      "sha": "22e2b29d9a83ccf71a7275aac6ca561d7e9ce480",
+      "first_commit_authored_at": "2026-11-05T09:11:09Z",
+      "created_at": "2026-11-05T10:02:54Z",
+      "first_human_review_at": "2026-11-05T10:23:51+00:00",
+      "merged_at": "2026-11-05T10:45:53Z",
+      "delivery_completed_at": "2026-11-05T10:48:26Z",
+      "delivery_run_id": 42013412204,
+      "lead_seconds": 5837.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T10:23:51Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:43:44Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:45:12Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3105.0,
+      "before_first_human_review_seconds": 1257.0,
+      "after_first_human_review_seconds": 1322.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 153.0
+    },
+    {
+      "number": 199,
+      "sha": "38f55c213d9a5f7bd084a6dad5f7bbd7bbd6b452",
+      "first_commit_authored_at": "2026-11-05T08:21:59Z",
+      "created_at": "2026-11-05T10:08:46Z",
+      "first_human_review_at": "2026-11-05T10:24:10+00:00",
+      "merged_at": "2026-11-05T10:36:07Z",
+      "delivery_completed_at": "2026-11-05T10:38:28Z",
+      "delivery_run_id": 42012073751,
+      "lead_seconds": 8189.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T10:24:10Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T10:28:49Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 6407.0,
+      "before_first_human_review_seconds": 924.0,
+      "after_first_human_review_seconds": 717.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 141.0
+    },
+    {
+      "number": 200,
+      "sha": "c00fa863339614a914e84cf8c5502fb614861d7e",
+      "first_commit_authored_at": "2026-11-05T12:13:30Z",
+      "created_at": "2026-11-05T12:13:47Z",
+      "first_human_review_at": "2026-11-05T17:19:12+00:00",
+      "merged_at": "2026-11-05T17:23:19Z",
+      "delivery_completed_at": "2026-11-05T17:26:12Z",
+      "delivery_run_id": 42074133498,
+      "lead_seconds": 18762.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T17:19:12Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 17.0,
+      "before_first_human_review_seconds": 18325.0,
+      "after_first_human_review_seconds": 247.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 173.0
+    },
+    {
+      "number": 201,
+      "sha": "eb0432e2c8aa9a07dfb2f082147703a98092eb78",
+      "first_commit_authored_at": "2026-11-05T15:12:24Z",
+      "created_at": "2026-11-05T15:13:19Z",
+      "first_human_review_at": "2026-11-05T15:24:42+00:00",
+      "merged_at": "2026-11-05T15:24:54Z",
+      "delivery_completed_at": "2026-11-05T15:27:21Z",
+      "delivery_run_id": 42054737978,
+      "lead_seconds": 897.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T15:24:42Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 55.0,
+      "before_first_human_review_seconds": 683.0,
+      "after_first_human_review_seconds": 12.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 147.0
+    },
+    {
+      "number": 202,
+      "sha": "a1c8565be818c8737f9881dca908be832d02ed0b",
+      "first_commit_authored_at": "2026-11-05T15:57:18Z",
+      "created_at": "2026-11-05T15:57:47Z",
+      "first_human_review_at": "2026-11-05T17:19:34+00:00",
+      "merged_at": "2026-11-05T17:23:03Z",
+      "delivery_completed_at": "2026-11-05T17:25:42Z",
+      "delivery_run_id": 42074089964,
+      "lead_seconds": 5304.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T17:19:34Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 29.0,
+      "before_first_human_review_seconds": 4907.0,
+      "after_first_human_review_seconds": 209.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 159.0
+    },
+    {
+      "number": 203,
+      "sha": "239cb39bd6dc5e84d832e866ba367b9b90a5a042",
+      "first_commit_authored_at": "2026-11-05T18:21:02Z",
+      "created_at": "2026-11-05T18:21:04Z",
+      "first_human_review_at": "2026-11-05T19:20:11+00:00",
+      "merged_at": "2026-11-05T21:17:19Z",
+      "delivery_completed_at": "2026-11-05T21:19:38Z",
+      "delivery_run_id": 42111262361,
+      "lead_seconds": 10716.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T19:20:11Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T21:15:13Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2.0,
+      "before_first_human_review_seconds": 3547.0,
+      "after_first_human_review_seconds": 7028.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 139.0
+    },
+    {
+      "number": 204,
+      "sha": "9bbca539e4b63537c4f012116fe9673847b15494",
+      "first_commit_authored_at": "2026-11-05T19:59:57Z",
+      "created_at": "2026-11-05T20:03:37Z",
+      "first_human_review_at": "2026-11-05T20:07:34+00:00",
+      "merged_at": "2026-11-05T21:09:38Z",
+      "delivery_completed_at": "2026-11-05T21:11:57Z",
+      "delivery_run_id": 42110067898,
+      "lead_seconds": 4320.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T20:07:34Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-05T20:27:54Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 220.0,
+      "before_first_human_review_seconds": 237.0,
+      "after_first_human_review_seconds": 3724.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 139.0
+    },
+    {
+      "number": 205,
+      "sha": "607f9e4eed01989e210edcaad8ef1dab73957a36",
+      "first_commit_authored_at": "2026-11-05T21:43:08Z",
+      "created_at": "2026-11-05T21:55:41Z",
+      "first_human_review_at": "2026-11-05T22:04:54+00:00",
+      "merged_at": "2026-11-05T22:11:18Z",
+      "delivery_completed_at": "2026-11-05T22:13:37Z",
+      "delivery_run_id": 42119321896,
+      "lead_seconds": 1829.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T22:04:54Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 753.0,
+      "before_first_human_review_seconds": 553.0,
+      "after_first_human_review_seconds": 384.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 139.0
+    },
+    {
+      "number": 206,
+      "sha": "3c000b4c2093e88e2fae4e59715e940bfdbcff37",
+      "first_commit_authored_at": "2026-11-05T22:26:40Z",
+      "created_at": "2026-11-05T22:28:06Z",
+      "first_human_review_at": "2026-11-05T22:28:53+00:00",
+      "merged_at": "2026-11-05T22:41:05Z",
+      "delivery_completed_at": "2026-11-05T22:43:46Z",
+      "delivery_run_id": 42123564650,
+      "lead_seconds": 1026.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T22:28:53Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 86.0,
+      "before_first_human_review_seconds": 47.0,
+      "after_first_human_review_seconds": 732.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 161.0
+    },
+    {
+      "number": 207,
+      "sha": "197088fb36224381738b60e8e1766c48bb50b95d",
+      "first_commit_authored_at": "2026-11-05T22:26:40Z",
+      "created_at": "2026-11-05T22:40:49Z",
+      "first_human_review_at": "2026-11-05T22:42:15+00:00",
+      "merged_at": "2026-11-05T22:42:39Z",
+      "delivery_completed_at": "2026-11-05T22:45:43Z",
+      "delivery_run_id": 42123779915,
+      "lead_seconds": 1143.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-05T22:42:15Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 849.0,
+      "before_first_human_review_seconds": 86.0,
+      "after_first_human_review_seconds": 24.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 184.0
+    },
+    {
+      "number": 208,
+      "sha": "47f37f94b62316a63bab9a56faa0767a2881c1a3",
+      "first_commit_authored_at": "2026-11-06T08:22:35Z",
+      "created_at": "2026-11-06T08:22:52Z",
+      "first_human_review_at": "2026-11-06T08:23:08+00:00",
+      "merged_at": "2026-11-06T09:18:18Z",
+      "delivery_completed_at": "2026-11-06T09:20:40Z",
+      "delivery_run_id": 42194030916,
+      "lead_seconds": 3485.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-06T08:23:08Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-06T08:31:18Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 17.0,
+      "before_first_human_review_seconds": 16.0,
+      "after_first_human_review_seconds": 3310.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 142.0
+    },
+    {
+      "number": 210,
+      "sha": "f1d5fa6b3900e3e5a689613bf046b852e77526be",
+      "first_commit_authored_at": "2026-11-07T11:37:43Z",
+      "created_at": "2026-11-07T11:40:07Z",
+      "first_human_review_at": "2026-11-08T10:20:51+00:00",
+      "merged_at": "2026-11-08T10:29:16Z",
+      "delivery_completed_at": "2026-11-08T10:35:15Z",
+      "delivery_run_id": 42471841555,
+      "lead_seconds": 82652.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-08T10:20:51Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 144.0,
+      "before_first_human_review_seconds": 81644.0,
+      "after_first_human_review_seconds": 505.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 359.0
+    },
+    {
+      "number": 211,
+      "sha": "5185fd519477871c4a818290ed829045f558fb23",
+      "first_commit_authored_at": "2026-11-07T21:40:57Z",
+      "created_at": "2026-11-07T21:42:23Z",
+      "first_human_review_at": "2026-11-08T10:21:16+00:00",
+      "merged_at": "2026-11-08T10:31:16Z",
+      "delivery_completed_at": "2026-11-08T10:35:15Z",
+      "delivery_run_id": 42471841555,
+      "lead_seconds": 46458.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-08T10:21:16Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 86.0,
+      "before_first_human_review_seconds": 45533.0,
+      "after_first_human_review_seconds": 600.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 239.0
+    },
+    {
+      "number": 222,
+      "sha": "e61583d41c1b0629260a0aac40dfead7b35a4d52",
+      "first_commit_authored_at": "2026-11-07T23:10:53Z",
+      "created_at": "2026-11-07T23:17:00Z",
+      "first_human_review_at": "2026-11-08T10:22:20+00:00",
+      "merged_at": "2026-11-08T10:39:10Z",
+      "delivery_completed_at": "2026-11-08T10:42:47Z",
+      "delivery_run_id": 42472329645,
+      "lead_seconds": 41514.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-08T10:22:20Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 367.0,
+      "before_first_human_review_seconds": 39920.0,
+      "after_first_human_review_seconds": 1010.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 217.0
+    },
+    {
+      "number": 223,
+      "sha": "05de932618d846e74826594412fff82d2997e82a",
+      "first_commit_authored_at": "2026-11-07T23:25:40Z",
+      "created_at": "2026-11-07T23:25:55Z",
+      "first_human_review_at": "2026-11-08T10:22:41+00:00",
+      "merged_at": "2026-11-08T11:04:01Z",
+      "delivery_completed_at": "2026-11-08T11:06:45Z",
+      "delivery_run_id": 42474086090,
+      "lead_seconds": 42065.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-08T10:22:41Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-08T10:51:40Z",
+          "state": "COMMENTED",
+          "author": {
+            "__typename": "Bot"
+          }
+        }
+      ],
+      "before_open_seconds": 15.0,
+      "before_first_human_review_seconds": 39406.0,
+      "after_first_human_review_seconds": 2480.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 164.0
+    },
+    {
+      "number": 225,
+      "sha": "5a270c60c06546f636c3760f79923ce1049cae0c",
+      "first_commit_authored_at": "2026-11-08T11:22:21Z",
+      "created_at": "2026-11-08T11:22:45Z",
+      "first_human_review_at": null,
+      "merged_at": "2026-11-08T12:04:51Z",
+      "delivery_completed_at": "2026-11-08T12:07:37Z",
+      "delivery_run_id": 42478560398,
+      "lead_seconds": 2716.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [],
+      "before_open_seconds": 24.0,
+      "before_first_human_review_seconds": 0,
+      "after_first_human_review_seconds": 0,
+      "without_human_review_seconds": 2526.0,
+      "after_merge_seconds": 166.0
+    },
+    {
+      "number": 226,
+      "sha": "229d97c6f0da4fda746bf5a23897c8f9858362d1",
+      "first_commit_authored_at": "2026-11-07T21:53:07Z",
+      "created_at": "2026-11-08T11:29:27Z",
+      "first_human_review_at": null,
+      "merged_at": "2026-11-08T12:05:04Z",
+      "delivery_completed_at": "2026-11-08T12:07:49Z",
+      "delivery_run_id": 42478577755,
+      "lead_seconds": 51282.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [],
+      "before_open_seconds": 48980.0,
+      "before_first_human_review_seconds": 0,
+      "after_first_human_review_seconds": 0,
+      "without_human_review_seconds": 2137.0,
+      "after_merge_seconds": 165.0
+    },
+    {
+      "number": 229,
+      "sha": "a336633c7386ec0cdd39d21bcc6f4db658055b07",
+      "first_commit_authored_at": "2026-11-08T20:00:16Z",
+      "created_at": "2026-11-08T20:00:29Z",
+      "first_human_review_at": "2026-11-08T20:13:34+00:00",
+      "merged_at": "2026-11-10T17:28:03Z",
+      "delivery_completed_at": "2026-11-10T17:31:28Z",
+      "delivery_run_id": 42865248239,
+      "lead_seconds": 163872.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-08T20:13:34Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-09T10:22:48Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 13.0,
+      "before_first_human_review_seconds": 785.0,
+      "after_first_human_review_seconds": 162869.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 205.0
+    },
+    {
+      "number": 234,
+      "sha": "079c4411b7931883837be91747f81c53b76ddf37",
+      "first_commit_authored_at": "2026-11-09T16:37:43Z",
+      "created_at": "2026-11-09T16:39:08Z",
+      "first_human_review_at": "2026-11-09T16:41:19+00:00",
+      "merged_at": "2026-11-10T17:28:43Z",
+      "delivery_completed_at": "2026-11-10T17:32:31Z",
+      "delivery_run_id": 42865358425,
+      "lead_seconds": 89688.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-09T16:41:19Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-09T16:46:48Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-10T17:18:48Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 85.0,
+      "before_first_human_review_seconds": 131.0,
+      "after_first_human_review_seconds": 89244.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 228.0
+    },
+    {
+      "number": 236,
+      "sha": "afd48fd42678c59c403312ce3beede66433ec2a1",
+      "first_commit_authored_at": "2026-11-10T15:39:59Z",
+      "created_at": "2026-11-10T17:05:08Z",
+      "first_human_review_at": "2026-11-10T17:15:04+00:00",
+      "merged_at": "2026-11-12T20:18:43Z",
+      "delivery_completed_at": "2026-11-12T20:25:35Z",
+      "delivery_run_id": 43299034444,
+      "lead_seconds": 189936.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-10T17:15:04Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-10T17:19:31Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 5109.0,
+      "before_first_human_review_seconds": 596.0,
+      "after_first_human_review_seconds": 183819.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 412.0
+    },
+    {
+      "number": 238,
+      "sha": "703b5c6f87429a40f81b4960561fe8fa318c6363",
+      "first_commit_authored_at": "2026-11-10T17:59:55Z",
+      "created_at": "2026-11-10T18:00:35Z",
+      "first_human_review_at": "2026-11-10T18:32:33+00:00",
+      "merged_at": "2026-11-12T09:59:43Z",
+      "delivery_completed_at": "2026-11-12T10:02:30Z",
+      "delivery_run_id": 43196363221,
+      "lead_seconds": 144155.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-10T18:32:33Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-10T21:51:10Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 40.0,
+      "before_first_human_review_seconds": 1918.0,
+      "after_first_human_review_seconds": 142030.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 167.0
+    },
+    {
+      "number": 240,
+      "sha": "14bd6d051583f9e804a6862fe86056190738df1a",
+      "first_commit_authored_at": "2026-11-10T21:53:35Z",
+      "created_at": "2026-11-10T21:54:21Z",
+      "first_human_review_at": "2026-11-11T11:19:26+00:00",
+      "merged_at": "2026-11-11T22:28:28Z",
+      "delivery_completed_at": "2026-11-11T22:31:30Z",
+      "delivery_run_id": 43112062424,
+      "lead_seconds": 88675.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-11T11:19:26Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 46.0,
+      "before_first_human_review_seconds": 48305.0,
+      "after_first_human_review_seconds": 40142.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 182.0
+    },
+    {
+      "number": 241,
+      "sha": "63756a62a5f0914dc65e57261520debc7b49a6c9",
+      "first_commit_authored_at": "2026-11-10T22:04:34Z",
+      "created_at": "2026-11-10T22:05:33Z",
+      "first_human_review_at": "2026-11-11T11:19:42+00:00",
+      "merged_at": "2026-11-11T17:22:15Z",
+      "delivery_completed_at": "2026-11-11T17:31:13Z",
+      "delivery_run_id": 43067507298,
+      "lead_seconds": 69999.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-11T11:19:42Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-11T12:43:14Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 59.0,
+      "before_first_human_review_seconds": 47649.0,
+      "after_first_human_review_seconds": 21753.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 538.0
+    },
+    {
+      "number": 242,
+      "sha": "c70f2a67054121c7413ab5820fdedc14a18a5a27",
+      "first_commit_authored_at": "2026-11-10T22:42:20Z",
+      "created_at": "2026-11-10T22:43:08Z",
+      "first_human_review_at": "2026-11-11T11:20:02+00:00",
+      "merged_at": "2026-11-11T22:23:38Z",
+      "delivery_completed_at": "2026-11-11T22:28:28Z",
+      "delivery_run_id": 43111390064,
+      "lead_seconds": 85568.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-11T11:20:02Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-11T12:43:37Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 48.0,
+      "before_first_human_review_seconds": 45414.0,
+      "after_first_human_review_seconds": 39816.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 290.0
+    },
+    {
+      "number": 243,
+      "sha": "d29709f2bbe4a282bcc4e2f7e1842d4ec5864cbd",
+      "first_commit_authored_at": "2026-11-10T17:59:55Z",
+      "created_at": "2026-11-11T17:08:45Z",
+      "first_human_review_at": "2026-11-11T17:20:45+00:00",
+      "merged_at": "2026-11-12T18:42:55Z",
+      "delivery_completed_at": "2026-11-12T18:45:25Z",
+      "delivery_run_id": 43282714881,
+      "lead_seconds": 175530.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-11T17:20:45Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-11T20:23:08Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 83330.0,
+      "before_first_human_review_seconds": 720.0,
+      "after_first_human_review_seconds": 91330.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 150.0
+    },
+    {
+      "number": 245,
+      "sha": "abfa940441886f2ecd31014e96c286a6973a5d01",
+      "first_commit_authored_at": "2026-11-12T08:35:05Z",
+      "created_at": "2026-11-12T08:35:07Z",
+      "first_human_review_at": "2026-11-12T08:38:17+00:00",
+      "merged_at": "2026-11-12T20:22:46Z",
+      "delivery_completed_at": "2026-11-12T20:43:34Z",
+      "delivery_run_id": 43299717961,
+      "lead_seconds": 43709.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-12T08:38:17Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-12T10:17:57Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-12T10:30:40Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2.0,
+      "before_first_human_review_seconds": 190.0,
+      "after_first_human_review_seconds": 42269.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1248.0
+    },
+    {
+      "number": 246,
+      "sha": "091343132dd64513784c61c3b0c09ad8fff8ff3c",
+      "first_commit_authored_at": "2026-11-12T08:35:14Z",
+      "created_at": "2026-11-12T08:35:17Z",
+      "first_human_review_at": "2026-11-12T10:17:57+00:00",
+      "merged_at": "2026-11-12T20:23:07Z",
+      "delivery_completed_at": "2026-11-12T20:46:28Z",
+      "delivery_run_id": 43299777657,
+      "lead_seconds": 43874.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-12T10:17:57Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-12T10:30:35Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 6160.0,
+      "after_first_human_review_seconds": 36310.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1401.0
+    },
+    {
+      "number": 247,
+      "sha": "d6d9a1d8ff3fe5efc954c574e18b7eef40f26d54",
+      "first_commit_authored_at": "2026-11-12T08:35:19Z",
+      "created_at": "2026-11-12T08:35:21Z",
+      "first_human_review_at": "2026-11-12T10:17:58+00:00",
+      "merged_at": "2026-11-12T20:23:22Z",
+      "delivery_completed_at": "2026-11-12T20:47:17Z",
+      "delivery_run_id": 43299817982,
+      "lead_seconds": 43918.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-12T10:17:58Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-12T10:30:30Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2.0,
+      "before_first_human_review_seconds": 6157.0,
+      "after_first_human_review_seconds": 36324.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1435.0
+    },
+    {
+      "number": 248,
+      "sha": "317318b3cd1d196a974fb2fc3027f4fd16e9a3ed",
+      "first_commit_authored_at": "2026-11-12T08:35:24Z",
+      "created_at": "2026-11-12T08:35:27Z",
+      "first_human_review_at": "2026-11-12T10:17:58+00:00",
+      "merged_at": "2026-11-12T20:22:24Z",
+      "delivery_completed_at": "2026-11-12T20:41:09Z",
+      "delivery_run_id": 43299656880,
+      "lead_seconds": 43545.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-12T10:17:58Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-12T10:30:25Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 3.0,
+      "before_first_human_review_seconds": 6151.0,
+      "after_first_human_review_seconds": 36266.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 1125.0
+    },
+    {
+      "number": 249,
+      "sha": "d181473989fd1905bca29d11e9efafabd57d17ad",
+      "first_commit_authored_at": "2026-11-12T08:35:31Z",
+      "created_at": "2026-11-12T08:35:33Z",
+      "first_human_review_at": "2026-11-12T10:17:58+00:00",
+      "merged_at": "2026-11-12T20:22:04Z",
+      "delivery_completed_at": "2026-11-12T20:37:14Z",
+      "delivery_run_id": 43299601495,
+      "lead_seconds": 43303.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-12T10:17:58Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-12T10:30:20Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2.0,
+      "before_first_human_review_seconds": 6145.0,
+      "after_first_human_review_seconds": 36246.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 910.0
+    },
+    {
+      "number": 250,
+      "sha": "014640ed63f8129a33dc69339fc5122d639ec81f",
+      "first_commit_authored_at": "2026-11-12T08:35:32Z",
+      "created_at": "2026-11-12T08:35:34Z",
+      "first_human_review_at": "2026-11-12T10:18:12+00:00",
+      "merged_at": "2026-11-12T20:21:37Z",
+      "delivery_completed_at": "2026-11-12T20:37:14Z",
+      "delivery_run_id": 43299601495,
+      "lead_seconds": 43302.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-12T10:18:12Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-12T10:30:10Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2.0,
+      "before_first_human_review_seconds": 6158.0,
+      "after_first_human_review_seconds": 36205.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 937.0
+    },
+    {
+      "number": 251,
+      "sha": "d87dcb4f46e0977e5475074e13bc9143133908a0",
+      "first_commit_authored_at": "2026-11-12T08:35:53Z",
+      "created_at": "2026-11-12T08:35:55Z",
+      "first_human_review_at": "2026-11-12T10:17:58+00:00",
+      "merged_at": "2026-11-12T20:21:14Z",
+      "delivery_completed_at": "2026-11-12T20:31:34Z",
+      "delivery_run_id": 43299458361,
+      "lead_seconds": 42941.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-12T10:17:58Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-12T10:29:51Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 2.0,
+      "before_first_human_review_seconds": 6123.0,
+      "after_first_human_review_seconds": 36196.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 620.0
+    },
+    {
+      "number": 252,
+      "sha": "6b9735ad0dbd9a0b8655bd4a86c99f1f6336c874",
+      "first_commit_authored_at": "2026-11-12T18:52:21Z",
+      "created_at": "2026-11-12T18:53:07Z",
+      "first_human_review_at": "2026-11-12T18:54:25+00:00",
+      "merged_at": "2026-11-12T21:47:03Z",
+      "delivery_completed_at": "2026-11-12T21:57:15Z",
+      "delivery_run_id": 43313636471,
+      "lead_seconds": 11094.0,
+      "opened_before_first_commit": false,
+      "reviewed_before_first_commit": false,
+      "reviews": [
+        {
+          "submittedAt": "2026-11-12T18:54:25Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-12T19:09:56Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        },
+        {
+          "submittedAt": "2026-11-12T20:16:59Z",
+          "state": "APPROVED",
+          "author": {
+            "__typename": "User"
+          }
+        }
+      ],
+      "before_open_seconds": 46.0,
+      "before_first_human_review_seconds": 78.0,
+      "after_first_human_review_seconds": 10358.0,
+      "without_human_review_seconds": 0,
+      "after_merge_seconds": 612.0
+    }
+  ]
+}
