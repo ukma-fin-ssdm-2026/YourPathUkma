@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.4.0] - 2026-11-21
+
+### Features
+
+- Implement auto load level calculation for 4th year (closes #292)
+  ([#303](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/303),
+  [`6d67f5a`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/6d67f5a783f3edfd1d2ea6360c8e89ebc82454af))
+
+
 ## [0.3.4] - 2026-11-21
 
 ### Bug Fixes
