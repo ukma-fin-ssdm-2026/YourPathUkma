@@ -9,12 +9,15 @@
 Використання ШІ: файл створено за допомогою Antigravity (Claude Sonnet 4.6, Google DeepMind)
 за requirements.md (FR-005, SEC-001), AGENTS.md §5 та існуючими моделями БД.
 Перевірено: pytest tests/test_ai_prompt_builder.py, ruff check src/ai/prompt_builder.py.
+Використання ШІ: автоматичний розрахунок load_levels для 4 курсу за залишком до 240 кредитів (FR-003, #292)
+додано за допомогою Antigravity (Gemini 2.5 Pro). Перевірка: pytest, ruff.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from dataclasses import dataclass
 from typing import Optional
 
@@ -29,6 +32,8 @@ from ..db.models.plans import IndividualPlan
 from ..db.models.preferences import PlanPreferences
 from ..db.models.users import StudentProfile
 from ..services.plan_rules import FREE_ELECTIVE_LIMIT
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -109,6 +114,18 @@ def build_context(db: Session, student_id: int, academic_year: int) -> PromptCon
         include_free_electives = prefs.include_free_electives
         wants_certificate = prefs.wants_certificate
         certificate_program_id = prefs.certificate_program_id
+    elif profile and profile.course_year == 4:
+        try:
+            from ..services.load_levels import calculate_auto_load_levels
+
+            auto_res = calculate_auto_load_levels(db, student_id, academic_year)
+            load_levels = {
+                "autumn": auto_res.autumn_level,
+                "spring": auto_res.spring_level,
+                "summer": auto_res.summer_level,
+            }
+        except Exception as exc:
+            logger.warning("Failed to calculate auto load levels for prompt: %s", exc)
 
     # Назви напрямків
     if direction_ids:
