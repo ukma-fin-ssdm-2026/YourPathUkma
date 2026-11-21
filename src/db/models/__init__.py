@@ -1,13 +1,14 @@
 """
 Усі моделі БД. Імпорт цього пакета реєструє таблиці в Base.metadata (потрібно Alembic).
 
-Сутності етапу 2 (AI-генерація, альтернативи, сертифікатні програми) ще не додано: contract.md §3.7–3.8 (🔵).
-
-Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: `alembic check`, pytest.
+Використання ШІ: файл створено за допомогою Claude (Claude Code); оновлено за допомогою
+Antigravity (Claude Sonnet 4.6, Google DeepMind) — додано PlanAlternative (FR-009).
+Перевірка: `alembic check`, pytest.
 """
 
 from . import ai  # noqa: F401
 from .admin import AuditLog, ModerationItem, SyncJob
+from .alternatives import PlanAlternative
 from .catalog import Course, CourseDirection, CourseInstructor, Direction, Instructor
 from .deanery import DeaneryPlanDocument, NormativeCourseEntry
 from .history import AcademicRecord
@@ -28,6 +29,7 @@ __all__ = [
     "InstructorPreference",
     "ModerationItem",
     "NormativeCourseEntry",
+    "PlanAlternative",
     "PlanItem",
     "PlanPreferences",
     "PreferenceDirection",
