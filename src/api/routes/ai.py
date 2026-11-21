@@ -14,7 +14,6 @@ POST /plan-generations, GET /plan-generations/{generation_id}.
 
 
 import os
-import time
 from datetime import datetime, timedelta
 
 from typing import List, Optional
