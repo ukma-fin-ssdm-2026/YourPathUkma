@@ -12,10 +12,8 @@ POST /plan-generations, GET /plan-generations/{generation_id}.
 Перевірено: pytest tests/test_ai.py tests/test_ai_worker.py tests/reliability, ruff check src/api/routes/ai.py.
 """
 
-
 import os
 from datetime import datetime, timedelta
-
 from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Response, status

@@ -1,18 +1,20 @@
 """add plan_alternatives table (FR-009)
 
-Revision ID: 0005
-Revises: 0004
+Revision ID: 0006
+Revises: 0005
 Create Date: 2026-11-09
 
-Використання ШІ: файл створено за допомогою Antigravity (Claude Sonnet 4.6, Google DeepMind).
-Перевірено: alembic check, alembic upgrade head на тестовій БД.
+Використання ШІ: файл створено за допомогою Antigravity (Claude Sonnet 4.6),
+оновлено ревізію на 0006 для лінійного ланцюжка після
+0005_preferences_certificate_fk та усунення колізії MultipleHeads.
+Перевірено: alembic check, alembic upgrade head, pytest tests/reliability.
 """
 
 import sqlalchemy as sa
 from alembic import op
 
-revision = "0005"
-down_revision = "0004"
+revision = "0006"
+down_revision = "0005"
 branch_labels = None
 depends_on = None
 
