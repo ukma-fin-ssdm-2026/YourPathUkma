@@ -1605,6 +1605,28 @@ paths:
           description: Фільтр за навчальним роком
           title: Academic Year
         description: Фільтр за навчальним роком
+      - name: limit
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 100
+            minimum: 1
+          - type: 'null'
+          description: Максимальна кількість документів
+          title: Limit
+        description: Максимальна кількість документів
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          description: Зсув для пагінації
+          default: 0
+          title: Offset
+        description: Зсув для пагінації
       responses:
         '200':
           description: Successful Response
@@ -3719,6 +3741,28 @@ paths:
           description: Фільтр за ID напрямку
           title: Direction Id
         description: Фільтр за ID напрямку
+      - name: limit
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 100
+            minimum: 1
+          - type: 'null'
+          description: Максимальна кількість програм
+          title: Limit
+        description: Максимальна кількість програм
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          description: Зсув для пагінації
+          default: 0
+          title: Offset
+        description: Зсув для пагінації
       responses:
         '200':
           description: Список отримано

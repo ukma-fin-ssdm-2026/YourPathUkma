@@ -1,7 +1,8 @@
 """
 Тести схеми БД: міграції збігаються з моделями, обмеження цілісності працюють на рівні БД.
 
-Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: pytest на SQLite і PostgreSQL.
+Використання ШІ: файл створено за допомогою Claude (Claude Code), доповнено Antigravity (Claude Sonnet 4.6,
+Google DeepMind) тестом upgrade/downgrade міграції 0007 (issue #218). Перевірка: pytest на SQLite і PostgreSQL.
 """
 
 import pytest
@@ -18,6 +19,14 @@ from src.db.session import session_factory
 def test_migrations_match_models():
     # Падає, якщо моделі змінено без нової міграції (alembic revision --autogenerate)
     command.check(alembic_config())
+
+
+def test_migration_0007_upgrade_downgrade():
+    """Перевірка, що міграція 0007 чисто накочується і відкочується (issue #218)."""
+    cfg = alembic_config()
+    command.downgrade(cfg, "0006")
+    command.upgrade(cfg, "0007")
+    command.check(cfg)
 
 
 def test_only_one_active_sync_job_per_source():

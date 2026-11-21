@@ -3,7 +3,9 @@
 
 Запускається після відповіді 202 на POST /deanery-documents фоновий парсинг.
 
-Використання ШІ: Codex додав перевірку довжини й безпечну видачу назви файлу.
+Використання ШІ: Codex додав перевірку довжини й безпечну видачу назви файлу;
+Antigravity (Claude Sonnet 4.6, Google DeepMind) оптимізував GET /deanery-documents:
+додано selectinload для усунення N+1 та параметри пагінації limit/offset (issue #218).
 Перевірка: регресії pytest на PostgreSQL та генерація OpenAPI.
 """
 
@@ -18,7 +20,7 @@ from urllib.parse import quote
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Path, Query, Response, UploadFile, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from ...db import enums as db_enums
 from ...db.base import normalize_text, utcnow
@@ -307,14 +309,25 @@ async def upload_document(
 )
 def list_documents(
     academic_year: Optional[int] = Query(None, description="Фільтр за навчальним роком"),
+    limit: Optional[int] = Query(None, ge=1, le=100, description="Максимальна кількість документів"),
+    offset: int = Query(0, ge=0, description="Зсув для пагінації"),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
-    query = select(DeaneryPlanDocument).where(DeaneryPlanDocument.student_id == student_id)
+    query = (
+        select(DeaneryPlanDocument)
+        .options(selectinload(DeaneryPlanDocument.normative_courses))
+        .where(DeaneryPlanDocument.student_id == student_id)
+        .order_by(DeaneryPlanDocument.uploaded_at.desc(), DeaneryPlanDocument.id.desc())
+    )
     if academic_year:
         query = query.where(DeaneryPlanDocument.academic_year == academic_year)
+    if offset:
+        query = query.offset(offset)
+    if limit is not None:
+        query = query.limit(limit)
 
-    docs = db.scalars(query.order_by(DeaneryPlanDocument.uploaded_at.desc())).all()
+    docs = db.scalars(query).all()
     return DeaneryDocumentsListResponse(deanery_documents=[_to_response(d) for d in docs])
 
 
