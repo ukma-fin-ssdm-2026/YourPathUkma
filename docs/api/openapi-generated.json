@@ -871,11 +871,12 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "PDF-файл індивідуального плану",
             "content": {
               "application/json": {
                 "schema": {}
-              }
+              },
+              "application/pdf": {}
             }
           },
           "401": {
@@ -955,22 +956,6 @@
                       "message": "Input should be greater than 0"
                     }
                   ],
-                  "request_id": "req_3f9a1c7e2b4d4a6e"
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "501": {
-            "description": "Операцію ще не реалізовано",
-            "content": {
-              "application/json": {
-                "example": {
-                  "code": "EXPORT_NOT_IMPLEMENTED",
-                  "message": "Експорт плану в PDF ще не реалізовано",
-                  "details": [],
                   "request_id": "req_3f9a1c7e2b4d4a6e"
                 },
                 "schema": {
@@ -7863,8 +7848,8 @@
           "plan_export": {
             "type": "boolean",
             "title": "Plan Export",
-            "description": "Експорт плану в PDF (поки не реалізовано: 501)",
-            "default": false
+            "description": "Експорт плану в PDF (use-case 16)",
+            "default": true
           }
         },
         "type": "object",

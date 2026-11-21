@@ -4,6 +4,8 @@
 Ресурс «Система» (System): публічна конфігурація для фронтенду (GET /api/v1/config).
 
 Використання ШІ: прапорці парсингу і віддаленого входу САЗ додано Codex. Перевірка: pytest.
+Використання ШІ: увімкнено прапорець plan_export за допомогою Antigravity
+(Gemini 2.5 Pro, Google DeepMind). Перевірка: pytest, ruff.
 
 Без автентифікації. Ліміти тут мають збігатися з контрактом (docs/api/contract.md, §2.2 і §3.0),
 щоб фронтенд брав їх звідси, а не дублював у власному коді.
@@ -62,7 +64,7 @@ class Features(BaseModel):
     saz_catalog_live: bool = Field(False, description="Серверний парсинг каталогу САЗ")
     saz_remote_login: bool = Field(False, description="Віддалений вхід адміністратора до САЗ")
     saz_sync: bool = Field(False, description="Синхронізація з САЗ (заблоковано, R14)")
-    plan_export: bool = Field(False, description="Експорт плану в PDF (поки не реалізовано: 501)")
+    plan_export: bool = Field(True, description="Експорт плану в PDF (use-case 16)")
 
 
 class ConfigResponse(BaseModel):

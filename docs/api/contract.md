@@ -359,7 +359,7 @@ Query-параметри:
     "ai_generation": false,
     "certificate_programs": false,
     "saz_sync": false,
-    "plan_export": false
+    "plan_export": true
   }
 }
 ```
@@ -858,9 +858,9 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 
 Подальші переходи `submitted` → `awaiting_deanery` → `approved` робить не студент: їх ставить синхронізація з САЗ (⛔, див. нижче). Фронтенд лише відображає ці статуси.
 
-#### `GET /plans/{plan_id}/export` ⛔
+#### `GET /plans/{plan_id}/export` ✅
 
-Поки генерація PDF очікує реалізації, `features.plan_export` має значення `false`. Для власного затвердженого плану запит із `format=pdf` повертає `501 EXPORT_NOT_IMPLEMENTED`. Інший формат дає `422`, а план поза статусом `approved` — `409 PLAN_NOT_EXPORTABLE`. Також можливі `401`, `403` та `404`.
+Експорт затвердженого індивідуального плану у форматі PDF (use-case 16, #296). Запит із `format=pdf` для власного плану у статусі `approved` повертає `200` з `application/pdf`, заголовком `Content-Disposition` (з кириличним іменем за RFC 5987 / 6266) та журналює запис у `AuditLog` (`plan.export`). Непідтримуваний формат дає `422 VALIDATION_ERROR`, а план поза статусом `approved` — `409 PLAN_NOT_EXPORTABLE`. Також можливі `401`, `403` (чужий план) та `404` (не знайдено).
 
 #### `POST /plans/sync-saz` ⛔
 
@@ -1637,3 +1637,5 @@ User stories US-001…US-010 відповідають тим самим FR і п
 **Використання ШІ.** Codex описав API імпорту САЗ і прапорець серверного обходу. Перевірка: pytest і згенерована специфікація OpenAPI.
 
 **Використання ШІ.** Codex описав API віддаленого входу до САЗ. Перевірка: pytest і OpenAPI.
+
+**Використання ШІ.** Antigravity (Gemini 2.5 Pro) оновив опис GET /plans/{id}/export і features.plan_export для #296. Перевірка: pytest, ruff, згенерована специфікація OpenAPI.
