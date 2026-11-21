@@ -159,7 +159,24 @@ export interface Preferences {
   updated_at?: string;
 }
 
-export type PlanItem = components["schemas"]["PlanItem"];
+// Використання ШІ: Codex описав поля PR #231. Перевірка: TypeScript і Vitest.
+export type PlanAlternative = components["schemas"]["PlanItem"] & {
+  rank: number;
+  ai_explanation?: string | null;
+};
+
+export type PlanItem = components["schemas"]["PlanItem"] & {
+  ai_explanation?: string | null;
+  alternatives?: PlanAlternative[];
+};
+
+export interface PlanGeneration {
+  id: number;
+  status: "pending" | "succeeded" | "failed";
+  plan_id: number | null;
+  notices: { code: string; message: string; course_id: number | null }[];
+  error?: string | null;
+}
 export type PlanValidationResponse = components["schemas"]["PlanValidationResponse"];
 export type RuleIssue = components["schemas"]["RuleIssue"];
 export type PlanSummary = components["schemas"]["PlanSummary"];

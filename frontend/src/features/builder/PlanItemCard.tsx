@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: columns.test.tsx.
+// Codex додав пояснення та альтернативи ШІ. Перевірка: тести конструктора.
 import { useEffect, useRef, useState } from "react";
-import type { PlanItem } from "../../api/types";
+import type { PlanAlternative, PlanItem } from "../../api/types";
 import { formatCredits } from "../../lib/credits";
 import { canAnimate } from "../../ui/motion";
 
@@ -8,10 +9,12 @@ export function PlanItemCard({
   item,
   error,
   onRemove,
+  onAlternative,
 }: {
   item: PlanItem;
   error?: string;
   onRemove: (courseId: number) => void;
+  onAlternative?: (courseId: number, alternative: PlanAlternative) => void;
 }) {
   const [leaving, setLeaving] = useState(false);
   const timer = useRef(0);
@@ -53,6 +56,32 @@ export function PlanItemCard({
         <p role="alert" className="text-xs text-bad">
           {error}
         </p>
+      )}
+      {item.ai_explanation && (
+        <details className="border-t border-rule pt-2 text-xs">
+          <summary className="cursor-pointer font-semibold text-cobalt-d">Чому запропоновано</summary>
+          <p className="mt-1 wrap-break-word text-ink-2">{item.ai_explanation}</p>
+        </details>
+      )}
+      {!!item.alternatives?.length && onAlternative && (
+        <details className="border-t border-rule pt-2 text-xs">
+          <summary className="cursor-pointer font-semibold text-cobalt-d">Альтернативи</summary>
+          <ul className="mt-1 grid gap-2">
+            {item.alternatives.map((alternative) => (
+              <li key={alternative.course_id} className="grid gap-1">
+                <span className="wrap-break-word">{alternative.title} · {formatCredits(alternative.credits)} кр.</span>
+                <button
+                  type="button"
+                  className="justify-self-start rounded-md px-1 py-1 text-cobalt-d hover:underline focus-visible:outline-2"
+                  aria-label={`Замінити на ${alternative.title}`}
+                  onClick={() => onAlternative(item.course_id, alternative)}
+                >
+                  Вибрати
+                </button>
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
     </div>
   );
