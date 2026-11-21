@@ -2,18 +2,32 @@
 Індивідуальні плани: individual_plans, plan_items.
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code) за data-model.md («Individual Plans»)
-і contract.md §3.4. Перевірка: pytest (CRUD планів через API), `alembic check`.
+і contract.md §3.4. Доповнено за допомогою Antigravity (Gemini 2.5 Flash, Google DeepMind): додано поле
+ai_explanation та зв'язок alternatives до PlanItem (FR-009). Перевірка: pytest, `alembic check`.
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import CheckConstraint, ForeignKey, Identity, Index, Numeric, SmallInteger, String, UniqueConstraint
+from sqlalchemy import (
+    CheckConstraint,
+    ForeignKey,
+    Identity,
+    Index,
+    Numeric,
+    SmallInteger,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..base import Base, BigIntId, UTCDateTime, db_enum, utcnow
 from ..enums import LoadLevel, PlanItemCategory, PlanOrigin, PlanStatus, Trimester
 from .catalog import Course
+
+if TYPE_CHECKING:
+    from .alternatives import PlanAlternative
 
 
 class PlanItem(Base):
@@ -31,8 +45,15 @@ class PlanItem(Base):
     course_id: Mapped[int] = mapped_column(BigIntId, ForeignKey("courses.id", ondelete="RESTRICT"), index=True)
     trimester: Mapped[Trimester] = mapped_column(db_enum(Trimester, "trimester"))
     category: Mapped[PlanItemCategory] = mapped_column(db_enum(PlanItemCategory, "plan_item_category"))
+    ai_explanation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     course: Mapped[Course] = relationship(lazy="joined")
+    alternatives: Mapped[List["PlanAlternative"]] = relationship(
+        back_populates="plan_item",
+        cascade="all, delete-orphan",
+        order_by="PlanAlternative.rank",
+        lazy="selectin",
+    )
 
 
 class IndividualPlan(Base):
