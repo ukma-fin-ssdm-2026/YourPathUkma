@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.3.4] - 2026-11-21
+
+### Bug Fixes
+
+- Renumber plan alternatives migration to 0006
+  ([`1cd0317`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/1cd031779aa1cfeb0aaab7eca16e0ca324177a1b))
+
+
 ## [0.3.3] - 2026-11-20
 
 ### Bug Fixes
