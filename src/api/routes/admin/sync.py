@@ -10,6 +10,9 @@ GET /admin/moderation-items, POST /admin/moderation-items/{id}/approve|reject, P
 Для джерела `saz_catalog` задачу після відповіді підхоплює `src.parser.sync.run_sync_job` (BackgroundTasks) і
 веде її `queued` -> `running` -> `succeeded`/`failed`. Вимкнути автозапуск: SAZ_AUTORUN=0.
 Використання ШІ: імпорт каталогу та перевірку підключення САЗ додано Codex. Перевірка: pytest.
+Використання ШІ: додано автоматичний перерахунок доступності сертифікатних програм
+при схваленні змін каталогу через recalculate_certificate_programs_availability (Antigravity, Gemini 2.5 Pro).
+Перевірка: pytest, ruff.
 
 TODO(команда): для `faculty_certificates` парсера ще немає, така задача лишається в `queued`, а нова для того
 самого джерела дасть 409 SYNC_JOB_ALREADY_RUNNING (часткова унікальність у БД).
@@ -34,6 +37,7 @@ from ....db.session import get_db
 from ....parser.bundle import MAX_BUNDLE_BYTES, CatalogBundle
 from ....parser.config import autorun_enabled, load_settings, remote_login_enabled
 from ....parser.sync import fail_stale_jobs, run_sync_job, stage_catalog
+from ....services.certificates import recalculate_certificate_programs_availability
 from ...common import ApiError, ErrorDetail, ErrorResponse, PaginationInfo, error_responses
 from .common import client_ip, require_admin, write_audit
 
@@ -324,6 +328,7 @@ def _review_item(
 
     if decision == "approve":
         _apply_change(db, item, course, data)
+        recalculate_certificate_programs_availability(db)
     write_audit(
         db,
         actor_id=admin.id,

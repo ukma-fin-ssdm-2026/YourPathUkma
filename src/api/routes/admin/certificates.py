@@ -5,19 +5,23 @@ PATCH /admin/certificate-programs/{program_id},
 PUT /admin/certificate-programs/{program_id}/courses/{entry_id}.
 
 Інші кінцеві точки для сертифікатних програм — у certificates.py.
+
+Використання ШІ: додано каскадний перерахунок доступності сертифікатних програм через
+recalculate_certificate_programs_availability за допомогою Antigravity (Gemini 2.5 Pro). Перевірка: pytest, ruff.
 """
 
 from typing import Annotated, List, Optional
 
 from fastapi import APIRouter, Depends, Path, Request
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ....db import enums as db_enums
 from ....db.models.catalog import CertificateProgram, CertificateProgramCourse, Course, Direction
 from ....db.models.users import User
 from ....db.session import get_db
+from ....services.certificates import recalculate_certificate_programs_availability
 from ...common import MAX_DATABASE_ID, ApiError, error_responses
 from .common import client_ip, require_admin, write_audit
 
@@ -149,15 +153,8 @@ def update_certificate_entry(
     old_availability = program.availability
     entry.course_id = payload.course_id
     db.flush()
-    # Доступність виводимо з усіх записів програми: програма доступна лише коли кожну дисципліну звірено
-    unmatched = db.scalar(
-        select(func.count())
-        .select_from(CertificateProgramCourse)
-        .where(CertificateProgramCourse.program_id == program_id, CertificateProgramCourse.course_id.is_(None))
-    )
-    program.availability = (
-        db_enums.CertificateAvailability.UNAVAILABLE if unmatched else db_enums.CertificateAvailability.AVAILABLE
-    )
+    # Доступність виводимо з усіх записів програми та актуального каталогу
+    recalculate_certificate_programs_availability(db)
 
     write_audit(
         db,
