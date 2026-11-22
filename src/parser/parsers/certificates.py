@@ -112,7 +112,8 @@ def parse_program_page_html(html: str, source_url: str, title: str = "") -> Pars
     headers = soup.find_all(re.compile(r"^h[2-4]$"))
     discipline_sections = []
     for h in headers:
-        header_text = h.get_text().lower()
+        h_text = h.get_text(strip=True) if h else ""
+        header_text = h_text.lower()
         if any(keyword in header_text for keyword in ["дисциплін", "курс", "предмет", "компонент", "програм"]):
             discipline_sections.append(h)
 
@@ -132,6 +133,8 @@ def parse_program_page_html(html: str, source_url: str, title: str = "") -> Pars
     for elem in elements_to_scan:
         if elem.name in ["ul", "ol"]:
             for li in elem.find_all("li"):
+                if li is None:
+                    continue
                 raw = li.get_text(strip=True)
                 # Фільтруємо навігаційні та занадто короткі рядки
                 if not raw or len(raw) < 4 or len(raw) > 250:
@@ -146,19 +149,26 @@ def parse_program_page_html(html: str, source_url: str, title: str = "") -> Pars
         elif elem.name == "table":
             for tr in elem.find_all("tr"):
                 tds = tr.find_all(["td", "th"])
-                if len(tds) >= 1:
-                    raw = tds[0].get_text(strip=True)
-                    # Якщо перший стовпець номер або код, беремо другий
-                    if len(tds) > 1 and (raw.isdigit() or len(raw) <= 3):
-                        raw = tds[1].get_text(strip=True)
-                    if not raw or len(raw) < 4 or len(raw) > 250:
+                if not tds:
+                    continue
+                first_td = tds[0]
+                if first_td is None:
+                    continue
+                raw = first_td.get_text(strip=True)
+                # Якщо перший стовпець номер або код, беремо другий
+                if len(tds) > 1 and (raw.isdigit() or len(raw) <= 3):
+                    second_td = tds[1]
+                    if second_td is None:
                         continue
-                    if any(header_word in raw.lower() for header_word in ["назва", "дисципліна", "номер", "№"]):
-                        continue
-                    norm = normalize_discipline_title(raw)
-                    if norm and norm not in seen_titles:
-                        seen_titles.add(norm)
-                        courses.append(ParsedCertificateCourse(raw_title=raw, normalized_title=norm))
+                    raw = second_td.get_text(strip=True)
+                if not raw or len(raw) < 4 or len(raw) > 250:
+                    continue
+                if any(header_word in raw.lower() for header_word in ["назва", "дисципліна", "номер", "№"]):
+                    continue
+                norm = normalize_discipline_title(raw)
+                if norm and norm not in seen_titles:
+                    seen_titles.add(norm)
+                    courses.append(ParsedCertificateCourse(raw_title=raw, normalized_title=norm))
 
     return ParsedCertificateProgram(
         title=title,
@@ -178,8 +188,13 @@ def parse_catalog_page_html(html: str, base_url: str = DEFAULT_CERTIFICATES_URL)
     seen_urls = set()
 
     for a in soup.find_all("a", href=True):
-        href = a["href"].strip()
-        title = a.get_text(strip=True)
+        if a is None:
+            continue
+        href = a.get("href", "")
+        if not href:
+            continue
+        href = href.strip()
+        title = a.get_text(strip=True) if a else ""
         # Посилання на сторінки сертифікатних програм
         if not title or len(title) < 3:
             continue
