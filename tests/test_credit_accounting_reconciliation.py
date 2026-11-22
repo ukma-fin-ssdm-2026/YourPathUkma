@@ -107,7 +107,7 @@ def test_reproduced_audit_scenario_240_credits_and_25_free_rejected(clean_studen
 
     candidate_plan = {
         "academic_year": YEAR,
-        "course": 3,
+        "course": 2,
         "items": [
             {"course_id": 101, "title": "Функціональне програмування", "trimester": 1, "credits": 5.0},
             {
@@ -134,7 +134,7 @@ def test_reproduced_audit_scenario_240_credits_and_25_free_rejected(clean_studen
         draft = IndividualPlan(
             student_id=student_id,
             academic_year=YEAR,
-            course_year=3,
+            course_year=2,
             status=db_enums.PlanStatus.DRAFT,
             total_credits=8.0,
             items=[
@@ -181,7 +181,7 @@ def test_boundary_exact_240_and_25_credits_allowed(clean_student_42_records):
     # План на 8 кредитів (5 проф + 3 вільний вибір) -> рівно 240 і 25
     candidate_plan = {
         "academic_year": YEAR,
-        "course": 3,
+        "course": 2,
         "items": [
             {"course_id": 101, "title": "Функціональне програмування", "trimester": 1, "credits": 5.0},
             {
@@ -226,7 +226,7 @@ def test_boundary_exceeded_by_one_credit_rejected(clean_student_42_records):
     # 23 + 3 = 26 > 25 (вільний вибір перевищено на 1)
     plan_free_exceeded = {
         "academic_year": YEAR,
-        "course": 3,
+        "course": 2,
         "items": [
             {"course_id": 101, "title": "Функціональне програмування", "trimester": 1, "credits": 5.0},
             {
@@ -254,7 +254,7 @@ def test_deduplication_between_approved_plan_and_history():
         approved_plan = IndividualPlan(
             student_id=student_id,
             academic_year=2024,
-            course_year=1,
+            course_year=2,
             status=db_enums.PlanStatus.APPROVED,
             total_credits=8.0,
             items=[
@@ -304,7 +304,7 @@ def test_approved_plan_unrecorded_items_are_counted():
         approved_plan = IndividualPlan(
             student_id=student_id,
             academic_year=2024,
-            course_year=1,
+            course_year=2,
             status=db_enums.PlanStatus.APPROVED,
             total_credits=9.0,
             items=[
@@ -353,7 +353,7 @@ def test_drafts_do_not_reserve_credits_against_each_other(clean_student_42_recor
 
     candidate_plan_1 = {
         "academic_year": YEAR,
-        "course": 3,
+        "course": 2,
         "items": [
             {"course_id": 101, "title": "Обов'язковий", "trimester": 1, "credits": 5.0},
             {"course_id": 205, "title": "Вільний вибір 1", "trimester": 2, "credits": 3.0, "is_free_elective": True},
@@ -366,7 +366,7 @@ def test_drafts_do_not_reserve_credits_against_each_other(clean_student_42_recor
     # Друга чернетка на той самий рік також створюється без конфлікту з першою чернеткою
     candidate_plan_2 = {
         "academic_year": YEAR,
-        "course": 3,
+        "course": 2,
         "items": [
             {"course_id": 101, "title": "Обов'язковий 2", "trimester": 1, "credits": 5.0},
             {"course_id": 205, "title": "Вільний вибір 2", "trimester": 2, "credits": 3.0, "is_free_elective": True},
@@ -397,7 +397,7 @@ def test_updating_own_draft_does_not_double_count_itself(clean_student_42_record
     # Створюємо чернетку на 3 кредити вільного вибору (20 + 3 = 23 <= 25)
     initial_plan = {
         "academic_year": YEAR,
-        "course": 3,
+        "course": 2,
         "items": [
             {"course_id": 101, "title": "Проф", "trimester": 1, "credits": 5.0},
             {"course_id": 205, "title": "Вільний", "trimester": 2, "credits": 3.0, "is_free_elective": True},
@@ -411,7 +411,7 @@ def test_updating_own_draft_does_not_double_count_itself(clean_student_42_record
         # Оновлюємо чернетку: міняємо на 4 кредити вільного вибору (20 + 4 = 24 <= 25)
         updated_plan = {
             "academic_year": YEAR,
-            "course": 3,
+            "course": 2,
             "items": [
                 {"course_id": 101, "title": "Проф", "trimester": 1, "credits": 5.0},
                 {"course_id": 102, "title": "Вільний інший", "trimester": 2, "credits": 4.0, "is_free_elective": True},
@@ -463,7 +463,7 @@ def test_plans_validate_returns_consistent_summary_and_reports_errors(clean_stud
     # План на 8 кредитів (235 + 8 = 243 > 240)
     body = {
         "academic_year": YEAR,
-        "course": 3,
+        "course": 2,
         "items": [
             {"course_id": 101, "title": "Проф", "trimester": 1, "credits": 5.0},
             {"course_id": 205, "title": "Вільний", "trimester": 2, "credits": 3.0, "is_free_elective": True},
@@ -488,16 +488,18 @@ def test_add_academic_history_takes_committed_plans_into_account(clean_student_4
         db.commit()
 
     # Спроба додати 235 кредитів в історію (235 + 8 = 243 > 240)
+    # Кожна дисципліна має обмеження credits <= 30, тому розбиваємо на 8 дисциплін (7*30 + 25 = 235)
     payload_total = {
         "records": [
             {
                 "academic_year": 2024,
                 "course_year": 1,
-                "title": "Велика дисципліна",
-                "credits": 235.0,
+                "title": f"Велика дисципліна {i}",
+                "credits": 30.0 if i < 7 else 25.0,
                 "trimester": 1,
                 "category": "professional",
             }
+            for i in range(8)
         ]
     }
     res = client.post("/api/v1/me/academic-history", json=payload_total, headers=AUTH_STUDENT_42)
