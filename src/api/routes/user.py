@@ -20,7 +20,7 @@ from typing import Dict, List, Literal, Optional
 
 from fastapi import APIRouter, Depends, Path, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -366,16 +366,13 @@ def add_academic_history(
         credit_summary = get_student_credit_summary(db, student_id)
 
         new_free = sum(r.credits for r in rows if r.category == db_enums.AcademicCategory.FREE_CHOICE)
-        if credit_summary.free_choice_used + new_free > limits.free_choice_credits:
-            details.append(
-                ErrorDetail(
-                    field="records",
-                    message=(
-                        f"FREE_ELECTIVE_LIMIT_EXCEEDED: вільний вибір за всі роки "
-                        f"{round(credit_summary.free_choice_used + new_free, 1)} > {limits.free_choice_credits} кредитів"
-                    ),
-                )
+        free_total = round(credit_summary.free_choice_used + new_free, 1)
+        if free_total > limits.free_choice_credits:
+            msg = (
+                f"FREE_ELECTIVE_LIMIT_EXCEEDED: вільний вибір за всі роки "
+                f"{free_total} > {limits.free_choice_credits} кредитів"
             )
+            details.append(ErrorDetail(field="records", message=msg))
 
         new_total = sum(r.credits for r in rows)
         if credit_summary.total_used + new_total > limits.total_credits:

@@ -19,7 +19,7 @@
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import delete, select
+from sqlalchemy import delete
 
 from src.api.main import app
 from src.api.plan_checks import get_student_credit_summary
@@ -110,7 +110,13 @@ def test_reproduced_audit_scenario_240_credits_and_25_free_rejected(clean_studen
         "course": 3,
         "items": [
             {"course_id": 101, "title": "Функціональне програмування", "trimester": 1, "credits": 5.0},
-            {"course_id": 205, "title": "Основи криптографії", "trimester": 2, "credits": 3.0, "is_free_elective": True},
+            {
+                "course_id": 205,
+                "title": "Основи криптографії",
+                "trimester": 2,
+                "credits": 3.0,
+                "is_free_elective": True,
+            },
         ],
     }
 
@@ -132,8 +138,12 @@ def test_reproduced_audit_scenario_240_credits_and_25_free_rejected(clean_studen
             status=db_enums.PlanStatus.DRAFT,
             total_credits=8.0,
             items=[
-                PlanItem(course_id=101, trimester=db_enums.Trimester.AUTUMN, category=db_enums.PlanItemCategory.PROFESSIONAL),
-                PlanItem(course_id=205, trimester=db_enums.Trimester.SPRING, category=db_enums.PlanItemCategory.FREE_CHOICE),
+                PlanItem(
+                    course_id=101, trimester=db_enums.Trimester.AUTUMN, category=db_enums.PlanItemCategory.PROFESSIONAL
+                ),
+                PlanItem(
+                    course_id=205, trimester=db_enums.Trimester.SPRING, category=db_enums.PlanItemCategory.FREE_CHOICE
+                ),
             ],
         )
         db.add(draft)
@@ -174,7 +184,13 @@ def test_boundary_exact_240_and_25_credits_allowed(clean_student_42_records):
         "course": 3,
         "items": [
             {"course_id": 101, "title": "Функціональне програмування", "trimester": 1, "credits": 5.0},
-            {"course_id": 205, "title": "Основи криптографії", "trimester": 2, "credits": 3.0, "is_free_elective": True},
+            {
+                "course_id": 205,
+                "title": "Основи криптографії",
+                "trimester": 2,
+                "credits": 3.0,
+                "is_free_elective": True,
+            },
         ],
     }
 
@@ -213,7 +229,13 @@ def test_boundary_exceeded_by_one_credit_rejected(clean_student_42_records):
         "course": 3,
         "items": [
             {"course_id": 101, "title": "Функціональне програмування", "trimester": 1, "credits": 5.0},
-            {"course_id": 205, "title": "Основи криптографії", "trimester": 2, "credits": 3.0, "is_free_elective": True},
+            {
+                "course_id": 205,
+                "title": "Основи криптографії",
+                "trimester": 2,
+                "credits": 3.0,
+                "is_free_elective": True,
+            },
         ],
     }
     res = client.post("/api/v1/plans", json=plan_free_exceeded, headers=AUTH_STUDENT_42)
@@ -236,8 +258,16 @@ def test_deduplication_between_approved_plan_and_history():
             status=db_enums.PlanStatus.APPROVED,
             total_credits=8.0,
             items=[
-                PlanItem(course_id=c101.id, trimester=db_enums.Trimester.AUTUMN, category=db_enums.PlanItemCategory.PROFESSIONAL),
-                PlanItem(course_id=c205.id, trimester=db_enums.Trimester.SPRING, category=db_enums.PlanItemCategory.FREE_CHOICE),
+                PlanItem(
+                    course_id=c101.id,
+                    trimester=db_enums.Trimester.AUTUMN,
+                    category=db_enums.PlanItemCategory.PROFESSIONAL,
+                ),
+                PlanItem(
+                    course_id=c205.id,
+                    trimester=db_enums.Trimester.SPRING,
+                    category=db_enums.PlanItemCategory.FREE_CHOICE,
+                ),
             ],
         )
         db.add(approved_plan)
@@ -278,8 +308,16 @@ def test_approved_plan_unrecorded_items_are_counted():
             status=db_enums.PlanStatus.APPROVED,
             total_credits=9.0,
             items=[
-                PlanItem(course_id=c101.id, trimester=db_enums.Trimester.AUTUMN, category=db_enums.PlanItemCategory.PROFESSIONAL),
-                PlanItem(course_id=c102.id, trimester=db_enums.Trimester.SPRING, category=db_enums.PlanItemCategory.FREE_CHOICE),
+                PlanItem(
+                    course_id=c101.id,
+                    trimester=db_enums.Trimester.AUTUMN,
+                    category=db_enums.PlanItemCategory.PROFESSIONAL,
+                ),
+                PlanItem(
+                    course_id=c102.id,
+                    trimester=db_enums.Trimester.SPRING,
+                    category=db_enums.PlanItemCategory.FREE_CHOICE,
+                ),
             ],
         )
         db.add(approved_plan)
@@ -305,7 +343,6 @@ def test_approved_plan_unrecorded_items_are_counted():
 
 def test_drafts_do_not_reserve_credits_against_each_other(clean_student_42_records):
     """Альтернативні чернетки не резервують кредити одночасно."""
-    student_id = clean_student_42_records
 
     # Створюємо першу чернетку на 18 кредитів вільного вибору
     with session_factory()() as db:
@@ -442,7 +479,6 @@ def test_plans_validate_returns_consistent_summary_and_reports_errors(clean_stud
 
 def test_add_academic_history_takes_committed_plans_into_account(clean_student_42_records):
     """POST /me/academic-history враховує зобов'язання за активними планами."""
-    student_id = clean_student_42_records
 
     # Переконуємось, що Plan 2 (SUBMITTED) активний і має 8 кредитів (3 з яких вільний вибір)
     with session_factory()() as db:

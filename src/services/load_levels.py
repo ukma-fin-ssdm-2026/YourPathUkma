@@ -272,14 +272,11 @@ def calculate_auto_load_levels(
     """
     from sqlalchemy import select
 
+    # 1. Зараховані кредити без подвійного обліку (спільний облік історії та активних планів)
+    from ..api.plan_checks import get_student_credit_summary
     from ..db import enums as db_enums
     from ..db.models.catalog import Course
     from ..db.models.deanery import DeaneryPlanDocument
-    from ..db.models.history import AcademicRecord
-    from ..db.models.plans import IndividualPlan
-
-    # 1. Зараховані кредити без подвійного обліку (спільний облік історії та активних планів)
-    from ..api.plan_checks import get_student_credit_summary
 
     summary = get_student_credit_summary(db, student_id, exclude_academic_year=academic_year)
     earned_credits = summary.total_used

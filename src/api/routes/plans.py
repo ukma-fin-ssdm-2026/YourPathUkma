@@ -40,8 +40,7 @@ from sqlalchemy.orm import Session
 from ...db import enums as db_enums
 from ...db.models import Course, IndividualPlan
 from ...db.models import PlanItem as PlanItemRow
-from ...db.models.history import AcademicRecord
-from ...db.models.users import StudentProfile, User
+from ...db.models.users import StudentProfile
 from ...db.session import get_db
 from ...services import plan_rules
 from ..common import MAX_DATABASE_ID, ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id

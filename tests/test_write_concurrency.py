@@ -186,7 +186,13 @@ def test_concurrent_history_writes_cannot_exceed_credit_limit(history_student, c
                     "credits": 5,
                     "is_free_elective": False,
                 },
-                {"course_id": 205, "title": "Вільний вибір 205", "trimester": 2, "credits": 3, "is_free_elective": True},
+                {
+                    "course_id": 205,
+                    "title": "Вільний вибір 205",
+                    "trimester": 2,
+                    "credits": 3,
+                    "is_free_elective": True,
+                },
             ],
             [("Попередній вільний вибір", 21.0, "free_choice")],
             "FREE_ELECTIVE_TOTAL_EXCEEDED",
@@ -239,7 +245,10 @@ def test_concurrent_plan_creations_cannot_exceed_credit_limits(
     )
 
     statuses = {first.status_code, second.status_code}
-    assert statuses == {201, 422}, f"Очікувався один 201 і один 422, отримано: {first.status_code}, {second.status_code}"
+    assert statuses == {
+        201,
+        422,
+    }, f"Очікувався один 201 і один 422, отримано: {first.status_code}, {second.status_code}"
     error_res = second if second.status_code == 422 else first
     details = error_res.json().get("details", [])
     assert any(expected_error in d["message"] for d in details)

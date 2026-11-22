@@ -17,12 +17,11 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Set
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..db import enums as db_enums
 from ..db.models import Course, IndividualPlan
-from ..db.models import PlanItem as PlanItemRow
 from ..db.models.deanery import DeaneryPlanDocument, NormativeCourseEntry
 from ..db.models.history import AcademicRecord
 from ..db.models.users import StudentProfile
@@ -99,7 +98,6 @@ def get_student_credit_summary(
     committed_total = 0.0
     committed_free = 0.0
     committed_prof = 0.0
-    seen_committed_course_ids: Set[int] = set()
 
     for plan in committed_plans:
         if plan.id in recorded_plan_ids:
