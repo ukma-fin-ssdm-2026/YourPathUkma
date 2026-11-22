@@ -5,6 +5,8 @@
 Доповнено функціями розрахунку та розподілу навантаження для 4 курсу (calculate_auto_load_levels, distribute_auto_load)
 за допомогою Antigravity (Gemini 2.5 Pro, Google DeepMind) для задачі #292.
 Перевірка: pytest (tests/test_load_levels.py, tests/test_auto_load_4th_year.py), ruff.
+Додатково (Antigravity): узгоджено з єдиним модулем обліку кредитів get_student_credit_summary для issue #288.
+Перевірка: pytest.
 """
 
 from __future__ import annotations
@@ -276,28 +278,12 @@ def calculate_auto_load_levels(
     from ..db.models.history import AcademicRecord
     from ..db.models.plans import IndividualPlan
 
-    # 1. Зараховані кредити без подвійного обліку
-    records = db.scalars(select(AcademicRecord).where(AcademicRecord.student_id == student_id)).all()
-    earned_credits = round(sum(r.credits for r in records), 1)
+    # 1. Зараховані кредити без подвійного обліку (спільний облік історії та активних планів)
+    from ..api.plan_checks import get_student_credit_summary
 
-    recorded_plan_ids = {r.plan_id for r in records if r.plan_id is not None}
-    recorded_course_ids = {r.course_id for r in records if r.course_id is not None}
-
-    # Додаємо дисципліни з затверджених планів попередніх років, якщо вони ще не в AcademicRecord
-    approved_plans = db.scalars(
-        select(IndividualPlan).where(
-            IndividualPlan.student_id == student_id,
-            IndividualPlan.status == db_enums.PlanStatus.APPROVED,
-            IndividualPlan.academic_year != academic_year,
-        )
-    ).all()
-
-    for plan in approved_plans:
-        if plan.id not in recorded_plan_ids:
-            for item in plan.items:
-                if item.course_id not in recorded_course_ids:
-                    earned_credits = round(earned_credits + item.course.credits, 1)
-                    recorded_course_ids.add(item.course_id)
+    summary = get_student_credit_summary(db, student_id, exclude_academic_year=academic_year)
+    earned_credits = summary.total_used
+    recorded_course_ids = set(summary.recorded_course_ids) | set(summary.seen_committed_course_ids)
 
     # 2. Нормативні дисципліни поточного року з документа деканату
     doc = db.scalar(

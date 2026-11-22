@@ -10,6 +10,8 @@
 Перевірка: ручний огляд; pytest і лінтери запустити перед комітом.
 
 Codex додав блокування профілю під час запису історії. Перевірка: pytest на PostgreSQL.
+Додатково (Antigravity, Gemini 2.5 Pro): використання єдиного обліку кредитів (get_student_credit_summary)
+у _credits та add_academic_history для issue #288. Перевірка: pytest.
 """
 
 from collections import defaultdict
@@ -29,6 +31,7 @@ from ...db.models.users import StudentProfile, User
 from ...db.session import get_db
 from ..common import ApiError, ErrorDetail, error_responses, get_current_student_id
 from ..onboarding import get_onboarded_student
+from ..plan_checks import get_student_credit_summary, lock_student_for_credits
 from .auth import AuthUser
 from .system import Limits
 
@@ -120,19 +123,14 @@ def _get_user(db: Session, user_id: int) -> User:
 
 
 def _credits(db: Session, student_id: int) -> CreditsInfo:
-    rows = db.execute(
-        select(AcademicRecord.category, func.sum(AcademicRecord.credits))
-        .where(AcademicRecord.student_id == student_id)
-        .group_by(AcademicRecord.category)
-    ).all()
-    by_category = {category: float(total or 0) for category, total in rows}
+    summary = get_student_credit_summary(db, student_id)
     limits = Limits()
     return CreditsInfo(
-        total_used=round(sum(by_category.values()), 1),
+        total_used=summary.total_used,
         total_limit=limits.total_credits,
-        free_choice_used=round(by_category.get(db_enums.AcademicCategory.FREE_CHOICE, 0.0), 1),
+        free_choice_used=summary.free_choice_used,
         free_choice_limit=limits.free_choice_credits,
-        professional_used=round(by_category.get(db_enums.AcademicCategory.PROFESSIONAL, 0.0), 1),
+        professional_used=summary.professional_used,
         professional_limit=limits.professional_credits,
     )
 
@@ -288,7 +286,7 @@ def add_academic_history(
 ):
     student_id = profile.user_id
     # Блокуємо профіль до перевірки дублікатів і сум кредитів, навіть якщо історія ще порожня.
-    db.execute(select(StudentProfile.user_id).where(StudentProfile.user_id == student_id).with_for_update())
+    lock_student_for_credits(db, student_id)
     ids = [r.course_id for r in payload.records if r.course_id is not None]
     courses: Dict[int, Course] = {}
     already_taken: set = set()
@@ -365,35 +363,28 @@ def add_academic_history(
 
     if not details:
         limits = Limits()
-        used_rows = db.execute(
-            select(AcademicRecord.category, func.coalesce(func.sum(AcademicRecord.credits), 0))
-            .where(AcademicRecord.student_id == student_id)
-            .group_by(AcademicRecord.category)
-        ).all()
-        used_by_category = {category: float(total or 0) for category, total in used_rows}
+        credit_summary = get_student_credit_summary(db, student_id)
 
-        used_free = used_by_category.get(db_enums.AcademicCategory.FREE_CHOICE, 0.0)
         new_free = sum(r.credits for r in rows if r.category == db_enums.AcademicCategory.FREE_CHOICE)
-        if used_free + new_free > limits.free_choice_credits:
+        if credit_summary.free_choice_used + new_free > limits.free_choice_credits:
             details.append(
                 ErrorDetail(
                     field="records",
                     message=(
                         f"FREE_ELECTIVE_LIMIT_EXCEEDED: вільний вибір за всі роки "
-                        f"{round(used_free + new_free, 1)} > {limits.free_choice_credits} кредитів"
+                        f"{round(credit_summary.free_choice_used + new_free, 1)} > {limits.free_choice_credits} кредитів"
                     ),
                 )
             )
 
-        used_total = sum(used_by_category.values())
         new_total = sum(r.credits for r in rows)
-        if used_total + new_total > limits.total_credits:
+        if credit_summary.total_used + new_total > limits.total_credits:
             details.append(
                 ErrorDetail(
                     field="records",
                     message=(
                         f"TOTAL_CREDITS_EXCEEDED: усього за програму "
-                        f"{round(used_total + new_total, 1)} > {limits.total_credits} кредитів"
+                        f"{round(credit_summary.total_used + new_total, 1)} > {limits.total_credits} кредитів"
                     ),
                 )
             )

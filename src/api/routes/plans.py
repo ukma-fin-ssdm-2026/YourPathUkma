@@ -23,6 +23,9 @@ Codex поєднав блокування з перевірками курсу �
 Перевірка: регресійні тести та генерація OpenAPI.
 Використання ШІ: автоматичне призначення рівнів навантаження для 4 курсу в конструкторі (FR-003, #292)
 реалізовано за допомогою Antigravity (Gemini 2.5 Pro). Перевірка: pytest, ruff.
+Використання ШІ: узгодження обліку кредитів історії та планів, атомарне блокування lock_student_for_credits
+у create/update/submit, підсумки та перевірка лімітів у validate_plan (issue #288)
+реалізовано за допомогою Antigravity (Gemini 2.5 Pro). Перевірка: pytest, ruff.
 """
 
 from datetime import datetime
@@ -43,7 +46,12 @@ from ...db.session import get_db
 from ...services import plan_rules
 from ..common import MAX_DATABASE_ID, ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
 from ..onboarding import get_onboarded_student
-from ..plan_checks import enforce_plan_rules, enforce_submit_rules
+from ..plan_checks import (
+    enforce_plan_rules,
+    enforce_submit_rules,
+    get_student_credit_summary,
+    lock_student_for_credits,
+)
 
 router = APIRouter(prefix="/api/v1", tags=["Plans"])
 
@@ -275,15 +283,7 @@ def _find_plan(db: Session, plan_id: int, student_id: int, *, for_update: bool =
 
 
 def _lock_student(db: Session, student_id: int) -> None:
-    """
-    Блокує рядок студента до кінця транзакції: подання планів одного студента виконуються по черзі.
-
-    Ліміт вільного вибору рахується за всіма його планами. Без блокування два паралельні подання різних
-    планів обидва бачили б інший план як чернетку, обидва проходили б перевірку й разом перевищили б ліміт.
-    `FOR NO KEY UPDATE` не конфліктує з вставками, що посилаються на користувача зовнішнім ключем.
-    На SQLite блокування ігнорується (там один записувач).
-    """
-    db.execute(select(User.id).where(User.id == student_id).with_for_update(key_share=True))
+    lock_student_for_credits(db, student_id)
 
 
 def _check_catalog(db: Session, items: List[PlanItem]) -> Dict[int, Course]:
@@ -436,6 +436,7 @@ def create_plan(
     db: Session = Depends(get_db),
 ):
     student_id = profile.user_id
+    lock_student_for_credits(db, student_id)
     _check_course_year(payload.course, profile)
     courses = _check_catalog(db, payload.items)
     enforce_plan_rules(db, student_id, payload, courses)
@@ -529,6 +530,7 @@ def update_plan(
     db: Session = Depends(get_db),
 ):
     student_id = profile.user_id
+    lock_student_for_credits(db, student_id)
     plan = _find_plan(db, plan_id, student_id, for_update=True)
     if plan.status != db_enums.PlanStatus.DRAFT:
         raise ApiError(409, "PLAN_NOT_EDITABLE", "Редагувати можна лише план у статусі draft")
@@ -591,13 +593,14 @@ def validate_plan(
     errors = collect_rule_errors(payload.items)
     total = round(sum(item.credits for item in payload.items), 1)
     free = round(sum(item.credits for item in payload.items if item.is_free_elective), 1)
-    history_free = db.scalar(
-        select(func.coalesce(func.sum(AcademicRecord.credits), 0)).where(
-            AcademicRecord.student_id == student_id,
-            AcademicRecord.category == db_enums.AcademicCategory.FREE_CHOICE,
-        )
-    )
-    free_all_years = round(float(history_free or 0) + free, 1)
+    credit_summary = get_student_credit_summary(db, student_id, exclude_academic_year=payload.academic_year)
+    free_all_years = round(credit_summary.free_choice_used + free, 1)
+
+    for v in plan_rules.check_free_elective_total(free, credit_summary.free_choice_used):
+        errors.append(RuleIssue(code=v.code, message=v.message, field=v.field))
+    for v in plan_rules.check_total_program_credits(total, credit_summary.total_used):
+        errors.append(RuleIssue(code=v.code, message=v.message, field=v.field))
+
     by_trimester = {"1": 0.0, "2": 0.0, "3": 0.0}
     for item in payload.items:
         by_trimester[str(item.trimester)] += item.credits
@@ -611,7 +614,7 @@ def validate_plan(
             total_credits=total,
             free_elective_credits=free,
             free_elective_used_all_years=free_all_years,
-            free_elective_remaining=max(0.0, round(FREE_ELECTIVE_LIMIT - free_all_years, 1)),
+            free_elective_remaining=max(0.0, round(plan_rules.FREE_ELECTIVE_LIMIT - free_all_years, 1)),
             year_total_credits=total,  # TODO: додати нормативні дисципліни року
             credits_by_trimester=by_trimester,
         ),
