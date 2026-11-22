@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: plan.test.ts.
 // Чиста логіка плану без React: UI лише показує її результат. Остаточні правила перевіряє сервер.
-import type { Discipline, LoadLevel, LoadLevels, PlanItem } from "../../api/types";
+// Використання ШІ: Codex додав заміну з перевіркою триместру й дублікатів. Перевірка: Vitest.
+import type { Discipline, LoadLevel, LoadLevels, PlanAlternative, PlanItem } from "../../api/types";
 import type { Trimester } from "../../lib/trimester";
 
 export const MAX_ITEMS = 30;
@@ -68,6 +69,23 @@ export function addDiscipline(
 
 export function removeCourse(plan: BuilderPlan, courseId: number): BuilderPlan {
   return { ...plan, items: plan.items.filter((item) => item.course_id !== courseId) };
+}
+
+export function replaceWithAlternative(
+  plan: BuilderPlan,
+  courseId: number,
+  alternative: PlanAlternative,
+): BuilderPlan {
+  const original = plan.items.find((item) => item.course_id === courseId);
+  if (
+    !original ||
+    original.trimester !== alternative.trimester ||
+    plan.items.some((item) => item.course_id === alternative.course_id)
+  ) return plan;
+
+  const { course_id, title, trimester, credits, is_free_elective, ai_explanation } = alternative;
+  const replacement: PlanItem = { course_id, title, trimester, credits, is_free_elective, ai_explanation };
+  return { ...plan, items: plan.items.map((item) => item === original ? replacement : item) };
 }
 
 export function setLoad(

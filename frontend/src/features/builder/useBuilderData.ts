@@ -1,5 +1,6 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: data.test.tsx.
 // Codex уточнив підсумок кредитів і живу валідацію. Перевірка — фронтенд-тести.
+// Codex відокремив поля рекомендацій від тіла запису плану. Перевірка: Vitest.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../../api/client";
 import type { ApiError } from "../../api/errors";
@@ -16,7 +17,9 @@ export function planPayload(plan: BuilderPlan) {
     academic_year: plan.academic_year,
     course: plan.course,
     load_levels: plan.load_levels,
-    items: plan.items,
+    items: plan.items.map(({ course_id, title, trimester, credits, is_free_elective }) => ({
+      course_id, title, trimester, credits, is_free_elective,
+    })),
   };
   return plan.course === 4 ? rest : { ...rest, load_levels };
 }
@@ -44,7 +47,7 @@ export function useValidatePlan(plan: BuilderPlan, options: { debounceMs?: numbe
 export function usePlan(id: number | null) {
   return useQuery({
     queryKey: ["plan", id],
-    queryFn: () => request<PlanResponse>(`/plans/${id}`),
+    queryFn: ({ signal }) => request<PlanResponse>(`/plans/${id}`, { signal }),
     enabled: id !== null,
   });
 }
