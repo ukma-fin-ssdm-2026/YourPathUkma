@@ -6,8 +6,11 @@ GET /preferences/{academic_year}, PUT /preferences/{academic_year} (створю
 
 Використання ШІ: явне значення за замовчуванням для certificate_program_id у PreferencesResponse додано за допомогою
 Claude (Claude Code) за звітом SonarCloud. Перевірено: pytest (tests/test_preferences.py, tests/test_ai.py), ruff, tsc.
+Використання ШІ: автоматичний розрахунок навантаження для 4 курсу за залишком до 240 кредитів (FR-003, US-009, #292)
+реалізовано за допомогою Antigravity (Gemini 2.5 Pro). Перевірка: pytest, ruff.
 """
 
+import logging
 from datetime import datetime
 from typing import Annotated, List, Optional, Type
 
@@ -23,11 +26,13 @@ from ...db.models.catalog import CertificateProgram, Direction, Instructor
 from ...db.models.preferences import InstructorPreference, PlanPreferences, PreferenceDirection, TrimesterLoad
 from ...db.models.users import StudentProfile
 from ...db.session import get_db
+from ...services.load_levels import AutoLoadError, calculate_auto_load_levels
 from ..common import MAX_DATABASE_ID, ApiError, ErrorDetail, error_responses
 from ..onboarding import get_onboarded_student
 from .plans import LoadLevels
 
 router = APIRouter(prefix="/api/v1", tags=["Preferences"])
+logger = logging.getLogger(__name__)
 
 MAX_DIRECTIONS = 3  # FR-007
 MAX_INSTRUCTOR_IDS = 50
@@ -69,6 +74,8 @@ class PreferencesResponse(BaseModel):
     wants_certificate: bool
     certificate_program_id: Optional[int] = None
     updated_at: datetime
+    load_levels_mode: Optional[str] = Field("manual", description="'manual' (2–3 курс) або 'auto' (4 курс, FR-003)")
+    auto_load_explanation: Optional[str] = Field(None, description="Пояснення автоматичного розрахунку для 4 курсу")
 
 
 def _unique(ids: List[int]) -> List[int]:
@@ -90,9 +97,14 @@ def _find(db: Session, student_id: int, academic_year: int) -> Optional[PlanPref
     )
 
 
-def _to_response(prefs: PlanPreferences) -> PreferencesResponse:
+def _to_response(
+    prefs: PlanPreferences,
+    profile: Optional[StudentProfile] = None,
+    auto_explanation: Optional[str] = None,
+) -> PreferencesResponse:
     loads = {row.trimester: row.load_level for row in prefs.trimester_loads}
     medium = db_enums.LoadLevel.MEDIUM
+    is_auto = (profile.course_year == 4) if profile else any(row.is_auto for row in prefs.trimester_loads)
     return PreferencesResponse(
         academic_year=prefs.academic_year,
         load_levels=LoadLevels(
@@ -115,6 +127,8 @@ def _to_response(prefs: PlanPreferences) -> PreferencesResponse:
         wants_certificate=prefs.wants_certificate,
         certificate_program_id=prefs.certificate_program_id,
         updated_at=prefs.updated_at,
+        load_levels_mode="auto" if is_auto else "manual",
+        auto_load_explanation=auto_explanation,
     )
 
 
@@ -136,7 +150,14 @@ def get_preferences(
     prefs = _find(db, profile.user_id, academic_year)
     if prefs is None:
         raise ApiError(404, "PREFERENCES_NOT_FOUND", f"Побажань на {academic_year} рік ще не збережено")
-    return _to_response(prefs)
+    explanation = None
+    if profile.course_year == 4:
+        try:
+            auto_res = calculate_auto_load_levels(db, profile.user_id, academic_year)
+            explanation = auto_res.explanation
+        except Exception as exc:
+            logger.debug("Auto load levels calculation failed for preferences: %s", exc)
+    return _to_response(prefs, profile=profile, auto_explanation=explanation)
 
 
 @router.put(
@@ -187,9 +208,18 @@ def save_preferences(
         raise ApiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details)
 
     is_auto = profile.course_year == 4
+    explanation = None
     if is_auto:
-        # TODO(команда): правило розрахунку рівнів для 4 курсу з залишку до 240 кредитів у контракті не описане
-        levels = LoadLevels()
+        try:
+            auto_res = calculate_auto_load_levels(db, profile.user_id, academic_year)
+            levels = LoadLevels(
+                autumn=db_enums.LoadLevel(auto_res.autumn_level),
+                spring=db_enums.LoadLevel(auto_res.spring_level),
+                summer=db_enums.LoadLevel(auto_res.summer_level),
+            )
+            explanation = auto_res.explanation
+        except AutoLoadError as exc:
+            raise ApiError(exc.status_code, exc.code, exc.message)
     else:
         levels = payload.load_levels
 
@@ -228,4 +258,4 @@ def save_preferences(
     except IntegrityError:
         db.rollback()
         raise ApiError(409, "CONFLICT", "Побажання на цей рік уже змінює інший запит, повторіть спробу")
-    return _to_response(prefs)
+    return _to_response(prefs, profile=profile, auto_explanation=explanation)

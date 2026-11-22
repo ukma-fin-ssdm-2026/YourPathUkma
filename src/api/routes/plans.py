@@ -23,6 +23,8 @@ Codex поєднав блокування з перевірками курсу �
 Перевірка: регресійні тести та генерація OpenAPI.
 Використання ШІ: реалізовано генерацію та експорт плану в PDF (use-case 16, #296) за допомогою Antigravity
 (Gemini 2.5 Pro, Google DeepMind). Перевірка: pytest (test_plan_export.py), ruff.
+Використання ШІ: автоматичне призначення рівнів навантаження для 4 курсу в конструкторі (FR-003, #292)
+реалізовано за допомогою Antigravity (Gemini 2.5 Pro). Перевірка: pytest, ruff.
 """
 
 from datetime import datetime
@@ -358,12 +360,45 @@ def _ensure_credits_up_to_date(plan: IndividualPlan, items: List[PlanItem], cour
         )
 
 
-def _apply_payload(plan: IndividualPlan, payload: CreatePlanRequest, courses: Dict[int, Course]) -> None:
+def _apply_payload(
+    db: Session,
+    plan: IndividualPlan,
+    payload: CreatePlanRequest,
+    courses: Dict[int, Course],
+    student_id: int,
+) -> None:
     plan.academic_year = payload.academic_year
     plan.course_year = payload.course
-    plan.load_autumn = db_enums.LoadLevel(payload.load_levels.autumn.value)
-    plan.load_spring = db_enums.LoadLevel(payload.load_levels.spring.value)
-    plan.load_summer = db_enums.LoadLevel(payload.load_levels.summer.value)
+    if payload.course == 4:
+        # Для 4 курсу навантаження розраховується автоматично (FR-003, US-009)
+        from ...db.models.preferences import PlanPreferences
+        from ...services.load_levels import calculate_auto_load_levels
+
+        prefs = db.scalar(
+            select(PlanPreferences).where(
+                PlanPreferences.student_id == student_id,
+                PlanPreferences.academic_year == payload.academic_year,
+            )
+        )
+        if prefs and prefs.trimester_loads:
+            loads = {row.trimester: row.load_level for row in prefs.trimester_loads}
+            plan.load_autumn = loads.get(db_enums.Trimester.AUTUMN, db_enums.LoadLevel.MEDIUM)
+            plan.load_spring = loads.get(db_enums.Trimester.SPRING, db_enums.LoadLevel.MEDIUM)
+            plan.load_summer = loads.get(db_enums.Trimester.SUMMER, db_enums.LoadLevel.MEDIUM)
+        else:
+            try:
+                auto_res = calculate_auto_load_levels(db, student_id, payload.academic_year)
+                plan.load_autumn = db_enums.LoadLevel(auto_res.autumn_level)
+                plan.load_spring = db_enums.LoadLevel(auto_res.spring_level)
+                plan.load_summer = db_enums.LoadLevel(auto_res.summer_level)
+            except Exception:
+                plan.load_autumn = db_enums.LoadLevel.MEDIUM
+                plan.load_spring = db_enums.LoadLevel.MEDIUM
+                plan.load_summer = db_enums.LoadLevel.MEDIUM
+    else:
+        plan.load_autumn = db_enums.LoadLevel(payload.load_levels.autumn.value)
+        plan.load_spring = db_enums.LoadLevel(payload.load_levels.spring.value)
+        plan.load_summer = db_enums.LoadLevel(payload.load_levels.summer.value)
     plan.total_credits = round(sum(courses[item.course_id].credits for item in payload.items), 1)
     plan.items = [
         PlanItemRow(
@@ -411,7 +446,7 @@ def create_plan(
     courses = _check_catalog(db, payload.items)
     enforce_plan_rules(db, student_id, payload, courses)
     plan = IndividualPlan(student_id=student_id, status=db_enums.PlanStatus.DRAFT, origin=db_enums.PlanOrigin.MANUAL)
-    _apply_payload(plan, payload, courses)
+    _apply_payload(db, plan, payload, courses, student_id)
     db.add(plan)
     db.commit()
     response.headers["Location"] = f"/api/v1/plans/{plan.id}"
@@ -508,7 +543,7 @@ def update_plan(
     enforce_plan_rules(db, student_id, payload, courses, exclude_plan_id=plan.id)
     plan.items.clear()
     db.flush()
-    _apply_payload(plan, payload, courses)
+    _apply_payload(db, plan, payload, courses, student_id)
     db.commit()
     return _to_response(plan)
 

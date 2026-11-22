@@ -6150,6 +6150,19 @@ components:
           type: string
           format: date-time
           title: Updated At
+        load_levels_mode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Load Levels Mode
+          description: '''manual'' (2–3 курс) або ''auto'' (4 курс, FR-003)'
+          default: manual
+        auto_load_explanation:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Auto Load Explanation
+          description: Пояснення автоматичного розрахунку для 4 курсу
       type: object
       required:
       - academic_year
