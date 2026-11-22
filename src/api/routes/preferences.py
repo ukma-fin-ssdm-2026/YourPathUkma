@@ -8,6 +8,8 @@ GET /preferences/{academic_year}, PUT /preferences/{academic_year} (створю
 Claude (Claude Code) за звітом SonarCloud. Перевірено: pytest (tests/test_preferences.py, tests/test_ai.py), ruff, tsc.
 Використання ШІ: автоматичний розрахунок навантаження для 4 курсу за залишком до 240 кредитів (FR-003, US-009, #292)
 реалізовано за допомогою Antigravity (Gemini 2.5 Pro). Перевірка: pytest, ruff.
+Використання ШІ: додано валідацію доступності сертифікатної програми (FR-013) через Antigravity (Gemini 2.5 Pro).
+Перевірка: pytest, ruff.
 """
 
 import logging
@@ -204,6 +206,15 @@ def save_preferences(
         program = db.get(CertificateProgram, payload.certificate_program_id, with_for_update={"read": True})
         if program is None:
             details.append(ErrorDetail(field="certificate_program_id", message="Сертифікатна програма не існує"))
+        elif program.hidden:
+            details.append(ErrorDetail(field="certificate_program_id", message="Сертифікатна програма прихована"))
+        elif program.availability == db_enums.CertificateAvailability.UNAVAILABLE:
+            details.append(
+                ErrorDetail(
+                    field="certificate_program_id",
+                    message="CERTIFICATE_PROGRAM_UNAVAILABLE: сертифікатна програма недоступна цього року",
+                )
+            )
     if details:
         raise ApiError(422, "VALIDATION_ERROR", "Невалідні вхідні дані", details)
 

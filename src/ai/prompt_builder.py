@@ -11,6 +11,8 @@
 Перевірено: pytest tests/test_ai_prompt_builder.py, ruff check src/ai/prompt_builder.py.
 Використання ШІ: автоматичний розрахунок load_levels для 4 курсу за залишком до 240 кредитів (FR-003, #292)
 додано за допомогою Antigravity (Gemini 2.5 Pro). Перевірка: pytest, ruff.
+Використання ШІ: інтеграція сертифікатних програм у промпт AI (FR-013) через Antigravity (Gemini 2.5 Pro).
+Перевірка: pytest, ruff.
 """
 
 from __future__ import annotations
@@ -18,7 +20,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from sqlalchemy import select
@@ -26,7 +28,7 @@ from sqlalchemy.orm import Session
 
 from ..api.plan_checks import normative_course_ids as fetch_normative_course_ids
 from ..db import enums as db_enums
-from ..db.models.catalog import Course, Direction
+from ..db.models.catalog import CertificateProgram, Course, Direction
 from ..db.models.history import AcademicRecord
 from ..db.models.plans import IndividualPlan
 from ..db.models.preferences import PlanPreferences
@@ -75,6 +77,8 @@ class PromptContext:
     history_free_choice_credits_used: float
     # Плани попередніх років (AI-генеровані або ручні, без даних інших студентів)
     past_plan_course_ids: list[int]
+    certificate_program_name: Optional[str] = None
+    certificate_course_ids: list[int] = field(default_factory=list)
 
 
 def build_context(db: Session, student_id: int, academic_year: int) -> PromptContext:
@@ -190,6 +194,15 @@ def build_context(db: Session, student_id: int, academic_year: int) -> PromptCon
     ).all()
     past_plan_course_ids = list({item.course_id for plan in past_plans for item in plan.items})
 
+    # --- Сертифікатна програма (FR-013) ---
+    certificate_program_name = None
+    certificate_course_ids: list[int] = []
+    if certificate_program_id and wants_certificate:
+        cert_prog = db.get(CertificateProgram, certificate_program_id)
+        if cert_prog and cert_prog.availability == db_enums.CertificateAvailability.AVAILABLE and not cert_prog.hidden:
+            certificate_program_name = cert_prog.title
+            certificate_course_ids = [c.course_id for c in cert_prog.courses if c.course_id is not None]
+
     return PromptContext(
         student_course_year=course_year,
         student_specialty=specialty,
@@ -199,6 +212,8 @@ def build_context(db: Session, student_id: int, academic_year: int) -> PromptCon
         include_free_electives=include_free_electives,
         wants_certificate=wants_certificate,
         certificate_program_id=certificate_program_id,
+        certificate_program_name=certificate_program_name,
+        certificate_course_ids=certificate_course_ids,
         load_levels=load_levels,
         available_courses=course_contexts,
         excluded_course_ids=excluded_course_ids,
@@ -241,6 +256,13 @@ def build_prompt(ctx: PromptContext) -> tuple[str, str]:
 
     free_elective_budget = max(0.0, FREE_ELECTIVE_LIMIT - ctx.history_free_choice_credits_used)
 
+    cert_rule = ""
+    if ctx.wants_certificate and ctx.certificate_program_name and ctx.certificate_course_ids:
+        cert_rule = (
+            f"10. The student wants to obtain certificate program '{ctx.certificate_program_name}'. "
+            f"Prioritize including its courses (course_ids: {ctx.certificate_course_ids}) in the plan.\n"
+        )
+
     system_prompt = (
         "You are an academic planning assistant for NaUKMA Faculty of Informatics. "
         "Your task is to build a personalized individual study plan for a student based on their preferences, "
@@ -254,7 +276,7 @@ def build_prompt(ctx: PromptContext) -> tuple[str, str]:
         "6. Consider the student's load level preferences per trimester.\n"
         "7. Prioritize courses matching the student's direction_ids.\n"
         f"8. Free elective budget remaining: {free_elective_budget:.1f} credits.\n"
-        "9. Do not include courses the student has already completed (past_course_ids).\n\n"
+        f"9. Do not include courses the student has already completed (past_course_ids).\n{cert_rule}\n"
         "Return ONLY valid JSON matching this schema:\n"
         "{\n"
         '  "plan": [\n'
@@ -286,6 +308,13 @@ def build_prompt(ctx: PromptContext) -> tuple[str, str]:
         "past_course_ids": ctx.past_plan_course_ids,
         "available_courses": courses_data,
     }
+
+    if ctx.wants_certificate and ctx.certificate_program_name:
+        user_data["preferences"]["certificate_program"] = {
+            "id": ctx.certificate_program_id,
+            "name": ctx.certificate_program_name,
+            "course_ids": ctx.certificate_course_ids,
+        }
 
     user_prompt = json.dumps(user_data, ensure_ascii=False)
     full_text = system_prompt + "\n\n" + user_prompt

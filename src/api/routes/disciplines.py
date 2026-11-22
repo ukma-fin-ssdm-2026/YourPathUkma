@@ -1,10 +1,14 @@
 """
 Ресурс «Дисципліни» (Disciplines): read-only каталог вибіркових і нормативних дисциплін (use-case 9).
 Дані в реальній системі надходять із САЗ парсингом; тут — заглушки.
+
+Використання ШІ: додано поле certificate_programs для відображення входження дисципліни
+у сертифікатні програми (FR-013) за допомогою Antigravity (Gemini 2.5 Pro). Перевірка: pytest, ruff.
 """
 
+from collections import defaultdict
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, Path, Query
 from pydantic import BaseModel, ConfigDict, Field
@@ -14,6 +18,7 @@ from sqlalchemy.orm import Session, selectinload
 from ...db.base import normalize_text
 from ...db.enums import CourseKind, PublicationStatus, Trimester
 from ...db.models import Course, CourseDirection, CourseInstructor, Direction, Instructor
+from ...db.models.catalog import CertificateProgram, CertificateProgramCourse
 from ...db.session import get_db
 from ..common import (
     ApiError,
@@ -48,6 +53,10 @@ class Discipline(BaseModel):
         default_factory=list,
         description="Напрямки, для яких дисципліна профорієнтовна. Порожньо — дисципліна вільного вибору",
     )
+    certificate_programs: List[str] = Field(
+        default_factory=list,
+        description="Сертифікатні програми, до яких входить дисципліна",
+    )
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -73,7 +82,7 @@ class PaginatedDisciplinesResponse(BaseModel):
     pagination: PaginationInfo = Field(..., description="Метадані пагінації")
 
 
-def to_discipline(course: Course) -> Discipline:
+def to_discipline(course: Course, certificate_programs: Optional[List[str]] = None) -> Discipline:
     lecturers = [ci.instructor.full_name for ci in course.course_instructors]
     return Discipline(
         id=course.id,
@@ -85,6 +94,7 @@ def to_discipline(course: Course) -> Discipline:
         trimester=course.trimester.number,
         credits=course.credits,
         directions=[direction.name for direction in course.directions],
+        certificate_programs=certificate_programs or [],
     )
 
 
@@ -161,8 +171,23 @@ def list_disciplines(
         .limit(limit)
     ).all()
 
+    course_ids = [c.id for c in courses]
+    cert_map: Dict[int, List[str]] = defaultdict(list)
+    if course_ids:
+        rows = db.execute(
+            select(CertificateProgramCourse.course_id, CertificateProgram.title)
+            .join(CertificateProgram, CertificateProgram.id == CertificateProgramCourse.program_id)
+            .where(
+                CertificateProgramCourse.course_id.in_(course_ids),
+                CertificateProgram.hidden.is_(False),
+            )
+        ).all()
+        for cid, title in rows:
+            if cid is not None:
+                cert_map[cid].append(title)
+
     return PaginatedDisciplinesResponse(
-        disciplines=[to_discipline(course) for course in courses],
+        disciplines=[to_discipline(course, cert_map.get(course.id)) for course in courses],
         pagination=PaginationInfo(
             limit=limit,
             offset=offset,
@@ -198,5 +223,13 @@ def get_discipline(
     )
     course = db.scalar(query)
     if course is not None:
-        return to_discipline(course)
+        cert_rows = db.scalars(
+            select(CertificateProgram.title)
+            .join(CertificateProgramCourse, CertificateProgramCourse.program_id == CertificateProgram.id)
+            .where(
+                CertificateProgramCourse.course_id == discipline_id,
+                CertificateProgram.hidden.is_(False),
+            )
+        ).all()
+        return to_discipline(course, list(cert_rows))
     raise ApiError(404, "DISCIPLINE_NOT_FOUND", f"Дисципліну з ID {discipline_id} не знайдено")
