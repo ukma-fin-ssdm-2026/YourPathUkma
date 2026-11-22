@@ -14,8 +14,9 @@ GET /admin/moderation-items, POST /admin/moderation-items/{id}/approve|reject, P
 при схваленні змін каталогу через recalculate_certificate_programs_availability (Antigravity, Gemini 2.5 Pro).
 Перевірка: pytest, ruff.
 
-TODO(команда): для `faculty_certificates` парсера ще немає, така задача лишається в `queued`, а нова для того
-самого джерела дасть 409 SYNC_JOB_ALREADY_RUNNING (часткова унікальність у БД).
+Для джерела `faculty_certificates` синхронізація виконується через
+`src.parser.sync_certificates.run_certificates_sync_job` (BackgroundTasks)
+з парсингом сайту сертифікатів, автоматичною звіркою та розрахунком доступності.
 """
 
 from datetime import datetime
@@ -37,6 +38,7 @@ from ....db.session import get_db
 from ....parser.bundle import MAX_BUNDLE_BYTES, CatalogBundle
 from ....parser.config import autorun_enabled, load_settings, remote_login_enabled
 from ....parser.sync import fail_stale_jobs, run_sync_job, stage_catalog
+from ....parser.sync_certificates import run_certificates_sync_job
 from ....services.certificates import recalculate_certificate_programs_availability
 from ...common import ApiError, ErrorDetail, ErrorResponse, PaginationInfo, error_responses
 from .common import client_ip, require_admin, write_audit
@@ -420,6 +422,8 @@ def start_sync_job(
     response.headers["Location"] = f"/api/v1/admin/sync-jobs/{job.id}"
     if is_saz:
         background_tasks.add_task(run_sync_job, job.id)
+    elif payload.source == db_enums.SyncSource.FACULTY_CERTIFICATES:
+        background_tasks.add_task(run_certificates_sync_job, job.id)
     return _job_response(job, {admin.id: admin})
 
 
