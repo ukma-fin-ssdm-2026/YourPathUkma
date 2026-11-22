@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.5.0] - 2026-11-22
+
+### Features
+
+- Add AI generation to the plan builder
+  ([`0a15aea`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/0a15aeac1ca10a730a9d9b7cce101d98aa76cf33))
+
+
 ## [0.4.0] - 2026-11-21
 
 ### Features
