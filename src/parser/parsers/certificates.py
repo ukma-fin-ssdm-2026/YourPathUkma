@@ -84,11 +84,16 @@ def parse_program_page_html(html: str, source_url: str, title: str = "") -> Pars
     # Якщо заголовок не передано явно — шукаємо h1 або title
     if not title:
         h1 = soup.find("h1")
-        if h1 and h1.get_text(strip=True):
-            title = h1.get_text(strip=True)
-        else:
+        if h1 is not None:
+            extracted_title = h1.get_text(strip=True)
+            if extracted_title:
+                title = extracted_title
+        if not title:
             title_tag = soup.find("title")
-            title = title_tag.get_text(strip=True) if title_tag else "Невідома сертифікатна програма"
+            if title_tag is not None:
+                title = title_tag.get_text(strip=True)
+            else:
+                title = "Невідома сертифікатна програма"
 
     # Опис програми
     desc_parts = []
