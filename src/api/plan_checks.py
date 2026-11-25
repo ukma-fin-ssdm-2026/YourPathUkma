@@ -9,17 +9,22 @@
 Додатково (Claude): збір усіх правил в одному місці (дублікати, лише вільний вибір, ліміт 25, конфлікт з
 документом деканату), enforce_submit_rules для подання плану. Перевірка: ручний огляд; pytest і лінтери
 запустити перед комітом.
+Додатково (Antigravity, Gemini 2.5 Pro): спільний облік кредитів студента (get_student_credit_summary),
+виключення дублювання між історією та планами, перевірка ліміту 240 кредитів, блокування
+(lock_student_for_credits) для issue #288. Перевірка: tests/test_credit_accounting_reconciliation.py, pytest.
 """
 
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Set
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..db import enums as db_enums
 from ..db.models import Course, IndividualPlan
-from ..db.models import PlanItem as PlanItemRow
 from ..db.models.deanery import DeaneryPlanDocument, NormativeCourseEntry
+from ..db.models.history import AcademicRecord
+from ..db.models.users import StudentProfile
 from ..services import plan_rules
 from .common import ApiError, ErrorDetail
 
@@ -30,27 +35,117 @@ _COUNTED_STATUSES = (
 )
 
 
-def free_elective_used_in_other_plans(db: Session, student_id: int, exclude_plan_id: Optional[int] = None) -> float:
-    """
-    Кредити вільного вибору в усіх поданих планах студента (без чернеток), крім `exclude_plan_id`.
+@dataclass(frozen=True)
+class StudentCreditSummary:
+    """Спільний стан кредитів студента за програмою (AGENTS.md §4, §10, issue #288)."""
 
-    Ліміт 25 кредитів діє за ВСІ роки разом, тому плани того самого навчального року теж враховуються:
-    інакше два подані плани на один рік могли б мати по 25 кредитів кожен.
+    history_total: float
+    history_free: float
+    history_professional: float
+    committed_plans_total: float
+    committed_plans_free: float
+    committed_plans_professional: float
+    total_used: float
+    free_choice_used: float
+    professional_used: float
+    recorded_course_ids: Set[int]
+    seen_committed_course_ids: Set[int]
+
+
+def get_student_credit_summary(
+    db: Session,
+    student_id: int,
+    exclude_plan_id: Optional[int] = None,
+    exclude_academic_year: Optional[int] = None,
+) -> StudentCreditSummary:
     """
-    query = (
-        select(func.coalesce(func.sum(Course.credits), 0.0))
-        .select_from(PlanItemRow)
-        .join(IndividualPlan, IndividualPlan.id == PlanItemRow.plan_id)
-        .join(Course, Course.id == PlanItemRow.course_id)
-        .where(
-            IndividualPlan.student_id == student_id,
-            IndividualPlan.status.in_(_COUNTED_STATUSES),
-            PlanItemRow.category == db_enums.PlanItemCategory.FREE_CHOICE,
-        )
+    Спільний облік кредитів студента:
+    1. Завершені дисципліни з AcademicRecord.
+    2. Актуальні зобов'язання за активними планами (SUBMITTED, AWAITING_DEANERY, APPROVED), крім exclude_plan_id.
+       Чернетки (DRAFT) не резервують кредити одночасно.
+    3. Виключення подвійного обліку: якщо план або дисципліна вже є в AcademicRecord, вона не рахується з плану.
+    """
+    records = db.scalars(select(AcademicRecord).where(AcademicRecord.student_id == student_id)).all()
+
+    history_total = 0.0
+    history_free = 0.0
+    history_prof = 0.0
+    recorded_course_ids: Set[int] = set()
+    recorded_plan_ids: Set[int] = set()
+
+    for r in records:
+        history_total += r.credits
+        if r.category == db_enums.AcademicCategory.FREE_CHOICE:
+            history_free += r.credits
+        elif r.category == db_enums.AcademicCategory.PROFESSIONAL:
+            history_prof += r.credits
+        if r.course_id is not None:
+            recorded_course_ids.add(r.course_id)
+        if r.plan_id is not None:
+            recorded_plan_ids.add(r.plan_id)
+
+    query = select(IndividualPlan).where(
+        IndividualPlan.student_id == student_id,
+        IndividualPlan.status.in_(_COUNTED_STATUSES),
     )
     if exclude_plan_id is not None:
         query = query.where(IndividualPlan.id != exclude_plan_id)
-    return float(db.scalar(query) or 0.0)
+    if exclude_academic_year is not None:
+        query = query.where(IndividualPlan.academic_year != exclude_academic_year)
+
+    committed_plans = db.scalars(query).all()
+
+    committed_total = 0.0
+    committed_free = 0.0
+    committed_prof = 0.0
+
+    for plan in committed_plans:
+        if plan.id in recorded_plan_ids:
+            continue
+        for item in plan.items:
+            if item.course_id in recorded_course_ids:
+                continue
+            credits = float(item.course.credits if item.course else item.credits)
+            committed_total += credits
+            if item.category == db_enums.PlanItemCategory.FREE_CHOICE:
+                committed_free += credits
+            elif item.category == db_enums.PlanItemCategory.PROFESSIONAL:
+                committed_prof += credits
+
+    total_used = round(history_total + committed_total, 1)
+    free_choice_used = round(history_free + committed_free, 1)
+    professional_used = round(history_prof + committed_prof, 1)
+
+    return StudentCreditSummary(
+        history_total=round(history_total, 1),
+        history_free=round(history_free, 1),
+        history_professional=round(history_prof, 1),
+        committed_plans_total=round(committed_total, 1),
+        committed_plans_free=round(committed_free, 1),
+        committed_plans_professional=round(committed_prof, 1),
+        total_used=total_used,
+        free_choice_used=free_choice_used,
+        professional_used=professional_used,
+        recorded_course_ids=recorded_course_ids,
+        seen_committed_course_ids=set(),
+    )
+
+
+def lock_student_for_credits(db: Session, student_id: int) -> None:
+    """
+    Блокує рядок StudentProfile до завершення транзакції (FOR UPDATE) для забезпечення
+    атомарності перевірки лімітів при паралельних мутаціях (створення/зміна/подання планів, історія).
+    На SQLite блокування ігнорується.
+    """
+    db.execute(select(StudentProfile.user_id).where(StudentProfile.user_id == student_id).with_for_update())
+
+
+def free_elective_used_in_other_plans(db: Session, student_id: int, exclude_plan_id: Optional[int] = None) -> float:
+    """
+    Кредити вільного вибору в усіх завершених і поданих планах студента (без чернеток), крім `exclude_plan_id`.
+    Ліміт 25 кредитів діє за ВСІ роки разом.
+    """
+    return get_student_credit_summary(db, student_id, exclude_plan_id).free_choice_used
 
 
 def normative_course_ids(db: Session, student_id: int, academic_year: int) -> Set[int]:
@@ -92,12 +187,16 @@ def _collect_violations(
     violations += plan_rules.check_not_only_free_electives([item.is_free_elective for item in items])
     violations += collect_catalog_flag_violations(items, courses)
 
+    # Кредити рахуються за каталогом дисциплін
     current_free = round(
-        sum(getattr(item, "credits", 0.0) or 0.0 for item in items if getattr(item, "is_free_elective", False)), 1
+        sum(courses[item.course_id].credits for item in items if getattr(item, "is_free_elective", False)), 1
     )
+    current_total = round(sum(courses[item.course_id].credits for item in items), 1)
+
     violations += plan_rules.check_free_elective_in_plan(current_free)
-    used = free_elective_used_in_other_plans(db, student_id, exclude_plan_id)
-    violations += plan_rules.check_free_elective_total(current_free, used)
+    credit_summary = get_student_credit_summary(db, student_id, exclude_plan_id)
+    violations += plan_rules.check_free_elective_total(current_free, credit_summary.free_choice_used)
+    violations += plan_rules.check_total_program_credits(current_total, credit_summary.total_used)
 
     normative = normative_course_ids(db, student_id, academic_year)
     violations += plan_rules.check_deanery_conflicts(

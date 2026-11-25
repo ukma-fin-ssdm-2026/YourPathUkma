@@ -8,6 +8,9 @@
 Додатково (Claude): правила дублікатів, «лише вільний вибір», ліміту в межах плану й конфлікту з нормативними
 дисциплінами деканату перенесено сюди з плану API, щоб мати одне джерело правил.
 Перевірка: unit-тести tests/test_plan_rules.py (потрібно оновити й запустити), Black, flake8, bandit, ручний огляд.
+Доповнено правилом перевірки загального ліміту програми 240 кредитів (check_total_program_credits)
+та узгодження обліку кредитів за допомогою Antigravity (Gemini 2.5 Pro) для issue #288.
+Перевірка: tests/test_plan_rules.py, tests/test_credit_accounting_reconciliation.py.
 """
 
 from dataclasses import dataclass
@@ -16,6 +19,7 @@ from typing import Iterable, List, Optional, Sequence, Set, Tuple
 FREE_ELECTIVE_LIMIT = 25.0
 ANNUAL_MIN_CREDITS = 57.0
 COURSE_WITHOUT_LOAD_CHOICE = 4
+TOTAL_PROGRAM_CREDITS = 240.0
 
 
 @dataclass(frozen=True)
@@ -96,7 +100,7 @@ def check_free_elective_total(current_credits: float, used_in_other_plans: float
     """
     Ліміт 25 кредитів вільного вибору діє сумарно за всі 4 роки.
     Перевірку в межах одного плану робить check_free_elective_in_plan, тому тут лише випадок,
-    коли в інших поданих планах студента (будь-якого року) вже є вільний вибір.
+    коли в історії або інших поданих планах студента вже є вільний вибір.
     """
     if used_in_other_plans <= 0:
         return []
@@ -109,7 +113,31 @@ def check_free_elective_total(current_credits: float, used_in_other_plans: float
             code="FREE_ELECTIVE_TOTAL_EXCEEDED",
             message=(
                 f"Перевищено ліміт вільного вибору за всі роки: {total} > {FREE_ELECTIVE_LIMIT:g} кредитів "
-                f"(в інших поданих планах вже використано {used_in_other_plans:g}, "
+                f"(вже використано {used_in_other_plans:g}, "
+                f"у цьому плані можна обрати не більше {remaining:g})"
+            ),
+            field="items",
+        )
+    ]
+
+
+def check_total_program_credits(current_credits: float, used_credits: float) -> List[Violation]:
+    """
+    Сумарний ліміт 240 кредитів за 4 роки програми (AGENTS.md §4, FR-003, FR-010).
+    Враховує кредити поточного плану разом із уже зарахованими в історії та активних планах.
+    """
+    if used_credits < 0 or current_credits < 0:
+        raise ValueError("Кількість кредитів не може бути від'ємною")
+    total = round(current_credits + used_credits, 1)
+    if total <= TOTAL_PROGRAM_CREDITS:
+        return []
+    remaining = max(0.0, round(TOTAL_PROGRAM_CREDITS - used_credits, 1))
+    return [
+        Violation(
+            code="TOTAL_CREDITS_EXCEEDED",
+            message=(
+                f"Перевищено ліміт кредитів за програму: {total:g} > {TOTAL_PROGRAM_CREDITS:g} кредитів "
+                f"(вже зараховано або заплановано {used_credits:g}, "
                 f"у цьому плані можна обрати не більше {remaining:g})"
             ),
             field="items",

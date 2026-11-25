@@ -2,6 +2,8 @@
 
 Використання ШІ: Codex додав регресійні тести. Перевірка: pytest на PostgreSQL до й після виправлення.
 Codex узгодив курс тестового плану з профілем. Перевірка: pytest на PostgreSQL.
+Доповнено тестами конкурентного створення планів (test_concurrent_plan_creations_cannot_exceed_credit_limits)
+за допомогою Antigravity (Gemini 2.5 Pro) для issue #288. Перевірка: pytest.
 """
 
 from concurrent.futures import ThreadPoolExecutor
@@ -15,6 +17,7 @@ from sqlalchemy import delete, event, select, text
 
 from src.api.common import get_current_student_id
 from src.api.main import app
+from src.db import enums as db_enums
 from src.db.config import database_url
 from src.db.enums import PlanStatus
 from src.db.models import AcademicRecord, IndividualPlan, User
@@ -169,3 +172,83 @@ def test_concurrent_history_writes_cannot_exceed_credit_limit(history_student, c
     with session_factory()() as db:
         credits = db.scalars(select(AcademicRecord.credits).where(AcademicRecord.student_id == history_student)).all()
     assert sum(credits) == sum(prior_credits) + 2
+
+
+@pytest.mark.parametrize(
+    "plan_items, prior_history, expected_error",
+    [
+        (
+            [
+                {
+                    "course_id": 101,
+                    "title": "Обов'язковий курс",
+                    "trimester": 1,
+                    "credits": 5,
+                    "is_free_elective": False,
+                },
+                {
+                    "course_id": 205,
+                    "title": "Вільний вибір 205",
+                    "trimester": 2,
+                    "credits": 3,
+                    "is_free_elective": True,
+                },
+            ],
+            [("Попередній вільний вибір", 21.0, "free_choice")],
+            "FREE_ELECTIVE_TOTAL_EXCEEDED",
+        ),
+        (
+            [
+                {
+                    "course_id": 101,
+                    "title": "Дисципліна 101",
+                    "trimester": 1,
+                    "credits": 5,
+                    "is_free_elective": False,
+                },
+                {"course_id": 205, "title": "Дисципліна 205", "trimester": 2, "credits": 3, "is_free_elective": True},
+            ],
+            [("Попередні кредити", 230.0, "professional")],
+            "TOTAL_CREDITS_EXCEEDED",
+        ),
+    ],
+)
+def test_concurrent_plan_creations_cannot_exceed_credit_limits(
+    history_student, plan_items, prior_history, expected_error
+):
+    with session_factory()() as db:
+        for title, cr, cat in prior_history:
+            db.add(
+                AcademicRecord(
+                    student_id=history_student,
+                    academic_year=2025,
+                    course_year=2,
+                    title=title,
+                    credits=cr,
+                    trimester=db_enums.Trimester.AUTUMN,
+                    category=db_enums.AcademicCategory(cat),
+                    source=db_enums.RecordSource.SELF_DECLARED,
+                )
+            )
+        db.commit()
+
+    candidate_plan = {
+        "academic_year": 2026,
+        "course": 3,
+        "items": plan_items,
+    }
+
+    first, second = _concurrent_requests(
+        lambda: TestClient(app).post(PLAN_URL, json=candidate_plan),
+        lambda: TestClient(app).post(PLAN_URL, json=candidate_plan),
+        lambda db: any(isinstance(row, IndividualPlan) for row in db.new),
+    )
+
+    statuses = {first.status_code, second.status_code}
+    assert statuses == {
+        201,
+        422,
+    }, f"Очікувався один 201 і один 422, отримано: {first.status_code}, {second.status_code}"
+    error_res = second if second.status_code == 422 else first
+    details = error_res.json().get("details", [])
+    assert any(expected_error in d["message"] for d in details)
