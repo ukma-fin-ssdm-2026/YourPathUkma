@@ -27,11 +27,22 @@ from sqlalchemy.orm import Session  # noqa: E402
 
 from src.api.common import get_current_student_id  # noqa: E402
 from src.api.main import app  # noqa: E402
+from src.api.rate_limiter import deanery_upload_limiter, global_rate_limiter  # noqa: E402
 from src.api.tokens import issue_access_token  # noqa: E402
 from src.db import enums as db_enums  # noqa: E402
 from src.db.migrate import downgrade_base, upgrade_head  # noqa: E402
 from src.db.seed import seed_demo_data  # noqa: E402
 from src.db.session import session_factory  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limiters():
+    """Скидає лічильники rate limiter перед кожним тестом, щоб тести не впливали один на одного."""
+    global_rate_limiter.reset()
+    deanery_upload_limiter.reset()
+    yield
+    global_rate_limiter.reset()
+    deanery_upload_limiter.reset()
 
 
 @pytest.fixture(autouse=True)

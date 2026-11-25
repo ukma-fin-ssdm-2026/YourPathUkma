@@ -1,5 +1,6 @@
 """
 Використання ШІ: Codex підключив health.router та спільну перевірку готовності для /health;
+Antigravity (Gemini 4 Hydrogen) додав RateLimitMiddleware та заголовок Retry-After до CORS (#298).
 перевірка: pytest, Ruff і перегенерація OpenAPI.
 
 Точка входу API YourPathUkma. Запуск з кореня репозиторію:
@@ -46,6 +47,7 @@ from ..db.migrate import init_database
 from ..parser.remote_login import remote_login
 from . import health
 from .common import RequestIdMiddleware, assert_safe_environment, cors_origins, register_error_handlers
+from .rate_limiter import RateLimitMiddleware
 from .routes import ai, auth, certificates, deanery, disciplines, plans, preferences, reference, system, user
 from .routes.admin import audit as admin_audit
 from .routes.admin import catalog as admin_catalog
@@ -130,6 +132,7 @@ app = FastAPI(
 
 # Порядок важливий: у Starlette останній доданий middleware виконується першим (найзовнішній).
 # CORSMiddleware має бути доданий останнім, щоб CORS-заголовки були і на відповідях з помилками.
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(RequestIdMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -137,7 +140,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["X-Request-ID", "X-SAZ-Login-Host"],
+    expose_headers=["X-Request-ID", "X-SAZ-Login-Host", "Retry-After"],
 )
 
 register_error_handlers(app)

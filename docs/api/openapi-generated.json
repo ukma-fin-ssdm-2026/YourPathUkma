@@ -2400,6 +2400,22 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Забагато запитів",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "RATE_LIMITED",
+                  "message": "Забагато завантажень, спробуйте пізніше",
+                  "details": [],
+                  "request_id": "req_3f9a1c7e2b4d4a6e"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       },

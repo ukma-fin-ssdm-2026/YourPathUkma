@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useConfig } from "../../api/config";
-import { ApiError } from "../../api/errors";
+import { ApiError, formatRetryAfter } from "../../api/errors";
 import type { DeaneryDocument } from "../../api/types";
 import { Card } from "../../ui/Card";
 import { ConfirmDialog } from "../plans/ConfirmDialog";
@@ -24,7 +24,12 @@ const DEFAULT_MAX_BYTES = 10_485_760;
 function uploadMessage(error: ApiError): string {
   if (error.status === 413) return "Файл завеликий: максимум 10 МБ";
   if (error.status === 415) return "Підтримуються лише PDF і DOCX";
-  if (error.status === 429) return "Забагато завантажень, спробуйте за кілька хвилин";
+  if (error.status === 429) {
+    const wait = formatRetryAfter(error.retryAfter);
+    return wait
+      ? `Забагато завантажень, спробуйте ${wait}`
+      : "Забагато завантажень, спробуйте за кілька хвилин";
+  }
   return error.requestId ? `${error.message}. Код помилки: ${error.requestId}` : error.message;
 }
 

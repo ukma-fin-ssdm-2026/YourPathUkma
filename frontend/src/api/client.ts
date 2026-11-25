@@ -1,3 +1,4 @@
+// Використання ШІ: Antigravity (Gemini 4 Hydrogen) додав парсинг Retry-After (#298). Перевірка: Vitest.
 // Використання ШІ: Codex відкрив заголовки бінарної відповіді для кадрів САЗ. Перевірка: Vitest.
 // Використання ШІ: підтримку JSON-файлів додано Codex. Перевірка: Vitest.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: client.test.ts.
@@ -115,8 +116,15 @@ async function send(
   }
 }
 
+function parseRetryAfter(header: string | null): number | null {
+  if (!header) return null;
+  const parsed = Number.parseInt(header.trim(), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 async function toApiError(response: Response): Promise<ApiError> {
   const requestId = response.headers.get("X-Request-ID");
+  const retryAfter = parseRetryAfter(response.headers.get("Retry-After"));
   try {
     const data = (await response.json()) as {
       code?: unknown;
@@ -126,7 +134,7 @@ async function toApiError(response: Response): Promise<ApiError> {
     if (typeof data.code === "string") {
       const message = typeof data.message === "string" ? data.message : "Помилка запиту";
       const details = Array.isArray(data.details) ? (data.details as ErrorDetail[]) : [];
-      return new ApiError(response.status, data.code, message, details, requestId);
+      return new ApiError(response.status, data.code, message, details, requestId, retryAfter);
     }
   } catch {
     // тіло не JSON (наприклад, HTML від проксі): падаємо на загальну помилку нижче
@@ -137,6 +145,7 @@ async function toApiError(response: Response): Promise<ApiError> {
     `Помилка запиту (${response.status})`,
     [],
     requestId,
+    retryAfter,
   );
 }
 

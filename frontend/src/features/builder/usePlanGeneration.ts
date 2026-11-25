@@ -1,7 +1,8 @@
 // Використання ШІ: Codex підключив запуск і опитування API. Перевірка: Vitest і Chromium.
+// Використання ШІ: Antigravity (Gemini 4 Hydrogen) додав форматування Retry-After (#298). Перевірка: Vitest.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../../api/client";
-import { ApiError } from "../../api/errors";
+import { ApiError, formatRetryAfter } from "../../api/errors";
 import type { PlanGeneration, Preferences } from "../../api/types";
 
 export function usePlanGeneration(scope: string, enabled: boolean) {
@@ -64,7 +65,12 @@ export function usePlanGeneration(scope: string, enabled: boolean) {
 export function generationStartError(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.status === 409) return "Генерація вже триває. Спробуйте пізніше.";
-    if (error.status === 429) return "Вичерпано добовий ліміт генерацій. Спробуйте завтра.";
+    if (error.status === 429) {
+      const wait = formatRetryAfter(error.retryAfter);
+      return wait
+        ? `Вичерпано добовий ліміт генерацій. Спробуйте ${wait}.`
+        : "Вичерпано добовий ліміт генерацій. Спробуйте завтра.";
+    }
     if (error.status === 422) return "Перевірте побажання на обраний навчальний рік.";
   }
   return "Не вдалося запустити генерацію. Спробуйте ще раз.";

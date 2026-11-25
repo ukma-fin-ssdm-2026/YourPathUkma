@@ -1,5 +1,6 @@
 """
 Використання ШІ: Codex додав логування 5xx та CORS для необроблених помилок; перевірка: pytest і Ruff.
+Antigravity (Gemini 4 Hydrogen) додав передачу заголовків (зокрема Retry-After) у _error_response (#298).
 
 Спільні елементи API YourPathUkma: єдиний формат помилок, пагінація, заглушка автентифікації.
 
@@ -186,13 +187,17 @@ def _error_response(
     code: str,
     message: str,
     details: Optional[List[ErrorDetail]] = None,
+    headers: Optional[Dict[str, str]] = None,
 ) -> JSONResponse:
     request_id = get_request_id(request)
     body = ErrorResponse(code=code, message=message, details=details or [], request_id=request_id)
+    resp_headers = {REQUEST_ID_HEADER: request_id}
+    if headers:
+        resp_headers.update(headers)
     return JSONResponse(
         status_code=status_code,
         content=body.model_dump(mode="json"),
-        headers={REQUEST_ID_HEADER: request_id},
+        headers=resp_headers,
     )
 
 
@@ -209,7 +214,7 @@ def register_error_handlers(app: FastAPI) -> None:
                 exc.code,
                 get_request_id(request),
             )
-        return _error_response(request, exc.status_code, exc.code, exc.message, exc.details)
+        return _error_response(request, exc.status_code, exc.code, exc.message, exc.details, headers=exc.headers)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error_handler(request: Request, exc: RequestValidationError):
