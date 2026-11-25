@@ -2,8 +2,8 @@
 Адміністрування: sync_jobs, moderation_items, audit_log.
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code) за data-model.md («Moderation Queue & SyncJobs»,
-«Audit»), ADR-002 і contract.md §3.9. Перевірка: pytest (зокрема обмеження «одна активна задача на джерело»),
-`alembic check`.
+«Audit»), ADR-002 і contract.md §3.9; Antigravity додав індекс на course_id (issue #218).
+Перевірка: pytest (зокрема обмеження «одна активна задача на джерело»), `alembic check`.
 """
 
 from datetime import datetime
@@ -62,7 +62,9 @@ class ModerationItem(Base):
 
     id: Mapped[int] = mapped_column(BigIntId, Identity(), primary_key=True)
     sync_job_id: Mapped[int] = mapped_column(BigIntId, ForeignKey("sync_jobs.id", ondelete="CASCADE"))
-    course_id: Mapped[Optional[int]] = mapped_column(BigIntId, ForeignKey("courses.id", ondelete="SET NULL"))
+    course_id: Mapped[Optional[int]] = mapped_column(
+        BigIntId, ForeignKey("courses.id", ondelete="SET NULL"), index=True
+    )
     change_type: Mapped[ModerationChangeType] = mapped_column(db_enum(ModerationChangeType, "moderation_change_type"))
     payload: Mapped[dict[str, Any]] = mapped_column(JsonDoc)
     diff: Mapped[Optional[dict[str, Any]]] = mapped_column(JsonDoc)

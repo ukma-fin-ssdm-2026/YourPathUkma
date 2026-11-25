@@ -2,8 +2,8 @@
 Індивідуальні плани: individual_plans, plan_items.
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code) за data-model.md («Individual Plans»)
-і contract.md §3.4. Доповнено за допомогою Antigravity (Gemini 2.5 Flash, Google DeepMind): додано поле
-ai_explanation та зв'язок alternatives до PlanItem (FR-009). Перевірка: pytest, `alembic check`.
+і contract.md §3.4. Доповнено за допомогою Antigravity: додано поле ai_explanation та зв'язок alternatives
+до PlanItem (FR-009); додано індекс на deanery_document_id (issue #218). Перевірка: pytest, `alembic check`.
 """
 
 from datetime import datetime
@@ -87,7 +87,7 @@ class IndividualPlan(Base):
     )
     # Видалення документа, прив'язаного до не-чернетки, забороняє сервер (409 DOCUMENT_IN_USE)
     deanery_document_id: Mapped[Optional[int]] = mapped_column(
-        BigIntId, ForeignKey("deanery_plan_documents.id", ondelete="SET NULL")
+        BigIntId, ForeignKey("deanery_plan_documents.id", ondelete="SET NULL"), index=True
     )
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)

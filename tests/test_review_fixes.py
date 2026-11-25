@@ -5,6 +5,8 @@
 
 Використання ШІ: Codex додав регресії курсу, онбордингу, експорту та цілісності ID.
 Перевірка: pytest на PostgreSQL.
+Використання ШІ: оновлено перевірки експорту для реального PDF (#296) за допомогою Antigravity
+(Gemini 2.5 Pro). Перевірка: pytest.
 """
 
 from contextlib import contextmanager
@@ -362,12 +364,12 @@ def approved_plan(draft_plan):
     return draft_plan
 
 
-def test_export_returns_501_instead_of_fake_pdf(client, approved_plan):
+def test_export_returns_real_pdf(client, approved_plan):
     response = client.get(f"/api/v1/plans/{approved_plan}/export")
-    assert response.status_code == 501
-    assert response.json()["code"] == "EXPORT_NOT_IMPLEMENTED"
-    assert response.headers["content-type"].startswith("application/json")
-    assert b"%PDF" not in response.content
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.content.startswith(b"%PDF-")
+    assert b"%%EOF" in response.content
 
 
 def test_export_unknown_format_still_422(client, approved_plan):
@@ -380,5 +382,5 @@ def test_export_rejects_draft(client, draft_plan):
     assert response.json()["code"] == "PLAN_NOT_EXPORTABLE"
 
 
-def test_config_reports_plan_export_disabled(client):
-    assert client.get("/api/v1/config").json()["features"]["plan_export"] is False
+def test_config_reports_plan_export_enabled(client):
+    assert client.get("/api/v1/config").json()["features"]["plan_export"] is True
