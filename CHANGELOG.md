@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.7.0] - 2026-11-25
+
+### Bug Fixes
+
+- Remove unused imports, fix line length and sort order for ruff
+  ([#304](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/304),
+  [`0498cb7`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/0498cb7dceaf3c5c733ca4d73675562d33b48438))
+
+### Features
+
+- Implement unified credit accounting and lock handling [REFACTOR]
+  ([#304](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/304),
+  [`0498cb7`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/0498cb7dceaf3c5c733ca4d73675562d33b48438))
+
+
 ## [0.6.0] - 2026-11-25
 
 ### Features
