@@ -21,6 +21,8 @@ title елемента до 300 символів (як у БД); кредити 
 Codex додав блокування плану під час зміни, видалення й подання. Перевірка: pytest на PostgreSQL.
 Codex поєднав блокування з перевірками курсу й каталогу та уточнив відповіді експорту.
 Перевірка: регресійні тести та генерація OpenAPI.
+Використання ШІ: реалізовано генерацію та експорт плану в PDF (use-case 16, #296) за допомогою Antigravity
+(Gemini 2.5 Pro, Google DeepMind). Перевірка: pytest (test_plan_export.py), ruff.
 Використання ШІ: автоматичне призначення рівнів навантаження для 4 курсу в конструкторі (FR-003, #292)
 реалізовано за допомогою Antigravity (Gemini 2.5 Pro). Перевірка: pytest, ruff.
 """
@@ -28,8 +30,9 @@ Codex поєднав блокування з перевірками курсу �
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
+from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, Path, Query, Response, status
+from fastapi import APIRouter, Depends, Path, Query, Request, Response, status
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -37,13 +40,16 @@ from sqlalchemy.orm import Session
 from ...db import enums as db_enums
 from ...db.models import Course, IndividualPlan
 from ...db.models import PlanItem as PlanItemRow
+from ...db.models.deanery import DeaneryPlanDocument
 from ...db.models.history import AcademicRecord
 from ...db.models.users import StudentProfile, User
 from ...db.session import get_db
+from ...export.pdf_generator import generate_plan_pdf
 from ...services import plan_rules
 from ..common import MAX_DATABASE_ID, ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
 from ..onboarding import get_onboarded_student
 from ..plan_checks import enforce_plan_rules, enforce_submit_rules
+from .admin.common import client_ip, write_audit
 
 router = APIRouter(prefix="/api/v1", tags=["Plans"])
 
@@ -666,22 +672,25 @@ def submit_plan(
     summary="Експорт плану в PDF",
     description="Фіксація і експорт плану у форматі PDF (use-case 16).",
     responses={
+        200: {
+            "description": "PDF-файл індивідуального плану",
+            "content": {"application/pdf": {}},
+        },
         **error_responses(
             401,
             403,
             404,
             409,
             422,
-            501,
             overrides={
                 404: _PLAN_NOT_FOUND,
                 409: ("PLAN_NOT_EXPORTABLE", "Експортувати можна лише план у статусі approved"),
-                501: ("EXPORT_NOT_IMPLEMENTED", "Експорт плану в PDF ще не реалізовано"),
             },
         ),
     },
 )
 def export_plan(
+    request: Request,
     plan_id: int = Path(..., gt=0, le=MAX_DATABASE_ID, examples=[1]),
     export_format: str = Query("pdf", alias="format", description="Формат експорту (поки лише pdf)"),
     student_id: int = Depends(get_current_student_id),
@@ -699,6 +708,47 @@ def export_plan(
             [ErrorDetail(field="format", message="Підтримується лише формат pdf")],
         )
 
-    # Реальної генерації PDF ще немає. Віддавати заглушку зі статусом 200 не можна: студент завантажив би порожній
-    # «план». Коли функцію буде реалізовано, поверніть Features.plan_export = True в system.py.
-    raise ApiError(501, "EXPORT_NOT_IMPLEMENTED", "Експорт плану в PDF ще не реалізовано")
+    user = db.get(User, student_id)
+    student_name = user.full_name if user else f"Студент #{student_id}"
+    profile = user.student_profile if user else None
+    specialty = profile.specialty if profile else None
+    course_year = plan.course_year
+
+    normative_courses = []
+    if plan.deanery_document_id:
+        doc = db.get(DeaneryPlanDocument, plan.deanery_document_id)
+        if doc:
+            normative_courses = doc.normative_courses
+
+    pdf_bytes = generate_plan_pdf(
+        plan=plan,
+        student_name=student_name,
+        specialty=specialty,
+        course_year=course_year,
+        normative_courses=normative_courses,
+    )
+
+    write_audit(
+        db,
+        actor_id=student_id,
+        action="plan.export",
+        object_type="IndividualPlan",
+        object_id=plan.id,
+        outcome=db_enums.AuditOutcome.ALLOWED,
+        new_value={"format": "pdf", "size_bytes": len(pdf_bytes)},
+        ip=client_ip(request),
+    )
+    db.commit()
+
+    filename = f"план_{plan.academic_year}_{plan.academic_year + 1}.pdf"
+    fallback = f"plan_{plan.academic_year}_{plan.academic_year + 1}.pdf"
+    disposition = f"attachment; filename=\"{fallback}\"; filename*=UTF-8''{quote(filename, safe='')}"
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": disposition,
+            "Content-Length": str(len(pdf_bytes)),
+        },
+    )
