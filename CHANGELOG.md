@@ -4,6 +4,25 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.9.0] - 2026-11-25
+
+### Bug Fixes
+
+- Add atomicity and Retry-After to AI generation rate limits
+  ([`26a90d6`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/26a90d60523801fbeed0a67bf2998ec90b7f3c4a))
+
+### Features
+
+- Add server-side rate limiting middleware and sliding window limiter
+  ([`45cf11b`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/45cf11b78e4a9eed5ac4503a3ca2c50c725adb44))
+
+- Enforce deanery upload rate limit of 5 per 10 minutes
+  ([`0555809`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/0555809639f130620cd323b92e1ff2d8578cff21))
+
+- Handle Retry-After and disable 429 retry storms in frontend
+  ([`11466f2`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/11466f2c38d33e3b0edf2b7d3f72c642967284c5))
+
+
 ## [0.8.0] - 2026-11-25
 
 ### Bug Fixes
