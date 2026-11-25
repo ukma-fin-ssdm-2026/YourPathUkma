@@ -1,4 +1,5 @@
 // Використання ШІ: Codex підключив запуск і опитування API. Перевірка: Vitest і Chromium.
+// Codex розрізнив загальний і добовий ліміти. Перевірка: generationLimit.test.ts.
 // Використання ШІ: Antigravity (Gemini 4 Hydrogen) додав форматування Retry-After (#298). Перевірка: Vitest.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../../api/client";
@@ -67,6 +68,10 @@ export function generationStartError(error: unknown): string {
     if (error.status === 409) return "Генерація вже триває. Спробуйте пізніше.";
     if (error.status === 429) {
       const wait = formatRetryAfter(error.retryAfter);
+      const daily = error.details.some(({ field, message }) => field === "rate_limit" && message === "ai_daily");
+      if (!daily) {
+        return wait ? `Забагато запитів. Спробуйте ${wait}.` : "Забагато запитів. Спробуйте пізніше.";
+      }
       return wait
         ? `Вичерпано добовий ліміт генерацій. Спробуйте ${wait}.`
         : "Вичерпано добовий ліміт генерацій. Спробуйте завтра.";

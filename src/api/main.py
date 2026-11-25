@@ -42,6 +42,7 @@ import yaml
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 
 from ..db.migrate import init_database
 from ..parser.remote_login import remote_login
@@ -172,6 +173,49 @@ app.include_router(admin_certificates.router)
 def health_check():
     """Перевіряє готовність БД і Microsoft, як і /health/ready."""
     return health.readiness_check()
+
+
+# Використання ШІ: Codex описав загальні 429 для API. Перевірка: OpenAPI-регресія та генерація.
+def rate_limited_openapi():
+    if app.openapi_schema is None:
+        schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+            tags=app.openapi_tags,
+            servers=app.servers,
+        )
+        for path, operations in schema["paths"].items():
+            if not path.startswith("/api/v1/"):
+                continue
+            for method, operation in operations.items():
+                if method not in {"get", "post", "put", "patch", "delete", "head"}:
+                    continue
+                response = operation.setdefault("responses", {}).setdefault(
+                    "429",
+                    {
+                        "description": "Забагато запитів",
+                        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}},
+                    },
+                )
+                response.setdefault("headers", {}).update(
+                    {
+                        "Retry-After": {
+                            "description": "Секунди до повторної спроби",
+                            "schema": {"type": "integer", "minimum": 1},
+                        },
+                        "X-Request-ID": {
+                            "description": "Ідентифікатор запиту",
+                            "schema": {"type": "string"},
+                        },
+                    }
+                )
+        app.openapi_schema = schema
+    return app.openapi_schema
+
+
+app.openapi = rate_limited_openapi
 
 
 if __name__ == "__main__":
