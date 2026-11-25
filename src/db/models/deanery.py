@@ -2,7 +2,7 @@
 Документи деканату: deanery_plan_documents, normative_course_entries.
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code) за data-model.md («Deanery Documents»)
-і contract.md §3.6. Перевірка: pytest, `alembic check`.
+і contract.md §3.6; Antigravity додав індекс на student_id (issue #218). Перевірка: pytest, `alembic check`.
 """
 
 from datetime import datetime
@@ -45,7 +45,7 @@ class DeaneryPlanDocument(Base):
     )
 
     id: Mapped[int] = mapped_column(BigIntId, Identity(), primary_key=True)
-    student_id: Mapped[int] = mapped_column(BigIntId, ForeignKey("users.id", ondelete="CASCADE"))
+    student_id: Mapped[int] = mapped_column(BigIntId, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     academic_year: Mapped[int] = mapped_column(SmallInteger)
     content: Mapped[bytes] = mapped_column(LargeBinary, deferred=True)
     original_filename: Mapped[str] = mapped_column(String(255))

@@ -1,10 +1,18 @@
+"""
+Сервіс автентифікації: обробка Microsoft identity, створення та ротація refresh-токенів.
+
+Використання ШІ: файл доповнено за допомогою Antigravity (Claude Sonnet 4.6, Google DeepMind):
+додано абсолютний термін життя сесії сім'ї токенів (30 діб) та періодичне очищення таблиці токенів (issue #218).
+Перевірено: pytest tests/test_auth.py tests/test_auth_tokens.py.
+"""
+
 import hashlib
+import os
 import secrets
-import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -18,6 +26,9 @@ from .tokens import REFRESH_TOKEN_TTL_SECONDS, get_auth_settings
 # Скільки секунд після ротації старий refresh-токен ще вважається «щойно ротованим», а не вкраденим:
 # друга вкладка або повтор після втраченої відповіді пред'являють той самий cookie майже одночасно.
 REFRESH_REUSE_GRACE_SECONDS = 10
+
+# Абсолютний ліміт життя сім'ї refresh-токенів (за замовчуванням 30 діб, issue #218)
+REFRESH_FAMILY_MAX_LIFETIME_SECONDS = int(os.getenv("REFRESH_FAMILY_MAX_LIFETIME_SECONDS", 30 * 86400))
 
 
 def _unauthorized(code: str = "UNAUTHORIZED") -> ApiError:
@@ -64,14 +75,54 @@ def sign_in_user(db: Session, identity: MicrosoftIdentity) -> User:
     raise ApiError(409, "LOGIN_CONFLICT", "Не вдалося завершити вхід, спробуйте ще раз")
 
 
-def create_refresh_token(db: Session, user_id: int, family_id: Optional[str] = None) -> str:
+def _family_created_at(db: Session, row: RefreshToken) -> datetime:
+    family_id = row.family_id
+    if len(family_id) == 32:
+        try:
+            ts = int(family_id[:8], 16)
+            if 1700000000 <= ts <= 4100000000:
+                return datetime.fromtimestamp(ts, tz=timezone.utc)
+        except (ValueError, OverflowError):
+            pass
+    earliest = db.scalar(select(func.min(RefreshToken.created_at)).where(RefreshToken.family_id == family_id))
+    return earliest or row.created_at
+
+
+def prune_refresh_tokens(db: Session, now: Optional[datetime] = None) -> int:
+    """
+    Видалення прострочених і застарілих відкликаних токенів (issue #218).
+    Видаляє:
+    - токени, термін яких сплив понад 1 годину тому;
+    - відкликані токени, старші за grace-вікно (понад 1 годину тому).
+    """
+    if now is None:
+        now = utcnow()
+    cutoff = now - timedelta(hours=1)
+    stmt = delete(RefreshToken).where(
+        (RefreshToken.expires_at < cutoff) | (RefreshToken.revoked_at.is_not(None) & (RefreshToken.revoked_at < cutoff))
+    )
+    result = db.execute(stmt)
+    return result.rowcount
+
+
+def create_refresh_token(
+    db: Session,
+    user_id: int,
+    family_id: Optional[str] = None,
+    expires_at: Optional[datetime] = None,
+) -> str:
+    now = utcnow()
+    if family_id is None:
+        family_id = f"{int(now.timestamp()):08x}{secrets.token_hex(12)}"
+    if expires_at is None:
+        expires_at = now + timedelta(seconds=REFRESH_TOKEN_TTL_SECONDS)
     raw = secrets.token_urlsafe(48)
     db.add(
         RefreshToken(
             user_id=user_id,
             token_sha256=hash_token(raw),
-            family_id=family_id or uuid.uuid4().hex,
-            expires_at=utcnow() + timedelta(seconds=REFRESH_TOKEN_TTL_SECONDS),
+            family_id=family_id,
+            expires_at=expires_at,
         )
     )
     return raw
@@ -113,14 +164,29 @@ def rotate_refresh_token(db: Session, raw: str) -> Tuple[User, str]:
         _revoke_family(db, row.family_id)
         db.commit()
         raise _unauthorized("REFRESH_TOKEN_REUSED")
+
+    # Перевірка абсолютного терміну життя сім'ї токенів (issue #218)
+    family_start = _family_created_at(db, row)
+    if now - family_start >= timedelta(seconds=REFRESH_FAMILY_MAX_LIFETIME_SECONDS):
+        _revoke_family(db, row.family_id)
+        db.commit()
+        raise _unauthorized("REFRESH_SESSION_EXPIRED")
+
     if row.expires_at <= now:
         raise _unauthorized("REFRESH_TOKEN_EXPIRED")
+
     user = db.get(User, row.user_id)
     if user is None:
         raise _unauthorized()
     if row.revoked_at is None:
         row.revoked_at = now
-    new_raw = create_refresh_token(db, user.id, row.family_id)
+
+    family_deadline = family_start + timedelta(seconds=REFRESH_FAMILY_MAX_LIFETIME_SECONDS)
+    normal_expiry = now + timedelta(seconds=REFRESH_TOKEN_TTL_SECONDS)
+    new_expires_at = min(normal_expiry, family_deadline)
+
+    new_raw = create_refresh_token(db, user.id, row.family_id, expires_at=new_expires_at)
+    prune_refresh_tokens(db, now)
     db.commit()
     return user, new_raw
 

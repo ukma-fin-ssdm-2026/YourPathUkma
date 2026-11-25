@@ -5,6 +5,10 @@ GET /certificate-programs, GET /certificate-programs/{program_id}.
 
 Дані надходять через синхронізацію (SyncJob з source=faculty_certificates). Адмінські кінцеві точки —
 у admin/catalog.py.
+
+Використання ШІ: Antigravity (Claude Sonnet 4.6, Google DeepMind) оптимізував GET /certificate-programs:
+додано selectinload для усунення N+1 та параметри пагінації limit/offset (issue #218).
+Перевірка: pytest tests/test_queries_and_n_plus_one.py.
 """
 
 from typing import List, Optional
@@ -12,7 +16,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Path, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from ...db import enums as db_enums
 from ...db.models.catalog import CertificateProgram
@@ -51,14 +55,25 @@ class CertificateProgramDetail(CertificateProgramResponse):
 )
 def list_certificate_programs(
     direction_id: Optional[int] = Query(None, gt=0, le=MAX_DATABASE_ID, description="Фільтр за ID напрямку"),
+    limit: Optional[int] = Query(None, ge=1, le=100, description="Максимальна кількість програм"),
+    offset: int = Query(0, ge=0, description="Зсув для пагінації"),
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
-    query = select(CertificateProgram).where(CertificateProgram.hidden.is_(False))
-    programs = db.scalars(query.order_by(CertificateProgram.title)).all()
+    query = (
+        select(CertificateProgram)
+        .options(selectinload(CertificateProgram.courses))
+        .where(CertificateProgram.hidden.is_(False))
+        .order_by(CertificateProgram.title, CertificateProgram.id)
+    )
+    programs = list(db.scalars(query).all())
     if direction_id:
         # Фільтр у Python: .any() для ARRAY працює лише в PostgreSQL, а тести йдуть на SQLite (JSON)
         programs = [p for p in programs if direction_id in (p.direction_ids or [])]
+    if offset:
+        programs = programs[offset:]
+    if limit is not None:
+        programs = programs[:limit]
     return [
         CertificateProgramResponse(
             id=p.id,
