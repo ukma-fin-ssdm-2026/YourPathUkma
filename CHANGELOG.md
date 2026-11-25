@@ -4,6 +4,49 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.8.0] - 2026-11-25
+
+### Bug Fixes
+
+- Add None-safety guards for BeautifulSoup elements in certificate parser
+  ([#305](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/305),
+  [`2620f39`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/2620f39c351acee41c2b95c14b9897cc385c3e6e))
+
+- Explicit None check before get_text on BeautifulSoup elements [REFACTOR]
+  ([#305](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/305),
+  [`2620f39`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/2620f39c351acee41c2b95c14b9897cc385c3e6e))
+
+- Remove unused imports, fix line length and sort order for ruff
+  ([#305](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/305),
+  [`2620f39`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/2620f39c351acee41c2b95c14b9897cc385c3e6e))
+
+### Features
+
+- Add background sync job lifecycle for faculty certificates [REFACTOR]
+  ([#305](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/305),
+  [`2620f39`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/2620f39c351acee41c2b95c14b9897cc385c3e6e))
+
+- Add certificate reconciliation engine and availability calculation [REFACTOR]
+  ([#305](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/305),
+  [`2620f39`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/2620f39c351acee41c2b95c14b9897cc385c3e6e))
+
+- Certificate programs sync reconciliation
+  ([#305](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/305),
+  [`2620f39`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/2620f39c351acee41c2b95c14b9897cc385c3e6e))
+
+- Enforce certificate availability in preferences and expose in disciplines [REFACTOR]
+  ([#305](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/305),
+  [`2620f39`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/2620f39c351acee41c2b95c14b9897cc385c3e6e))
+
+- Implement certificate programs web parser and text normalizer [REFACTOR]
+  ([#305](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/305),
+  [`2620f39`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/2620f39c351acee41c2b95c14b9897cc385c3e6e))
+
+- Implement unified credit accounting and lock handling [REFACTOR]
+  ([#305](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/305),
+  [`2620f39`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/2620f39c351acee41c2b95c14b9897cc385c3e6e))
+
+
 ## [0.7.0] - 2026-11-25
 
 ### Bug Fixes
