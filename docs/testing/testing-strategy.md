@@ -143,6 +143,21 @@ pytest tests/test_properties.py -q
 
 ---
 
+## Лаб 10, бонус 3: швидкий і повільний набори тестів
+
+| Набір | Що входить | Коли запускається | Команда |
+| --- | --- | --- | --- |
+| Швидкий | усі тести без маркера `slow`: модульні й API-тести (SQLite у розробці, PostgreSQL у CI) | кожен pull request і кожен push у `main` | `pytest -m "not slow" --ignore=tests/reliability` |
+| Повільний | тести з маркером `slow`: `tests/integration/test_postgres_integration.py`, `tests/test_write_concurrency.py`, `tests/test_submit_concurrency.py` | push у `main` (після злиття) і ручний запуск; на pull request не запускається | `pytest -m slow` |
+
+Повільний набір потребує справжнього PostgreSQL 16 у контейнері (service container `postgres` у `ci.yaml`). Інтеграційний файл перевіряє версію сервера, відповідність схеми голові Alembic, відмову сервера віддати рядок, заблокований іншою транзакцією (`FOR UPDATE NOWAIT`, SQLSTATE 55P03), і читання каталогу через API з PostgreSQL. У CI задано `REQUIRE_POSTGRES=1`: якщо база недоступна, тести падають, а не пропускаються. Тривалість кожного набору workflow виводить у «Summary» запуску.
+
+**Ціна поділу.** Дефект, який видно лише в повільному наборі, не зупиняє pull request, а дає червоний запуск CI на `main`; він входить у частоту збоїв змін і час відновлення. Це свідомий компроміс заради швидшого зворотного зв'язку на PR.
+
+**Використання ШІ.** Розділ і поділ наборів підготував Claude. Перевірка: обидва набори запущено локально (швидкий — 540 passed, 2 skipped, 9 deselected, покриття 85,30%; повільний на PostgreSQL 16 у Docker — 9 passed) і в GitHub Actions: на PR #279 виконано лише швидкий набір (29 с), на `main` — обидва (29 с і 9 с), [запуск](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/actions/runs/44419656294).
+
+---
+
 ## Використання ШІ
 
 - **Що створено:** документ складено за допомогою Claude (Claude Code) на основі `.github/workflows/ci.yaml`, `docs/testing/coverage/README.md`, `test-quality-notes.md`, `debugging-log.md`, `quality-attributes.md`, `threat-model.md` і структури `tests/` та `frontend/src`.

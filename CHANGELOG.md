@@ -4,6 +4,47 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.7.0] - 2026-11-25
+
+### Bug Fixes
+
+- Remove unused imports, fix line length and sort order for ruff
+  ([#304](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/304),
+  [`0498cb7`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/0498cb7dceaf3c5c733ca4d73675562d33b48438))
+
+### Features
+
+- Implement unified credit accounting and lock handling [REFACTOR]
+  ([#304](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/304),
+  [`0498cb7`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/0498cb7dceaf3c5c733ca4d73675562d33b48438))
+
+
+## [0.6.0] - 2026-11-25
+
+### Features
+
+- Implement plan PDF export (closes #296)
+  ([#302](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/302),
+  [`e270807`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e2708077ea9954b27bda301e6179ef1fad371d7b))
+
+
+## [0.5.1] - 2026-11-25
+
+### Bug Fixes
+
+- Harden migrations indexes lists and tokens (closes #218)
+  ([#301](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/301),
+  [`4bdec94`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/4bdec94ae1a74c23751134ff2c544d966f4ca2b9))
+
+
+## [0.5.0] - 2026-11-22
+
+### Features
+
+- Add AI generation to the plan builder
+  ([`0a15aea`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/0a15aeac1ca10a730a9d9b7cce101d98aa76cf33))
+
+
 ## [0.4.0] - 2026-11-21
 
 ### Features

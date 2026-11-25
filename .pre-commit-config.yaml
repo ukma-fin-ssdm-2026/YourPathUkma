@@ -1,3 +1,4 @@
+# Використання ШІ: збільшено ліміт check-added-large-files (--maxkb=1000) для шрифтів DejaVu Sans (#296, Gemini 2.5 Pro).
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -6,6 +7,7 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
+        args: ['--maxkb=1000']
 
   - repo: https://github.com/psf/black
     rev: 24.3.0

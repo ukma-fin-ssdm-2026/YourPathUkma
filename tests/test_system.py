@@ -1,4 +1,8 @@
-"""Тести системних кінцевих точок: GET /api/v1/config."""
+"""Тести системних кінцевих точок: GET /api/v1/config.
+
+Використання ШІ: оновлено перевірку plan_export: True (#296) за допомогою Antigravity (Gemini 2.5 Pro).
+Перевірка: pytest.
+"""
 
 import pytest
 from fastapi.testclient import TestClient
@@ -15,7 +19,7 @@ def test_config_is_public_and_has_limits():
     assert body["limits"]["total_credits"] == 240
     assert body["limits"]["free_choice_credits"] == 25
     assert body["features"]["saz_sync"] is False
-    assert body["features"]["plan_export"] is False  # експорт ще не реалізовано (501)
+    assert body["features"]["plan_export"] is True  # експорт реалізовано (#296)
     assert response.headers["cache-control"] == "max-age=300"
 
 

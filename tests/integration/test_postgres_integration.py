@@ -5,9 +5,8 @@
 На SQLite ці перевірки неможливі: там немає ні справжніх блокувань рядків, ні серверної версії, ні типів PostgreSQL.
 У CI змінна REQUIRE_POSTGRES=1 перетворює пропуск на помилку, щоб набір не став «зеленим» без бази.
 
-Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: py_compile і Ruff-сумісне форматування
-(рядки до 120 символів); сам файл проти PostgreSQL у розробницькому середовищі не запускався, перший прогін
-відбувається в GitHub Actions на main.
+Використання ШІ: файл створено за допомогою Claude (Anthropic), доповнено Antigravity (Claude Sonnet 4.6,
+Google DeepMind) тестом pg_advisory_lock для міграцій (issue #218).
 """
 
 import os
@@ -75,3 +74,21 @@ def test_api_reads_catalog_stored_in_postgres(pg_engine):
     response = TestClient(app).get("/api/v1/disciplines", headers={"Authorization": "Bearer test"})
     assert response.status_code == 200
     assert "disciplines" in response.json()
+
+
+def test_migration_advisory_lock_blocks_contender(pg_engine):
+    """Поки migration_lock утримується, інший процес бачить pg_try_advisory_lock = False (issue #218)."""
+    from src.db.migrate import MIGRATION_ADVISORY_LOCK_ID, migration_lock
+
+    with migration_lock(pg_engine):
+        with pg_engine.connect() as contender:
+            acquired = contender.scalar(text("SELECT pg_try_advisory_lock(:id)"), {"id": MIGRATION_ADVISORY_LOCK_ID})
+            assert acquired is False
+            contender.rollback()
+
+    # Після виходу з контексту блокування звільнено
+    with pg_engine.connect() as contender:
+        acquired = contender.scalar(text("SELECT pg_try_advisory_lock(:id)"), {"id": MIGRATION_ADVISORY_LOCK_ID})
+        assert acquired is True
+        contender.execute(text("SELECT pg_advisory_unlock(:id)"), {"id": MIGRATION_ADVISORY_LOCK_ID})
+        contender.commit()

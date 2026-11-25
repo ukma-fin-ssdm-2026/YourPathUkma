@@ -1,9 +1,10 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: core.test.ts і ручний запуск dev з VITE_USE_MOCKS=full.
 // Codex уточнив підсумок кредитів і живу валідацію. Перевірка — фронтенд-тести.
+// Codex додав демонстраційний цикл генерації. Перевірка: Vitest і Chromium.
 // Обробники ✅-ендпоінтів, які реальний бекенд уже має. Вмикаються лише в режимі VITE_USE_MOCKS=full,
 // щоб увесь застосунок можна було пройти без запущеного бекенду.
 import { http, HttpResponse } from "msw";
-import type { Discipline, Instructor, PlanItem, PlanResponse } from "../api/types";
+import type { Discipline, Instructor, PlanGeneration, PlanItem, PlanResponse, Preferences } from "../api/types";
 import { db } from "./db";
 import { configFixture } from "./fixtures";
 import { API, apiError, hasAuth, paginate, unauthorized } from "./http";
@@ -100,10 +101,14 @@ const seedPlans = (): PlanResponse[] => [
 ];
 
 const state = { plans: seedPlans(), nextId: 3 };
+const generations = new Map<number, { task: PlanGeneration }>();
+let nextGenerationId = 1;
 
 export function resetCoreMocks(): void {
   state.plans = seedPlans();
   state.nextId = 3;
+  generations.clear();
+  nextGenerationId = 1;
 }
 
 interface PlanBody {
@@ -173,7 +178,52 @@ const replace = (plan: PlanResponse) => {
 };
 
 export const coreHandlers = [
-  http.get(`${API}/config`, () => HttpResponse.json(configFixture({ saz_sync: true }))),
+  http.get(`${API}/config`, () => HttpResponse.json(configFixture({ saz_sync: true, ai_generation: true }))),
+
+  http.post(`${API}/plan-generations`, async ({ request }) => {
+    if (!hasAuth(request)) return unauthorized();
+    if ([...generations.values()].some(({ task }) => task.status === "pending")) {
+      return apiError(409, "GENERATION_IN_PROGRESS", "Генерація вже триває");
+    }
+    const preferences = (await request.json()) as Preferences;
+    const task: PlanGeneration = { id: nextGenerationId++, status: "pending", plan_id: null, notices: [] };
+    const generation = { task };
+    generations.set(task.id, generation);
+    setTimeout(() => {
+      if (generations.get(task.id) !== generation) return;
+      const draft = build(state.nextId++, "draft", [
+        item(DISCIPLINES[0]!),
+        {
+          ...item(DISCIPLINES[1]!),
+          ai_explanation: "Доповнює напрям Data Science практикою оцінювання моделей.",
+          alternatives: [{ ...item(DISCIPLINES[4]!), rank: 1 }],
+        },
+        item(DISCIPLINES[2]!, true),
+      ], preferences.academic_year);
+      draft.course = db.me.student?.course_year ?? draft.course;
+      const levels = preferences.load_levels;
+      draft.load_levels = {
+        autumn: levels.autumn ?? "medium",
+        spring: levels.spring ?? "medium",
+        summer: levels.summer ?? "medium",
+      };
+      state.plans.push(draft);
+      generation.task = {
+        ...generation.task,
+        status: "succeeded",
+        plan_id: draft.id,
+        notices: [{ code: "YEAR_CREDITS_BELOW_MIN", course_id: null, message: "Перевірте річну суму кредитів з урахуванням нормативних дисциплін." }],
+      };
+    }, 1800);
+    return HttpResponse.json(task, { status: 202 });
+  }),
+
+  http.get(`${API}/plan-generations/:id`, ({ request, params }) => {
+    if (!hasAuth(request)) return unauthorized();
+    const generation = generations.get(Number(params.id));
+    if (!generation) return apiError(404, "GENERATION_NOT_FOUND", "Генерацію не знайдено");
+    return HttpResponse.json(generation.task);
+  }),
 
   // Довідник напрямків спільний з адмінкою, тож додані там напрямки одразу видно скрізь.
   http.get(`${API}/directions`, () => HttpResponse.json({ directions: db.admin.directions })),

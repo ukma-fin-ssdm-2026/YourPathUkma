@@ -1,6 +1,7 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: columns.test.tsx.
+// Codex підключив дію заміни. Перевірка: тести конструктора.
 import type { CSSProperties } from "react";
-import type { LoadLevel, NormativeCourse, PlanItem } from "../../api/types";
+import type { LoadLevel, NormativeCourse, PlanAlternative, PlanItem } from "../../api/types";
 import { formatCredits } from "../../lib/credits";
 import { trimesterLabel, type Trimester } from "../../lib/trimester";
 import { Segmented } from "../../ui/Segmented";
@@ -39,6 +40,7 @@ export function TrimesterColumn({
   loadLocked,
   onLoadChange,
   onRemove,
+  onAlternative,
   itemErrors = {},
   dropHint = null,
 }: {
@@ -49,6 +51,7 @@ export function TrimesterColumn({
   loadLocked: boolean;
   onLoadChange: (level: LoadLevel) => void;
   onRemove: (courseId: number) => void;
+  onAlternative?: (courseId: number, alternative: PlanAlternative) => void;
   itemErrors?: Record<number, string>;
   dropHint?: string | null;
 }) {
@@ -81,6 +84,7 @@ export function TrimesterColumn({
           item={item}
           error={itemErrors[item.course_id]}
           onRemove={onRemove}
+          onAlternative={onAlternative}
         />
       ))}
       {normative.map((course) => (

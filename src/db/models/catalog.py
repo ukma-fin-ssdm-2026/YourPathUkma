@@ -3,7 +3,7 @@
 certificate_programs, certificate_program_courses.
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code) за data-model.md («Courses & Catalogs»)
-і contract.md §3.3, §3.5. Перевірка: pytest, `alembic check`.
+і contract.md §3.3, §3.5; Antigravity додав індекс на last_sync_job_id (issue #218). Перевірка: pytest, `alembic check`.
 """
 
 from datetime import datetime
@@ -85,7 +85,9 @@ class Course(Base):
     publication_status: Mapped[PublicationStatus] = mapped_column(
         db_enum(PublicationStatus, "publication_status"), default=PublicationStatus.PUBLISHED
     )
-    last_sync_job_id: Mapped[Optional[int]] = mapped_column(BigIntId, ForeignKey("sync_jobs.id", ondelete="SET NULL"))
+    last_sync_job_id: Mapped[Optional[int]] = mapped_column(
+        BigIntId, ForeignKey("sync_jobs.id", ondelete="SET NULL"), index=True
+    )
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)
 

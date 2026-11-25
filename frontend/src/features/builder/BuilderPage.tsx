@@ -1,5 +1,6 @@
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: page.test.tsx.
 // Codex додав мобільну навігацію. Перевірка — браузер.
+// Codex додав генерацію плану та заміну дисциплін. Перевірка: Vitest і Chromium.
 // Codex узгодив дії з доступністю конструктора. Перевірка — фронтенд-тести.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useEffect, useMemo, useState } from "react";
@@ -7,7 +8,7 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useConfig } from "../../api/config";
 import { ApiError } from "../../api/errors";
-import type { Discipline } from "../../api/types";
+import type { Discipline, PlanAlternative } from "../../api/types";
 import { parsePlanId, planYearFromParam } from "../../lib/planParams";
 import { trimesterKey, type Trimester } from "../../lib/trimester";
 import { useSessionDraft } from "../../lib/useSessionDraft";
@@ -26,11 +27,13 @@ import {
 } from "../profile/useMe";
 import { CatalogPanel } from "./CatalogPanel";
 import { BuilderDnd, DroppableColumn } from "./dnd";
+import { GenerationPanel } from "./GenerationPanel";
 import {
   addDiscipline,
   blockMessage,
   canAdd,
   removeCourse,
+  replaceWithAlternative,
   setLoad,
   trimesterOf,
   type BuilderPlan,
@@ -39,6 +42,7 @@ import { SummaryStrip } from "./SummaryStrip";
 import { TrimesterColumn } from "./TrimesterColumn";
 import { describeSaveError, type SaveErrors } from "./saveErrors";
 import { usePlan, useSavePlan, useSubmitPlan, useValidatePlan } from "./useBuilderData";
+import { usePlanGeneration } from "./usePlanGeneration";
 
 const NO_ERRORS: SaveErrors = { itemErrors: {}, form: [] };
 
@@ -70,15 +74,15 @@ function Notice({
 
 export function BuilderPage() {
   const [params] = useSearchParams();
-  const limits = useConfig().data?.limits;
-  const year = planYearFromParam(params.get("year"), limits);
+  const config = useConfig().data;
   const planId = parsePlanId(params.get("plan"));
+  const planQuery = usePlan(planId);
+  const year = planQuery.data?.academic_year ?? planYearFromParam(params.get("year"), config?.limits);
 
   const me = useMe();
   const prefs = usePreferences(year);
   const directions = useDirections();
   const history = useAcademicHistory();
-  const planQuery = usePlan(planId);
   const documents = useDeaneryDocuments(year);
   const latestParsed = [...(documents.data?.deanery_documents ?? [])]
     .reverse()
@@ -86,6 +90,9 @@ export function BuilderPage() {
   const document = useDeaneryDocument(latestParsed?.id ?? null);
 
   const student = me.data?.student ?? null;
+  const aiEnabled = config?.features.ai_generation === true && student?.can_create_plan === true;
+  const generation = usePlanGeneration(`${year}:${planId ?? "new"}`, aiEnabled);
+  const [pendingDraft, setPendingDraft] = useState<number | null>(null);
   const normative = document.data?.parse_status === "parsed" ? document.data.normative_courses : [];
 
   // Початковий стан: збережена чернетка або порожній план із навантаженням із побажань.
@@ -228,6 +235,28 @@ export function BuilderPage() {
     edit(addDiscipline(plan!, discipline, studentDirections));
   }
 
+  function handleAlternative(courseId: number, alternative: PlanAlternative) {
+    if (takenIds.includes(alternative.course_id) || normativeIds.includes(alternative.course_id)) {
+      setNotice("Ця дисципліна вже є в академічній історії або в документі деканату.");
+      return;
+    }
+    const next = replaceWithAlternative(plan!, courseId, alternative);
+    if (next === plan) {
+      setNotice("Ця заміна недоступна. Перевірте триместр і дисципліни в плані.");
+      return;
+    }
+    setNotice(null);
+    edit(next);
+  }
+
+  function openGeneratedDraft(id: number) {
+    setPendingDraft(null);
+    setErrors(NO_ERRORS);
+    setChecked(false);
+    setNotice(null);
+    navigate(`/path/create?year=${year}&plan=${id}`);
+  }
+
   /** Зберігає чернетку: новий план це POST, наявний це PUT. Повертає id або null, якщо збереження не вдалось. */
   async function persist(): Promise<number | null> {
     try {
@@ -281,6 +310,18 @@ export function BuilderPage() {
           <Link to={`/path/create/preferences?year=${year}`} className={linkGhostClass}>
             Побажання
           </Link>
+          {aiEnabled && (
+            <Button
+              variant="ghost"
+              disabled={prefs.isPending || prefs.isError || generation.starting || generation.generation?.status === "pending"}
+              onClick={() => {
+                if (prefs.data?.updated_at) generation.launch(prefs.data);
+                else navigate(`/path/create/preferences?year=${year}`);
+              }}
+            >
+              Згенерувати план з ШІ
+            </Button>
+          )}
           <Button
             variant="ghost"
             disabled={empty || busy}
@@ -305,7 +346,7 @@ export function BuilderPage() {
           </a>
         </div>
       </div>
-      <div className="min-h-5 text-sm" aria-live="polite">
+      <div className={busy || (savedAt && !dirty) ? "text-sm" : "sr-only"} aria-live="polite">
         {busy && (
           <p role="status" className="text-ink-2">
             Зберігається…
@@ -323,6 +364,16 @@ export function BuilderPage() {
             <li key={message}>{message}</li>
           ))}
         </ul>
+      )}
+
+      {aiEnabled && (
+        <GenerationPanel
+          task={generation}
+          onOpen={(id) => {
+            if (dirty) setPendingDraft(id);
+            else openGeneratedDraft(id);
+          }}
+        />
       )}
 
       <SummaryStrip
@@ -359,6 +410,7 @@ export function BuilderPage() {
                     loadLocked={loadLocked}
                     onLoadChange={(level) => edit(setLoad(plan, trimesterKey(trimester), level))}
                     onRemove={(courseId) => edit(removeCourse(plan, courseId))}
+                    onAlternative={handleAlternative}
                     itemErrors={errors.itemErrors}
                     dropHint={hint}
                   />
@@ -377,6 +429,17 @@ export function BuilderPage() {
         </div>
       </BuilderDnd>
 
+      <ConfirmDialog
+        open={pendingDraft !== null}
+        title="Відкрити нову чернетку?"
+        description="У поточному плані є незбережені зміни. Ви зможете повернутися до них у цій вкладці."
+        confirmLabel="Відкрити чернетку"
+        variant="primary"
+        onConfirm={() => {
+          if (pendingDraft !== null) openGeneratedDraft(pendingDraft);
+        }}
+        onCancel={() => setPendingDraft(null)}
+      />
       <ConfirmDialog
         open={confirmOpen}
         title="Подати план?"
