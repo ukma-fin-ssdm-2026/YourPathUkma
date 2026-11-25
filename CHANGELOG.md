@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.6.0] - 2026-11-25
+
+### Features
+
+- Implement plan PDF export (closes #296)
+  ([#302](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/302),
+  [`e270807`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/e2708077ea9954b27bda301e6179ef1fad371d7b))
+
+
 ## [0.5.1] - 2026-11-25
 
 ### Bug Fixes
