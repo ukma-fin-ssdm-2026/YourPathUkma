@@ -9,6 +9,7 @@ POST /plan-generations, GET /plan-generations/{generation_id}.
 Використання ШІ: файл доповнено за допомогою Antigravity (Google DeepMind):
 додано запуск BackgroundTask після POST /plan-generations (adapter.run via worker.run_generation_task),
 імпорт BackgroundTasks, схему PlanGenerationRequest(PreferencesRequest), збереження preferences перед генерацією.
+Antigravity (Gemini 4 Hydrogen) додав атомарне блокування FOR UPDATE та заголовок Retry-After для ліміту 20/добу (#298).
 Перевірено: pytest tests/test_ai.py tests/test_ai_worker.py tests/reliability, ruff check src/api/routes/ai.py.
 """
 
@@ -18,7 +19,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Response, status
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ...ai.worker import run_generation_task
@@ -92,6 +93,9 @@ def start_generation(
     profile: StudentProfile = Depends(get_onboarded_student),
     db: Session = Depends(get_db),
 ):
+    # Атомарне блокування профілю студента для запобігання race conditions при одночасних запитах
+    db.execute(select(StudentProfile.user_id).where(StudentProfile.user_id == profile.user_id).with_for_update())
+
     # Перевірка активних генерацій
     active = db.scalar(
         select(PlanGeneration.id).where(
@@ -104,14 +108,24 @@ def start_generation(
 
     # Перевірка ліміту 20/добу
     since = utcnow() - timedelta(hours=24)
-    recent = db.scalar(
-        select(func.count()).where(
+    recent_generations = db.scalars(
+        select(PlanGeneration)
+        .where(
             PlanGeneration.student_id == profile.user_id,
             PlanGeneration.created_at >= since,
         )
-    )
-    if recent >= 20:
-        raise ApiError(429, *_RATE_LIMITED)
+        .order_by(PlanGeneration.created_at.asc())
+    ).all()
+
+    if len(recent_generations) >= 20:
+        oldest_recent = recent_generations[0].created_at
+        retry_seconds = max(1, int((oldest_recent + timedelta(hours=24) - utcnow()).total_seconds() + 0.999))
+        raise ApiError(
+            429,
+            _RATE_LIMITED[0],
+            _RATE_LIMITED[1],
+            headers={"Retry-After": str(retry_seconds)},
+        )
 
     # Створення задачі генерації
     generation = PlanGeneration(
