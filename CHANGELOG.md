@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.5.1] - 2026-11-25
+
+### Bug Fixes
+
+- Harden migrations indexes lists and tokens (closes #218)
+  ([#301](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/301),
+  [`4bdec94`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/4bdec94ae1a74c23751134ff2c544d966f4ca2b9))
+
+
 ## [0.5.0] - 2026-11-22
 
 ### Features
