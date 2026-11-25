@@ -7739,6 +7739,14 @@
             "type": "array",
             "title": "Directions",
             "description": "Напрямки, для яких дисципліна профорієнтовна. Порожньо — дисципліна вільного вибору"
+          },
+          "certificate_programs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Certificate Programs",
+            "description": "Сертифікатні програми, до яких входить дисципліна"
           }
         },
         "type": "object",

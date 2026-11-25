@@ -50,6 +50,7 @@ def test_to_discipline_maps_course_fields():
         "trimester": 2,  # у БД назва триместру, в API — число
         "credits": 5.0,
         "directions": ["Data Science"],
+        "certificate_programs": [],
     }
 
 
