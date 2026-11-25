@@ -6,6 +6,7 @@
 Використання ШІ: Codex додав перевірку довжини й безпечну видачу назви файлу;
 Antigravity (Claude Sonnet 4.6, Google DeepMind) оптимізував GET /deanery-documents:
 додано selectinload для усунення N+1 та параметри пагінації limit/offset (issue #218).
+Antigravity (Gemini 4 Hydrogen) додав обмеження частоти завантажень (5 / 10 хв) до обробки файлу (#298).
 Перевірка: регресії pytest на PostgreSQL та генерація OpenAPI.
 """
 
@@ -31,6 +32,7 @@ from ...db.models.history import AcademicRecord
 from ...db.models.users import StudentProfile
 from ...db.session import get_db, session_factory
 from ..common import MAX_DATABASE_ID, ApiError, error_responses, get_current_student_id
+from ..rate_limiter import deanery_upload_limiter
 
 logger = logging.getLogger(__name__)
 
@@ -234,9 +236,11 @@ def _to_response(doc: DeaneryPlanDocument) -> DeaneryDocumentResponse:
             413,
             415,
             422,
+            429,
             overrides={
                 413: ("FILE_TOO_LARGE", "Файл більший за 10 МБ"),
                 415: ("UNSUPPORTED_FILE_TYPE", "Не PDF і не DOCX"),
+                429: ("RATE_LIMITED", "Забагато завантажень, спробуйте пізніше"),
             },
         ),
     },
@@ -249,6 +253,15 @@ async def upload_document(
     student_id: int = Depends(get_current_student_id),
     db: Session = Depends(get_db),
 ):
+    upload_limit = deanery_upload_limiter.check(f"usr:{student_id}")
+    if not upload_limit.allowed:
+        raise ApiError(
+            429,
+            "RATE_LIMITED",
+            "Перевищено ліміт завантажень документів (максимум 5 за 10 хвилин)",
+            headers={"Retry-After": str(upload_limit.retry_after)},
+        )
+
     filename = file.filename or "document"
     if len(filename) > MAX_FILENAME_LENGTH:
         raise ApiError(422, "FILENAME_TOO_LONG", f"Назва файлу має містити не більше {MAX_FILENAME_LENGTH} символів")
