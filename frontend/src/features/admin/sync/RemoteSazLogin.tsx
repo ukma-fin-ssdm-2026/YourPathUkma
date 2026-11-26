@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: Vitest та TypeScript.
 // Використання ШІ: екран віддаленого входу до САЗ додано Codex. Перевірка: Vitest і typecheck.
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
@@ -9,8 +10,19 @@ import { Card } from "../../../ui/Card";
 const SESSION = "/admin/saz-session";
 const SESSION_QUERY = ["admin", "saz-session"];
 const BROWSER_KEYS = new Set([
-  "Enter", "Tab", "Backspace", "Delete", "Escape", "ArrowUp", "ArrowDown", "ArrowLeft",
-  "ArrowRight", "Home", "End", "PageUp", "PageDown",
+  "Enter",
+  "Tab",
+  "Backspace",
+  "Delete",
+  "Escape",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "Home",
+  "End",
+  "PageUp",
+  "PageDown",
 ]);
 
 type BrowserInput =
@@ -21,7 +33,7 @@ type BrowserInput =
 export function useSazSession(enabled: boolean) {
   return useQuery({
     queryKey: SESSION_QUERY,
-    queryFn: () => request<{ connected: boolean }>(SESSION),
+    queryFn: ({ signal }) => request<{ connected: boolean }>(SESSION, { signal }),
     enabled,
     retry: false,
   });
@@ -66,7 +78,9 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
         if (failure instanceof ApiError && failure.code === "SAZ_LOGIN_PENDING") {
           setFrame(null);
         } else {
-          setError(failure instanceof ApiError ? failure.message : "Не вдалося отримати кадр браузера");
+          setError(
+            failure instanceof ApiError ? failure.message : "Не вдалося отримати кадр браузера",
+          );
         }
       }
       if (!stopped) timer = setTimeout(refreshFrame, 700);
@@ -101,12 +115,17 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
     inputQueue.current = inputQueue.current
       .then(async () => {
         if (activeLogin.current === loginId) {
-          await request(`${SESSION}/login/${loginId}/input`, { method: "POST", body: { host: frame.host, action: input } });
+          await request(`${SESSION}/login/${loginId}/input`, {
+            method: "POST",
+            body: { host: frame.host, action: input },
+          });
         }
       })
       .catch((failure: unknown) => {
         if (activeLogin.current === loginId) {
-          setError(failure instanceof ApiError ? failure.message : "Не вдалося передати дію до браузера");
+          setError(
+            failure instanceof ApiError ? failure.message : "Не вдалося передати дію до браузера",
+          );
         }
       });
   }
@@ -135,7 +154,10 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
     <Card className="mt-4 space-y-3">
       {loginId ? (
         <>
-          <p>Увійдіть у САЗ через Microsoft. Натисніть на кадр браузера, щоб вводити з клавіатури. Esc повертає керування сторінці.</p>
+          <p>
+            Увійдіть у САЗ через Microsoft. Натисніть на кадр браузера, щоб вводити з клавіатури.
+            Esc повертає керування сторінці.
+          </p>
           {frame && <p className="text-sm text-ink-2">{frame.host}</p>}
           {frame ? (
             <button
@@ -162,17 +184,21 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
           <div className="flex flex-wrap gap-2">
             <Button
               disabled={busy}
-              onClick={() => void perform(async () => {
-                await inputQueue.current;
-                await request(`${SESSION}/login/${loginId}/complete`, { method: "POST" });
-                activeLogin.current = null;
-                setLoginId(null);
-                await queryClient.invalidateQueries({ queryKey: SESSION_QUERY });
-              })}
+              onClick={() =>
+                void perform(async () => {
+                  await inputQueue.current;
+                  await request(`${SESSION}/login/${loginId}/complete`, { method: "POST" });
+                  activeLogin.current = null;
+                  setLoginId(null);
+                  await queryClient.invalidateQueries({ queryKey: SESSION_QUERY });
+                })
+              }
             >
               Перевірити й зберегти сесію
             </Button>
-            <Button disabled={busy} onClick={() => setLoginId(null)}>Скасувати</Button>
+            <Button disabled={busy} onClick={() => setLoginId(null)}>
+              Скасувати
+            </Button>
           </div>
         </>
       ) : (
@@ -180,26 +206,39 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
           <p>{connected ? "Сесію САЗ збережено" : "Підключіть САЗ, щоб запустити парсинг"}</p>
           <Button
             disabled={busy}
-            onClick={() => void perform(async () => {
-              const result = await request<{ id: string }>(`${SESSION}/login`, { method: "POST" });
-              setFrame(null);
-              activeLogin.current = result.id;
-              setLoginId(result.id);
-            })}
+            onClick={() =>
+              void perform(async () => {
+                const result = await request<{ id: string }>(`${SESSION}/login`, {
+                  method: "POST",
+                });
+                setFrame(null);
+                activeLogin.current = result.id;
+                setLoginId(result.id);
+              })
+            }
           >
             {connected ? "Підключити САЗ повторно" : "Підключити САЗ"}
           </Button>
           {connected && (
-            <Button disabled={busy} onClick={() => void perform(async () => {
-              await request(SESSION, { method: "DELETE" });
-              await queryClient.invalidateQueries({ queryKey: SESSION_QUERY });
-            })}>
+            <Button
+              disabled={busy}
+              onClick={() =>
+                void perform(async () => {
+                  await request(SESSION, { method: "DELETE" });
+                  await queryClient.invalidateQueries({ queryKey: SESSION_QUERY });
+                })
+              }
+            >
               Відключити САЗ
             </Button>
           )}
         </div>
       )}
-      {error && <p role="alert" className="text-bad">{error}</p>}
+      {error && (
+        <p role="alert" className="text-bad">
+          {error}
+        </p>
+      )}
     </Card>
   );
 }

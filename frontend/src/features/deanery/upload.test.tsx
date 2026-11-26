@@ -1,3 +1,5 @@
+// Використання ШІ: Codex виправив #220; перевірка: Vitest та TypeScript.
+// Використання ШІ: Codex узгодив очікування готовності списку (#220); Vitest.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -40,6 +42,7 @@ beforeEach(() => {
 describe("DeaneryPage: завантаження", () => {
   it("вибраний PDF завантажується й показує повідомлення про розпізнавання", async () => {
     renderPage();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
     await user().upload(fileInput(), pdf());
     expect(await screen.findByText("Завантажено, розпізнаємо…")).toBeInTheDocument();
     expect(db.documents).toHaveLength(1);
@@ -51,6 +54,7 @@ describe("DeaneryPage: завантаження", () => {
 
   it("повідомлення про розпізнавання зникає, коли документ розпізнано", async () => {
     renderPage("/path/create/document?year=2026", 20);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
     await user().upload(fileInput(), pdf());
     expect(await screen.findByText("Завантажено, розпізнаємо…")).toBeInTheDocument();
     expect(await screen.findByText("Розпізнано")).toBeInTheDocument();
@@ -61,6 +65,7 @@ describe("DeaneryPage: завантаження", () => {
 
   it("невідомий тип показує причину й не надсилає запит", async () => {
     renderPage();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
     await user().upload(fileInput(), new File(["x"], "notes.txt", { type: "text/plain" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Підтримуються лише PDF і DOCX");
     expect(db.documents).toHaveLength(0);
@@ -70,6 +75,7 @@ describe("DeaneryPage: завантаження", () => {
     renderPage();
     const big = pdf("big.pdf");
     Object.defineProperty(big, "size", { value: MAX + 1 });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
     await user().upload(fileInput(), big);
     expect(await screen.findByRole("alert")).toHaveTextContent("Файл завеликий: максимум 10 МБ");
     expect(db.documents).toHaveLength(0);
@@ -77,6 +83,7 @@ describe("DeaneryPage: завантаження", () => {
 
   it("порожній файл відхиляється на клієнті", async () => {
     renderPage();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
     await user().upload(fileInput(), new File([], "empty.pdf", { type: "application/pdf" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Файл порожній");
     expect(db.documents).toHaveLength(0);
@@ -89,6 +96,7 @@ describe("DeaneryPage: завантаження", () => {
     expect(zone).toHaveAttribute("data-dragging", "true");
     fireEvent.dragLeave(zone);
     expect(zone).toHaveAttribute("data-dragging", "false");
+    await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
     fireEvent.drop(zone, { dataTransfer: { files: [pdf("dropped.pdf")] } });
     await waitFor(() => expect(db.documents).toHaveLength(1));
     expect(db.documents[0]!.original_filename).toBe("dropped.pdf");
@@ -98,6 +106,7 @@ describe("DeaneryPage: завантаження", () => {
 describe("DeaneryPage: помилки сервера", () => {
   it("413 від сервера показується як «Файл завеликий»", async () => {
     renderPage();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
     await user().upload(fileInput(), pdf("huge.pdf"));
     expect(await screen.findByRole("alert")).toHaveTextContent("Файл завеликий");
   });
@@ -109,13 +118,14 @@ describe("DeaneryPage: помилки сервера", () => {
       ),
     );
     renderPage();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
     await user().upload(fileInput(), pdf());
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Забагато завантажень, спробуйте за кілька хвилин",
     );
   });
 
-  it("інша помилка показує повідомлення сервера й код помилки", async () => {
+  it("5xx показує безпечне повідомлення й код помилки", async () => {
     server.use(
       http.post("*/api/v1/deanery-documents", () =>
         HttpResponse.json(
@@ -125,9 +135,10 @@ describe("DeaneryPage: помилки сервера", () => {
       ),
     );
     renderPage();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
     await user().upload(fileInput(), pdf());
     const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Внутрішня помилка сервера");
+    expect(alert).toHaveTextContent("Сервіс тимчасово недоступний");
     expect(alert).toHaveTextContent("Код помилки: rid-9");
   });
 
@@ -139,6 +150,7 @@ describe("DeaneryPage: помилки сервера", () => {
       }),
     );
     renderPage();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
     await user().upload(fileInput(), pdf());
     expect(screen.getByRole("button", { name: "Обрати файл" })).toBeDisabled();
     await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());

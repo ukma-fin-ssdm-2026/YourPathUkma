@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: регресії Vitest, ESLint і TypeScript.
 // Використання ШІ: Antigravity (Gemini 4 Hydrogen) додав парсинг Retry-After (#298). Перевірка: Vitest.
 // Використання ШІ: Codex відкрив заголовки бінарної відповіді для кадрів САЗ. Перевірка: Vitest.
 // Використання ШІ: підтримку JSON-файлів додано Codex. Перевірка: Vitest.
@@ -8,7 +9,7 @@ import { getAccessToken, setAccessToken } from "./token";
 
 const BASE_URL: string = import.meta.env.VITE_API_BASE ?? "/api/v1";
 
-/** Скільки чекаємо відповідь сервера (до отримання заголовків); завантаження файлів і PDF довші. */
+/** Скільки чекаємо відповідь сервера (разом із читанням тіла); завантаження файлів і PDF довші. */
 const DEFAULT_TIMEOUT_MS = 20_000;
 const UPLOAD_TIMEOUT_MS = 120_000;
 const BLOB_TIMEOUT_MS = 60_000;
@@ -30,6 +31,12 @@ interface AuthHandlers {
   /** Новий токен; `null`, якщо сесія недійсна. Виняток означає тимчасовий збій (мережа, тайм-аут, 5xx). */
   refresh: () => Promise<string | null>;
   onAuthLost: () => void;
+}
+
+const responseCleanups = new WeakMap<Response, { cleanup: () => void; timedOut: () => boolean }>();
+function releaseResponse(response: Response): void {
+  responseCleanups.get(response)?.cleanup();
+  responseCleanups.delete(response);
 }
 
 let doFetch: typeof fetch = (...args) => fetch(...args);
@@ -85,14 +92,22 @@ async function send(
   // Без тайм-ауту запит до «мовчазного» сервера висить вічно (і «Завантаження…» разом із ним)
   const controller = new AbortController();
   let timedOut = false;
-  const timer = setTimeout(() => {
-    timedOut = true;
-    controller.abort();
-  }, options.timeoutMs ?? (isForm || isFile ? UPLOAD_TIMEOUT_MS : DEFAULT_TIMEOUT_MS));
+  const timer = setTimeout(
+    () => {
+      timedOut = true;
+      controller.abort();
+    },
+    options.timeoutMs ?? (isForm || isFile ? UPLOAD_TIMEOUT_MS : DEFAULT_TIMEOUT_MS),
+  );
   const abortWithCaller = () => controller.abort();
   if (options.signal?.aborted) controller.abort();
   else options.signal?.addEventListener("abort", abortWithCaller, { once: true });
 
+  const cleanup = () => {
+    clearTimeout(timer);
+    options.signal?.removeEventListener("abort", abortWithCaller);
+  };
+  let handedOff = false;
   try {
     const response = await doFetch(buildUrl(path, options.query), {
       method: options.method ?? "GET",
@@ -106,13 +121,15 @@ async function send(
       credentials: "include",
       signal: controller.signal,
     });
+    responseCleanups.set(response, { cleanup, timedOut: () => timedOut });
+    handedOff = true;
     return { response, tokenUsed };
-  } catch {
+  } catch (error) {
+    if (options.signal?.aborted) throw error;
     if (timedOut) throw new ApiError(0, "TIMEOUT", "Сервер не відповів вчасно. Спробуйте ще раз");
     throw new ApiError(0, "NETWORK_ERROR", "Не вдалося з'єднатися з сервером");
   } finally {
-    clearTimeout(timer);
-    options.signal?.removeEventListener("abort", abortWithCaller);
+    if (!handedOff) cleanup();
   }
 }
 
@@ -123,8 +140,26 @@ function parseRetryAfter(header: string | null): number | null {
 }
 
 async function toApiError(response: Response): Promise<ApiError> {
+  try {
+    return await parseApiError(response);
+  } finally {
+    releaseResponse(response);
+  }
+}
+
+async function parseApiError(response: Response): Promise<ApiError> {
   const requestId = response.headers.get("X-Request-ID");
   const retryAfter = parseRetryAfter(response.headers.get("Retry-After"));
+  if (response.status >= 500) {
+    return new ApiError(
+      response.status,
+      `HTTP_${response.status}`,
+      "Сервіс тимчасово недоступний. Спробуйте ще раз",
+      [],
+      requestId,
+      retryAfter,
+    );
+  }
   try {
     const data = (await response.json()) as {
       code?: unknown;
@@ -155,6 +190,7 @@ async function execute(path: string, options: RequestOptions): Promise<Response>
   let { response, tokenUsed } = await send(path, options, useAuth);
 
   if (response.status === 401 && useAuth) {
+    releaseResponse(response);
     // Якщо токен уже оновив інший запит, достатньо повторити; інакше оновлюємо самі.
     if (tokenUsed === getAccessToken()) {
       let fresh: string | null;
@@ -184,8 +220,27 @@ async function execute(path: string, options: RequestOptions): Promise<Response>
 
 export async function request<T = void>(path: string, options: RequestOptions = {}): Promise<T> {
   const response = await execute(path, options);
-  if (response.status === 204) return undefined as T;
-  return (await response.json()) as T;
+  if (response.status === 204) {
+    releaseResponse(response);
+    return undefined as T;
+  }
+  try {
+    return (await response.json()) as T;
+  } catch (error) {
+    if (responseCleanups.get(response)?.timedOut()) {
+      throw new ApiError(0, "TIMEOUT", "Сервер не відповів вчасно. Спробуйте ще раз");
+    }
+    if (options.signal?.aborted) throw error;
+    throw new ApiError(
+      response.status,
+      "BAD_RESPONSE",
+      "Сервер повернув некоректну відповідь",
+      [],
+      response.headers.get("X-Request-ID"),
+    );
+  } finally {
+    releaseResponse(response);
+  }
 }
 
 /** Бінарна відповідь (наприклад, PDF) з іменем файлу з Content-Disposition. */
@@ -198,9 +253,18 @@ export async function requestBlob(
     timeoutMs: BLOB_TIMEOUT_MS,
     ...options,
   });
-  return {
-    blob: await response.blob(),
-    headers: response.headers,
-    filename: parseDispositionFilename(response.headers.get("Content-Disposition")),
-  };
+  try {
+    return {
+      blob: await response.blob(),
+      headers: response.headers,
+      filename: parseDispositionFilename(response.headers.get("Content-Disposition")),
+    };
+  } catch (error) {
+    if (responseCleanups.get(response)?.timedOut()) {
+      throw new ApiError(0, "TIMEOUT", "Сервер не відповів вчасно. Спробуйте ще раз");
+    }
+    throw error;
+  } finally {
+    releaseResponse(response);
+  }
 }

@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: регресії Vitest, ESLint і TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: deanery-data.test.tsx.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
@@ -10,8 +11,9 @@ const LIST_KEY = ["deanery-documents"] as const;
 export function useDeaneryDocuments(academicYear: number) {
   return useQuery({
     queryKey: [...LIST_KEY, academicYear],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       request<{ deanery_documents: DeaneryDocument[] }>("/deanery-documents", {
+        signal,
         query: { academic_year: academicYear },
       }),
   });
@@ -23,7 +25,7 @@ export function useDeaneryDocument(id: number | null, options: { pollMs?: number
   const pollMs = options.pollMs ?? 2000;
   const query = useQuery({
     queryKey: ["deanery-document", id],
-    queryFn: () => request<DeaneryDocument>(`/deanery-documents/${id}`),
+    queryFn: ({ signal }) => request<DeaneryDocument>(`/deanery-documents/${id}`, { signal }),
     enabled: id !== null,
     refetchInterval: (q) => (q.state.data?.parse_status === "pending" ? pollMs : false),
   });

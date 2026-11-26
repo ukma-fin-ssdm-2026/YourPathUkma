@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: регресії Vitest, ESLint і TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: page.test.tsx.
 // Codex додав мобільну навігацію. Перевірка — браузер.
 // Codex додав генерацію плану та заміну дисциплін. Перевірка: Vitest і Chromium.
@@ -77,7 +78,8 @@ export function BuilderPage() {
   const config = useConfig().data;
   const planId = parsePlanId(params.get("plan"));
   const planQuery = usePlan(planId);
-  const year = planQuery.data?.academic_year ?? planYearFromParam(params.get("year"), config?.limits);
+  const year =
+    planQuery.data?.academic_year ?? planYearFromParam(params.get("year"), config?.limits);
 
   const me = useMe();
   const prefs = usePreferences(year);
@@ -90,7 +92,10 @@ export function BuilderPage() {
   const document = useDeaneryDocument(latestParsed?.id ?? null);
 
   const student = me.data?.student ?? null;
-  const aiEnabled = config?.features.ai_generation === true && student?.can_create_plan === true;
+  const auxiliary = [history, documents, directions, ...(latestParsed ? [document] : [])];
+  const auxiliaryReady = auxiliary.every((query) => !query.isPending && !query.isError);
+  const aiEnabled =
+    auxiliaryReady && config?.features.ai_generation === true && student?.can_create_plan === true;
   const generation = usePlanGeneration(`${year}:${planId ?? "new"}`, aiEnabled);
   const [pendingDraft, setPendingDraft] = useState<number | null>(null);
   const normative = document.data?.parse_status === "parsed" ? document.data.normative_courses : [];
@@ -184,6 +189,31 @@ export function BuilderPage() {
       >
         {student?.course_year === 1 ? FIRST_YEAR_PLAN_NOTICE : PLAN_PROFILE_REQUIRED}
       </Notice>
+    );
+  }
+  if (!auxiliaryReady) {
+    return (
+      <div
+        role={auxiliary.some((query) => query.isError) ? "alert" : "status"}
+        className="grid gap-3"
+      >
+        <p>
+          {auxiliary.some((query) => query.isError)
+            ? "Не вдалося завантажити дані для перевірки плану"
+            : "Завантаження даних для перевірки плану…"}
+        </p>
+        {auxiliary.some((query) => query.isError) && (
+          <Button
+            onClick={() => {
+              void Promise.all(
+                auxiliary.filter((query) => query.isError).map((query) => query.refetch()),
+              );
+            }}
+          >
+            Повторити
+          </Button>
+        )}
+      </div>
     );
   }
   if (planId !== null && planQuery.isError) {
@@ -313,7 +343,12 @@ export function BuilderPage() {
           {aiEnabled && (
             <Button
               variant="ghost"
-              disabled={prefs.isPending || prefs.isError || generation.starting || generation.generation?.status === "pending"}
+              disabled={
+                prefs.isPending ||
+                prefs.isError ||
+                generation.starting ||
+                generation.generation?.status === "pending"
+              }
               onClick={() => {
                 if (prefs.data?.updated_at) generation.launch(prefs.data);
                 else navigate(`/path/create/preferences?year=${year}`);
