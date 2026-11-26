@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: Vitest та TypeScript.
 // Використання ШІ: завантаження каталогу САЗ додано Codex. Перевірка: Vitest.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: sync.test.tsx.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -29,8 +30,9 @@ export const isJobActive = (job: SyncJob) => job.status === "queued" || job.stat
 export function useSyncJobs(page: number, pollMs = SYNC_POLL_MS) {
   return useQuery({
     queryKey: ["admin", "sync-jobs", page],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       request<SyncJobsResponse>("/admin/sync-jobs", {
+        signal,
         query: { limit: SYNC_PAGE_SIZE, offset: (page - 1) * SYNC_PAGE_SIZE },
       }),
     refetchInterval: (query) => (query.state.data?.sync_jobs.some(isJobActive) ? pollMs : false),

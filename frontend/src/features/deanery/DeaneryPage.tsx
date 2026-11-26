@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: регресії Vitest, ESLint і TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: upload.test.tsx, documents.test.tsx.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useState } from "react";
@@ -46,7 +47,8 @@ export function DeaneryPage({ pollMs }: { pollMs?: number }) {
 
   const upload = useUploadDocument();
   const remove = useDeleteDocument();
-  const documents = useDeaneryDocuments(year).data?.deanery_documents ?? [];
+  const documentList = useDeaneryDocuments(year);
+  const documents = documentList.data?.deanery_documents ?? [];
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadedId, setUploadedId] = useState<number | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -66,6 +68,7 @@ export function DeaneryPage({ pollMs }: { pollMs?: number }) {
   const recognizing = uploadedId !== null && (!uploaded || uploaded.parse_status === "pending");
 
   function handleFile(file: File) {
+    if (documentList.isPending || documentList.isError) return;
     setUploadError(null);
     setUploadedId(null);
     upload.mutate(
@@ -105,6 +108,33 @@ export function DeaneryPage({ pollMs }: { pollMs?: number }) {
         </Link>
       </div>
 
+      {documentList.isError && (
+        <div role="alert">
+          <p>Не вдалося завантажити документи</p>
+          <button
+            type="button"
+            onClick={() => {
+              void documentList.refetch();
+            }}
+          >
+            Повторити
+          </button>
+        </div>
+      )}
+      {documentList.isPending && <p role="status">Завантаження документів…</p>}
+      {active.isError && (
+        <div role="alert">
+          <p>Не вдалося завантажити нормативні дисципліни</p>
+          <button
+            type="button"
+            onClick={() => {
+              void active.refetch();
+            }}
+          >
+            Повторити
+          </button>
+        </div>
+      )}
       <div className="grid items-start gap-5 lg:grid-cols-[1fr_320px]">
         <div className="grid gap-4">
           <Card>
@@ -115,7 +145,7 @@ export function DeaneryPage({ pollMs }: { pollMs?: number }) {
             </p>
             <Dropzone
               maxBytes={limits?.max_upload_bytes ?? DEFAULT_MAX_BYTES}
-              disabled={upload.isPending}
+              disabled={upload.isPending || documentList.isPending || documentList.isError}
               onFile={handleFile}
               error={uploadError}
             />

@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: Vitest та TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
 // Codex уточнив конфігурацію відгуків. Перевірка — фронтенд-тести.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
@@ -149,7 +150,7 @@ describe("CatalogPage", () => {
       ),
     );
     renderCatalog();
-    expect(await screen.findByRole("alert")).toHaveTextContent("Внутрішня помилка сервера");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Сервіс тимчасово недоступний");
     expect(screen.getByText(/Код помилки: rid-77/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Спробувати ще раз" })).toBeInTheDocument();
   });

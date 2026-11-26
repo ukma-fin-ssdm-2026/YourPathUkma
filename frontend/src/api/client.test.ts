@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: Vitest та TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
 import { ApiError } from "./errors";
 import { configureAuth, request, setFetch } from "./client";
@@ -224,12 +225,12 @@ describe("request: тайм-аут", () => {
     expect(await pending).toMatchObject({ code: "TIMEOUT" });
   });
 
-  it("скасування викликачем лишається NETWORK_ERROR, а не TIMEOUT", async () => {
+  it("скасування викликачем зберігає AbortError", async () => {
     setFetch(hangingFetch());
     const controller = new AbortController();
     const pending = request("/me", { signal: controller.signal }).catch((e: unknown) => e);
     controller.abort();
-    expect(await pending).toMatchObject({ status: 0, code: "NETWORK_ERROR" });
+    expect(await pending).toMatchObject({ name: "AbortError" });
   });
 
   it("швидка відповідь не лишає активного таймера", async () => {

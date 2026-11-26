@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: регресії Vitest, ESLint і TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: audit.test.tsx.
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { request } from "../../../api/client";
@@ -22,8 +23,9 @@ export function useAuditLog({
   return useQuery({
     queryKey: ["admin", "audit", action, outcome ?? "all", page],
     placeholderData: keepPreviousData,
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       request<{ audit_log: AuditLogEntry[]; pagination: PaginationInfo }>("/admin/audit-log", {
+        signal,
         query: {
           limit: AUDIT_PAGE_SIZE,
           offset: (page - 1) * AUDIT_PAGE_SIZE,
@@ -38,7 +40,7 @@ export function useAuditLog({
 export function useAuditEntry(id: number | null) {
   return useQuery({
     queryKey: ["admin", "audit-entry", id],
-    queryFn: () => request<AuditLogEntry>(`/admin/audit-log/${id}`),
+    queryFn: ({ signal }) => request<AuditLogEntry>(`/admin/audit-log/${id}`, { signal }),
     enabled: id !== null,
   });
 }

@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: регресії Vitest, ESLint і TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: moderation-data.test.tsx.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../../../api/client";
@@ -26,8 +27,9 @@ export function useModerationItems({
 }) {
   return useQuery({
     queryKey: ["admin", "moderation", status, changeType ?? "all", page],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       request<ModerationResponse>("/admin/moderation-items", {
+        signal,
         query: {
           limit: MODERATION_PAGE_SIZE,
           offset: (page - 1) * MODERATION_PAGE_SIZE,

@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: регресії Vitest, ESLint і TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: session.test.ts.
 import { create } from "zustand";
 import { configureAuth, request } from "../api/client";
@@ -52,13 +53,15 @@ export async function restoreSession(): Promise<void> {
   else useSession.getState().setAnonymous();
 }
 
-export async function signOut(): Promise<void> {
+export async function signOut(): Promise<boolean> {
+  let confirmed = true;
   try {
     await request("/auth/logout", { method: "POST", auth: false });
   } catch {
-    // сервер недоступний: сесію на клієнті все одно завершуємо
+    confirmed = false; // локальний вихід не підтверджений сервером
   }
   useSession.getState().setAnonymous();
+  return confirmed;
 }
 
 /** Підключає refresh на 401 і скидання сесії до клієнта API. */
