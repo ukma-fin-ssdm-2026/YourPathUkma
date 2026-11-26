@@ -1,3 +1,4 @@
+# Використання ШІ: Codex виправив #219; перевірка: YAML, lock та GitHub CI.
 # Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: ті самі кроки
 # (генерація, git diff, pytest) запущено локально; перший прогін у GitHub Actions після пушу.
 # Лаб 10, бонус 3 (Claude): тести розділено на швидкий набір (на кожному PR і push) та повільний (`-m slow`, лише
@@ -17,12 +18,16 @@ on:
       - 'Labs/**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
   build:
+    timeout-minutes: 30
     runs-on: [self-hosted, linux]
     services:
       postgres:
@@ -46,7 +51,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - run: "pip install --only-binary :all: -r requirements.txt -r requirements-dev.txt"
+      - run: "pip install --require-hashes --only-binary :all: -r requirements-ci.lock"
       - name: Lint (ruff)
         run: "pip install --only-binary :all: ruff==0.17.0 && ruff check src tests scripts mcp"
       - name: Security scan (bandit)
@@ -54,7 +59,13 @@ jobs:
       - name: Generate OpenAPI from code
         run: python scripts/generate_openapi.py
       - name: Fail if committed spec is out of date
-        run: git diff --exit-code docs/api/
+        shell: bash
+        run: |
+          changes=$(git status --porcelain --untracked-files=all -- docs/api/)
+          if [ -n "$changes" ]; then
+            printf '%s\n' "$changes"
+            exit 1
+          fi
       - name: Fast suite (unit and API tests, every PR and push)
         shell: bash
         run: |
@@ -89,6 +100,7 @@ jobs:
             coverage.xml
 
   frontend:
+    timeout-minutes: 30
     runs-on: [self-hosted, linux]
     defaults:
       run:
@@ -108,4 +120,3 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      
