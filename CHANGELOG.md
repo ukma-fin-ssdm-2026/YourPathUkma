@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.9.1] - 2026-11-26
+
+### Bug Fixes
+
+- Handle frontend network failures consistently
+  ([#310](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/310),
+  [`1c8e823`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/1c8e823527af5008912c9e25691632041c27c63f))
+
+
 ## [0.9.0] - 2026-11-25
 
 ### Bug Fixes
