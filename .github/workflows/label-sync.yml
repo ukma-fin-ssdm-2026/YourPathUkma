@@ -1,3 +1,4 @@
+# Використання ШІ: Codex виправив #219; перевірка: YAML, lock та GitHub CI.
 name: Sync status label on close
 
 # На self-hosted раннері немає CLI `gh` (прогони 29.10 падали з «gh: command not found», код 127),
@@ -11,6 +12,7 @@ permissions:
 
 jobs:
   relabel:
+    timeout-minutes: 5
     runs-on: [self-hosted, linux]
     steps:
       - name: Remove in-progress/review labels, add done

@@ -1,3 +1,4 @@
+# Використання ШІ: Codex виправив #219; перевірка: YAML, lock та GitHub CI.
 # Використання ШІ: файл створено за допомогою Claude (Anthropic) для бонусу «Автоматизований реліз» (Лаб 8).
 # Перевірка: повний прогін `semantic-release version` (без push) у локальному клоні: refactor: -> 0.1.1,
 # feat: -> 0.2.0, docs: -> без релізу (код виходу 0), коміт `chore(release)`, тег і CHANGELOG.md; YAML розібрано
@@ -23,6 +24,7 @@ concurrency:
 
 jobs:
   release:
+    timeout-minutes: 15
     runs-on: [self-hosted, linux]
     # Реліз-коміт `chore(release): X.Y.Z` бот пушить сам. З GITHUB_TOKEN це не запускає workflow, а з PAT
     # (RELEASE_TOKEN) запускає, тому ця умова обов'язкова: вона не дає релізу запустити сам себе.
