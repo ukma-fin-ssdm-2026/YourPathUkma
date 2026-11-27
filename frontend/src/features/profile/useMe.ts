@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: Vitest та TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: onboarding.test.tsx.
 // Codex узгодив дії з доступністю конструктора. Перевірка — фронтенд-тести.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +17,7 @@ export function useMe() {
   const authenticated = useSession((s) => s.status === "authenticated");
   return useQuery({
     queryKey: ME_KEY,
-    queryFn: () => request<Me>("/me"),
+    queryFn: ({ signal }) => request<Me>("/me", { signal }),
     enabled: authenticated,
   });
 }
@@ -38,7 +39,7 @@ export function useAcademicHistory() {
   const authenticated = useSession((s) => s.status === "authenticated");
   return useQuery({
     queryKey: ["academic-history"],
-    queryFn: () => request<{ years: AcademicYear[] }>("/me/academic-history"),
+    queryFn: ({ signal }) => request<{ years: AcademicYear[] }>("/me/academic-history", { signal }),
     enabled: authenticated,
   });
 }

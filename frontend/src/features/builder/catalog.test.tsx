@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: Vitest та TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
@@ -151,7 +152,7 @@ describe("CatalogPanel: стани", () => {
       ),
     );
     renderPanel();
-    expect(await screen.findByRole("alert")).toHaveTextContent("Внутрішня помилка сервера");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Сервіс тимчасово недоступний");
   });
 
   it("на останній сторінці «Далі» недоступна", async () => {

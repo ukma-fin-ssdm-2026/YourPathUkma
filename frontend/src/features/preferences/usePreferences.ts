@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: Vitest та TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: preferences-data.test.tsx.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,9 +13,9 @@ export type PreferencesInput = Omit<Preferences, "updated_at">;
 export function usePreferences(year: number) {
   return useQuery({
     queryKey: ["preferences", year],
-    queryFn: async (): Promise<Preferences> => {
+    queryFn: async ({ signal }): Promise<Preferences> => {
       try {
-        return await request<Preferences>(`/preferences/${year}`);
+        return await request<Preferences>(`/preferences/${year}`, { signal });
       } catch (error) {
         // Побажань ще не збережено: показуємо порожню форму, а не помилку.
         if (error instanceof ApiError && error.code === "PREFERENCES_NOT_FOUND") {
@@ -45,7 +46,8 @@ export function useInstructors(q: string) {
   const term = q.trim();
   return useQuery({
     queryKey: ["instructors", "search", term],
-    queryFn: () => request<InstructorsPage>("/instructors", { query: { q: term, limit: 10 } }),
+    queryFn: ({ signal }) =>
+      request<InstructorsPage>("/instructors", { signal, query: { q: term, limit: 10 } }),
     enabled: term.length >= 2,
   });
 }

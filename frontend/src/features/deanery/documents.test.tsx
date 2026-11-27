@@ -1,3 +1,4 @@
+import { http, HttpResponse } from "msw";
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: npm test (тести спершу впали).
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
@@ -26,11 +27,13 @@ function renderPage() {
 }
 
 const user = () => userEvent.setup({ applyAccept: false });
-const upload = async (name: string) =>
-  user().upload(
+const upload = async (name: string) => {
+  await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
+  return user().upload(
     screen.getByLabelText("Файл документа деканату"),
     new File(["вміст"], name, { type: "application/pdf" }),
   );
+};
 
 function parsedDoc(overrides: Partial<DeaneryDocument> = {}): DeaneryDocument {
   return {
@@ -141,4 +144,17 @@ describe("видалення документа", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(db.documents).toHaveLength(1);
   });
+});
+
+// Використання ШІ: регресія завантаження документів #220; Vitest red/green.
+it("blocks uploads when document list fails and allows retry", async () => {
+  server.use(http.get("*/api/v1/deanery-documents", () => new HttpResponse(null, { status: 503 })));
+  renderPage();
+  expect(await screen.findByText("Не вдалося завантажити документи")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Обрати файл" })).toBeDisabled();
+  server.use(
+    http.get("*/api/v1/deanery-documents", () => HttpResponse.json({ deanery_documents: [] })),
+  );
+  await user().click(screen.getByRole("button", { name: "Повторити" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Обрати файл" })).toBeEnabled());
 });

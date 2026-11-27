@@ -133,33 +133,47 @@ describe("Генерація плану з ШІ", () => {
         posted = await request.json();
         return HttpResponse.json(pending, { status: 202 });
       }),
-      http.get(`${generationUrl}/42`, () => HttpResponse.json({
-        ...pending, status: "succeeded", plan_id: 88,
-        notices: [{ code: "TEST", course_id: null, message: "Перевірте річне навантаження." }],
-      })),
-      ...plansCrudHandlers([planFixture({
-        id: 88,
-        items: [{
-          ...item(5, 2, "Машинне навчання"),
-          ai_explanation: "Відповідає напряму.",
-          alternatives: [{ ...item(19, 2, "Аналіз даних на Python"), rank: 1 }],
-        } as PlanItem],
-      })]).handlers,
+      http.get(`${generationUrl}/42`, () =>
+        HttpResponse.json({
+          ...pending,
+          status: "succeeded",
+          plan_id: 88,
+          notices: [{ code: "TEST", course_id: null, message: "Перевірте річне навантаження." }],
+        }),
+      ),
+      ...plansCrudHandlers([
+        planFixture({
+          id: 88,
+          items: [
+            {
+              ...item(5, 2, "Машинне навчання"),
+              ai_explanation: "Відповідає напряму.",
+              alternatives: [{ ...item(19, 2, "Аналіз даних на Python"), rank: 1 }],
+            } as PlanItem,
+          ],
+        }),
+      ]).handlers,
     );
     const router = renderPage();
     await userEvent.click(await screen.findByRole("button", { name: generateLabel }));
     expect(await screen.findByText("Генеруємо план…")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: generateLabel })).toBeDisabled();
-    await userEvent.click(await screen.findByRole("button", { name: "Додати Функціональне програмування" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Додати Функціональне програмування" }),
+    );
     expect(posted).toMatchObject({ academic_year: 2026, direction_ids: [] });
     expect(posted).not.toHaveProperty("updated_at");
-    await userEvent.click(await screen.findByRole("button", { name: "Відкрити чернетку" }, { timeout: 4500 }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Відкрити чернетку" }, { timeout: 4500 }),
+    );
     expect(screen.getByText("Перевірте річне навантаження.")).toBeInTheDocument();
     const dialog = await screen.findByRole("dialog");
     await userEvent.click(within(dialog).getByRole("button", { name: "Відкрити чернетку" }));
     expect(router.state.location.search).toContain("plan=88");
     await userEvent.click(await screen.findByText("Альтернативи"));
-    await userEvent.click(screen.getByRole("button", { name: "Замінити на Аналіз даних на Python" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Замінити на Аналіз даних на Python" }),
+    );
     expect(within(column("Весна")).getByText("Аналіз даних на Python")).toBeVisible();
     expect(within(column("Весна")).queryByText("Машинне навчання")).not.toBeInTheDocument();
   }, 10_000);
@@ -183,7 +197,8 @@ describe("Генерація плану з ШІ", () => {
     enableAi();
     db.preferences[2026] = { ...defaultPreferences(2026), updated_at: "2026-10-08T10:00:00Z" };
     const post = vi.fn(() => HttpResponse.json(pending, { status: 202 }));
-    const status = vi.fn()
+    const status = vi
+      .fn()
       .mockReturnValueOnce(new HttpResponse(null, { status: 503 }))
       .mockImplementation(() => HttpResponse.json(pending));
     server.use(http.post(generationUrl, post), http.get(`${generationUrl}/42`, status));
@@ -354,3 +369,24 @@ describe("BuilderPage: недоступний план", () => {
     expect(screen.queryByRole("region", { name: "Осінь" })).not.toBeInTheDocument();
   });
 });
+
+// Використання ШІ: регресії збоїв допоміжних даних #220; Vitest red/green.
+it.each(["me/academic-history", "deanery-documents"])(
+  "blocks builder on failed %s and recovers",
+  async (path) => {
+    db.preferences[2026] = { ...defaultPreferences(2026), updated_at: "2026-10-08T10:00:00Z" };
+    server.use(http.get(`*/api/v1/${path}`, () => new HttpResponse(null, { status: 503 })));
+    renderPage();
+    expect(
+      await screen.findByText("Не вдалося завантажити дані для перевірки плану"),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Зберегти чернетку" })).not.toBeInTheDocument();
+    server.use(
+      http.get(`*/api/v1/${path}`, () =>
+        HttpResponse.json(path.startsWith("me/") ? { years: [] } : { deanery_documents: [] }),
+      ),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Повторити" }));
+    expect(await screen.findByRole("button", { name: "Зберегти чернетку" })).toBeInTheDocument();
+  },
+);

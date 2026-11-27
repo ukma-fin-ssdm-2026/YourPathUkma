@@ -1,3 +1,4 @@
+// Використання ШІ: Codex виправив #220; перевірка: регресії Vitest, ESLint і TypeScript.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: users.test.tsx.
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../../../api/client";
@@ -21,8 +22,9 @@ export function useAdminUsers({ q, role, page }: { q: string; role?: UserRole; p
   return useQuery({
     queryKey: ["admin", "users", q, role ?? "all", page],
     placeholderData: keepPreviousData,
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       request<{ users: AdminUser[]; pagination: PaginationInfo }>("/admin/users", {
+        signal,
         query: {
           limit: USERS_PAGE_SIZE,
           offset: (page - 1) * USERS_PAGE_SIZE,

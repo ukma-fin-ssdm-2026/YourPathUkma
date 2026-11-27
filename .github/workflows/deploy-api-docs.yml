@@ -1,3 +1,4 @@
+# Використання ШІ: Codex виправив #219; перевірка: YAML, lock та GitHub CI.
 name: Generate and Deploy API Docs
 
 # Запускається лише після успішного workflow "CI" на main
@@ -11,8 +12,13 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: deploy-api-docs
+  cancel-in-progress: false
+
 jobs:
   generate-and-deploy:
+    timeout-minutes: 15
     runs-on: [self-hosted, linux]
     if: >
       github.event_name == 'workflow_dispatch' ||
@@ -28,7 +34,7 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: "pip install --only-binary :all: -r requirements.txt"
+        run: "pip install --require-hashes --only-binary :all: -r requirements-ci.lock"
 
       - name: Generate OpenAPI spec from code
         run: python scripts/generate_openapi.py

@@ -1,3 +1,7 @@
+# Використання ШІ: Codex підключив hash lock для #219; перевірка: YAML та CI.
+permissions:
+  contents: read
+
 # Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: кроки mutmut і підрахунок оцінки
 # запущено локально на тих самих командах (57 мутантів, 36 вбито, оцінка 63%); перший прогін у GitHub Actions
 # вручну через workflow_dispatch після злиття.
@@ -27,7 +31,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - run: "pip install --only-binary :all: -r requirements.txt -r requirements-dev.txt"
+      - run: "pip install --require-hashes --only-binary :all: -r requirements-ci.lock"
       - name: Run mutmut
         env:
           MUTATE_PATHS: ${{ inputs.paths }}
