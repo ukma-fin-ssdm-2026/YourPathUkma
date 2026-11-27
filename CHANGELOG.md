@@ -4,6 +4,19 @@ All notable changes to this project are documented in this file. The format is b
 
 <!-- version list -->
 
+## [0.9.2] - 2026-11-27
+
+### Bug Fixes
+
+- Complete API rate limit integration
+  ([#308](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/308),
+  [`43a4d83`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/43a4d83c2ca479e2e626abd0955d735bb99c9b9e))
+
+- Complete rate limit handling and concurrency checks
+  ([#308](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/pull/308),
+  [`43a4d83`](https://github.com/ukma-fin-ssdm-2026/YourPathUkma/commit/43a4d83c2ca479e2e626abd0955d735bb99c9b9e))
+
+
 ## [0.9.1] - 2026-11-26
 
 ### Bug Fixes
