@@ -16,12 +16,15 @@
 from __future__ import annotations
 
 import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from types import SimpleNamespace
 from unittest.mock import patch
 
+import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import delete
+from sqlalchemy import delete, event, func, select
 
 from src.api.common import get_current_student_id
 from src.api.main import app
@@ -32,11 +35,84 @@ from src.api.rate_limiter import (
 )
 from src.db import enums as db_enums
 from src.db.base import utcnow
+from src.db.config import database_url
 from src.db.models.ai import PlanGeneration
 from src.db.models.deanery import DeaneryPlanDocument
 from src.db.session import session_factory
 
 client = TestClient(app)
+
+
+# Використання ШІ: Codex додав HTTP-конкурентність AI та перевірку OpenAPI. Перевірка: PostgreSQL.
+def test_all_api_operations_document_rate_limit():
+    schema = app.openapi()
+    for path, operations in schema["paths"].items():
+        for method, operation in operations.items():
+            if path.startswith("/api/v1/") and method in {"get", "post", "put", "patch", "delete"}:
+                response = operation["responses"]["429"]
+                assert response["content"]["application/json"]["schema"]["$ref"].endswith("ErrorResponse")
+                assert response["headers"]["Retry-After"]["schema"]["minimum"] == 1
+                assert "X-Request-ID" in response["headers"]
+    assert "429" not in schema["paths"]["/health"]["get"]["responses"]
+
+
+@pytest.mark.skipif(not database_url().startswith("postgresql"), reason="Потрібні блокування PostgreSQL")
+@pytest.mark.parametrize("daily", [False, True])
+def test_parallel_ai_requests_respect_active_and_daily_limits(monkeypatch, auth_headers, daily):
+    monkeypatch.setenv("AI_AUTORUN", "0")
+    with session_factory()() as db:
+        db.execute(delete(PlanGeneration).where(PlanGeneration.student_id == 42))
+        if daily:
+            db.add_all(
+                [
+                    PlanGeneration(
+                        student_id=42,
+                        academic_year=2026,
+                        status=db_enums.GenerationStatus.SUCCEEDED,
+                        created_at=utcnow(),
+                    )
+                    for _ in range(19)
+                ]
+            )
+        db.commit()
+
+    def delay_insert(mapper, connection, target):
+        # Даємо другому HTTP-запиту час дійти до блокування профілю.
+        time.sleep(0.3)
+        if daily:
+            # Завершена задача перевіряє саме добовий ліміт, незалежно від active.
+            target.status = db_enums.GenerationStatus.SUCCEEDED
+
+    event.listen(PlanGeneration, "before_insert", delay_insert)
+    barrier = threading.Barrier(2)
+
+    def launch():
+        barrier.wait(timeout=5)
+        return TestClient(app).post(
+            "/api/v1/plan-generations",
+            json={"academic_year": 2026, "direction_ids": [1]},
+            headers=auth_headers(user_id=42),
+        )
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            futures = [pool.submit(launch) for _ in range(2)]
+            responses = [future.result(timeout=15) for future in futures]
+        expected_error = 429 if daily else 409
+        assert sorted(response.status_code for response in responses) == [202, expected_error]
+        rejected = next(response for response in responses if response.status_code == expected_error)
+        assert rejected.json()["code"] == ("RATE_LIMITED" if daily else "GENERATION_IN_PROGRESS")
+        if daily:
+            assert 1 <= int(rejected.headers["Retry-After"]) <= 86400
+            assert {"field": "rate_limit", "message": "ai_daily"} in rejected.json()["details"]
+        with session_factory()() as db:
+            count = db.scalar(select(func.count()).select_from(PlanGeneration).where(PlanGeneration.student_id == 42))
+            assert count == (20 if daily else 1)
+    finally:
+        event.remove(PlanGeneration, "before_insert", delay_insert)
+        with session_factory()() as db:
+            db.execute(delete(PlanGeneration).where(PlanGeneration.student_id == 42))
+            db.commit()
 
 
 def test_sliding_window_boundary_and_expiration():

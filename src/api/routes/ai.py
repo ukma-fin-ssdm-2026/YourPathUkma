@@ -10,6 +10,7 @@ POST /plan-generations, GET /plan-generations/{generation_id}.
 додано запуск BackgroundTask після POST /plan-generations (adapter.run via worker.run_generation_task),
 імпорт BackgroundTasks, схему PlanGenerationRequest(PreferencesRequest), збереження preferences перед генерацією.
 Antigravity (Gemini 4 Hydrogen) додав атомарне блокування FOR UPDATE та заголовок Retry-After для ліміту 20/добу (#298).
+Codex додав ознаку ai_daily для розрізнення причин 429. Перевірка: HTTP-регресії на PostgreSQL.
 Перевірено: pytest tests/test_ai.py tests/test_ai_worker.py tests/reliability, ruff check src/api/routes/ai.py.
 """
 
@@ -28,7 +29,7 @@ from ...db.base import utcnow
 from ...db.models.ai import PlanGeneration
 from ...db.models.users import StudentProfile
 from ...db.session import get_db
-from ..common import MAX_DATABASE_ID, ApiError, error_responses, get_current_student_id
+from ..common import MAX_DATABASE_ID, ApiError, ErrorDetail, error_responses, get_current_student_id
 from ..onboarding import get_onboarded_student
 from .preferences import PreferencesRequest
 
@@ -124,6 +125,7 @@ def start_generation(
             429,
             _RATE_LIMITED[0],
             _RATE_LIMITED[1],
+            details=[ErrorDetail(field="rate_limit", message="ai_daily")],
             headers={"Retry-After": str(retry_seconds)},
         )
 

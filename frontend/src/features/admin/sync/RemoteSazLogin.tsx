@@ -1,9 +1,9 @@
 // Використання ШІ: Codex виправив #220; перевірка: Vitest та TypeScript.
 // Використання ШІ: екран віддаленого входу до САЗ додано Codex. Перевірка: Vitest і typecheck.
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { request, requestBlob } from "../../../api/client";
-import { ApiError } from "../../../api/errors";
+import { ApiError, formatRetryAfter } from "../../../api/errors";
 import { Button } from "../../../ui/Button";
 import { Card } from "../../../ui/Card";
 
@@ -45,8 +45,26 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
   const [frame, setFrame] = useState<{ url: string; host: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [retryAt, setRetryAt] = useState(0);
+  const retryDeadline = useRef(0);
   const inputQueue = useRef(Promise.resolve());
   const activeLogin = useRef<string | null>(null);
+
+  // Використання ШІ: Codex додав спільну паузу кадрів і введення після 429. Перевірка: Vitest.
+  const pauseOnRateLimit = useCallback((failure: unknown): boolean => {
+    if (!(failure instanceof ApiError) || failure.status !== 429) return false;
+    const seconds = failure.retryAfter ?? 60;
+    retryDeadline.current = Math.max(retryDeadline.current, Date.now() + seconds * 1000);
+    setRetryAt(retryDeadline.current);
+    setError(`Забагато запитів. Спробуйте ${formatRetryAfter(seconds)}.`);
+    return true;
+  }, []);
+
+  useEffect(() => {
+    if (!retryAt) return;
+    const timer = setTimeout(() => setRetryAt(0), Math.max(0, retryAt - Date.now()));
+    return () => clearTimeout(timer);
+  }, [retryAt]);
 
   useEffect(() => {
     if (!loginId) return;
@@ -56,6 +74,11 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
     const controller = new AbortController();
 
     async function refreshFrame() {
+      const remaining = retryDeadline.current - Date.now();
+      if (remaining > 0) {
+        timer = setTimeout(refreshFrame, remaining);
+        return;
+      }
       try {
         const result = await requestBlob(`${SESSION}/login/${loginId}/frame`, {
           accept: "image/jpeg",
@@ -67,8 +90,13 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
         if (url) URL.revokeObjectURL(url);
         url = URL.createObjectURL(result.blob);
         setFrame({ url, host });
+        setError("");
       } catch (failure) {
         if (stopped) return;
+        if (pauseOnRateLimit(failure)) {
+          timer = setTimeout(refreshFrame, Math.max(0, retryDeadline.current - Date.now()));
+          return;
+        }
         if (failure instanceof ApiError && failure.code === "SAZ_LOGIN_NOT_FOUND") {
           setError(failure.message);
           activeLogin.current = null;
@@ -96,7 +124,7 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
       activeLogin.current = null;
       void request(`${SESSION}/login/${loginId}`, { method: "DELETE" }).catch(() => undefined);
     };
-  }, [loginId]);
+  }, [loginId, pauseOnRateLimit]);
 
   async function perform(action: () => Promise<void>) {
     setBusy(true);
@@ -104,17 +132,19 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
     try {
       await action();
     } catch (failure) {
-      setError(failure instanceof ApiError ? failure.message : "Не вдалося виконати дію");
+      if (!pauseOnRateLimit(failure)) {
+        setError(failure instanceof ApiError ? failure.message : "Не вдалося виконати дію");
+      }
     } finally {
       setBusy(false);
     }
   }
 
   function send(input: BrowserInput) {
-    if (!loginId || !frame || busy) return;
+    if (!loginId || !frame || busy || retryDeadline.current > Date.now()) return;
     inputQueue.current = inputQueue.current
       .then(async () => {
-        if (activeLogin.current === loginId) {
+        if (activeLogin.current === loginId && retryDeadline.current <= Date.now()) {
           await request(`${SESSION}/login/${loginId}/input`, {
             method: "POST",
             body: { host: frame.host, action: input },
@@ -123,9 +153,11 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
       })
       .catch((failure: unknown) => {
         if (activeLogin.current === loginId) {
-          setError(
-            failure instanceof ApiError ? failure.message : "Не вдалося передати дію до браузера",
-          );
+          if (!pauseOnRateLimit(failure)) {
+            setError(
+              failure instanceof ApiError ? failure.message : "Не вдалося передати дію до браузера",
+            );
+          }
         }
       });
   }
@@ -164,7 +196,7 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
               type="button"
               className="block w-full cursor-crosshair overflow-hidden rounded border border-rule"
               aria-label="Віддалений браузер САЗ"
-              disabled={busy}
+              disabled={busy || retryAt > 0}
               onKeyDown={handleKey}
               onClick={(event) => {
                 if (!event.detail) return;
@@ -183,7 +215,7 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
           )}
           <div className="flex flex-wrap gap-2">
             <Button
-              disabled={busy}
+              disabled={busy || retryAt > 0}
               onClick={() =>
                 void perform(async () => {
                   await inputQueue.current;
@@ -205,7 +237,7 @@ export function RemoteSazLogin({ connected }: { connected: boolean }) {
         <div className="flex flex-wrap items-center gap-3">
           <p>{connected ? "Сесію САЗ збережено" : "Підключіть САЗ, щоб запустити парсинг"}</p>
           <Button
-            disabled={busy}
+            disabled={busy || retryAt > 0}
             onClick={() =>
               void perform(async () => {
                 const result = await request<{ id: string }>(`${SESSION}/login`, {
