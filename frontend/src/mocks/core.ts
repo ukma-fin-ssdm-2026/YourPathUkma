@@ -4,7 +4,14 @@
 // Обробники ✅-ендпоінтів, які реальний бекенд уже має. Вмикаються лише в режимі VITE_USE_MOCKS=full,
 // щоб увесь застосунок можна було пройти без запущеного бекенду.
 import { http, HttpResponse } from "msw";
-import type { Discipline, Instructor, PlanGeneration, PlanItem, PlanResponse, Preferences } from "../api/types";
+import type {
+  Discipline,
+  Instructor,
+  PlanGeneration,
+  PlanItem,
+  PlanResponse,
+  Preferences,
+} from "../api/types";
 import { db } from "./db";
 import { configFixture } from "./fixtures";
 import { API, apiError, hasAuth, paginate, unauthorized } from "./http";
@@ -120,7 +127,8 @@ interface PlanBody {
 
 function validate(body: PlanBody) {
   const free = body.items.filter((i) => i.is_free_elective).reduce((sum, i) => sum + i.credits, 0);
-  const freeAllYears = Math.round(((db.me.student?.credits.free_choice_used ?? 0) + free) * 10) / 10;
+  const freeAllYears =
+    Math.round(((db.me.student?.credits.free_choice_used ?? 0) + free) * 10) / 10;
   const total = body.items.reduce((sum, i) => sum + i.credits, 0);
   const errors: { code: string; message: string; field: string | null }[] = [];
   if (new Set(body.items.map((i) => i.course_id)).size !== body.items.length) {
@@ -144,19 +152,63 @@ function validate(body: PlanBody) {
       field: null,
     });
   }
-  const warnings = Object.values(body.load_levels).includes("low")
-    ? [
-        {
-          code: "LOW_LOAD_FUTURE_INCREASE",
-          message: "Низьке навантаження цього року збільшить його в наступних",
-          field: null,
-        },
-      ]
-    : [];
+  const doc = db.documents
+    .filter((d) => d.academic_year === body.academic_year && d.parse_status === "parsed")
+    .at(-1);
+  const normative = doc?.normative_courses ?? [];
+  const yearTotal =
+    total +
+    normative
+      .filter(
+        (n) => !body.items.some((i) => i.course_id === n.course_id && i.trimester === n.trimester),
+      )
+      .reduce((sum, n) => sum + n.credits, 0);
+  const warnings =
+    yearTotal >= 57 && Object.values(body.load_levels ?? {}).includes("low")
+      ? [
+          {
+            code: "LOW_LOAD_FUTURE_INCREASE",
+            message: "Низьке навантаження цього року збільшить його в наступних",
+            field: null,
+          },
+        ]
+      : [];
   const byTrimester: Record<string, number> = { "1": 0, "2": 0, "3": 0 };
   for (const i of body.items) byTrimester[String(i.trimester)]! += i.credits;
+  for (const n of normative)
+    if (!body.items.some((i) => i.course_id === n.course_id && i.trimester === n.trimester))
+      byTrimester[String(n.trimester)]! += n.credits;
+  warnings.push({
+    code: "WORKLOAD_DATA_INCOMPLETE",
+    message: "У демонстраційних дисциплін немає підтверджених годин із САЗ",
+    field: null,
+  });
+  if (yearTotal < 57)
+    warnings.push({
+      code: "YEAR_CREDITS_BELOW_MIN",
+      message: "За рік менше 57 кредитів",
+      field: null,
+    });
+  const workload = Object.fromEntries(
+    [1, 2, 3].map((t) => [
+      String(t),
+      {
+        known_weekly_hours: 0,
+        complete: false,
+        level: null,
+        missing_courses: [
+          ...body.items
+            .filter((i) => i.trimester === t)
+            .map((i) => ({ course_id: i.course_id, title: i.title, source: "plan" })),
+          ...normative
+            .filter((n) => n.trimester === t)
+            .map((n) => ({ course_id: n.course_id, title: n.raw_title, source: "deanery" })),
+        ],
+      },
+    ]),
+  );
   return {
-    valid: errors.length === 0,
+    valid: false,
     errors,
     warnings,
     summary: {
@@ -164,8 +216,10 @@ function validate(body: PlanBody) {
       free_elective_credits: free,
       free_elective_used_all_years: freeAllYears,
       free_elective_remaining: Math.max(0, Math.round((25 - freeAllYears) * 10) / 10),
-      year_total_credits: total,
+      year_total_credits: yearTotal,
       credits_by_trimester: byTrimester,
+      workload_by_trimester: workload,
+      workload_complete: false,
     },
   };
 }
@@ -178,7 +232,9 @@ const replace = (plan: PlanResponse) => {
 };
 
 export const coreHandlers = [
-  http.get(`${API}/config`, () => HttpResponse.json(configFixture({ saz_sync: true, ai_generation: true }))),
+  http.get(`${API}/config`, () =>
+    HttpResponse.json(configFixture({ saz_sync: true, ai_generation: true })),
+  ),
 
   http.post(`${API}/plan-generations`, async ({ request }) => {
     if (!hasAuth(request)) return unauthorized();
@@ -186,20 +242,30 @@ export const coreHandlers = [
       return apiError(409, "GENERATION_IN_PROGRESS", "Генерація вже триває");
     }
     const preferences = (await request.json()) as Preferences;
-    const task: PlanGeneration = { id: nextGenerationId++, status: "pending", plan_id: null, notices: [] };
+    const task: PlanGeneration = {
+      id: nextGenerationId++,
+      status: "pending",
+      plan_id: null,
+      notices: [],
+    };
     const generation = { task };
     generations.set(task.id, generation);
     setTimeout(() => {
       if (generations.get(task.id) !== generation) return;
-      const draft = build(state.nextId++, "draft", [
-        item(DISCIPLINES[0]!),
-        {
-          ...item(DISCIPLINES[1]!),
-          ai_explanation: "Доповнює напрям Data Science практикою оцінювання моделей.",
-          alternatives: [{ ...item(DISCIPLINES[4]!), rank: 1 }],
-        },
-        item(DISCIPLINES[2]!, true),
-      ], preferences.academic_year);
+      const draft = build(
+        state.nextId++,
+        "draft",
+        [
+          item(DISCIPLINES[0]!),
+          {
+            ...item(DISCIPLINES[1]!),
+            ai_explanation: "Доповнює напрям Data Science практикою оцінювання моделей.",
+            alternatives: [{ ...item(DISCIPLINES[4]!), rank: 1 }],
+          },
+          item(DISCIPLINES[2]!, true),
+        ],
+        preferences.academic_year,
+      );
       draft.course = db.me.student?.course_year ?? draft.course;
       const levels = preferences.load_levels;
       draft.load_levels = {
@@ -212,7 +278,13 @@ export const coreHandlers = [
         ...generation.task,
         status: "succeeded",
         plan_id: draft.id,
-        notices: [{ code: "YEAR_CREDITS_BELOW_MIN", course_id: null, message: "Перевірте річну суму кредитів з урахуванням нормативних дисциплін." }],
+        notices: [
+          {
+            code: "YEAR_CREDITS_BELOW_MIN",
+            course_id: null,
+            message: "Перевірте річну суму кредитів з урахуванням нормативних дисциплін.",
+          },
+        ],
       };
     }, 1800);
     return HttpResponse.json(task, { status: 202 });
@@ -317,3 +389,4 @@ export const coreHandlers = [
       : planNotFound();
   }),
 ];
+// Використання ШІ: Codex узгодив моки з неповними годинами #291; перевірка: Vitest і typecheck.

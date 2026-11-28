@@ -478,7 +478,11 @@ export function BuilderPage() {
       <ConfirmDialog
         open={confirmOpen}
         title="Подати план?"
-        description="Після подання змінити його не можна."
+        description={
+          validation.data?.summary.workload_complete
+            ? "Після подання змінити його не можна."
+            : "Години перевірено не повністю. Перегляньте дисципліни без даних перед поданням. Після подання змінити план не можна."
+        }
         confirmLabel="Подати"
         variant="primary"
         busy={busy}
@@ -488,3 +492,4 @@ export function BuilderPage() {
     </div>
   );
 }
+// Використання ШІ: Codex уточнив підтвердження подання за неповних годин #291; перевірка: Vitest і typecheck.
