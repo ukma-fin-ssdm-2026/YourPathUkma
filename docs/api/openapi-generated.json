@@ -9228,6 +9228,14 @@
             "title": "Credits",
             "description": "Кількість кредитів ECTS"
           },
+          "semesters": {
+            "items": {
+              "$ref": "#/components/schemas/SemesterFields"
+            },
+            "type": "array",
+            "title": "Semesters",
+            "description": "Семестрові кредити й контактні години на тиждень із САЗ"
+          },
           "directions": {
             "items": {
               "type": "string"
@@ -9735,6 +9743,35 @@
           "redirect_uri"
         ],
         "title": "MicrosoftLoginRequest"
+      },
+      "MissingWorkloadCourse": {
+        "properties": {
+          "course_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "source"
+        ],
+        "title": "MissingWorkloadCourse"
       },
       "ModerationChangeType": {
         "type": "string",
@@ -10611,6 +10648,18 @@
             "type": "object",
             "title": "Credits By Trimester",
             "description": "Кредити по триместрах (ключі 1, 2, 3)"
+          },
+          "workload_by_trimester": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TrimesterWorkload"
+            },
+            "type": "object",
+            "title": "Workload By Trimester"
+          },
+          "workload_complete": {
+            "type": "boolean",
+            "title": "Workload Complete",
+            "default": false
           }
         },
         "type": "object",
@@ -10629,7 +10678,7 @@
           "valid": {
             "type": "boolean",
             "title": "Valid",
-            "description": "true, якщо немає жодної помилки"
+            "description": "true, якщо немає помилок і дані тижневих годин повні; неповнота повертається в warnings"
           },
           "errors": {
             "items": {
@@ -10902,6 +10951,63 @@
         ],
         "title": "RuleIssue"
       },
+      "SemesterFields": {
+        "properties": {
+          "number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Number"
+          },
+          "season": {
+            "type": "string",
+            "enum": [
+              "Осінь",
+              "Весна",
+              "Літо"
+            ],
+            "title": "Season"
+          },
+          "credits": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credits"
+          },
+          "weekly_hours": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 168.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weekly Hours"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "number",
+          "season",
+          "credits"
+        ],
+        "title": "SemesterFields"
+      },
       "SessionStatus": {
         "properties": {
           "connected": {
@@ -11164,6 +11270,43 @@
           "faculty_certificates"
         ],
         "title": "SyncSource"
+      },
+      "TrimesterWorkload": {
+        "properties": {
+          "known_weekly_hours": {
+            "type": "number",
+            "title": "Known Weekly Hours"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          },
+          "missing_courses": {
+            "items": {
+              "$ref": "#/components/schemas/MissingWorkloadCourse"
+            },
+            "type": "array",
+            "title": "Missing Courses"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "known_weekly_hours",
+          "complete",
+          "missing_courses"
+        ],
+        "title": "TrimesterWorkload"
       },
       "UserRef": {
         "properties": {

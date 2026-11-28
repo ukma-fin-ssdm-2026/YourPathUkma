@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Класифікація тижневого навантаження студента та автоматичний розрахунок для 4 курсу (AGENTS.md §4, FR-003, US-009).
 
@@ -109,6 +110,7 @@ def distribute_auto_load(
     catalog_available_by_trimester: Dict[str, float] | None = None,
     total_program_credits: float = TOTAL_PROGRAM_CREDITS,
     max_hours_per_week: float = MAX_HOURS_PER_WEEK,
+    weekly_by_trimester: Dict[str, float | None] | None = None,
 ) -> AutoLoadResult:
     """Розподіляє навантаження 4 курсу за залишком кредитів до 240 (чиста бізнес-логіка).
 
@@ -116,27 +118,13 @@ def distribute_auto_load(
     - зараховані кредити студента;
     - нормативні дисципліни поточного року за триместрами;
     - доступність вибіркових курсів у каталозі по триместрах;
-    - обмеження тижневого навантаження (максимум 25 год/тиждень на триместр).
+    - реальні години, якщо відомі; кредити не обмежуються межею годин.
     """
     earned = round(float(earned_credits), 1)
     if earned > total_program_credits:
         raise TotalCreditsExceededError(earned)
 
     remaining_total = round(total_program_credits - earned, 1)
-
-    # Випадок, коли 240 вже зараховано (залишок 0)
-    if remaining_total <= 0.0:
-        return AutoLoadResult(
-            autumn_level="low",
-            spring_level="low",
-            summer_level="low",
-            explanation="Норматив у 240 кредитів уже виконано (залишок 0 кредитів). Навантаження мінімальне (low).",
-            earned_credits=earned,
-            remaining_credits=0.0,
-            normative_credits=0.0,
-            remaining_elective_credits=0.0,
-            trimester_credits={"autumn": 0.0, "spring": 0.0, "summer": 0.0},
-        )
 
     # Нормативні дисципліни поточного року
     norm: Dict[str, float] = {"autumn": 0.0, "spring": 0.0, "summer": 0.0}
@@ -148,29 +136,9 @@ def distribute_auto_load(
     if total_normative > remaining_total:
         raise NormativeCreditsExceedRemainingError(total_normative, remaining_total)
 
-    for k in ("autumn", "spring", "summer"):
-        if norm[k] > max_hours_per_week:
-            raise LoadDistributionFailedError(
-                f"Нормативні дисципліни в триместрі '{k}' ({norm[k]:g} кр.) "
-                f"перевищують максимальне тижневе навантаження {max_hours_per_week:g} годин"
-            )
-
     remaining_elective = round(remaining_total - total_normative, 1)
-
-    # Максимальне навантаження за 3 триместри (3 * 25 = 75)
-    max_year_capacity = 3 * max_hours_per_week
-    if remaining_total > max_year_capacity:
-        raise LoadDistributionFailedError(
-            f"Залишок у {remaining_total:g} кредитів перевищує максимально можливе річне "
-            f"навантаження ({max_year_capacity:g} кредитів за 3 триместри)"
-        )
-
-    elective_capacity = {k: round(max_hours_per_week - norm[k], 1) for k in ("autumn", "spring", "summer")}
-    if remaining_elective > sum(elective_capacity.values()):
-        raise LoadDistributionFailedError(
-            f"Неможливо розподілити {remaining_elective:g} кр. вибіркових дисциплін "
-            "без перевищення ліміту 25 год/тиждень"
-        )
+    # Credit targets are independent of the contact-hour limit.
+    elective_capacity = {k: remaining_elective for k in ("autumn", "spring", "summer")}
 
     # Перевірка наявності дисциплін у каталозі
     if catalog_available_by_trimester is not None and remaining_elective > 0:
@@ -228,13 +196,18 @@ def distribute_auto_load(
     final_diff = round(remaining_total - sum(final_totals.values()), 1)
     if abs(final_diff) > 0.05:
         for k in ("autumn", "spring", "summer"):
-            if 0 <= final_totals[k] + final_diff <= max_hours_per_week:
+            if 0 <= final_totals[k] + final_diff:
                 final_totals[k] = round(final_totals[k] + final_diff, 1)
                 break
 
-    autumn_lvl = classify_load_level(final_totals["autumn"])
-    spring_lvl = classify_load_level(final_totals["spring"])
-    summer_lvl = classify_load_level(final_totals["summer"])
+    actual_hours = weekly_by_trimester or {}
+    levels = {}
+    for k in ("autumn", "spring", "summer"):
+        hours = actual_hours.get(k)
+        if hours is not None and hours > max_hours_per_week:
+            raise LoadDistributionFailedError(f"Триместр {k}: {hours:g} год/тиждень перевищує 25")
+        levels[k] = classify_load_level(hours) if hours is not None else "medium"
+    autumn_lvl, spring_lvl, summer_lvl = (levels[k] for k in ("autumn", "spring", "summer"))
 
     explanation = (
         f"Автоматичний розрахунок для 4 курсу: зараховано {earned:g} кр., "
@@ -243,6 +216,9 @@ def distribute_auto_load(
         f"Весна — {final_totals['spring']:g} кр. ({spring_lvl}), "
         f"Літо — {final_totals['summer']:g} кр. ({summer_lvl})."
     )
+
+    if any(actual_hours.get(k) is None for k in levels):
+        explanation += " Години неповні; medium є тимчасовим значенням, а не підтвердженим рівнем."
 
     return AutoLoadResult(
         autumn_level=autumn_lvl,
@@ -313,7 +289,15 @@ def calculate_auto_load_levels(
             tri_key = c.trimester.value
             catalog_available[tri_key] = round(catalog_available[tri_key] + c.credits, 1)
 
+    from .plan_workload import evaluate_plan_workload
+
+    evaluation = evaluate_plan_workload(db, student_id, academic_year, [])
+    weekly = {
+        db_enums.Trimester.from_number(int(t)).value: (w["known_weekly_hours"] if w["complete"] else None)
+        for t, w in evaluation.workload_by_trimester.items()
+    }
     return distribute_auto_load(
+        weekly_by_trimester=weekly,
         earned_credits=earned_credits,
         normative_by_trimester=normative_by_trimester,
         catalog_available_by_trimester=catalog_available,

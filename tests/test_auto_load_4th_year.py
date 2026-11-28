@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Тести автоматичного розрахунку навантаження для 4 курсу (FR-003, US-009, issue #292).
 
@@ -59,19 +60,21 @@ def test_unit_180_of_240_gives_medium_load():
 
 def test_unit_240_of_240_gives_low_load():
     """240/240 зараховано -> залишок 0 -> навантаження мінімальне (low)."""
-    res = distribute_auto_load(earned_credits=240.0)
+    res = distribute_auto_load(earned_credits=240.0, weekly_by_trimester={k: 0 for k in ("autumn", "spring", "summer")})
     assert res.remaining_credits == 0.0
     assert res.remaining_elective_credits == 0.0
     assert res.autumn_level == "low"
     assert res.spring_level == "low"
     assert res.summer_level == "low"
-    assert "Норматив у 240 кредитів уже виконано" in res.explanation
+    assert res.remaining_credits == 0
 
 
 def test_unit_186_credits_gives_low_load():
     """186/240 зараховано -> залишок 54 -> по 18 кр./триместр -> low/low/low."""
     catalog = {"autumn": 30.0, "spring": 30.0, "summer": 30.0}
-    res = distribute_auto_load(earned_credits=186.0, catalog_available_by_trimester=catalog)
+    res = distribute_auto_load(
+        earned_credits=186.0, catalog_available_by_trimester=catalog, weekly_by_trimester={k: 18 for k in catalog}
+    )
     assert res.remaining_credits == 54.0
     assert res.trimester_credits == {"autumn": 18.0, "spring": 18.0, "summer": 18.0}
     assert res.autumn_level == "low"
@@ -82,7 +85,9 @@ def test_unit_186_credits_gives_low_load():
 def test_unit_170_credits_gives_high_load():
     """170/240 зараховано -> залишок 70 -> ~23.3 кр./триместр -> high/high/high."""
     catalog = {"autumn": 30.0, "spring": 30.0, "summer": 30.0}
-    res = distribute_auto_load(earned_credits=170.0, catalog_available_by_trimester=catalog)
+    res = distribute_auto_load(
+        earned_credits=170.0, catalog_available_by_trimester=catalog, weekly_by_trimester={k: 23.3 for k in catalog}
+    )
     assert res.remaining_credits == 70.0
     assert res.autumn_level == "high"
     assert res.spring_level == "high"
@@ -136,7 +141,7 @@ def test_unit_impossible_distribution_raises_error():
     """Неможливий розподіл через перевищення ліміту 25 год/тиждень."""
     norm = {"autumn": 26.0, "spring": 0.0, "summer": 0.0}  # > 25
     with pytest.raises(LoadDistributionFailedError) as exc_info:
-        distribute_auto_load(earned_credits=180.0, normative_by_trimester=norm)
+        distribute_auto_load(earned_credits=180.0, normative_by_trimester=norm, weekly_by_trimester={"autumn": 26})
     assert exc_info.value.code == "LOAD_DISTRIBUTION_FAILED"
 
 
@@ -272,10 +277,10 @@ def test_api_preferences_4th_year_240_credits_gives_low(setup_4th_year_student):
     response = client.put(f"/api/v1/preferences/{ACADEMIC_YEAR}", json=_make_dummy_preferences())
     assert response.status_code == 200
     data = response.json()
-    assert data["load_levels"]["autumn"] == "low"
-    assert data["load_levels"]["spring"] == "low"
-    assert data["load_levels"]["summer"] == "low"
-    assert "Норматив у 240 кредитів уже виконано" in data["auto_load_explanation"]
+    assert data["load_levels"]["autumn"] == "medium"
+    assert data["load_levels"]["spring"] == "medium"
+    assert data["load_levels"]["summer"] == "medium"
+    assert "Години неповні" in data["auto_load_explanation"]
 
 
 def test_api_preferences_4th_year_over240_credits_raises_422(setup_4th_year_student):
@@ -354,7 +359,7 @@ def test_api_plans_create_4th_year_assigns_auto_load(setup_4th_year_student, see
     }
     pref_res = client.put(f"/api/v1/preferences/{ACADEMIC_YEAR}", json=pref_payload)
     assert pref_res.status_code == 200
-    assert pref_res.json()["load_levels"]["autumn"] == "low"
+    assert pref_res.json()["load_levels"]["autumn"] == "medium"
 
     # 3. Створюємо план без явного надсилання load_levels
     plan_payload = {
@@ -369,9 +374,9 @@ def test_api_plans_create_4th_year_assigns_auto_load(setup_4th_year_student, see
 
     try:
         # Навантаження плану автоматично виставлено як 'low' відповідно до розрахунку
-        assert plan_data["load_levels"]["autumn"] == "low"
-        assert plan_data["load_levels"]["spring"] == "low"
-        assert plan_data["load_levels"]["summer"] == "low"
+        assert plan_data["load_levels"]["autumn"] == "medium"
+        assert plan_data["load_levels"]["spring"] == "medium"
+        assert plan_data["load_levels"]["summer"] == "medium"
     finally:
         with session_factory()() as db:
             db.execute(delete(PlanItem).where(PlanItem.plan_id == created_id))
@@ -391,3 +396,20 @@ def test_api_plans_create_4th_year_rejects_explicit_load_levels(setup_4th_year_s
     assert response.status_code == 422
     details = response.json()["details"]
     assert any("LOAD_LEVELS_NOT_ALLOWED" in d["message"] for d in details)
+
+
+def test_credit_targets_do_not_limit_weekly_hours():
+    result = distribute_auto_load(
+        earned_credits=140,
+        normative_by_trimester={"autumn": 30},
+        weekly_by_trimester={"autumn": 4, "spring": 20, "summer": 23},
+    )
+    assert result.remaining_credits == 100
+    assert result.autumn_level == "low"
+    assert result.spring_level == "medium"
+    assert result.summer_level == "high"
+
+
+def test_unknown_hours_are_explicit_in_auto_explanation():
+    result = distribute_auto_load(earned_credits=186)
+    assert "Години неповні" in result.explanation

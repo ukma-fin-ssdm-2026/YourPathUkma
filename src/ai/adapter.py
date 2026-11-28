@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Головний адаптер AI-генерації: оркеструє промпт → LLM → парсинг → серверна валідація → збереження.
 
@@ -134,6 +135,36 @@ def _validate_and_save(
             f"Ліміт вільного вибору перевищено: {total_free:.1f} > {FREE_ELECTIVE_LIMIT:.1f} кредитів (FR-010)"
         )
 
+    # Shared evaluation uses catalog hours, never model-supplied estimates (#291).
+    from types import SimpleNamespace
+
+    from ..services.plan_workload import evaluate_plan_workload
+
+    evaluation = evaluate_plan_workload(
+        db,
+        generation.student_id,
+        generation.academic_year,
+        [
+            SimpleNamespace(
+                course_id=i.course_id,
+                title=course_map[i.course_id].title,
+                credits=float(course_map[i.course_id].credits),
+                trimester=db_enums.Trimester(i.trimester).number,
+            )
+            for i in plan_items_data
+        ],
+        ctx.load_levels,
+    )
+    if evaluation.errors:
+        raise ValueError("; ".join(v.message for v in evaluation.errors))
+    notices.extend(PlanGenerationNotice(code=v.code, message=v.message) for v in evaluation.warnings)
+    levels = dict(ctx.load_levels)
+    if ctx.student_course_year == 4:
+        levels = {
+            db_enums.Trimester.from_number(int(t)).value: w["level"] or "medium"
+            for t, w in evaluation.workload_by_trimester.items()
+        }
+
     # Збереження IndividualPlan
     plan = IndividualPlan(
         student_id=generation.student_id,
@@ -141,9 +172,9 @@ def _validate_and_save(
         course_year=ctx.student_course_year,
         status=db_enums.PlanStatus.DRAFT,
         origin=db_enums.PlanOrigin.AI_GENERATED,
-        load_autumn=db_enums.LoadLevel(ctx.load_levels.get("autumn", "medium")),
-        load_spring=db_enums.LoadLevel(ctx.load_levels.get("spring", "medium")),
-        load_summer=db_enums.LoadLevel(ctx.load_levels.get("summer", "medium")),
+        load_autumn=db_enums.LoadLevel(levels.get("autumn", "medium")),
+        load_spring=db_enums.LoadLevel(levels.get("spring", "medium")),
+        load_summer=db_enums.LoadLevel(levels.get("summer", "medium")),
     )
     db.add(plan)
     db.flush()  # щоб отримати plan.id
@@ -296,6 +327,7 @@ def _extract_parts(ctx) -> tuple[str, str]:
             "title": c.title,
             "description": c.description,
             "credits": c.credits,
+            "semesters": c.semesters,
             "trimester": c.trimester,
             "recommended_year": c.recommended_year,
             "direction_ids": c.direction_ids,
@@ -316,6 +348,8 @@ def _extract_parts(ctx) -> tuple[str, str]:
         "6. Consider the student's load level preferences per trimester.\n"
         "7. Prioritize courses matching the student's direction_ids.\n"
         f"8. Free elective budget remaining: {max(0.0, 25.0 - ctx.history_free_choice_credits_used):.1f} credits.\n"
+        "Weekly contact hours come only from semesters.weekly_hours; ECTS is not hours/week. "
+        "Max 25 including normative courses.\n"
         "9. Do not include courses the student has already completed (past_course_ids).\n\n"
         "Return ONLY valid JSON matching this schema:\n"
         "{\n"
