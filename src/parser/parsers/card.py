@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Парсер картки курсу з каталогу САЗ: `div.panel` (`panel-default`, а в курсів, обраних студентом, `panel-info`)
 із вкладеним `div.panel-collapse#course-card-{id}`.
@@ -22,6 +23,7 @@ _INTERNAL_ID = re.compile(r"^course-card-(\d+)$")
 _CREDITS = re.compile(r"(\d+(?:[.,]\d+)?)\s*кред")
 _YEAR = re.compile(r"(\d+)\s*рік")
 _HOURS = re.compile(r"(\d+)\s*год\.(?!/)")
+_WEEKLY_HOURS = re.compile(r"(\d+(?:[.,]\d+)?)\s*год\.\s*/\s*тижд\.")
 _SEMESTER_NO = re.compile(r"Семестр\s+(\d+)")
 
 
@@ -80,11 +82,13 @@ def _semesters(body: Tag, rows: Dict[str, Tag]) -> List[Semester]:
     for season in _SEASONS:
         cell = rows.get(season)
         if cell is not None:
-            found.append((season, parse_float(_first(_CREDITS, clean_text(cell.get_text(" "))))))
+            text = clean_text(cell.get_text(" "))
+            # Visible units only: SAZ also puts misleading weekly titles on lecture counts.
+            found.append((season, parse_float(_first(_CREDITS, text)), parse_float(_first(_WEEKLY_HOURS, text))))
     paired = len(numbers) == len(found)
     return [
-        Semester(number=numbers[i] if paired else None, season=season, credits=credits)
-        for i, (season, credits) in enumerate(found)
+        Semester(number=numbers[i] if paired else None, season=season, credits=credits, weekly_hours=hours)
+        for i, (season, credits, hours) in enumerate(found)
     ]
 
 

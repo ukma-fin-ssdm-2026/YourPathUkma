@@ -31,9 +31,13 @@ const planWith = (items: PlanItem[]): BuilderPlan => ({
 });
 
 function validation(
-  overrides: Partial<PlanValidationResponse> & { total?: number; used?: number } = {},
+  overrides: Partial<PlanValidationResponse> & {
+    total?: number;
+    used?: number;
+    year?: number;
+  } = {},
 ): PlanValidationResponse {
-  const { total = 0, used = 0, ...rest } = overrides;
+  const { total = 0, used = 0, year = total, ...rest } = overrides;
   return {
     valid: true,
     errors: [],
@@ -43,7 +47,8 @@ function validation(
       free_elective_credits: 0,
       free_elective_used_all_years: used,
       free_elective_remaining: 25 - used,
-      year_total_credits: total,
+      year_total_credits: year,
+      workload_complete: true,
       credits_by_trimester: { "1": total, "2": 0, "3": 0 },
     },
     ...rest,
@@ -72,7 +77,7 @@ describe("SummaryStrip: числа", () => {
     );
     metric("із 57–60", "0 із 57–60");
     expect(bar("Кредитів за рік")).toHaveAttribute("aria-valuenow", "0");
-    expect(screen.getByText("Усе гаразд")).toBeInTheDocument();
+    expect(screen.getByText("Перевірка ще не завершена")).toBeInTheDocument();
   });
 
   it("після очищення плану ігнорує попередню перевірку", () => {
@@ -98,7 +103,7 @@ describe("SummaryStrip: числа", () => {
     render(
       <SummaryStrip
         plan={planWith([item(1, 31)])}
-        validation={validation({ total: 31 })}
+        validation={validation({ total: 31, year: 58 })}
         credits={credits}
         normativeCredits={27}
       />,
@@ -203,26 +208,45 @@ describe("SummaryStrip: помилки й попередження", () => {
     expect(within(screen.getByTestId("issues-count")).getByText("2")).toBeInTheDocument();
   });
 
-  it("серверне YEAR_CREDITS_BELOW_MIN ігнорується, бо сервер не бачить нормативних; рахуємо самі", () => {
-    const serverWarn = validation({ total: 31, warnings: [issue("YEAR_CREDITS_BELOW_MIN")] });
-    const { rerender } = render(
+  it("серверний річний підсумок і попередження мають пріоритет", () => {
+    render(
       <SummaryStrip
-        plan={planWith([item(1, 31)])}
-        validation={serverWarn}
+        plan={planWith([item(1, 5)])}
+        validation={validation({
+          total: 5,
+          year: 56.9,
+          warnings: [issue("YEAR_CREDITS_BELOW_MIN", "Сервер: 56,9 кредитів")],
+        })}
         credits={credits}
-        normativeCredits={27}
+        normativeCredits={100}
       />,
     );
-    expect(screen.queryAllByText("За рік менше 57 кредитів")).toHaveLength(0);
-    rerender(
+    metric("із 57–60", "56,9 із 57–60");
+    expect(screen.getAllByText("Сервер: 56,9 кредитів").length).toBeGreaterThan(0);
+  });
+
+  it("показує неповні години та дисципліни без даних", () => {
+    const result = validation();
+    result.valid = false;
+    result.summary.workload_by_trimester = {
+      "1": {
+        known_weekly_hours: 4,
+        complete: false,
+        level: null,
+        missing_courses: [{ course_id: 2, title: "Алгоритми", source: "deanery" }],
+      },
+    };
+    render(
       <SummaryStrip
-        plan={planWith([item(1, 31)])}
-        validation={serverWarn}
+        plan={planWith([item(1, 5)])}
+        validation={result}
         credits={credits}
-        normativeCredits={10}
+        normativeCredits={0}
       />,
     );
-    expect(screen.getAllByText("За рік менше 57 кредитів").length).toBeGreaterThan(0);
+    expect(screen.getByText("4 год/тиждень · неповні дані")).toBeInTheDocument();
+    expect(screen.getByText("Без годин: Алгоритми")).toBeInTheDocument();
+    expect(screen.queryByText("Усе гаразд")).not.toBeInTheDocument();
   });
 });
 
@@ -232,7 +256,7 @@ describe("SummaryStrip: показ перевірок лише після спр
     validation: validation({
       total: 3,
       errors: [issue("ONLY_FREE_ELECTIVES")],
-      warnings: [issue("LOW_LOAD_FUTURE_INCREASE")],
+      warnings: [issue("LOW_LOAD_FUTURE_INCREASE"), issue("YEAR_CREDITS_BELOW_MIN", "За рік менше 57 кредитів")],
     }),
     credits,
     normativeCredits: 0,

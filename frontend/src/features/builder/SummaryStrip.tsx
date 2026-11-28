@@ -1,3 +1,4 @@
+// Використання ШІ: Codex додав серверні години й повноту #291; перевірка: Vitest, typecheck, lint і build.
 // Використання ШІ: файл створено за допомогою Claude (Anthropic). Перевірка: summary.test.tsx.
 // Codex уточнив підсумок кредитів і живу валідацію. Перевірка — фронтенд-тести.
 // Codex вніс зміни для issue #221. Перевірка: фронтенд-тести й лінтер.
@@ -5,6 +6,7 @@ import type { Credits, PlanValidationResponse, RuleIssue } from "../../api/types
 import { creditsPercent } from "../../lib/credits";
 import { CountUp } from "../../ui/CountUp";
 import { FREE_LIMIT, MIN_YEAR_CREDITS, summarize, type BuilderPlan } from "./plan";
+import { trimesterLabel, type Trimester } from "../../lib/trimester";
 
 const YEAR_MAX = 60;
 
@@ -82,16 +84,12 @@ export function SummaryStrip({
   const local = summarize(plan.items);
   const currentValidation = plan.items.length > 0 ? validation : undefined;
   const selected = currentValidation?.summary.total_credits ?? local.total;
-  const yearTotal = selected + normativeCredits;
+  const yearTotal = currentValidation?.summary.year_total_credits ?? selected + normativeCredits;
   const freeUsed = (credits?.free_choice_used ?? 0) + local.free;
   const professional = (credits?.professional_used ?? 0) + (local.total - local.free);
 
-  // Сервер не бачить нормативних з документа деканату, тож це попередження рахуємо самі.
-  const serverWarnings = (currentValidation?.warnings ?? []).filter(
-    (w) => w.code !== "YEAR_CREDITS_BELOW_MIN",
-  );
-  const warnings: RuleIssue[] = [...serverWarnings];
-  if (plan.items.length > 0 && yearTotal < MIN_YEAR_CREDITS) {
+  const warnings: RuleIssue[] = [...(currentValidation?.warnings ?? [])];
+  if (!currentValidation && plan.items.length > 0 && yearTotal < MIN_YEAR_CREDITS) {
     warnings.push({
       code: "YEAR_CREDITS_BELOW_MIN",
       message: "За рік менше 57 кредитів",
@@ -146,13 +144,52 @@ export function SummaryStrip({
           <div className="mt-1 text-sm font-semibold">
             {issues === 0
               ? showIssues
-                ? "Усе гаразд"
+                ? currentValidation?.valid
+                  ? "Усе гаразд"
+                  : "Перевірка ще не завершена"
                 : "Виконаються під час збереження"
               : (WARNING_TEXT[(errors[0] ?? warnings[0])!.code] ??
                 ERROR_TEXT[(errors[0] ?? warnings[0])!.code] ??
                 (errors[0] ?? warnings[0])!.message)}
           </div>
         </div>
+      </div>
+
+      <div
+        className="rounded-2xl border border-rule bg-surface p-4"
+        aria-label="Тижневе навантаження"
+      >
+        <h2 className="text-sm font-semibold">Години на тиждень · максимум 25</h2>
+        <p className="mt-1 text-xs text-ink-2">
+          Контактні години із САЗ разом із нормативними дисциплінами. 60 ECTS — річний орієнтир, а
+          не верхня межа.
+        </p>
+        <dl className="mt-3 grid gap-3 sm:grid-cols-3" aria-live="polite">
+          {([1, 2, 3] as Trimester[]).map((tri) => {
+            const load = currentValidation?.summary.workload_by_trimester?.[String(tri)];
+            const over = (load?.known_weekly_hours ?? 0) > 25;
+            return (
+              <div key={tri} className={over ? "text-bad" : ""}>
+                <dt className="text-xs text-ink-2">{trimesterLabel(tri)}</dt>
+                <dd className="mt-1 text-sm font-semibold">
+                  {load ? `${load.known_weekly_hours} год/тиждень` : "Очікуємо перевірку"}
+                  {load && !load.complete ? " · неповні дані" : ""}
+                  {over ? " · перевищено 25" : ""}
+                </dd>
+                {load?.level && (
+                  <dd className="text-xs text-ink-2">
+                    {{ low: "Низьке", medium: "Середнє", high: "Високе" }[load.level] ?? load.level}
+                  </dd>
+                )}
+                {!!load?.missing_courses.length && (
+                  <dd className="mt-1 text-xs text-ink-2">
+                    Без годин: {load.missing_courses.map((c) => c.title).join(", ")}
+                  </dd>
+                )}
+              </div>
+            );
+          })}
+        </dl>
       </div>
 
       {errors.length > 0 && (

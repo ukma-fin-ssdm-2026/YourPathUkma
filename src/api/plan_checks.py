@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Перевірки плану, яким потрібні каталог і історія студента в БД. Точки входу: enforce_plan_rules (POST/PUT)
 і enforce_submit_rules (подання плану).
@@ -22,7 +23,6 @@ from sqlalchemy.orm import Session
 
 from ..db import enums as db_enums
 from ..db.models import Course, IndividualPlan
-from ..db.models.deanery import DeaneryPlanDocument, NormativeCourseEntry
 from ..db.models.history import AcademicRecord
 from ..db.models.users import StudentProfile
 from ..services import plan_rules
@@ -150,16 +150,10 @@ def free_elective_used_in_other_plans(db: Session, student_id: int, exclude_plan
 
 def normative_course_ids(db: Session, student_id: int, academic_year: int) -> Set[int]:
     """Дисципліни каталогу, на які студента записав деканат у документі за цей рік."""
-    rows = db.scalars(
-        select(NormativeCourseEntry.course_id)
-        .join(DeaneryPlanDocument, DeaneryPlanDocument.id == NormativeCourseEntry.document_id)
-        .where(
-            DeaneryPlanDocument.student_id == student_id,
-            DeaneryPlanDocument.academic_year == academic_year,
-            NormativeCourseEntry.course_id.is_not(None),
-        )
-    )
-    return set(rows)
+    from ..services.plan_workload import latest_parsed_document
+
+    doc = latest_parsed_document(db, student_id, academic_year)
+    return {entry.course_id for entry in doc.normative_courses if entry.course_id is not None} if doc else set()
 
 
 def collect_catalog_flag_violations(items: Sequence, courses: Dict[int, Course]) -> List[plan_rules.Violation]:
@@ -233,6 +227,10 @@ def enforce_submit_rules(db: Session, plan: IndividualPlan, items: Sequence, cou
         )
     else:
         violations += _collect_violations(db, plan.student_id, plan.academic_year, items, courses, plan.id)
+    from ..services.plan_workload import evaluate_plan_workload
+
+    evaluation = evaluate_plan_workload(db, plan.student_id, plan.academic_year, items)
+    violations += evaluation.errors
     if violations:
         raise ApiError(
             422,

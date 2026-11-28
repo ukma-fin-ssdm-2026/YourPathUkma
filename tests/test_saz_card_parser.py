@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Парсер картки курсу САЗ на очищених фікстурах (без мережі).
 
@@ -43,7 +44,7 @@ def test_full_card_fields(page1):
     assert course.instructors == ["Маслійчук В.Л."]  # ступінь «д.і.н.» відкинуто
     assert course.description and "історико-географічна" in course.description
     assert course.specialties == [Specialty("Історія", "Професійно-орієнтована")]
-    assert course.semesters == [Semester(6, "Весна", 4.0)]
+    assert course.semesters == [Semester(6, "Весна", 4.0, 3.0)]
 
 
 def test_status_not_happened(page1):
@@ -59,7 +60,7 @@ def test_optional_instructor_and_description_missing(page1):
 
 def test_multi_semester_course(page26):
     course = by_code(page26, "362856")
-    assert course.semesters == [Semester(3, "Осінь", 3.5), Semester(4, "Весна", 3.5)]
+    assert course.semesters == [Semester(3, "Осінь", 3.5, 4.0), Semester(4, "Весна", 3.5, 4.0)]
     assert course.credits == 3.5  # кредити першого семестру
 
 

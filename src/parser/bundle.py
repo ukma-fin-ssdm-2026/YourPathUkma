@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """Versioned SAZ catalog interchange shared by local scans and admin uploads.
 
 Використання ШІ: схему імпорту створено Codex. Перевірка: pytest.
@@ -45,6 +46,7 @@ class SemesterFields(CatalogModel):
     number: Optional[int]
     season: Literal["Осінь", "Весна", "Літо"]
     credits: Optional[float] = Field(ge=0)
+    weekly_hours: Optional[float] = Field(default=None, ge=0, le=168)
 
 
 class SpecialtyFields(CatalogModel):

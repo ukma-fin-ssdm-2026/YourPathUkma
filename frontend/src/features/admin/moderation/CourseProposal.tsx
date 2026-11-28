@@ -1,4 +1,5 @@
 // Використання ШІ: Codex створив картку пропозиції САЗ. Перевірка: moderation.test.tsx, lint, build.
+// Використання ШІ: Codex додав контактні години #291; перевірка: Vitest.
 import type { ReactNode } from "react";
 import { Badge } from "../../../ui/Badge";
 
@@ -63,7 +64,13 @@ export function CourseProposal({ payload }: { payload: Record<string, unknown> }
   const semesters = rows(payload.semesters, (row) => {
     const number = display(row.number);
     const credits = display(row.credits);
-    return [number && `${number} семестр`, display(row.season), credits && `${credits} кред.`]
+    const hours = display(row.weekly_hours);
+    return [
+      number && `${number} семестр`,
+      display(row.season),
+      credits && `${credits} кред.`,
+      hours && `${hours} год/тиждень`,
+    ]
       .filter(Boolean)
       .join(" · ");
   });

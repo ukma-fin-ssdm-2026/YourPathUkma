@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 TP-18: модульні тести перетворення курсу з БД на модель API `to_discipline` (src/api/routes/disciplines.py).
 
@@ -24,6 +25,7 @@ def _course(instructors=("Петренко І. М.",), directions=("Data Science
         "recommended_year": 2,
         "trimester": db_enums.Trimester.SPRING,
         "credits": 5.0,
+        "semesters": [],
         "course_instructors": [SimpleNamespace(instructor=SimpleNamespace(full_name=name)) for name in instructors],
         "directions": [SimpleNamespace(name=name) for name in directions],
     }
@@ -51,6 +53,7 @@ def test_to_discipline_maps_course_fields():
         "credits": 5.0,
         "directions": ["Data Science"],
         "certificate_programs": [],
+        "semesters": [],
     }
 
 

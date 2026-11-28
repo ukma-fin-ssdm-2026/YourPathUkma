@@ -246,18 +246,20 @@ OpenAPI описує `429`, `Retry-After` і `X-Request-ID` для всіх оп
 | Нормативна дисципліна (`discipline_type = normative`) у плані | 422 ✅ (`NORMATIVE_NOT_ALLOWED` у `details[].message`) | 422 |
 | Конфлікт з документом деканату на цей рік | 422 `NORMATIVE_CONFLICT` 🟡 | 422 |
 | `course_id` існує в каталозі, `credits`/`trimester` збігаються з каталогом | 422 ✅ (`COURSE_NOT_FOUND` / `COURSE_DATA_MISMATCH` у `details[].message`, `field = items.N.course_id`) | 422 |
-| Сума за рік (вибіркові + нормативні) < 57 | **попередження** 🟡 | 422 `PLAN_VALIDATION_FAILED` |
+| Сума за рік (вибіркові + нормативні + історія без повторів) < 57 | **попередження** `YEAR_CREDITS_BELOW_MIN` | попередження |
+| Відомий підсумок >25 год/тиждень у триместрі | чернетка дозволена | 422 `WEEKLY_LOAD_EXCEEDED` |
+| Невідомі години або немає розпізнаного документа | чернетка дозволена | попередження `WORKLOAD_DATA_INCOMPLETE` |
 | Обрано `low` хоча б на один триместр, а рік ≥ 57 | **попередження** `LOW_LOAD_FUTURE_INCREASE` (FR-002) 🟡 | попередження |
 
-Чернетку можна зберегти неповною, щоб студент міг повернутися до неї пізніше. Подання вимагає, щоб усі нормативи виконувались.
+Чернетку можна зберегти неповною, щоб студент міг повернутися до неї пізніше. Подання блокує підтверджені порушення; річний мінімум і неповні години залишаються попередженнями. 60 ECTS — орієнтир, не верхня межа.
 
-Попередження повертаються в полі `warnings` плану (§3.4) і з `POST /plans/validate` (§3.4.7):
+Спільні попередження повертаються з `POST /plans/validate` (§3.4.7), а після ШІ-генерації — у `notices`. Чинний `PlanResponse` не містить окремого поля `warnings`:
 
 ```json
 { "code": "LOW_LOAD_FUTURE_INCREASE", "message": "Обрано низьке навантаження: навантаження наступних років зросте" }
 ```
 
-Коди попереджень 🟡: `LOW_LOAD_FUTURE_INCREASE`, `YEAR_CREDITS_BELOW_MIN`, `CERTIFICATE_COURSE_HINT` (🔵, дисципліна входить у сертифікатну програму; `message`: «Ця дисципліна входить у сертифікат X»).
+Коди попереджень: `LOW_LOAD_FUTURE_INCREASE`, `YEAR_CREDITS_BELOW_MIN`, `WORKLOAD_DATA_INCOMPLETE`, `CERTIFICATE_COURSE_HINT` (🔵, дисципліна входить у сертифікатну програму; `message`: «Ця дисципліна входить у сертифікат X»).
 
 ---
 
@@ -832,6 +834,17 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
 
 #### `POST /plans/validate` ✅
 
+Перевірка використовує [спільний облік кредитів і контактних годин](../architecture/workload-validation.md).
+`valid: true` означає відсутність помилок **і** повноту даних про години.
+`summary.year_total_credits` та `credits_by_trimester` враховують каталог, останній
+успішно розпізнаний документ деканату й історію поточного року без повторів.
+`summary.workload_complete` показує повноту; `workload_by_trimester["1"|"2"|"3"]`
+містить `known_weekly_hours`, `complete`, `missing_courses` (`course_id`, `title`,
+`source`) та `level` (`low`/`medium`/`high` або `null`). Кредити не перетворюються
+на години. Каталог додатково повертає `semesters[].weekly_hours` (`number|null`).
+
+
+
 Перевіряє план **без збереження**: для живих попереджень у конструкторі (індикатор кредитів, попередження про низьке навантаження) без створення чернетки на кожну дію. Тіло: `CreatePlanRequest`.
 
 `free_elective_used_all_years` включає кредити вільного вибору з академічної історії авторизованого студента та з поточного плану. `free_elective_remaining` дорівнює різниці між лімітом і цією сумою, щонайменше 0.
@@ -853,7 +866,13 @@ Query-параметри: `limit`, `offset` (§1.5), `status` (`PlanStatus`), `a
     "free_elective_used_all_years": 9.0,
     "free_elective_remaining": 16.0,
     "year_total_credits": 58.0,
-    "credits_by_trimester": { "1": 20.0, "2": 22.0, "3": 16.0 }
+    "credits_by_trimester": { "1": 20.0, "2": 22.0, "3": 16.0 },
+    "workload_complete": true,
+    "workload_by_trimester": {
+      "1": {"known_weekly_hours": 20, "complete": true, "missing_courses": [], "level": "medium"},
+      "2": {"known_weekly_hours": 23, "complete": true, "missing_courses": [], "level": "high"},
+      "3": {"known_weekly_hours": 10, "complete": true, "missing_courses": [], "level": "low"}
+    }
   }
 }
 ```
@@ -1401,6 +1420,13 @@ export interface PlanValidationResult {                   // ✅
     free_elective_remaining: number;
     year_total_credits: number;
     credits_by_trimester: Record<"1" | "2" | "3", number>;
+    workload_complete: boolean;
+    workload_by_trimester: Record<string, {
+      known_weekly_hours: number;
+      complete: boolean;
+      missing_courses: { course_id: number | null; title: string; source: string }[];
+      level: LoadLevel | null;
+    }>;
   };
 }
 
@@ -1652,3 +1678,5 @@ User stories US-001…US-010 відповідають тим самим FR і п
 
 **Використання ШІ.** Antigravity (Gemini 2.5 Pro) оновив опис GET /plans/{id}/export і features.plan_export для #296. Перевірка: pytest, ruff, згенерована специфікація OpenAPI.
 **Використання ШІ.** Antigravity (Gemini 2.5 Pro) оновив контракт автоматичного навантаження 4 курсу в §2.3 та §3.2.3 для #292. Перевірка: pytest, ruff, згенерована специфікація OpenAPI.
+
+**Використання ШІ.** Codex узгодив #291: річний облік, години, повноту й попередження. Перевірка: API-тести на PostgreSQL і регенерація OpenAPI.

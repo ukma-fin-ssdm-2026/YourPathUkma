@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Побудова анонімізованого промпту для LLM AI-рекомендацій (FR-005, SEC-001, AGENTS.md §5).
 
@@ -50,6 +51,7 @@ class CourseContext:
     recommended_year: int
     direction_ids: list[int]
     instructor_ids: list[int]  # для серверної фільтрації небажаних (не передається в LLM як текст)
+    semesters: list = field(default_factory=list)
 
 
 @dataclass
@@ -156,6 +158,7 @@ def build_context(db: Session, student_id: int, academic_year: int) -> PromptCon
                 title=course.title,
                 description=course.description[:500] if course.description else "",
                 credits=course.credits,
+                semesters=course.semesters,
                 trimester=course.trimester.value,
                 recommended_year=course.recommended_year,
                 direction_ids=[d.id for d in course.directions],

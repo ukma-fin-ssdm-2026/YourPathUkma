@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Життєвий цикл синхронізації каталогу САЗ та формування пропозицій модерації.
 
@@ -84,6 +85,7 @@ def _existing_courses(db: Session) -> List[ExistingCourse]:
             title=c.title,
             description=c.description or "",
             credits=float(c.credits),
+            semesters=c.semesters,
             trimester=c.trimester.number,
             recommended_year=c.recommended_year,
             kind=c.kind.value,

@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Ресурс «Індивідуальні плани» (Plans): CRUD, перевірка, подання, експорт.
 
@@ -48,6 +49,7 @@ from ...db.models.users import StudentProfile, User
 from ...db.session import get_db
 from ...export.pdf_generator import generate_plan_pdf
 from ...services import plan_rules
+from ...services.plan_workload import evaluate_plan_workload
 from ..common import MAX_DATABASE_ID, ApiError, ErrorDetail, PaginationInfo, error_responses, get_current_student_id
 from ..onboarding import get_onboarded_student
 from ..plan_checks import (
@@ -208,6 +210,19 @@ class PaginatedPlansResponse(BaseModel):
     pagination: PaginationInfo = Field(..., description="Метадані пагінації")
 
 
+class MissingWorkloadCourse(BaseModel):
+    course_id: Optional[int] = None
+    title: str
+    source: str
+
+
+class TrimesterWorkload(BaseModel):
+    known_weekly_hours: float
+    complete: bool
+    missing_courses: List[MissingWorkloadCourse]
+    level: Optional[str] = None
+
+
 class PlanSummary(BaseModel):
     total_credits: float = Field(..., description="Кредити вибіркових дисциплін плану", examples=[8.0])
     free_elective_credits: float = Field(..., description="Кредити вільного вибору в плані", examples=[3.0])
@@ -221,10 +236,14 @@ class PlanSummary(BaseModel):
     )
     year_total_credits: float = Field(..., description="Сума кредитів за рік", examples=[8.0])
     credits_by_trimester: Dict[str, float] = Field(..., description="Кредити по триместрах (ключі 1, 2, 3)")
+    workload_by_trimester: Dict[str, TrimesterWorkload] = Field(default_factory=dict)
+    workload_complete: bool = False
 
 
 class PlanValidationResponse(BaseModel):
-    valid: bool = Field(..., description="true, якщо немає жодної помилки")
+    valid: bool = Field(
+        ..., description="true, якщо немає помилок і дані тижневих годин повні; неповнота повертається в warnings"
+    )
     errors: List[RuleIssue] = Field(..., description="Порушення правил")
     warnings: List[RuleIssue] = Field(..., description="Попередження")
     summary: PlanSummary = Field(..., description="Підсумок кредитів для індикаторів у конструкторі")
@@ -369,31 +388,11 @@ def _apply_payload(
     plan.academic_year = payload.academic_year
     plan.course_year = payload.course
     if payload.course == 4:
-        # Для 4 курсу навантаження розраховується автоматично (FR-003, US-009)
-        from ...db.models.preferences import PlanPreferences
-        from ...services.load_levels import calculate_auto_load_levels
-
-        prefs = db.scalar(
-            select(PlanPreferences).where(
-                PlanPreferences.student_id == student_id,
-                PlanPreferences.academic_year == payload.academic_year,
-            )
-        )
-        if prefs and prefs.trimester_loads:
-            loads = {row.trimester: row.load_level for row in prefs.trimester_loads}
-            plan.load_autumn = loads.get(db_enums.Trimester.AUTUMN, db_enums.LoadLevel.MEDIUM)
-            plan.load_spring = loads.get(db_enums.Trimester.SPRING, db_enums.LoadLevel.MEDIUM)
-            plan.load_summer = loads.get(db_enums.Trimester.SUMMER, db_enums.LoadLevel.MEDIUM)
-        else:
-            try:
-                auto_res = calculate_auto_load_levels(db, student_id, payload.academic_year)
-                plan.load_autumn = db_enums.LoadLevel(auto_res.autumn_level)
-                plan.load_spring = db_enums.LoadLevel(auto_res.spring_level)
-                plan.load_summer = db_enums.LoadLevel(auto_res.summer_level)
-            except Exception:
-                plan.load_autumn = db_enums.LoadLevel.MEDIUM
-                plan.load_spring = db_enums.LoadLevel.MEDIUM
-                plan.load_summer = db_enums.LoadLevel.MEDIUM
+        evaluation = evaluate_plan_workload(db, student_id, payload.academic_year, payload.items)
+        levels = evaluation.workload_by_trimester
+        plan.load_autumn = db_enums.LoadLevel(levels["1"]["level"] or "medium")
+        plan.load_spring = db_enums.LoadLevel(levels["2"]["level"] or "medium")
+        plan.load_summer = db_enums.LoadLevel(levels["3"]["level"] or "medium")
     else:
         plan.load_autumn = db_enums.LoadLevel(payload.load_levels.autumn.value)
         plan.load_spring = db_enums.LoadLevel(payload.load_levels.spring.value)
@@ -606,22 +605,24 @@ def validate_plan(
     for v in plan_rules.check_total_program_credits(total, credit_summary.total_used):
         errors.append(RuleIssue(code=v.code, message=v.message, field=v.field))
 
-    by_trimester = {"1": 0.0, "2": 0.0, "3": 0.0}
-    for item in payload.items:
-        by_trimester[str(item.trimester)] += item.credits
-    by_trimester = {key: round(value, 1) for key, value in by_trimester.items()}
+    evaluation = evaluate_plan_workload(
+        db, student_id, payload.academic_year, payload.items, payload.load_levels.model_dump()
+    )
+    errors.extend(RuleIssue(code=v.code, message=v.message, field=v.field) for v in evaluation.errors)
 
     return PlanValidationResponse(
-        valid=not errors,
+        valid=not errors and evaluation.complete,
         errors=errors,
-        warnings=[],  # TODO: LOW_LOAD_FUTURE_INCREASE і YEAR_CREDITS_BELOW_MIN потребують нормативних дисциплін року
+        warnings=[RuleIssue(code=v.code, message=v.message, field=v.field) for v in evaluation.warnings],
         summary=PlanSummary(
             total_credits=total,
             free_elective_credits=free,
             free_elective_used_all_years=free_all_years,
             free_elective_remaining=max(0.0, round(plan_rules.FREE_ELECTIVE_LIMIT - free_all_years, 1)),
-            year_total_credits=total,  # TODO: додати нормативні дисципліни року
-            credits_by_trimester=by_trimester,
+            year_total_credits=evaluation.year_total_credits,
+            credits_by_trimester=evaluation.credits_by_trimester,
+            workload_by_trimester=evaluation.workload_by_trimester,
+            workload_complete=evaluation.complete,
         ),
     )
 

@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Порівняння знімка САЗ з каталогом `courses`: що додати, змінити, архівувати. Чиста логіка без БД.
 
@@ -22,7 +23,7 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 from ..db import enums as db_enums
 
 REMOVE_THRESHOLD = 0.2
-_COMPARED = ("title", "description", "credits", "trimester", "recommended_year", "kind", "instructors")
+_COMPARED = ("title", "description", "credits", "trimester", "recommended_year", "kind", "instructors", "semesters")
 
 
 @dataclass(frozen=True)
@@ -38,6 +39,7 @@ class ExistingCourse:
     published: bool = True
     synced: bool = True  # курс створений синхронізацією (`last_sync_job_id` не порожній)
     instructors: Tuple[str, ...] = ()
+    semesters: list = field(default_factory=list)
 
 
 @dataclass

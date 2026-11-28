@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """Тести POST /api/v1/plans/validate і регресія POST /api/v1/plans після винесення правил.
 
 Використання ШІ: Codex налаштував профіль четвертокурсника для тесту навантаження. Перевірка: pytest.
@@ -39,16 +40,22 @@ def test_validate_requires_token():
     assert response.status_code == 401
 
 
-def test_validate_valid_plan():
+def test_validate_plan_without_hours_is_incomplete():
     body = _plan([_item(101, 5.0, trimester=1), _item(205, 3.0, trimester=2, free=True)])
     response = client.post("/api/v1/plans/validate", json=body, headers=AUTH)
     assert response.status_code == 200
     data = response.json()
-    assert data["valid"] is True
+    assert data["valid"] is False
+    assert "WORKLOAD_DATA_INCOMPLETE" in {w["code"] for w in data["warnings"]}
     assert data["errors"] == []
     assert data["summary"]["total_credits"] == 8.0
     assert data["summary"]["free_elective_remaining"] == 22.0
-    assert data["summary"]["credits_by_trimester"] == {"1": 5.0, "2": 3.0, "3": 0.0}
+    # Other integration tests replace demo history. Exact annual-source cases
+    # use isolated transactions in test_workload_api.py.
+    by_trimester = data["summary"]["credits_by_trimester"]
+    assert by_trimester["1"] >= 5.0
+    assert by_trimester["2"] >= 3.0
+    assert sum(by_trimester.values()) == data["summary"]["year_total_credits"]
 
 
 def test_validate_adds_only_owners_free_choice_history():
