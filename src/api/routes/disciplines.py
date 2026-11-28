@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Ресурс «Дисципліни» (Disciplines): read-only каталог вибіркових і нормативних дисциплін (use-case 9).
 Дані в реальній системі надходять із САЗ парсингом; тут — заглушки.
@@ -20,6 +21,7 @@ from ...db.enums import CourseKind, PublicationStatus, Trimester
 from ...db.models import Course, CourseDirection, CourseInstructor, Direction, Instructor
 from ...db.models.catalog import CertificateProgram, CertificateProgramCourse
 from ...db.session import get_db
+from ...parser.bundle import SemesterFields
 from ..common import (
     ApiError,
     ErrorDetail,
@@ -49,6 +51,9 @@ class Discipline(BaseModel):
     recommended_year: int = Field(..., ge=1, le=4, description="Рекомендований рік навчання")
     trimester: int = Field(..., ge=1, le=3, description="Триместр (1 — осінь, 2 — весна, 3 — літо)")
     credits: float = Field(..., gt=0, description="Кількість кредитів ECTS")
+    semesters: List[SemesterFields] = Field(
+        default_factory=list, description="Семестрові кредити й контактні години на тиждень із САЗ"
+    )
     directions: List[str] = Field(
         default_factory=list,
         description="Напрямки, для яких дисципліна профорієнтовна. Порожньо — дисципліна вільного вибору",
@@ -93,6 +98,7 @@ def to_discipline(course: Course, certificate_programs: Optional[List[str]] = No
         recommended_year=course.recommended_year,
         trimester=course.trimester.number,
         credits=course.credits,
+        semesters=course.semesters,
         directions=[direction.name for direction in course.directions],
         certificate_programs=certificate_programs or [],
     )

@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Каталог: courses, instructors, course_instructors, directions, course_directions,
 certificate_programs, certificate_program_courses.
@@ -79,6 +80,7 @@ class Course(Base):
     title_normalized: Mapped[str] = mapped_column(String(300), index=True)  # звірка сертифікатних програм
     description: Mapped[str] = mapped_column(Text, default="")  # недовірений вміст із САЗ
     credits: Mapped[float] = mapped_column(Credits)
+    semesters: Mapped[list] = mapped_column(JSON, default=list, server_default="[]")
     trimester: Mapped[Trimester] = mapped_column(db_enum(Trimester, "trimester"))
     recommended_year: Mapped[int] = mapped_column(SmallInteger)
     kind: Mapped[CourseKind] = mapped_column(db_enum(CourseKind, "course_kind"))

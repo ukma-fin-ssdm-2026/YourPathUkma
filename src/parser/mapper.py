@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 ParsedCourse -> payload елемента модерації (формат `CoursePayload` у src/api/routes/admin/sync.py).
 
@@ -6,7 +7,7 @@ ParsedCourse -> payload елемента модерації (формат `Cours
 - `credits` — кредити першого семестру, тобто те, що студент отримує в обраному триместрі;
 - `kind` = normative, лише якщо курс обов'язковий для всіх своїх спеціальностей (такі курси задає деканат,
   у план студента вони не додаються); решта — elective;
-- зайві ключі (`semesters`, `happened`, `specialties`, ...) схема payload ігнорує, але їх бачить модератор.
+- `semesters` із годинами зберігаються після модерації; решта метаданих доступна модератору.
 
 Використання ШІ: файл створено за допомогою Claude (Claude Code). Перевірка: tests/test_saz_mapper.py.
 """
@@ -52,9 +53,12 @@ def course_to_payload(course: ParsedCourse) -> Dict[str, Any]:
         "trimester": _TRIMESTER_BY_SEASON[season],
         "recommended_year": course.recommended_year,
         "kind": _kind(course).value,
-        # лише для модератора
+        # Семестри проходять модерацію й зберігаються; інші поля є контекстом сканування.
         "happened": course.happened,
-        "semesters": [{"number": s.number, "season": s.season, "credits": s.credits} for s in course.semesters],
+        "semesters": [
+            {"number": s.number, "season": s.season, "credits": s.credits, "weekly_hours": s.weekly_hours}
+            for s in course.semesters
+        ],
         "specialties": [{"name": s.name, "type": s.type} for s in course.specialties],
         "instructors": list(course.instructors),
         "faculty": course.faculty,

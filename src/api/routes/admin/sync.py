@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Адмінка: запуск парсингу (SyncJob) і черга модерації (contract.md §3.9, ADR-002).
 
@@ -35,7 +36,7 @@ from ....db.models.admin import ModerationItem, SyncJob
 from ....db.models.catalog import Course, CourseInstructor, Instructor
 from ....db.models.users import User
 from ....db.session import get_db
-from ....parser.bundle import MAX_BUNDLE_BYTES, CatalogBundle
+from ....parser.bundle import MAX_BUNDLE_BYTES, CatalogBundle, SemesterFields
 from ....parser.config import autorun_enabled, load_settings, remote_login_enabled
 from ....parser.sync import fail_stale_jobs, run_sync_job, stage_catalog
 from ....parser.sync_certificates import run_certificates_sync_job
@@ -142,6 +143,7 @@ class CoursePayload(BaseModel):
     recommended_year: Optional[int] = Field(None, ge=1, le=4)
     kind: Optional[db_enums.CourseKind] = None
     instructors: Optional[List[str]] = Field(None, description="Прізвища викладачів; None = не змінювати")
+    semesters: Optional[List[SemesterFields]] = Field(None, max_length=12)
 
     @field_validator("instructors")
     @classmethod
@@ -261,6 +263,7 @@ def _apply_change(db: Session, item: ModerationItem, course: Optional[Course], d
             title_normalized=normalize_text(data.title),
             description=data.description or "",
             credits=data.credits,
+            semesters=[s.model_dump(mode="json") for s in data.semesters or []],
             trimester=db_enums.Trimester.from_number(data.trimester),
             recommended_year=data.recommended_year,
             kind=data.kind,
@@ -280,6 +283,8 @@ def _apply_change(db: Session, item: ModerationItem, course: Optional[Course], d
             course.description = data.description
         if data.credits is not None:
             course.credits = data.credits
+        if data.semesters is not None:
+            course.semesters = [s.model_dump(mode="json") for s in data.semesters]
         if data.trimester is not None:
             course.trimester = db_enums.Trimester.from_number(data.trimester)
         if data.recommended_year is not None:

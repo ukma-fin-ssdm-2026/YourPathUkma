@@ -1,3 +1,4 @@
+# Використання ШІ: Codex доповнив облік годин і кредитів #291; перевірка: pytest і лінтери.
 """
 Тести схеми БД: міграції збігаються з моделями, обмеження цілісності працюють на рівні БД.
 
@@ -26,6 +27,14 @@ def test_migration_0007_upgrade_downgrade():
     cfg = alembic_config()
     command.downgrade(cfg, "0006")
     command.upgrade(cfg, "0007")
+    command.upgrade(cfg, "head")
+    command.check(cfg)
+
+
+def test_course_hours_migration_roundtrip():
+    cfg = alembic_config()
+    command.downgrade(cfg, "0007")
+    command.upgrade(cfg, "head")
     command.check(cfg)
 
 
