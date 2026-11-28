@@ -44,7 +44,7 @@ describe("ModerationPage", () => {
       kind: "elective",
       instructors: [],
       happened: false,
-      semesters: [{ number: 6, season: "Літо", credits: 3 }],
+      semesters: [{ number: 6, season: "Літо", credits: 3, weekly_hours: 2.5 }],
       specialties: [{ name: "Філософія", type: "Професійно-орієнтована" }],
       faculty: "Факультет гуманітарних наук",
       department: "Кафедра філософії та релігієзнавства",
@@ -63,7 +63,7 @@ describe("ModerationPage", () => {
 
     await userEvent.click(view.getByText("Деталі дисципліни"));
     expect(view.getByText("Курс про працю Гегеля.")).toBeVisible();
-    expect(view.getByText("6 семестр · Літо · 3 кред.")).toBeVisible();
+    expect(view.getByText("6 семестр · Літо · 3 кред. · 2,5 год/тиждень")).toBeVisible();
     expect(view.getByText("Філософія · Професійно-орієнтована")).toBeVisible();
     expect(view.getByText("65437")).toBeVisible();
     expect(proposalCard).not.toHaveTextContent(/saz_code|"number"|\[\]/);
